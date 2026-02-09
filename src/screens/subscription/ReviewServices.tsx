@@ -6,13 +6,14 @@ import { AuthContext, ThemeContext, ThemeContextType } from '../../context';
 
 //CONSTANT & ASSETS
 import { FONTS, IMAGES } from '../../assets';
-import { getScaleSize, useString, SHOW_TOAST, CATEGORY_DATA, SERVICES_DATA } from '../../constant';
+import { getScaleSize, useString, SHOW_TOAST, arrayIcons } from '../../constant';
 
 //SCREENS
 import { SCREENS } from '..';
 
 //COMPONENTS
-import { Header, Input, Text, Button, CategoryDropdown, ServiceItem } from '../../components';
+import { Header, Input, Text, Button, ServiceItem } from '../../components';
+import { API } from '../../api';
 
 
 export default function ReviewServices(props: any) {
@@ -20,53 +21,77 @@ export default function ReviewServices(props: any) {
     const STRING = useString();
 
     const { theme } = useContext<any>(ThemeContext);
-    const { myPlan } = useContext<any>(AuthContext);
-    
-    const SECTIONS_DATA = [
-        {
-            title: 'DIY',
-            icon: IMAGES.ic_hammer_wrench,
-            data: [
-                {
-                    id: 1,
-                    name: 'Furniture Assembly'
-                }, {
-                    id: 2,
-                    name: 'Interior Painting'
-                }
-            ]
-        },
-        {
-            title: 'Gardening',
-            icon: IMAGES.ic_hammer_wrench,
-            data: [
-                {
-                    id: 1,
-                    name: 'Green Waste Removal'
-                }
-            ]
-        },
-        {
-            title: 'Moving',
-            icon: IMAGES.ic_hammer_wrench,
-            data: [
-                {
-                    id: 1,
-                    name: 'Moving'
-                }
-            ]
-        },
-        {
-            title: 'Housekeeping',
-            icon: IMAGES.ic_hammer_wrench,
-            data: [
-                {
-                    id: 1,
-                    name: 'Housekeeping'
-                }
-            ]
+    const { selectedServices, setSelectedServices, myPlan, profile } = useContext<any>(AuthContext);
+
+    const [isLoading, setLoading] = useState(false);
+
+    const onDeleteService = (service: any) => {
+        const updated = selectedServices
+            .map((section: any) => ({
+                ...section,
+                service: section?.service?.filter((s: any) => s?.id !== service?.id)
+            }))
+            .filter((section: any) => section?.service?.length > 0);
+
+        setSelectedServices(updated);
+    };
+
+    async function onSelectedCategoriesProfessional() {
+        const output = selectedServices.map((item: any) => ({
+            category_id: item.category.id,
+            sub_category_ids: item.service.map((e: any) => e.id),
+        }));
+        const params = {
+            services: output
         }
-    ]
+        try {
+            setLoading(true);
+            const result = await API.Instance.post(API.API_ROUTES.onSendCategoryIds + `?action=add`, params);
+            if (result.status) {
+                setSelectedServices([]);
+                if (myPlan === 'professional') {
+                    props.navigation.navigate(SCREENS.AddBankDetails.identifier);
+                } else {
+                    props.navigation.navigate(SCREENS.AccountCreatedSuccessfully.identifier);
+                }
+            } else {
+                SHOW_TOAST(result?.data?.message, 'error')
+            }
+        } catch (error: any) {
+            SHOW_TOAST(error?.message ?? '', 'error');
+            console.log(error?.message)
+        } finally {
+            setLoading(false);
+        }
+    }
+
+    async function onSelectedCategoriesNonProfessional() {
+        const output = selectedServices.map((item: any) => ({
+            category_id: item.category.id,
+            sub_category_ids: item.service.map((e: any) => e.id),
+        }));
+        const params = {
+            services: output
+        }
+        try {
+            setLoading(true);
+            const result = await API.Instance.post(API.API_ROUTES.onSelectedCategoriesNonProfessional + `?platform=app&action=update`, params);
+            if (result.status) {
+                if (myPlan === 'professional') {
+                    props.navigation.navigate(SCREENS.AddBankDetails.identifier);
+                } else {
+                    props.navigation.navigate(SCREENS.AccountCreatedSuccessfully.identifier);
+                }
+            } else {
+                SHOW_TOAST(result?.data?.message, 'error')
+            }
+        } catch (error: any) {
+            SHOW_TOAST(error?.message ?? '', 'error');
+            console.log(error?.message)
+        } finally {
+            setLoading(false);
+        }
+    }
 
     return (
         <View style={styles(theme).container}>
@@ -91,28 +116,29 @@ export default function ReviewServices(props: any) {
                 </Text>
                 <ScrollView showsVerticalScrollIndicator={false}>
                     <View style={{ flex: 1.0 }}>
-                        {SECTIONS_DATA.map((section) => {
+                        {selectedServices.map((section: any, index: number) => {
                             return (
-                                <View style={styles(theme).itemContainer}>
+                                <View key={index} style={styles(theme).itemContainer}>
                                     <View style={styles(theme).sectionHeaderContainer}>
-                                        <Image source={section.icon} style={styles(theme).sectionHeaderIcon} />
+                                        <Image
+                                            source={arrayIcons[section?.category?.category_name?.toLowerCase() as keyof typeof arrayIcons] ?? arrayIcons['diy'] as any}
+                                            style={[styles(theme).sectionHeaderIcon, { tintColor: theme._2C6587 }]}
+                                            resizeMode='cover' />
                                         <Text size={getScaleSize(16)}
                                             font={FONTS.Lato.SemiBold}
                                             color={theme._2C6587}>
-                                            {section.title}
+                                            {section?.category?.category_name ?? ''}
                                         </Text>
                                     </View>
-                                    {section.data.map((item) => {
+                                    {(section?.service ?? []).map((item: any, index: number) => {
                                         return (
                                             <ServiceItem
+                                                key={index}
                                                 item={item}
                                                 itemContainer={{ marginBottom: getScaleSize(20) }}
                                                 isReview={true}
                                                 onPress={() => {
-
-                                                }}
-                                                onDelete={() => {
-
+                                                    onDeleteService(item);
                                                 }}
                                             />
                                         )
@@ -141,10 +167,10 @@ export default function ReviewServices(props: any) {
                     title={STRING.next}
                     style={{ flex: 1.0 }}
                     onPress={() => {
-                        if (myPlan === 'professional_certified') {
-                            props.navigation.navigate(SCREENS.AddBankDetails.identifier);
+                        if (profile?.user?.service_provider_type === 'professional') {
+                            onSelectedCategoriesProfessional();
                         } else {
-                            props.navigation.navigate(SCREENS.AccountCreatedSuccessfully.identifier);
+                            onSelectedCategoriesNonProfessional();
                         }
                     }}
                 />

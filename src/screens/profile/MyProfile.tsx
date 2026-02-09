@@ -6,37 +6,172 @@ import {
     Image,
     ScrollView,
     SafeAreaView,
+    Platform,
 } from 'react-native';
 
 //CONTEXT
-import { ThemeContext, ThemeContextType } from '../../context';
+import { AuthContext, ThemeContext, ThemeContextType } from '../../context';
 
 //CONSTANT & ASSETS
 import { FONTS, IMAGES } from '../../assets';
-import { getScaleSize, useString } from '../../constant';
+import { getScaleSize, SHOW_SUCCESS_TOAST, SHOW_TOAST, useString } from '../../constant';
 
 //COMPONENTS
-import { Text, HomeHeader, SearchComponent, Header, Input, Button, BottomSheet } from '../../components';
-import { SCREENS } from '..';
+import { Text, Header, Input, Button, BottomSheet } from '../../components';
 
+//API
+import { API } from '../../api';
+
+//PACKAGES
+import { launchImageLibrary } from 'react-native-image-picker';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { CommonActions } from '@react-navigation/native';
+
+//SCREENS
+import { SCREENS } from '..';
 
 export default function MyProfile(props: any) {
 
     const STRING = useString();
+
     const { theme } = useContext<any>(ThemeContext);
 
-    const bottomSheetRef = useRef<any>(null);
+    const { profile, fetchProfile } = useContext(AuthContext)
 
-    const [name, setName] = useState('');
+    const bottomSheetRef = useRef<any>(null);
+    const inputHeight = Platform.OS == 'ios' ? getScaleSize(56) : getScaleSize(56)
+
+    const [name, setName] = useState((profile?.user?.first_name ?? "") + " " + (profile?.user?.last_name ?? ""));
     const [nameError, setNameError] = useState('');
-    const [email, setEmail] = useState('');
+    const [email, setEmail] = useState(profile?.user?.email ?? "");
     const [emailError, setEmailError] = useState('');
-    const [mobileNumber, setMobileNumber] = useState('');
+    const [mobileNumber, setMobileNumber] = useState(profile?.user?.phone_number ?? "");
     const [mobileNumberError, setMobileNumberError] = useState('');
-    const [address, setAddress] = useState('');
+    const [address, setAddress] = useState(profile?.user?.address ?? "");
     const [addressError, setAddressError] = useState('');
     const [showCountryCode, setShowCountryCode] = useState(false);
+    const [isLoading, setLoading] = useState(false);
+    const [profileImage, setProfileImage] = useState<any>(null);
+    const [addressHeight, setAddressHeight] = useState(inputHeight);
 
+    
+
+    const pickImage = async () => {
+        launchImageLibrary({ mediaType: 'photo' }, (response) => {
+            if (!response.didCancel && !response.errorCode && response.assets) {
+                const asset: any = response.assets[0];
+                console.log('asset', asset)
+                setProfileImage(asset);
+                uploadProfileImage(asset);
+            } else {
+                console.log('response', response)
+            }
+        });
+    }
+
+    async function uploadProfileImage(asset: any) {
+        try {
+            const formData = new FormData();
+            formData.append(profile?.user?.phone_number ? 'email' : 'email', profile?.user?.email);
+            formData.append('file', {
+                uri: asset?.uri,
+                name: asset?.fileName || 'profile_image.jpg',
+                type: asset?.type || 'image/jpeg',
+            });
+
+            console.log('FORM DATA', formData)
+            setLoading(true);
+            const result = await API.Instance.post(API.API_ROUTES.uploadProfileImage, formData, {
+                headers: {
+                    'Content-Type': 'multipart/form-data',
+                },
+            });
+            setLoading(false);
+            console.log('PROFILE PIC RES', JSON.stringify(result))
+
+            if (result.status) {
+                SHOW_TOAST(result?.data?.message ?? '', 'success')
+                await fetchProfile()
+            } else {
+                SHOW_TOAST(result?.data?.message ?? '', 'error')
+                setProfileImage(null);
+            }
+            console.log('error==>', result?.data?.message)
+        }
+        catch (error: any) {
+            setProfileImage(null);
+            setLoading(false);
+            SHOW_TOAST(error?.message ?? '', 'error');
+            console.log(error?.message)
+        } finally {
+            setLoading(false);
+        }
+    }
+
+    async function onEditUserProfile() {
+
+        try {
+            const params = {
+                user_data: {
+                    name: name,
+                    // phone_country_code: countryCode,
+                    // phone_number: mobileNumber,
+                    address: address
+                }
+            }
+
+            console.log('EDIT PARAMS', params)
+
+            setLoading(true);
+            const result = await API.Instance.patch(API.API_ROUTES.editProfile, params);
+            setLoading(false);
+
+            console.log('EDIT PROFILE RES', JSON.stringify(result))
+
+            if (result?.status) {
+                SHOW_SUCCESS_TOAST(STRING.profile_updated_successfully)
+                setLoading(false);
+                props.navigation.goBack();
+                await fetchProfile()
+            }
+            else {
+                SHOW_TOAST(result?.data?.message, 'error')
+                console.log('ERR', result?.data?.message)
+            }
+        } catch (error: any) {
+            SHOW_TOAST(error?.message ?? '', 'error');
+        }
+    }
+
+    async function onDeleteProfile() {
+
+        try {
+            setLoading(true);
+            const result: any = await API.Instance.get(API.API_ROUTES.deleteProfile);
+            setLoading(false);
+
+            console.log('DELETE PROFILE RES', JSON.stringify(result))
+
+            if (result?.status) {
+                await AsyncStorage.clear()
+                setTimeout(() => {
+                    setLoading(false)
+                    props.navigation.dispatch(CommonActions.reset({
+                        index: 0,
+                        routes: [{
+                            name: SCREENS.Login.identifier
+                        }]
+                    }))
+                }, 500);
+            }
+            else {
+                SHOW_TOAST(result?.data?.message, 'error')
+                console.log('ERR', result?.data?.message)
+            }
+        } catch (error: any) {
+            SHOW_TOAST(error?.message ?? '', 'error');
+        }
+    }
 
     return (
         <View style={styles(theme).container}>
@@ -47,88 +182,120 @@ export default function MyProfile(props: any) {
                 screenName={STRING.my_profile}
             />
             <ScrollView showsVerticalScrollIndicator={false}>
-            <View style={styles(theme).mainContainer}>
-                <View style={styles(theme).profileContainer} />
-                <Text
-                    size={getScaleSize(16)}
-                    font={FONTS.Lato.SemiBold}
-                    align="center"
-                    color={theme._2C6587}>
-                    {STRING.edit_picture_or_avatar}
-                </Text>
-                <Text
-                style={{ marginTop: getScaleSize(22), marginBottom: getScaleSize(12) }}
-                    size={getScaleSize(20)}
-                    font={FONTS.Lato.SemiBold}
-                    color={theme._2B2B2B}>
-                    {STRING.personal_information}
-                </Text>
-                <Input
-                    placeholder={STRING.enter_name}
-                    placeholderTextColor={theme._939393}
-                    inputTitle={STRING.full_name}
-                    inputColor={true}
-                    value={name}
-                    continerStyle={{ marginBottom: getScaleSize(20) }}
-                    onChangeText={text => {
-                        setName(text);
-                        setNameError('');
-                    }}
-                    isError={nameError}
-                />
-                <Input
-                    placeholder={STRING.enter_email}
-                    placeholderTextColor={theme._939393}
-                    inputTitle={STRING.e_mail_id}
-                    inputColor={true}
-                    continerStyle={{ marginBottom: getScaleSize(20) }}
-                    value={email}
-                    onChangeText={text => {
-                        setEmail(text);
-                        setEmailError('');
-                    }}
-                    isError={emailError}
-                />
-                <Input
-                    placeholder={STRING.enter_mobile_number}
-                    placeholderTextColor={theme._939393}
-                    inputTitle={STRING.mobile_number}
-                    inputColor={true}
-                    keyboardType="numeric"
-                    continerStyle={{ marginBottom: getScaleSize(20) }}
-                    value={mobileNumber}
-                    maxLength={10}
-                    countryCode={'+91'}
-                    onPressCountryCode={() => {
-                        setShowCountryCode(true);
-                    }}
-                    onChangeText={text => {
-                        setMobileNumber(text);
-                        setMobileNumberError('');
-                    }}
-                    isError={mobileNumberError}
-                />
-                <Input
-                    placeholder={STRING.enter_address}
-                    placeholderTextColor={theme._939393}
-                    inputTitle={STRING.address}
-                    inputColor={true}
-                    value={address}
-                    multiline={true}
-                    inputContainer={{ maxHeight: getScaleSize(200) }}
-                    continerStyle={{ marginBottom: getScaleSize(20) }}
-                    onChangeText={text => {
-                        setAddress(text);
-                        setAddressError('');
-                    }}
-                    isError={addressError}
-                />
-            </View>
+                <View style={styles(theme).mainContainer}>
+                    {profile?.user?.profile_photo_url ? (
+                        <Image source={{ uri: profile?.user?.profile_photo_url }} resizeMode='cover' style={styles(theme).profileContainer} />
+                    ) : (
+                        <View style={styles(theme).EmptyProfileContainer}>
+                            <Text
+                                size={getScaleSize(24)}
+                                font={FONTS.Lato.Regular}
+                                align="center"
+                                color={theme._262B43E5}>
+                                {(profile?.user?.first_name?.charAt(0) ?? '').toUpperCase() +
+                                    (profile?.user?.last_name?.charAt(0) ?? '').toUpperCase()}
+                            </Text>
+                        </View>
+                    )}
+                    <TouchableOpacity onPress={() => {
+                        pickImage()
+                    }}>
+                        <Text
+                            size={getScaleSize(16)}
+                            font={FONTS.Lato.SemiBold}
+                            align="center"
+                            color={theme._2C6587}>
+                            {STRING.edit_picture_or_avatar}
+                        </Text>
+                    </TouchableOpacity>
+                    <Text
+                        style={{ marginTop: getScaleSize(22), marginBottom: getScaleSize(12) }}
+                        size={getScaleSize(20)}
+                        font={FONTS.Lato.SemiBold}
+                        color={theme._2B2B2B}>
+                        {STRING.personal_information}
+                    </Text>
+                    <Input
+                        placeholder={STRING.enter_name}
+                        placeholderTextColor={theme._939393}
+                        inputTitle={STRING.full_name}
+                        inputColor={true}
+                        value={name}
+                        continerStyle={{ marginBottom: getScaleSize(20) }}
+                        onChangeText={text => {
+                            setName(text);
+                            setNameError('');
+                        }}
+                        isError={nameError}
+                    />
+                    <Input
+                        placeholder={STRING.enter_email}
+                        placeholderTextColor={theme._939393}
+                        inputTitle={STRING.e_mail_id}
+                        inputColor={true}
+                        continerStyle={{ marginBottom: getScaleSize(20) }}
+                        value={email}
+                        editable={false}
+                        onChangeText={text => {
+                            setEmail(text);
+                            setEmailError('');
+                        }}
+                        isError={emailError}
+                    />
+                    <Input
+                        placeholder={STRING.enter_mobile_number}
+                        placeholderTextColor={theme._939393}
+                        inputTitle={STRING.mobile_number}
+                        inputColor={true}
+                        editable={false}
+                        keyboardType="numeric"
+                        continerStyle={{ marginBottom: getScaleSize(20) }}
+                        value={mobileNumber}
+                        maxLength={10}
+                        countryCode={'+91'}
+                        onPressCountryCode={() => {
+                            setShowCountryCode(true);
+                        }}
+                        onChangeText={text => {
+                            setMobileNumber(text);
+                            setMobileNumberError('');
+                        }}
+                        isError={mobileNumberError}
+                    />
+                    <Input
+                        placeholder={STRING.enter_address}
+                        placeholderTextColor={theme._939393}
+                        inputTitle={STRING.address}
+                        inputColor={true}
+                        value={address}
+                        multiline={true}
+                        numberOfLines={10}
+                        onContentSizeChange={(e) => {
+                            const newHeight = e.nativeEvent.contentSize.height;
+                            setAddressHeight(
+                              Math.min(getScaleSize(200), Math.max(inputHeight, newHeight))
+                            );
+                        }}
+                        inputContainer={{
+                            maxHeight: getScaleSize(200),
+                            height: addressHeight,
+                            minHeight: inputHeight, 
+                        }}
+                        continerStyle={{ marginBottom: getScaleSize(20) }}
+                        onChangeText={text => {
+                            setAddress(text);
+                            setAddressError('');
+                        }}
+                        isError={addressError}
+                    />
+                </View>
             </ScrollView>
             <Button
                 title={STRING.update}
                 style={{ marginVertical: getScaleSize(24), marginHorizontal: getScaleSize(24) }}
-                onPress={() => { }}
+                onPress={() => {
+                    onEditUserProfile()
+                }}
             />
             <BottomSheet
                 bottomSheetRef={bottomSheetRef}
@@ -138,11 +305,11 @@ export default function MyProfile(props: any) {
                 description={STRING.delete_account_message}
                 buttonTitle={STRING.delete_profile}
                 onPressButton={() => {
-
-                 }}
+                    onDeleteProfile()
+                }}
             />
             <SafeAreaView />
-        </View>
+        </View >
     );
 }
 
@@ -159,9 +326,20 @@ const styles = (theme: ThemeContextType['theme']) =>
         profileContainer: {
             width: getScaleSize(126),
             height: getScaleSize(126),
+            borderRadius: getScaleSize(126),
+            alignSelf: 'center',
+            borderWidth: 1,
+            borderColor: theme._F0EFF0,
+            marginBottom: getScaleSize(12),
+        },
+        EmptyProfileContainer: {
+            width: getScaleSize(126),
+            height: getScaleSize(126),
             backgroundColor: theme._F0EFF0,
             borderRadius: getScaleSize(126),
             alignSelf: 'center',
+            alignItems: 'center',
+            justifyContent: 'center',
             marginBottom: getScaleSize(12),
         },
     });

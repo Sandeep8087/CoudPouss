@@ -1,4 +1,4 @@
-import { Dimensions, Image, ScrollView, StyleSheet, TouchableOpacity, View } from 'react-native';
+import { Alert, Dimensions, Image, Linking, ScrollView, StyleSheet, TouchableOpacity, View } from 'react-native';
 import React, { useContext, useEffect, useRef, useState } from 'react';
 
 //CONTEXT
@@ -6,22 +6,29 @@ import { AuthContext, ThemeContext, ThemeContextType } from '../../context';
 
 //CONSTANT & ASSETS
 import { FONTS, IMAGES } from '../../assets';
-import { getScaleSize, useString, SHOW_TOAST } from '../../constant';
+import { getScaleSize, useString, SHOW_TOAST, openStripeCheckout } from '../../constant';
 
 //SCREENS
 import { SCREENS } from '..';
 
 //COMPONENTS
 import { Header, Input, Text, Button } from '../../components';
+import { EventRegister } from 'react-native-event-listeners';
+import { API } from '../../api';
+import { CommonActions } from '@react-navigation/native';
 
 
 export default function PaymentMethod(props: any) {
 
     const STRING = useString();
 
+    const planDetails: any = props?.route?.params?.planDetails ?? {};
+    const isFromSubscriptionButton: any = props?.route?.params?.isFromSubscriptionButton ?? false;
     const { theme } = useContext<any>(ThemeContext);
+    const { fetchProfile, profile } = useContext<any>(AuthContext);
 
-    const { myPlan } = useContext<any>(AuthContext);
+    const [isLoading, setLoading] = useState(false);
+    const [paymentDetails, setPaymentDetails] = useState<any>({});
 
     const paymentMethods = [
         { id: 1, title: 'Google Pay', icon: IMAGES.ic_google_pay },
@@ -29,6 +36,129 @@ export default function PaymentMethod(props: any) {
         { id: 3, title: 'Credit Card', icon: IMAGES.ic_credit_card },
     ]
 
+    useEffect(() => {
+        const parseParams = (url: string) => {
+            const queryString = url.split('?')[1] || '';
+            const params: Record<string, string> = {};
+
+            queryString.split('&').forEach(item => {
+                if (!item) return;
+                const [key, value] = item.split('=');
+                params[key] = decodeURIComponent(value || '');
+            });
+
+            return params;
+        };
+
+        Linking.getInitialURL().then((url: any) => {
+            if (!url) return;
+
+            if (url.includes('payment-success')) {
+                const params = parseParams(url);
+                const type = params.type;
+                if (type == 'add') {
+                    fetchProfile()
+                    props.navigation.navigate(SCREENS.SubscriptionSuccessful.identifier, {
+                        planDetails: params,
+                    });
+                } else if (type == 'update') {
+                    fetchProfile()
+                    props?.navigation?.dispatch(
+                        CommonActions.reset({
+                            index: 0,
+                            routes: [{ name: SCREENS.ManageSubscription.identifier }],
+                        }),
+                    );
+                }
+            }
+
+            if (url.includes('payment-cancel')) {
+                const params = parseParams(url);
+                const error = params.error || 'Payment cancelled';
+                const type = params.type;
+                EventRegister.emit('subscriptionPaymentCancel', {
+                    message: error,
+                });
+            }
+        });
+
+        const handleUrl = ({ url }: { url: string }) => {
+            console.log('Deep link:', url);
+            // ✅ PAYMENT SUCCESS
+            if (url.startsWith('coudpouss://payment-success')) {
+                const params = parseParams(url);
+                const type = params.type;
+
+                if (type == 'add') {
+                    fetchProfile()
+                    setTimeout(() => {
+                        props.navigation.navigate(SCREENS.SubscriptionSuccessful.identifier, {
+                            planDetails: params,
+                        });
+                    }, 2000);
+                } else if (type == 'update') {
+                    fetchProfile()
+                    setTimeout(() => {
+                        props?.navigation?.dispatch(
+                            CommonActions.reset({
+                                index: 0,
+                                routes: [{ name: SCREENS.ManageSubscription.identifier }],
+                            }),
+                        );
+                    }, 2000);
+                }
+                return;
+            }
+            // ❌ PAYMENT CANCEL
+            if (url.startsWith('coudpouss://payment-cancel')) {
+                const params = parseParams(url);
+                const error = params.error || 'Payment cancelled';
+                const type = params.type;
+                EventRegister.emit('subscriptionPaymentCancel', {
+                    message: error,
+                });
+                return;
+            }
+        };
+
+        Linking.addEventListener('url', handleUrl);
+
+        return () => {
+            Linking.removeAllListeners('url')
+        };
+    }, []);
+
+    useEffect(() => {
+        EventRegister.addEventListener('subscriptionPaymentCancel', (data: any) => {
+            SHOW_TOAST(data?.message ?? '', 'error')
+        });
+        return () => {
+            EventRegister.removeEventListener('subscriptionPaymentCancel')
+        }
+    }, []);
+
+    console.log(profile, 'profile')
+    async function onPayment() {
+        try {
+            setLoading(true);
+            const params = {
+                plan_id: planDetails?.id,
+            }
+            const result = await API.Instance.post(API.API_ROUTES.subscriptionPayment + `?action=${isFromSubscriptionButton ? 'update' : 'add'}&platform=app`, params);
+            if (result.status) {
+                setPaymentDetails(result?.data?.data ?? {});
+                const STRIPE_URL = result?.data?.data?.checkout_url ?? '';
+                openStripeCheckout(STRIPE_URL);
+            } else {
+                SHOW_TOAST(result?.data?.message ?? '', 'error')
+            }
+        } catch (error: any) {
+            SHOW_TOAST(error?.message ?? '', 'error');
+            console.log(error?.message)
+        } finally {
+            setLoading(false);
+        }
+    }
 
     return (
         <View style={styles(theme).container}>
@@ -52,7 +182,7 @@ export default function PaymentMethod(props: any) {
                                 size={getScaleSize(19)}
                                 font={FONTS.Lato.Bold}
                                 color={theme._214C65}>
-                                {myPlan === 'professional_certified' ? STRING.professional_certified : STRING.non_certified_provider}
+                                {planDetails?.name ?? ''}
                             </Text>
                             <Image source={IMAGES.ic_check} style={styles(theme).selectedView} />
                         </View>
@@ -60,14 +190,14 @@ export default function PaymentMethod(props: any) {
                             size={getScaleSize(18)}
                             font={FONTS.Lato.Medium}
                             color={theme._214C65}>
-                            {STRING.monthly}
+                            {planDetails?.duration ?? ''}
                         </Text>
                         <Text
                             size={getScaleSize(19)}
                             font={FONTS.Lato.Bold}
                             color={theme._214C65}
                             style={{ marginVertical: getScaleSize(8) }}>
-                            {'€15.99'}
+                            {`€${planDetails?.price ?? '0.00'}`}
                         </Text>
                         <Text
                             size={getScaleSize(12)}
@@ -85,12 +215,12 @@ export default function PaymentMethod(props: any) {
                     <View style={styles(theme).paymentMethodContainer}>
                         {paymentMethods.map((e, index) => {
                             return (
-                                <TouchableOpacity 
-                                key={index} 
-                                onPress={() => {
-                                    
-                                }}
-                                style={styles(theme).itemContainer}>
+                                <TouchableOpacity
+                                    key={index}
+                                    onPress={() => {
+
+                                    }}
+                                    style={styles(theme).itemContainer}>
                                     <Image source={e.icon} style={styles(theme).itemIcon} />
                                     <Text
                                         style={{ flex: 1.0 }}
@@ -99,7 +229,7 @@ export default function PaymentMethod(props: any) {
                                         color={theme._424242}>
                                         {e.title}
                                     </Text>
-                                    <Image source={IMAGES.ic_right} style={[styles(theme).selectedView, {marginRight: getScaleSize(12)}]} />
+                                    <Image source={IMAGES.ic_right} style={[styles(theme).selectedView, { marginRight: getScaleSize(12) }]} />
                                 </TouchableOpacity>
                             )
                         })}
@@ -125,7 +255,11 @@ export default function PaymentMethod(props: any) {
                     title={STRING.proceed_to_pay}
                     style={{ flex: 1.0 }}
                     onPress={() => {
-                            props.navigation.navigate(SCREENS.SubscriptionSuccessful.identifier)
+                        if(profile?.has_purchased){
+                            SHOW_TOAST(STRING.you_have_already_subscribed_to_a_plan, 'info')
+                        }else{
+                            onPayment()
+                        }
                     }}
                 />
             </View>
@@ -179,10 +313,10 @@ const styles = (theme: ThemeContextType['theme']) =>
             alignItems: 'center',
             justifyContent: 'center',
         },
-        paymentMethodContainer:{
+        paymentMethodContainer: {
             marginTop: getScaleSize(20)
         },
-        itemContainer:{
+        itemContainer: {
             flexDirection: 'row',
             alignItems: 'center',
             marginBottom: getScaleSize(16),
@@ -192,7 +326,7 @@ const styles = (theme: ThemeContextType['theme']) =>
             paddingVertical: getScaleSize(8),
             paddingHorizontal: getScaleSize(12),
         },
-        itemIcon:{
+        itemIcon: {
             width: getScaleSize(60),
             height: getScaleSize(60),
             marginRight: getScaleSize(15)

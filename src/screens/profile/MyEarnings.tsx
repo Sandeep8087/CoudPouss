@@ -1,58 +1,63 @@
-import { Image, ScrollView, StyleSheet, TouchableOpacity, View } from 'react-native'
-import React, { useContext } from 'react'
+import { Dimensions, Image, ScrollView, StyleSheet, TouchableOpacity, View } from 'react-native'
+import React, { useContext, useEffect, useState } from 'react'
 import { ThemeContext, ThemeContextType } from '../../context'
-import { Button, Header, Text, TransactionItem } from '../../components'
-import { getScaleSize, useString } from '../../constant'
+import { Button, EarningsChart, Header, Text, TransactionItem } from '../../components'
+import { getScaleSize, SHOW_TOAST, useString } from '../../constant'
 import { FONTS, IMAGES } from '../../assets'
 import { SCREENS } from '..'
+
+//PACKAGES
+import { API } from '../../api'
+import DateTimePicker from '@react-native-community/datetimepicker';
 
 export default function MyEarnings(props: any) {
     const { theme } = useContext<any>(ThemeContext);
     const STRING = useString();
 
-    const DATA = [
-        {
-            name: 'Jane Cooper',
-            date: '20 Jan, 22:44',
-            amount: '€49.89',
-            status: 'Success',
-            paymentMethod: 'Credit Card',
-        },
-        {
-            name: 'Jane Cooper',
-            date: '20 Jan, 22:44',
-            amount: '€49.89',
-            status: 'Success',
-            paymentMethod: 'Credit Card',
-        },
-        {
-            name: 'Jane Cooper',
-            date: '20 Jan, 22:44',
-            amount: '€49.89',
-            status: 'Success',
-            paymentMethod: 'Credit Card',
-        },
-        {
-            name: 'Jane Cooper',
-            date: '20 Jan, 22:44',
-            amount: '€49.89',
-            status: 'Success',
-            paymentMethod: 'Credit Card',
-        },
-        {
-            name: 'Jane Cooper',
-            date: '20 Jan, 22:44',
-            amount: '€49.89',
-            status: 'Success',
-            paymentMethod: 'Credit Card',
-        }
-    ]
+    const [activities, setActivities] = useState<any>([]);
+    const [isLoading, setLoading] = useState(false);
+    const [showPicker, setShowPicker] = useState(false);
+    const [selectedDate, setSelectedDate] = useState(new Date());
+    const [earningsData, setEarningsData] = useState<any>(null);
 
     const itemData = [
         { id: 1, title: 'Transaction Overview', onPress: SCREENS.Transactions.identifier },
-        { id: 2, title: 'Account Information', onPress: SCREENS.BankDetails.identifier },
+        // { id: 2, title: 'Account Information', onPress: SCREENS.BankDetails.identifier },
         { id: 3, title: 'History of Withdrawals', onPress: SCREENS.WithdrawHistory.identifier },
     ]
+
+    useEffect(() => {
+        fetchActivities(new Date().toISOString().slice(0, 7));
+    }, []);
+
+    const onChange = (_: any, date?: Date) => {
+        setShowPicker(false);
+        if (date) {
+
+            setSelectedDate(date);
+            // Call API with new month
+            const month = date.toISOString().slice(0, 7); // YYYY-MM
+            fetchActivities(month);
+        }
+    };
+
+    async function fetchActivities(month: string) {
+        try {
+            setLoading(true);
+            const result: any = await API.Instance.get(API.API_ROUTES.getEarningsDashboard + `?month=${month}&transaction_page=1&transaction_limit=1`);
+            if (result?.status) {
+                setActivities(result?.data?.data?.activities ?? []);
+                setEarningsData(result?.data?.data ?? null);
+            }
+            else {
+                SHOW_TOAST(result?.data?.message, 'error');
+            }
+        } catch (error: any) {
+            SHOW_TOAST(error?.message ?? '', 'error');
+        } finally {
+            setLoading(false);
+        }
+    }
 
     return (
         <View style={styles(theme).container}>
@@ -77,7 +82,7 @@ export default function MyEarnings(props: any) {
                         font={FONTS.Lato.ExtraBold}
                         align='center'
                         color={theme._0E1B27}>
-                        {'€53,278.22 USD'}
+                        {`€ ${earningsData?.wallet?.total_balance ?? 0} USD`}
                     </Text>
                     <View style={styles(theme).flexView}>
                         <Image source={IMAGES.ic_increase} style={styles(theme).increaseImage} />
@@ -85,10 +90,15 @@ export default function MyEarnings(props: any) {
                             size={getScaleSize(16)}
                             font={FONTS.Lato.Medium}
                             color={theme._4CAF50}>
-                            {'+0.59% increase from last month'}
+                            {`${earningsData?.increase_from_last_month?.percentage >= 0 ? '+' : '-'}${earningsData?.increase_from_last_month?.percentage ?? 0}% increase from last month`}
                         </Text>
                     </View>
-                    <View style={styles(theme).chartContainer} />
+                    <View style={styles(theme).chartContainer}>
+                        <EarningsChart
+                            data={activities}
+                            onMonthPress={() => setShowPicker(true)}
+                        />
+                    </View>
                     <Text
                         size={getScaleSize(20)}
                         font={FONTS.Lato.SemiBold}
@@ -96,11 +106,24 @@ export default function MyEarnings(props: any) {
                         style={{ marginBottom: getScaleSize(24) }}>
                         {STRING.latest_transactions}
                     </Text>
-                    {DATA.map((item, index) => (
-                        <TransactionItem
-                            itemContainer={{ marginBottom: getScaleSize(16)}}
-                            key={index} item={item} />
-                    ))}
+                    {earningsData?.latest_transactions?.items?.length > 0 ? (
+                        <>
+                            {earningsData?.latest_transactions?.items?.map((item: any, index: number) => (
+                                <TransactionItem
+                                    itemContainer={{ marginBottom: getScaleSize(16) }}
+                                    key={index} item={item} />
+                            ))}
+                        </>
+                    ) : (
+                        <Text
+                            style={{ marginBottom: getScaleSize(24) }}
+                            size={getScaleSize(16)}
+                            align='center'
+                            font={FONTS.Lato.Medium}
+                            color={theme._818285}>
+                            {STRING.no_transactions_data_found ?? ''}
+                        </Text>
+                    )}
                     <View>
                         {itemData.map((item: any, index: number) => {
                             return (
@@ -124,9 +147,17 @@ export default function MyEarnings(props: any) {
             <Button
                 style={{ marginHorizontal: getScaleSize(24), marginVertical: getScaleSize(24) }}
                 title={STRING.request_withdrawal}
-                onPress={() => { 
+                onPress={() => {
                     props.navigation.navigate(SCREENS.MoneyWithdrawal.identifier);
                 }} />
+            {showPicker && (
+                <DateTimePicker
+                    value={selectedDate}
+                    mode='date'
+                    display='spinner'
+                    onChange={onChange}
+                />
+            )}
         </View>
     )
 }
@@ -151,11 +182,11 @@ const styles = (theme: ThemeContextType['theme']) => StyleSheet.create({
         marginRight: getScaleSize(6),
     },
     chartContainer: {
-        height: getScaleSize(200),
         borderWidth: 1,
         borderColor: theme._DCDDDD,
         borderRadius: getScaleSize(12),
         marginVertical: getScaleSize(30),
+        overflow: 'hidden',
     },
     itemContainer: {
         flexDirection: 'row',
@@ -172,6 +203,6 @@ const styles = (theme: ThemeContextType['theme']) => StyleSheet.create({
         height: getScaleSize(24),
         marginLeft: getScaleSize(12),
         tintColor: theme._2C6587,
-        
+
     }
 })

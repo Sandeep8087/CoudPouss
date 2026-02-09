@@ -35,6 +35,9 @@ interface InputProps {
   inputColor?: boolean;
   countryCode?: string;
   onPressCountryCode?: () => void;
+  quantityIcon?: any;
+  onPressQuantityRemove?: () => void;
+  onPressQuantityAdd?: () => void;
 }
 
 function Input(props: InputProps & TextInputProps) {
@@ -51,7 +54,10 @@ function Input(props: InputProps & TextInputProps) {
     inputTitle,
     inputColor,
     countryCode,
-    onPressCountryCode
+    onPressCountryCode,
+    quantityIcon,
+    onPressQuantityRemove,
+    onPressQuantityAdd
   } = props;
 
   const { theme } = useContext<any>(ThemeContext);
@@ -67,19 +73,19 @@ function Input(props: InputProps & TextInputProps) {
           {inputTitle}
         </Text>
       )}
-      <View style={[styles(theme).flexView,{flex: 1.0}]}>
+      <View style={[styles(theme).flexView, { flex: 1.0 }]}>
         {countryCode && (
           <Pressable
-          onPress={onPressCountryCode}
-           style={[styles(theme).container,
-          {
-            borderColor: isError ? theme._EF5350 : theme._D5D5D5,
-            height: Platform.OS == 'ios' ? getScaleSize(56) : getScaleSize(56),
-            flexDirection: 'row',
-            alignItems: 'center',
-            marginRight: getScaleSize(14),
-          },
-          ]}>
+            onPress={onPressCountryCode}
+            style={[styles(theme).container,
+            {
+              borderColor: isError ? theme._EF5350 : theme._D5D5D5,
+              height: Platform.OS == 'ios' ? getScaleSize(56) : getScaleSize(56),
+              flexDirection: 'row',
+              alignItems: 'center',
+              marginRight: getScaleSize(14),
+            },
+            ]}>
             <Text
               size={getScaleSize(16)}
               font={FONTS.Lato.Medium}
@@ -98,9 +104,10 @@ function Input(props: InputProps & TextInputProps) {
           onPress={props.onPress}
           style={[
             styles(theme).container,
-            { borderColor: isError ? theme._EF5350 : theme._D5D5D5,
+            {
+              borderColor: isError ? theme._EF5350 : theme._D5D5D5,
               flex: 1.0,
-             },
+            },
           ]}>
           {searchBox && (
             <View>
@@ -115,9 +122,7 @@ function Input(props: InputProps & TextInputProps) {
             {...props}
             style={[styles(theme).input, inputContainer]}
             placeholderTextColor={
-              isError
-                ? theme._EF5350
-                : placeholderTextColor
+              placeholderTextColor
                   ? placeholderTextColor
                   : theme._939393
             }
@@ -133,6 +138,24 @@ function Input(props: InputProps & TextInputProps) {
                 style={[styles(theme).rightIcon]}
                 resizeMode={'contain'}
               />
+            </View>
+          )}
+          {quantityIcon && (
+            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+              <Pressable onPress={onPressQuantityRemove}>
+                <Image
+                  source={IMAGES.quantity_remove}
+                  style={[styles(theme).rightIcon, { marginHorizontal: getScaleSize(10) }]}
+                  resizeMode={'contain'}
+                />
+              </Pressable>
+              <Pressable onPress={onPressQuantityAdd}>
+                <Image
+                  source={IMAGES.quantity_add}
+                  style={[styles(theme).rightIcon, { marginHorizontal: getScaleSize(10) }]}
+                  resizeMode={'contain'}
+                />
+              </Pressable>
             </View>
           )}
           {passwordIcon && (

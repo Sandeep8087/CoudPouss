@@ -9,14 +9,36 @@ import {createBottomTabNavigator} from '@react-navigation/bottom-tabs';
 //PACKAGES
 import {TABS} from '.';
 import {AuthContext} from '../context';
-import {PermissionsAndroid, Platform} from 'react-native';
-import PushNotification from 'react-native-push-notification';
-import messaging from '@react-native-firebase/messaging';
+import {View} from 'react-native';
 
 const Tab = createBottomTabNavigator();
 
-function BottomBar() {
+function BottomBar(props: any) {
   const {userType} = useContext<any>(AuthContext);
+
+  const isProfile = props?.route?.params?.isProfile ?? false;
+  const isValidationService =
+    props?.route?.params?.isValidationService ?? false;
+  const isTask = props?.route?.params?.isTask ?? false;
+
+  function getInitialRouteName() {
+    if (isProfile) {
+      return TABS.Profile.identifier;
+    } else if (isValidationService) {
+      return TABS.Request.identifier;
+    } else {
+      return TABS.Home.identifier;
+    }
+  }
+
+  function getProfessionalRouteName() {
+    console.log('isTask==>', isTask);
+    if (isTask) {
+      return TABS.Task.identifier;
+    } else {
+      return TABS.ProfessionalHome.identifier;
+    }
+  }
 
   useEffect(() => {
     // Configure the notification service
@@ -82,7 +104,7 @@ function BottomBar() {
           screenOptions={{
             headerShown: false,
           }}
-          initialRouteName={TABS.ProfessionalHome.identifier}
+          initialRouteName={getProfessionalRouteName()}
           tabBar={props => {
             return <Tabbar {...props} />;
           }}>
@@ -112,7 +134,7 @@ function BottomBar() {
           screenOptions={{
             headerShown: false,
           }}
-          initialRouteName={TABS.Home.identifier}
+          initialRouteName={getInitialRouteName()}
           tabBar={props => {
             return <Tabbar {...props} />;
           }}>
@@ -124,10 +146,7 @@ function BottomBar() {
             name={TABS.Request.identifier}
             component={TABS.Request.component}
           />
-          <Tab.Screen
-            name={TABS.CreateRequest.identifier}
-            component={TABS.CreateRequest.component}
-          />
+          <Tab.Screen name={'plus'} component={() => <View />} />
           <Tab.Screen
             name={TABS.Chat.identifier}
             component={TABS.Chat.component}

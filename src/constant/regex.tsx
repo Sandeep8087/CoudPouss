@@ -3,4 +3,5 @@ export const REGEX = {
     word: /^[a-zA-Z]+(([',. -][a-zA-Z ])?[a-zA-Z]*)*$/,
     password: /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/,
     phoneNumber: /[^0-9]/g,
+    phoneRegex: /^\d+$/,
 }

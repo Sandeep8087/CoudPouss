@@ -57,11 +57,6 @@ export default function Notification(props: any) {
 
   return (
     <View style={styles(theme).container}>
-      <StatusBar
-        barStyle="dark-content"
-        backgroundColor={theme.white}
-        translucent={false}
-      />
       <Header
         onBack={() => {
           props.navigation.goBack();
@@ -178,7 +173,7 @@ export default function Notification(props: any) {
                     style={styles(theme).nextButtonContainer}
                     activeOpacity={1}
                     onPress={() => {
-                      props.navigation.navigate(SCREENS.TaskDetails.identifier);
+                      props.navigation.navigate(SCREENS.CompletedTaskDetails.identifier);
                     }}>
                     <Text
                       size={getScaleSize(14)}

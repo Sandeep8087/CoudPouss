@@ -34,7 +34,8 @@ const Button = (props: ButtonProps) => {
         align="center"
         font={FONTS.Lato.Bold}
         size={getScaleSize(19)}
-        color={disabled ? theme._214C65 : theme.white}>
+        lineHeight={getScaleSize(24)}
+        color={disabled ?  theme._214C65 : theme.white}>
         {title}
       </Text>
     </TouchableOpacity>

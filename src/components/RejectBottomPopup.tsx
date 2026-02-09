@@ -25,8 +25,7 @@ const RejectBottomPopup = (props: any) => {
   const slideAnim = useRef(new Animated.Value(50)).current;
   const scaleAnim = useRef(new Animated.Value(0.8)).current;
 
-  const [selectedCategory, setSelectedCategory] = useState(1);
-  const [reason, setReason] = useState('');
+  const { selectedCategory, reason, setSelectedCategory, setReason } = props;
 
   const startOpenAnimations = () => {
     fadeAnim.setValue(0);
@@ -92,7 +91,7 @@ const RejectBottomPopup = (props: any) => {
             backgroundColor: theme._77777733,
           },
           container: {
-            height: getScaleSize(700),
+            height: selectedCategory == 3 ? getScaleSize(700) : getScaleSize(550),
             borderTopLeftRadius: getScaleSize(24),
             borderTopRightRadius: getScaleSize(24),
             backgroundColor: theme.white,
@@ -115,6 +114,7 @@ const RejectBottomPopup = (props: any) => {
               activeOpacity={1}
               onPress={() => {
                 setSelectedCategory(1);
+                setReason(STRING.Pricehigherthancompetitors);
               }}>
               <Text
                 style={{flex: 1.0}}
@@ -137,6 +137,7 @@ const RejectBottomPopup = (props: any) => {
               activeOpacity={1}
               onPress={() => {
                 setSelectedCategory(2);
+                setReason(STRING.Lateresponse);
               }}>
               <Text
                 style={{flex: 1.0}}
@@ -158,7 +159,13 @@ const RejectBottomPopup = (props: any) => {
               style={styles(theme).otherRadioButtonContainer}
               activeOpacity={1}
               onPress={() => {
-                setSelectedCategory(3);
+                if (selectedCategory == 3) {
+
+                } else {
+                  setReason(''); // Clear the reason when selecting another reason
+                  setSelectedCategory(3);
+                }
+
               }}>
               <View style={{flexDirection: 'row', alignItems: 'center'}}>
                 <Text
@@ -177,6 +184,21 @@ const RejectBottomPopup = (props: any) => {
                   }
                 />
               </View>
+              {selectedCategory == 3 && (
+                <View style={styles(theme).inputContainer}>
+                  <TextInput
+                    style={styles(theme).input}
+                    placeholder={'Write your reason here…'}
+                    placeholderTextColor={theme._818285}
+                    value={reason}
+                    onChangeText={setReason}
+                    multiline={true}
+                    numberOfLines={8}
+                    textAlignVertical="top"
+                    returnKeyType="default"
+                  />
+                </View>
+              )}
             </TouchableOpacity>
           </View>
           <View style={styles(theme).buttonContainer}>
@@ -225,6 +247,7 @@ const styles = (theme: ThemeContextType['theme']) =>
     radioButtonContainer: {
       marginTop: getScaleSize(20),
       flexDirection: 'row',
+      alignItems: 'center',
       borderWidth: 1,
       borderColor: theme._D5D5D5,
       paddingVertical: getScaleSize(17),
@@ -278,6 +301,14 @@ const styles = (theme: ThemeContextType['theme']) =>
       flex: 1.0,
       height: Platform.OS == 'ios' ? getScaleSize(56) : getScaleSize(56),
     },
+    inputContainer: {
+      marginTop: getScaleSize(12),
+      height: getScaleSize(100),
+      borderWidth: 1,
+      borderColor: theme._D5D5D5,
+      borderRadius: getScaleSize(12),
+      paddingHorizontal: getScaleSize(16)
+    }
   });
 
 export default RejectBottomPopup;

@@ -19,15 +19,14 @@ export default function SubscriptionSuccessful(props: any) {
 
     const STRING = useString();
 
+    const planDetails: any = props?.route?.params?.planDetails ?? {};
     const { theme } = useContext<any>(ThemeContext);
-    const { myPlan } = useContext<any>(AuthContext);
+
 
     return (
         <View style={styles(theme).container}>
             <Header
-                onBack={() => {
-                    props.navigation.goBack();
-                }}
+               
                 screenName={STRING.payment_method}
             />
             <ScrollView showsVerticalScrollIndicator={false}>
@@ -40,7 +39,7 @@ export default function SubscriptionSuccessful(props: any) {
                         style={{ marginBottom: getScaleSize(16) }}>
                         {STRING.welcome_aboard_your_subscription_is_now_active_you_can_start_exploring_all_features_immediately}
                     </Text>
-                    <View style={styles(theme).infoContainer}>
+                    {/* <View style={styles(theme).infoContainer}>
                         <View style={[styles(theme).flexView, { marginBottom: getScaleSize(16) }]}>
                             <Text size={getScaleSize(16)}
                                 font={FONTS.Lato.Bold}
@@ -57,7 +56,7 @@ export default function SubscriptionSuccessful(props: any) {
                             <Text size={getScaleSize(16)}
                                 font={FONTS.Lato.Bold}
                                 color={theme._424242}>
-                                {myPlan == 'professional_certified' ? STRING.professional_certified : STRING.non_certified_provider}
+                                {planDetails?.name ?? ''}
                             </Text>
                         </View>
                         <View style={[styles(theme).flexView, { marginBottom: getScaleSize(16) }]}>
@@ -120,8 +119,9 @@ export default function SubscriptionSuccessful(props: any) {
                                 {"26 Sept 2025"}
                             </Text>
                         </View>
-                    </View>
-                    <View style={{flexDirection: 'row'}}>
+                    </View> */}
+                   
+                    {/* <View style={{flexDirection: 'row'}}>
                         <Image source={IMAGES.ic_info} style={styles(theme).infoIcon} />
                         <Text size={getScaleSize(16)}
                             font={FONTS.Lato.Bold}
@@ -134,14 +134,22 @@ export default function SubscriptionSuccessful(props: any) {
                         color={theme._555555}
                         style={{ marginTop: getScaleSize(8) }}>
                         {STRING.no_paymentwas_taken_today_your_first_month_is_free}
-                    </Text>
+                    </Text> */}
                 </View>
             </ScrollView>
             <Button
                 title={STRING.complete_profile_now}
                 style={{ marginBottom: getScaleSize(24), marginHorizontal: getScaleSize(24) }}
                 onPress={() => {
-                    props.navigation.navigate(SCREENS.AdditionalDetails.identifier);
+                    if (planDetails?.type === 'professional') {
+                        props.navigation.navigate(SCREENS.AdditionalDetails.identifier,{
+                            planDetails: planDetails,
+                        });
+                    } else {
+                        props.navigation.navigate(SCREENS.YearsOfExperience.identifier,{
+                            planDetails: planDetails,
+                        });
+                    }
                 }}
             />
         </View>
@@ -159,7 +167,8 @@ const styles = (theme: ThemeContextType['theme']) =>
             flex: 1.0,
             marginHorizontal: getScaleSize(24),
             marginVertical: getScaleSize(14),
-            justifyContent: 'center'
+            justifyContent: 'center',
+            alignItems: 'center'
         },
         successIcon: {
             width: getScaleSize(120),

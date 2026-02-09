@@ -1,4 +1,4 @@
-import React, {useContext, useState} from 'react';
+import React, { useContext, useState } from 'react';
 import {
   View,
   // Text,
@@ -7,19 +7,21 @@ import {
   ScrollView,
   Image,
 } from 'react-native';
-import {FONTS, IMAGES} from '../assets';
-import {getScaleSize, useString} from '../constant';
-import {ThemeContext, ThemeContextType} from '../context';
+import { FONTS, IMAGES } from '../assets';
+import { getScaleSize, SHOW_TOAST, useString } from '../constant';
+import { ThemeContext, ThemeContextType } from '../context';
 import Text from './Text';
+import moment from 'moment';
 
-const CalendarComponent = () => {
+const CalendarComponent = (props: any) => {
+  const { selectedDate, onDateChange } = props;
   const [currentDate, setCurrentDate] = useState(new Date());
 
   const STRING = useString();
-  const {theme} = useContext<any>(ThemeContext);
+  const { theme } = useContext<any>(ThemeContext);
 
   // Generate calendar data for given month
-  const generateCalendar = date => {
+  const generateCalendar = (date: Date) => {
     const year = date.getFullYear();
     const month = date.getMonth();
 
@@ -58,7 +60,7 @@ const CalendarComponent = () => {
     return weeks;
   };
 
-  const navigateMonth = direction => {
+  const navigateMonth = (direction: string) => {
     const newDate = new Date(currentDate);
     if (direction === 'next') {
       newDate.setMonth(newDate.getMonth() + 1);
@@ -68,14 +70,28 @@ const CalendarComponent = () => {
     setCurrentDate(newDate);
   };
 
-  const isToday = day => {
+  const isToday = (day: number) => {
     const today = new Date();
-    return (
-      day !== null &&
-      day === today.getDate() &&
-      currentDate.getMonth() === today.getMonth() &&
-      currentDate.getFullYear() === today.getFullYear()
-    );
+
+    if (selectedDate) {
+      const isSelectedDate = (
+        day !== null &&
+        day === selectedDate.getDate() &&
+        currentDate.getMonth() === selectedDate.getMonth() &&
+        currentDate.getFullYear() === selectedDate.getFullYear()
+      );
+      return isSelectedDate;
+    }
+    else {
+      const isToday = (
+        day !== null &&
+        day === today.getDate() &&
+        currentDate.getMonth() === today.getMonth() &&
+        currentDate.getFullYear() === today.getFullYear()
+      );
+
+      return isToday
+    }
   };
 
   const calendarData = generateCalendar(currentDate);
@@ -88,18 +104,6 @@ const CalendarComponent = () => {
 
   return (
     <View style={styles(theme).container}>
-      {/* Header with navigation */}
-      {/* <View style={styles.header}>
-        <TouchableOpacity onPress={() => navigateMonth('prev')} style={styles.navButton}>
-          <Text style={styles.navButtonText}>‹</Text>
-        </TouchableOpacity>
-        
-        <Text style={styles.monthYear}>{monthYear}</Text>
-        
-        <TouchableOpacity onPress={() => navigateMonth('next')} style={styles.navButton}>
-          <Text style={styles.navButtonText}>›</Text>
-        </TouchableOpacity>
-      </View> */}
       <View style={styles(theme).calenderHeader}>
         <TouchableOpacity
           style={styles(theme).nextImage}
@@ -110,7 +114,7 @@ const CalendarComponent = () => {
           <Image style={styles(theme).nextImage} source={IMAGES.backword} />
         </TouchableOpacity>
         <Text
-          style={{alignSelf: 'center', flex: 1.0, textAlign: 'center'}}
+          style={{ alignSelf: 'center', flex: 1.0, textAlign: 'center' }}
           size={getScaleSize(14)}
           align="center"
           font={FONTS.Lato.Medium}
@@ -138,9 +142,6 @@ const CalendarComponent = () => {
               color={theme.primary}>
               {day}
             </Text>
-            // <Text key={index} style={styles(theme).weekDayText}>
-            //   {day}
-            // </Text>
           ))}
         </View>
 
@@ -151,7 +152,17 @@ const CalendarComponent = () => {
               {week.map((day, dayIndex) => (
                 <View key={dayIndex} style={styles(theme).dayCell}>
                   {day ? (
-                    <View
+                    <TouchableOpacity
+                      onPress={() => {
+                        const date = new Date(currentDate.getFullYear(), currentDate.getMonth(), day);
+                        const currentDateMoment = moment().set({hour: 0, minute: 0, second: 0, millisecond: 0});
+                        if (moment(date).isBefore(currentDateMoment)) {
+                          SHOW_TOAST('You cannot select a date in the past', 'error');
+                          return;
+                        } else {
+                          onDateChange(date);
+                        }
+                      }}
                       style={[
                         styles(theme).dayContainer,
                         isToday(day) && styles(theme).todayContainer,
@@ -160,19 +171,18 @@ const CalendarComponent = () => {
                         size={getScaleSize(14)}
                         align="center"
                         font={FONTS.Lato.Medium}
-                        color={theme._323232}>
-                        {day}
-                      </Text>                      
-                    </View>
-                  ) : (
-                    <Text
-                        size={getScaleSize(14)}
-                        align="center"
-                        font={FONTS.Lato.Medium}
-                        color={theme._323232}>
+                        color={isToday(day) ? theme.white : theme._323232}>
                         {day}
                       </Text>
-                    // <Text style={styles(theme).emptyDay}></Text>
+                    </TouchableOpacity>
+                  ) : (
+                    <Text
+                      size={getScaleSize(14)}
+                      align="center"
+                      font={FONTS.Lato.Medium}
+                      color={theme._323232}>
+                      {day}
+                    </Text>
                   )}
                 </View>
               ))}
@@ -273,6 +283,7 @@ const styles = (theme: ThemeContextType['theme']) =>
       borderRadius: getScaleSize(18),
       backgroundColor: '#FBFBFB',
       flexDirection: 'row',
+      marginBottom: getScaleSize(4),
     },
     nextImage: {
       height: getScaleSize(24),

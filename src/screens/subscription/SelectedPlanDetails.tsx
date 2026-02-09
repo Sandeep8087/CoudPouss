@@ -13,34 +13,41 @@ import { SCREENS } from '..';
 
 //COMPONENTS
 import { Header, Input, Text, Button } from '../../components';
+import { API } from '../../api';
 
 
 export default function SelectedPlanDetails(props: any) {
 
     const STRING = useString();
     const { theme } = useContext<any>(ThemeContext);
-    const { setMyPlan, myPlan } = useContext<any>(AuthContext);
+    const { user } = useContext<any>(AuthContext);
 
-    const subscriptionDetails = [
-        { title: STRING.earn_money_through_coudPouss_secure_escrow_payments, id: 1 },
-        { title: STRING.certified_badge_visible_to_all_clients, id: 2 },
-        { title: STRING.includes_1_service_category_1_per_extra_category, id: 3 },
-        { title: STRING.subscription_billed_via_Bank_Card_Google_Pay_or_Apple_Pay, id: 4 },
-        { title: STRING.profile_reviewed_within_72_hours_by_an_administrator, id: 5 },
-    ]
-    const nonCertifiedSubscriptionDetails = [
-        { title: STRING.non_certified_provider_details, id: 1 },
-        { title: STRING.service_or_item_exchanges_only, id: 2 },
-        { title: STRING.includes_1_service_category_1_per_extra_category, id: 3 },
-        { title: STRING.subscription_billed_via_Bank_Card_Google_Pay_or_Apple_Pay, id: 4 },
-        { title: STRING.No_money_transactions_Barter_only, id: 5 },
-    ]
+    const plan: any = props?.route?.params?.plan ?? '';
+    const isFromSubscriptionButton: any = props?.route?.params?.isFromSubscriptionButton ?? false;
 
-    const getSubscriptionDetails = () => {
-        if (myPlan === 'professional_certified') {
-            return subscriptionDetails;
-        } else {
-            return nonCertifiedSubscriptionDetails;
+    const [isLoading, setLoading] = useState(false);
+    const [planDetails, setPlanDetails] = useState<any>({});
+
+    useEffect(() => {
+        getPlanDetails();
+    }, []);
+
+    async function getPlanDetails() {
+        try {
+            setLoading(true);
+            const result = await API.Instance.get(API.API_ROUTES.getPlanDetails + `?provider_type=${plan?.type}`);
+            setLoading(false);
+            if (result.status) {
+                setPlanDetails(result?.data?.data?.plan);
+            } else {
+                SHOW_TOAST(result?.data?.message ?? '', 'error')
+            }
+        } catch (error: any) {
+            setLoading(false);
+            SHOW_TOAST(error?.message ?? '', 'error');
+            console.log(error?.message)
+        } finally {
+            setLoading(false);
         }
     }
 
@@ -73,7 +80,7 @@ export default function SelectedPlanDetails(props: any) {
                                 size={getScaleSize(19)}
                                 font={FONTS.Lato.Bold}
                                 color={theme._214C65}>
-                                {myPlan === 'non_certified_provider' ? STRING.non_certified_provider : STRING.professional_certified}
+                                {planDetails?.name ?? ''}
                             </Text>
                             {/* <Image source={IMAGES.ic_check} style={styles(theme).selectedView} /> */}
                         </View>
@@ -82,27 +89,26 @@ export default function SelectedPlanDetails(props: any) {
                             font={FONTS.Lato.ExtraBold}
                             color={theme._214C65}
                             style={{ marginVertical: getScaleSize(8) }}>
-                            {'€15.99'}{' '}
+                            {`€${planDetails?.price ?? '0.00'}`}{' '}
                             <Text
                                 size={getScaleSize(16)}
                                 font={FONTS.Lato.Medium}
                                 color={theme._214C65}>
-                                {STRING.monthly}
+                                {planDetails?.duration ?? ''}
                             </Text>
                         </Text>
                         <View style={styles(theme).divider} />
                         <View style={{ flex: 1.0 }}>
-                            {(getSubscriptionDetails()).map((e, index) => {
+                            {(planDetails?.features ?? []).map((e: any, index: number) => {
                                 return (
                                     <View key={index} style={styles(theme).itemContainer} >
                                         <Image source={IMAGES.ic_sealCheck} style={styles(theme).itemIcon} />
-
                                         <View style={{ flex: 1.0 }}>
                                             <Text
                                                 size={getScaleSize(16)}
                                                 font={FONTS.Lato.SemiBold}
                                                 color={theme._424242}>
-                                                {e?.title}
+                                                {e ?? ''}
                                             </Text>
                                         </View>
                                     </View>
@@ -131,7 +137,10 @@ export default function SelectedPlanDetails(props: any) {
                     title={STRING.subscribe}
                     style={{ flex: 1.0 }}
                     onPress={() => {
-                        props.navigation.navigate(SCREENS.PaymentMethod.identifier);
+                        props.navigation.navigate(SCREENS.PaymentMethod.identifier, {
+                            planDetails: planDetails,
+                            isFromSubscriptionButton: isFromSubscriptionButton
+                        });
                     }}
                 />
             </View>

@@ -1,4 +1,4 @@
-import React, {useContext, useState} from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import {
   View,
   StatusBar,
@@ -15,13 +15,13 @@ import {
 } from 'react-native';
 
 //ASSETS
-import {FONTS, IMAGES} from '../../assets';
+import { FONTS, IMAGES } from '../../assets';
 
 //CONTEXT
-import {ThemeContext, ThemeContextType} from '../../context';
+import { ThemeContext, ThemeContextType } from '../../context';
 
 //CONSTANT
-import {getScaleSize, useString} from '../../constant';
+import { getScaleSize, SHOW_TOAST, useString } from '../../constant';
 
 //COMPONENT
 import {
@@ -34,32 +34,66 @@ import {
 } from '../../components';
 
 //PACKAGES
-import {useFocusEffect} from '@react-navigation/native';
-import {SCREENS} from '..';
+import { useFocusEffect } from '@react-navigation/native';
+import { SCREENS } from '..';
+import { API } from '../../api';
 
 export default function OtherUserProfile(props: any) {
   const STRING = useString();
-  const {theme} = useContext<any>(ThemeContext);
+  const { theme } = useContext<any>(ThemeContext);
 
+  const item = props?.route?.params?.item ?? {};
+
+
+  console.log('item==>', item)
+
+  const [isLoading, setLoading] = useState(false);
   const [showMore, setShowMore] = useState(false);
   const [showMoreExperience, setShowMoreExperience] = useState(false);
+  const [userProfile, setUserProfile] = useState<any>({});
+  const [ratings, setRatings] = useState<any>({});
 
-  useFocusEffect(
-    React.useCallback(() => {
-      if (Platform.OS === 'android') {
-        StatusBar.setBackgroundColor(theme.white);
-        StatusBar.setBarStyle('dark-content');
+  useEffect(() => {
+    getOtherUserProfile();
+  }, []);
+
+  async function getOtherUserProfile() {
+
+    try {
+      const params = {
+        user_id: item?.id,
       }
-    }, []),
-  );
+      setLoading(true);
+      const result = await API.Instance.post(API.API_ROUTES.otherUserProfile, params);
+      if (result.status) {
+        console.log('otherUserProfile==>', result?.data?.data)
+        setUserProfile(result?.data?.data ?? {});
+        parseRatings(result?.data?.data?.customer_ratings)
+      } else {
+        SHOW_TOAST(result?.data?.message ?? '', 'error')
+      }
+    } catch (error: any) {
+      SHOW_TOAST(error?.message ?? '', 'error');
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  const parseRatings = (item: any) => {
+    if (!item) return {};
+
+    try {
+      const fixedString = item.replace(/'/g, '"');
+      const ratings = JSON.parse(fixedString);
+      setRatings(ratings);
+    } catch (e) {
+      console.log('Rating parse error', e);
+      return {};
+    }
+  };
 
   return (
     <View style={styles(theme).container}>
-      <StatusBar
-        barStyle="dark-content"
-        backgroundColor={theme.white}
-        translucent={false}
-      />
       <Header
         onBack={() => {
           props.navigation.goBack();
@@ -70,16 +104,23 @@ export default function OtherUserProfile(props: any) {
         style={styles(theme).scrolledContainer}
         showsVerticalScrollIndicator={false}>
         <View style={styles(theme).informationContainer}>
-          <Image
-            style={styles(theme).profilePic}
-            source={IMAGES.user_placeholder}
-          />
+          {userProfile?.profile_photo_url ?
+            <Image
+              style={styles(theme).profilePic}
+              source={{ uri: userProfile?.profile_photo_url }}
+            />
+            :
+            <Image
+              style={styles(theme).profilePic}
+              source={IMAGES.user_placeholder}
+            />
+          }
           <Text
             size={getScaleSize(22)}
             font={FONTS.Lato.SemiBold}
             color={theme._2B2B2B}
-            style={{alignSelf: 'center'}}>
-            {'Bessie Cooper'}
+            style={{ alignSelf: 'center' }}>
+            {userProfile?.full_name ?? ''}
           </Text>
           <View style={styles(theme).horizontalContainer}>
             <View style={styles(theme).itemContainer}>
@@ -88,14 +129,14 @@ export default function OtherUserProfile(props: any) {
                   size={getScaleSize(16)}
                   font={FONTS.Lato.Bold}
                   color={'#1D7885'}
-                  style={{alignSelf: 'center'}}>
-                  {'4.6'}
+                  style={{ alignSelf: 'center' }}>
+                  {userProfile?.overall_ratings ?? '0.0'}
                 </Text>
                 <Text
                   size={getScaleSize(12)}
                   font={FONTS.Lato.Medium}
                   color={'#214C65'}
-                  style={{alignSelf: 'center', marginTop: getScaleSize(4)}}>
+                  style={{ alignSelf: 'center', marginTop: getScaleSize(4) }}>
                   {STRING.Overallrating}
                 </Text>
               </View>
@@ -103,7 +144,7 @@ export default function OtherUserProfile(props: any) {
             <View
               style={[
                 styles(theme).itemContainer,
-                {marginHorizontal: getScaleSize(16)},
+                { marginHorizontal: getScaleSize(16) },
               ]}>
               <View>
                 {/* <Text
@@ -125,7 +166,7 @@ export default function OtherUserProfile(props: any) {
                   size={getScaleSize(12)}
                   font={FONTS.Lato.Medium}
                   color={'#214C65'}
-                  style={{alignSelf: 'center', marginTop: getScaleSize(4)}}>
+                  style={{ alignSelf: 'center', marginTop: getScaleSize(4) }}>
                   {STRING.Certified}
                 </Text>
               </View>
@@ -136,14 +177,14 @@ export default function OtherUserProfile(props: any) {
                   size={getScaleSize(16)}
                   font={FONTS.Lato.Bold}
                   color={'#1D7885'}
-                  style={{alignSelf: 'center'}}>
-                  {'18'}
+                  style={{ alignSelf: 'center' }}>
+                  {userProfile?.unique_clients_served ?? '0'}
                 </Text>
                 <Text
                   size={getScaleSize(12)}
                   font={FONTS.Lato.Medium}
                   color={'#214C65'}
-                  style={{alignSelf: 'center', marginTop: getScaleSize(4)}}>
+                  style={{ alignSelf: 'center', marginTop: getScaleSize(4) }}>
                   {STRING.Clients}
                 </Text>
               </View>
@@ -160,11 +201,9 @@ export default function OtherUserProfile(props: any) {
           <Text
             size={getScaleSize(14)}
             font={FONTS.Lato.Medium}
-            style={{marginTop: getScaleSize(16)}}
+            style={{ marginTop: getScaleSize(16) }}
             color={theme._323232}>
-            {
-              'With a passion for home improvement, I have dedicated over 8 years to perfecting my craft. My expertise spans from intricate plumbing tasks to seamless TV installations. I pride myself on delivering quality service with a personal touch, ensuring every client feels valued and satisfied.'
-            }
+            {userProfile?.provider_info?.bio ?? ''}
           </Text>
         </View>
         <View style={styles(theme).informationContainer}>
@@ -178,22 +217,22 @@ export default function OtherUserProfile(props: any) {
             size={getScaleSize(14)}
             font={FONTS.Lato.Medium}
             numberOfLines={showMoreExperience ? undefined : 5}
-            style={{marginTop: getScaleSize(20)}}
+            style={{ marginTop: getScaleSize(20) }}
             color={theme._323232}>
-            {
-              'Hi, I’m Bessie — with over 6 years of experience in expert TV mounting and reliable plumbing solutions. I specialize in mounting TVs, shelves, mirrors with precision and care Mounting Expert You Can Trust Over 6 of experience in securely mounting TVs, shelves, mirrors, artwork, and more Reliable & On-Time I value your time and ready to get the job done right the first time Clean Work, Solid Results Every project is done with attention to detail, safety, and durability Respect for Your Space I treat your home like it’s my own. Friendly, professional, and focused on delivering quality you’ll love. Client Satisfaction First I’m proud of my 5-star service and happy clients '
-            }
+            {userProfile?.provider_info?.speciality ?? '-'}
           </Text>
-          <TouchableOpacity 
-          onPress={() => setShowMoreExperience(!showMoreExperience)}
-          style={{marginTop: getScaleSize(16)}}>
-            <Text
-              size={getScaleSize(16)}
-              font={FONTS.Lato.Medium}
-              color={'#2C6587'}>
-              {showMoreExperience ? STRING.show_less : STRING.read_more}
-            </Text>
-          </TouchableOpacity>
+          {userProfile?.provider_info?.speciality?.length > 50 &&
+            <TouchableOpacity
+              onPress={() => setShowMoreExperience(!showMoreExperience)}
+              style={{ marginTop: getScaleSize(16) }}>
+              <Text
+                size={getScaleSize(16)}
+                font={FONTS.Lato.Medium}
+                color={'#2C6587'}>
+                {showMoreExperience ? STRING.show_less : STRING.read_more}
+              </Text>
+            </TouchableOpacity>
+          }
         </View>
         <View style={styles(theme).informationContainer}>
           <Text
@@ -205,11 +244,9 @@ export default function OtherUserProfile(props: any) {
           <Text
             size={getScaleSize(14)}
             font={FONTS.Lato.Medium}
-            style={{marginTop: getScaleSize(16)}}
+            style={{ marginTop: getScaleSize(16) }}
             color={theme._323232}>
-            {
-              'Bessie Cooper has successfully completed over 150 projects, showcasing her expertise in TV mounting and plumbing. Her dedication to quality and customer satisfaction has earned her numerous accolades, including the "Best Service Provider" award in 2022. Clients consistently praise her attention to detail and professionalism, making her a top choice for home improvement services.'
-            }
+            {userProfile?.provider_info?.achievements ?? '-'}
           </Text>
         </View>
         <View style={styles(theme).informationContainer}>
@@ -219,20 +256,38 @@ export default function OtherUserProfile(props: any) {
             color={'#2C6587'}>
             {STRING.Photosofpastwork}
           </Text>
-          <FlatList
-            data={['']}
-            horizontal
-            keyExtractor={(item: any, index: number) => index.toString()}
-            showsHorizontalScrollIndicator={false}
-            renderItem={({item, index}) => {
-              return (
-                <Image
-                  style={[styles(theme).photosView]}
-                  source={{uri: 'https://picsum.photos/id/1/200/300'}}
-                />
-              );
-            }}
-          />
+          {userProfile?.past_work_photos?.length > 0 &&
+            <FlatList
+              data={userProfile?.past_work_photos ?? []}
+              horizontal
+              keyExtractor={(item: any, index: number) => index.toString()}
+              showsHorizontalScrollIndicator={false}
+              renderItem={({ item, index }) => {
+                return (
+                  <Image
+                    style={[styles(theme).photosView]}
+                    source={{ uri: item }}
+                  />
+                );
+              }}
+            />
+          }
+          {userProfile?.past_work_videos?.length > 0 &&
+            <FlatList
+              data={userProfile?.past_work_videos ?? []}
+              horizontal
+              keyExtractor={(item: any, index: number) => index.toString()}
+              showsHorizontalScrollIndicator={false}
+              renderItem={({ item, index }) => {
+                return (
+                  <Image
+                    style={[styles(theme).photosView]}
+                    source={{ uri: item }}
+                  />
+                );
+              }}
+            />
+          }
         </View>
         <View style={styles(theme).informationContainer}>
           <Text
@@ -244,13 +299,13 @@ export default function OtherUserProfile(props: any) {
           <View
             style={[
               styles(theme).horizontalContainer,
-              {marginTop: getScaleSize(20)},
+              { marginTop: getScaleSize(20) },
             ]}>
             <Text
               size={getScaleSize(24)}
               font={FONTS.Lato.SemiBold}
               color={theme._323232}>
-              {'4.6'}
+              {userProfile?.overall_ratings ?? '0.0'}
             </Text>
             <View
               style={{
@@ -260,6 +315,7 @@ export default function OtherUserProfile(props: any) {
               <View style={styles(theme).rowView}>
                 {[...Array(5)].map((_, i) => (
                   <Image
+                    key={i}
                     source={IMAGES.star}
                     style={styles(theme).ratingimage}
                   />
@@ -267,82 +323,85 @@ export default function OtherUserProfile(props: any) {
               </View>
               <Text
                 size={getScaleSize(12)}
-                style={{marginTop: getScaleSize(3)}}
+                style={{ marginTop: getScaleSize(3) }}
                 font={FONTS.Lato.Medium}
                 color={theme._323232}>
-                {'Based on 471 ratings'}
+                {`Based on ${userProfile?.total_ratings ?? '0'} ratings`}
               </Text>
             </View>
           </View>
-          <View style={{marginTop: getScaleSize(15)}}>
+          <View style={{ marginTop: getScaleSize(15) }}>
             <RattingControler
               title={'Work quality'}
-              value={'4.6'}
-              fillCount={4.6}
+              value={ratings?.work_quality ?? '0.0'}
+              fillCount={ratings?.work_quality ?? 0}
               totalCount={5}
             />
           </View>
-          <View style={{marginTop: getScaleSize(15)}}>
+          <View style={{ marginTop: getScaleSize(15) }}>
             <RattingControler
               title={'Reliability'}
-              value={'4.6'}
-              fillCount={4.6}
+              value={ratings?.reliability ?? '0.0'}
+              fillCount={ratings?.reliability ?? 0}
               totalCount={5}
             />
           </View>
-          <View style={{marginTop: getScaleSize(15)}}>
+          <View style={{ marginTop: getScaleSize(15) }}>
             <RattingControler
               title={'Punctunality'}
-              value={'4.6'}
-              fillCount={4.6}
+              value={ratings?.punctuality ?? '0.0'}
+              fillCount={ratings?.punctuality ?? 0}
               totalCount={5}
             />
           </View>
-          <View style={{marginTop: getScaleSize(15)}}>
+          <View style={{ marginTop: getScaleSize(15) }}>
             <RattingControler
               title={'Soluction'}
-              value={'4.6'}
-              fillCount={4.6}
+              value={ratings?.solution ?? '0.0'}
+              fillCount={ratings?.solution ?? 0}
               totalCount={5}
             />
           </View>
-          <View style={{marginTop: getScaleSize(15)}}>
+          <View style={{ marginTop: getScaleSize(15) }}>
             <RattingControler
               title={'Payout'}
-              value={'4.6'}
-              fillCount={3}
+              value={ratings?.payout ?? '0.0'}
+              fillCount={ratings?.payout ?? 0}
               totalCount={5}
             />
           </View>
         </View>
-        <View style={styles(theme).informationContainer}>
-          <Text
-            size={getScaleSize(16)}
-            font={FONTS.Lato.Medium}
-            color={'#2C6587'}>
-            {STRING.RecentWorksReviews}
-          </Text>
-          {['', ''].map((item: any, index: number) => {
-            return (
-              <RatingsReviewsItem
-              itemContainer={{ marginTop: index === 0 ? getScaleSize(20) : getScaleSize(16) }}
-              onPressShowMore={() => {
-                  setShowMore(!showMore);
-              }}
-              showMore={showMore}
-              />
-            );
-          })}
-        </View>
-        <View style={{height:getScaleSize(32)}}/>
-      </ScrollView>      
+        {userProfile?.recent_works_and_reviews?.length > 0 &&
+          <View style={styles(theme).informationContainer}>
+            <Text
+              size={getScaleSize(16)}
+              font={FONTS.Lato.Medium}
+              color={'#2C6587'}>
+              {STRING.RecentWorksReviews}
+            </Text>
+            {/* {(userProfile?.recent_works_and_reviews ?? []).map((item: any, index: number) => {
+              return (
+                <RatingsReviewsItem
+                  key={index}
+                  itemContainer={{ marginTop: index === 0 ? getScaleSize(20) : getScaleSize(16) }}
+                  onPressShowMore={() => {
+                    setShowMore(!showMore);
+                  }}
+                  showMore={showMore}
+                />
+              );
+            })} */}
+          </View>
+        }
+        <View style={{ height: getScaleSize(32) }} />
+      </ScrollView>
     </View>
   );
 }
 
 const styles = (theme: ThemeContextType['theme']) =>
   StyleSheet.create({
-    container: {flex: 1, backgroundColor: theme.white},
+    container: { flex: 1, backgroundColor: theme.white },
     scrolledContainer: {
       marginTop: getScaleSize(19),
       marginHorizontal: getScaleSize(24),
@@ -376,13 +435,13 @@ const styles = (theme: ThemeContextType['theme']) =>
     },
     photosView: {
       height: getScaleSize(144),
-      width: getScaleSize(180),
+      width: (Dimensions.get('window').width - getScaleSize(108)) / 2,
       borderRadius: 8,
       resizeMode: 'cover',
       marginTop: getScaleSize(18),
     },
     ratingimage: {
-      resizeMode: 'contain',
+      resizeMode: 'cover',
       width: getScaleSize(20),
       height: getScaleSize(20),
       marginLeft: getScaleSize(2),

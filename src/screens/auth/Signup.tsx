@@ -6,13 +6,13 @@ import { AuthContext, ThemeContext, ThemeContextType } from '../../context';
 
 //CONSTANT & ASSETS
 import { FONTS, IMAGES } from '../../assets';
-import { getScaleSize, SHOW_TOAST, useString } from '../../constant';
+import { getScaleSize, REGEX, SHOW_TOAST, useString } from '../../constant';
 
 //SCREENS
 import { SCREENS } from '..';
 
 //COMPONENTS
-import { Header, Input, Text, Button } from '../../components';
+import { Header, Input, Text, Button, SelectCountrySheet } from '../../components';
 import { CommonActions } from '@react-navigation/native';
 import { API } from '../../api';
 
@@ -26,16 +26,38 @@ export default function Signup(props: any) {
     const [email, setEmail] = useState('');
     const [emailError, setEmailError] = useState('');
     const [isLoading, setLoading] = useState(false);
+    const [visibleCountry, setVisibleCountry] = useState(false);
+    const [countryCode, setCountryCode] = useState('+91');
+    const [isPhoneNumber, setIsPhoneNumber] = useState(false);
+
+    useEffect(() => {
+        if (email.length >= 3) {
+            const isNumber = REGEX.phoneRegex.test(email);
+            setIsPhoneNumber(isNumber)
+        }
+        else {
+            setIsPhoneNumber(false)
+        }
+    }, [email])
 
     async function onSignup() {
         if (!email) {
-            setEmailError(STRING.please_enter_your_email);
+            setEmailError(STRING.please_enter_your_email_mobile_number);
         } else {
             setEmailError('');
-            const params = {
-                email: email,
-                role: userType
-            };
+            let params = {}
+            if (isPhoneNumber) {
+                params = {
+                    mobile: email,
+                    phone_country_code: countryCode,
+                    role: userType,
+                }
+            } else {
+                params = {
+                    email: email,
+                    role: userType,
+                }
+            }
             try {
                 setLoading(true);
                 const result = await API.Instance.post(API.API_ROUTES.signup, params);
@@ -45,7 +67,9 @@ export default function Signup(props: any) {
                     SHOW_TOAST(result?.data?.message ?? '', 'success')
                     props.navigation.navigate(SCREENS.Otp.identifier, {
                         isFromSignup: true,
-                        email: email
+                        email: email,
+                        isPhoneNumber: isPhoneNumber,
+                        countryCode: countryCode,
                     });
                 } else {
                     SHOW_TOAST(result?.data?.message ?? '', 'error')
@@ -81,21 +105,44 @@ export default function Signup(props: any) {
                         style={{ marginHorizontal: getScaleSize(48) }}>
                         {STRING.Empowering_seniors_with_easy_access_to_trusted_help_care_and_companionship_whenever_needed}
                     </Text>
-                    <Input
-                        placeholder={STRING.enter_email_or_mobile_number}
-                        placeholderTextColor={theme._939393}
-                        inputTitle={STRING.email_or_mobile_number}
-                        inputColor={false}
-                        continerStyle={{ marginTop: getScaleSize(82) }}
-                        value={email}
-                        keyboardType="email-address"
-                        autoCapitalize="none"
-                        onChangeText={text => {
-                            setEmail(text);
-                            setEmailError('');
-                        }}
-                        isError={emailError}
-                    />
+                    {isPhoneNumber ? (
+                        <Input
+                            placeholder={STRING.enter_email_or_mobile_number}
+                            placeholderTextColor={theme._939393}
+                            inputTitle={STRING.email_or_mobile_number}
+                            inputColor={false}
+                            continerStyle={{ marginTop: getScaleSize(82) }}
+                            value={email}
+                            keyboardType="email-address"
+                            autoCapitalize="none"
+                            maxLength={10}
+                            onChangeText={text => {
+                                setEmail(text);
+                                setEmailError('');
+                            }}
+                            isError={emailError}
+                            countryCode={countryCode}
+                            onPressCountryCode={() => {
+                                setVisibleCountry(true);
+                            }}
+                        />
+                    ) : (
+                        <Input
+                            placeholder={STRING.enter_email_or_mobile_number}
+                            placeholderTextColor={theme._939393}
+                            inputTitle={STRING.email_or_mobile_number}
+                            inputColor={false}
+                            continerStyle={{ marginTop: getScaleSize(82) }}
+                            value={email}
+                            keyboardType="email-address"
+                            autoCapitalize="none"
+                            onChangeText={text => {
+                                setEmail(text);
+                                setEmailError('');
+                            }}
+                            isError={emailError}
+                        />
+                    )}
                     <Button
                         title={STRING.continue}
                         style={{ marginTop: getScaleSize(32) }}
@@ -122,6 +169,18 @@ export default function Signup(props: any) {
                     </Text>
                 </View>
             </ScrollView>
+            <SelectCountrySheet
+                height={getScaleSize(500)}
+                isVisible={visibleCountry}
+                onPress={(e: any) => {
+                    console.log('e000', e)
+                    setCountryCode(e.dial_code);
+                    setVisibleCountry(false);
+                }}
+                onClose={() => {
+                    setVisibleCountry(false);
+                }}
+            />
         </View>
     );
 }

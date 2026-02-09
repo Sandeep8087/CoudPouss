@@ -1,5 +1,5 @@
 import { Dimensions, Image, StyleSheet, View } from 'react-native'
-import React, { useContext } from 'react'
+import React, { useContext, useEffect } from 'react'
 
 //CONTEXT
 import { ThemeContext, ThemeContextType } from '../../context'
@@ -13,12 +13,26 @@ import { SCREENS } from '..'
 
 //COMPONENTS
 import { Header, Input, Text, Button } from '../../components';
+import { CommonActions } from '@react-navigation/native'
 
 export default function AccountCreatedSuccessfully(props: any) {
 
     const isWithdrawal = props.route.params?.isWithdrawal || false;
     const STRING = useString();
     const { theme } = useContext<any>(ThemeContext);
+
+    useEffect(()=>{
+        setTimeout(() => {
+          props.navigation.dispatch(
+            CommonActions.reset({
+              index: 0,
+              routes: [
+                { name: SCREENS.BottomBar.identifier }
+              ],
+            }),
+          );
+        }, 2000);
+      },[])
 
     return (
         <View style={styles(theme).container}>

@@ -23,6 +23,8 @@ export default function NewPassword(props: any) {
     const { theme } = useContext<any>(ThemeContext);
 
     const email = props?.route?.params?.email || '';
+    const isPhoneNumber = props?.route?.params?.isPhoneNumber || false;
+    const countryCode = props?.route?.params?.countryCode || '+91';
 
     const [isLoading, setLoading] = useState(false);
     const [password, setPassword] = useState('');
@@ -35,18 +37,28 @@ export default function NewPassword(props: any) {
     async function onNewPassword() {
         if (!password) {
             setPasswordError(STRING.please_enter_your_password);
-        }else if (!REGEX.password.test(password)) {
+        } else if (!REGEX.password.test(password)) {
             setPasswordError(STRING.password_validation_message);
         } else if (!confirmPassword) {
             setConfirmPasswordError(STRING.please_enter_your_re_enter_password);
         } else {
             setPasswordError('');
             setConfirmPasswordError('');
-            const params = {
-                email: email,
-                password: password,
-                confirm_password: confirmPassword,
-            };
+            let params = {}
+            if (isPhoneNumber) {
+                params = {
+                    mobile: email,
+                    phone_country_code: countryCode,
+                    password: password,
+                    confirm_password: confirmPassword,
+                }
+            } else {
+                params = {
+                    email: email,
+                    password: password,
+                    confirm_password: confirmPassword,
+                }
+            }
             try {
                 setLoading(true);
                 const result = await API.Instance.post(API.API_ROUTES.createNewPassword, params);
@@ -56,10 +68,10 @@ export default function NewPassword(props: any) {
                     SHOW_TOAST(result?.data?.message ?? '', 'success')
                     props.navigation.dispatch(
                         CommonActions.reset({
-                          index: 0,
-                          routes: [{ name: SCREENS.Login.identifier }],
+                            index: 0,
+                            routes: [{ name: SCREENS.Login.identifier }],
                         }),
-                      );
+                    );
                 } else {
                     SHOW_TOAST(result?.data?.message ?? '', 'error')
                     console.log('error==>', result?.data?.message)

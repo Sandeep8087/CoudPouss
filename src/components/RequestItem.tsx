@@ -1,19 +1,44 @@
-import {Image, StyleSheet, TouchableOpacity, View} from 'react-native';
+import {
+  Image,
+  SafeAreaView,
+  StatusBar,
+  StyleSheet,
+  TextInput,
+  TouchableOpacity,
+  View,
+} from 'react-native';
 import React, {useContext} from 'react';
 
 //CONTEXT
 import {ThemeContext, ThemeContextType} from '../context';
 
 //CONSTANTS & ASSETS
-import {getScaleSize, useString} from '../constant';
+import {arrayIcons, getScaleSize, useString} from '../constant';
 import {FONTS, IMAGES} from '../assets';
 
 //COMPONENTS
 import Text from './Text';
+import moment from 'moment';
 
 function RequestItem(props: any) {
   const STRING = useString();
   const {theme} = useContext(ThemeContext);
+
+  const {item, selectedFilter} = props;
+
+  function getStatus(status: any) {
+    if (status === 'open') {
+      return 'Open Proposal';
+    } else if (status === 'pending') {
+      return 'Responsed';
+    } else if (status === 'accepted') {
+      return 'Validation';
+    } else if (status === 'completed') {
+      return 'Completed';
+    } else if (status === 'cancelled') {
+      return 'Cancelled';
+    }
+  }
 
   return (
     <TouchableOpacity
@@ -22,26 +47,55 @@ function RequestItem(props: any) {
         props.onPress();
       }}>
       <View style={styles(theme).horizontalContainer}>
-        <Image
-          source={IMAGES.service_icon}
-          style={styles(theme).imageIcon}
-          resizeMode="contain"
-        />
+        <View style={styles(theme).imageContainer}>
+          {item?.category_name ? (
+            <Image
+              source={
+                arrayIcons[
+                  item?.category_name?.toLowerCase() as keyof typeof arrayIcons
+                ] ?? (arrayIcons['diy'] as any)
+              }
+              style={[styles(theme).imageIcon, {tintColor: theme.white}]}
+              resizeMode="cover"
+            />
+          ) : (
+            <View style={styles(theme).imageIcon} />
+          )}
+        </View>
         <Text
           style={{marginLeft: getScaleSize(16), alignSelf: 'center'}}
           size={getScaleSize(24)}
           font={FONTS.Lato.Bold}
           color={theme.primary}>
-          {'DIY Service'}
+          {`${item?.category_name} Service`}
         </Text>
       </View>
-      <Text
-        style={{marginTop: getScaleSize(12)}}
-        size={getScaleSize(20)}
-        font={FONTS.Lato.SemiBold}
-        color={theme.primary}>
-        {'Furniture Assembly'}
-      </Text>
+      <View
+        style={{
+          flex: 1.0,
+          flexDirection: 'row',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          marginTop: getScaleSize(12),
+        }}>
+        <Text
+          style={{flex: 1.0}}
+          size={getScaleSize(20)}
+          font={FONTS.Lato.SemiBold}
+          color={theme.primary}>
+          {item?.sub_category_name ?? ''}
+        </Text>
+        {selectedFilter?.title === 'All' && (
+          <View style={styles(theme).statusContainer}>
+            <Text
+              size={getScaleSize(16)}
+              font={FONTS.Lato.SemiBold}
+              color={theme._F0B52C}>
+              {getStatus(item?.status)}
+            </Text>
+          </View>
+        )}
+      </View>
       <View style={styles(theme).detailsView}>
         <View style={styles(theme).horizontalContainer}>
           <Text
@@ -55,7 +109,7 @@ function RequestItem(props: any) {
             size={getScaleSize(20)}
             font={FONTS.Lato.SemiBold}
             color={theme.primary}>
-            {'€449.20'}
+            {`€${item?.total_renegotiated}`}
           </Text>
         </View>
         <View
@@ -74,7 +128,7 @@ function RequestItem(props: any) {
             size={getScaleSize(20)}
             font={FONTS.Lato.SemiBold}
             color={theme.primary}>
-            {'16 Aug'}
+            {moment(item?.chosen_datetime).format('DD MMM')}
           </Text>
         </View>
         <View
@@ -93,7 +147,7 @@ function RequestItem(props: any) {
             size={getScaleSize(20)}
             font={FONTS.Lato.SemiBold}
             color={theme.primary}>
-            {'10:00 Am'}
+            {moment(item?.chosen_datetime).format('hh:mm A')}
           </Text>
         </View>
       </View>
@@ -105,7 +159,7 @@ const styles = (theme: ThemeContextType['theme']) =>
   StyleSheet.create({
     container: {
       marginHorizontal: getScaleSize(24),
-      marginTop: getScaleSize(18),
+      marginBottom: getScaleSize(18),
       borderRadius: getScaleSize(16),
       backgroundColor: theme._EAF0F3,
       paddingHorizontal: getScaleSize(16),
@@ -114,9 +168,17 @@ const styles = (theme: ThemeContextType['theme']) =>
     horizontalContainer: {
       flexDirection: 'row',
     },
-    imageIcon: {
-      width: getScaleSize(48),
+    imageContainer: {
       height: getScaleSize(44),
+      width: getScaleSize(44),
+      borderRadius: getScaleSize(10),
+      backgroundColor: theme._2C6587,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    imageIcon: {
+      width: getScaleSize(24),
+      height: getScaleSize(24),
     },
     detailsView: {
       backgroundColor: theme.white,
@@ -124,6 +186,13 @@ const styles = (theme: ThemeContextType['theme']) =>
       paddingVertical: getScaleSize(16),
       paddingHorizontal: getScaleSize(16),
       marginTop: getScaleSize(16),
+    },
+    statusContainer: {
+      backgroundColor: theme.white,
+      borderRadius: getScaleSize(16),
+      paddingVertical: getScaleSize(4),
+      paddingHorizontal: getScaleSize(10),
+      marginLeft: getScaleSize(8),
     },
   });
 

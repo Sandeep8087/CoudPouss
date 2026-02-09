@@ -1,23 +1,24 @@
-import {Image, StyleSheet, TouchableOpacity, View} from 'react-native';
-import React, {useContext} from 'react';
-import {ThemeContext, ThemeContextType} from '../context/ThemeProvider';
-import {getScaleSize, useString} from '../constant';
+import { Image, StyleSheet, TouchableOpacity, View } from 'react-native';
+import React, { useContext } from 'react';
+import { ThemeContext, ThemeContextType } from '../context/ThemeProvider';
+import { getScaleSize, useString } from '../constant';
 import Text from './Text';
-import {FONTS, IMAGES} from '../assets';
+import { FONTS, IMAGES } from '../assets';
+import moment from 'moment';
 
 export default function TaskItem(props: any) {
-  const {theme} = useContext<any>(ThemeContext);
+  const { theme } = useContext<any>(ThemeContext);
   const STRING = useString();
 
+  const { item } = props;
+
   function getMessage() {
-    if (props?.type === 'quate_sent') {
+    if (item?.quote_status === 'send') {
       return 'Quote Submitted';
-    } else if (props?.type === 'quate_accepted') {
+    } else if (item?.quote_status === 'accepted') {
       return 'Quote Accepted';
-    } else if (props?.type === 'quate_completed') {
+    } else if (item?.quote_status === 'completed') {
       return 'Task Completed'
-    } else {
-      return 'Quote Submitted';
     }
   }
 
@@ -38,13 +39,13 @@ export default function TaskItem(props: any) {
         </Text>
       </View>
       <View style={styles(theme).horizontalContainer}>
-        <View style={{flex: 1.0}}>
+        <View style={{ flex: 1.0 }}>
           <Text
-            style={{flex: 1.0}}
+            style={{ flex: 1.0 }}
             size={getScaleSize(24)}
             font={FONTS.Lato.Bold}
             color={theme._2C6587}>
-            {'Furniture Assembly'}
+            {item?.service_details?.subcategory?.name ?? ''}
           </Text>
           <View style={styles(theme).itemView}>
             <Image
@@ -59,7 +60,7 @@ export default function TaskItem(props: any) {
               size={getScaleSize(14)}
               font={FONTS.Lato.Medium}
               color={theme._2C6587}>
-              {'16 Aug, 2025'}
+              {item?.chosen_date_time ? moment(item?.chosen_date_time).format('DD MMM, YYYY') : ''}
             </Text>
           </View>
           <View style={styles(theme).itemView}>
@@ -75,17 +76,22 @@ export default function TaskItem(props: any) {
               size={getScaleSize(14)}
               font={FONTS.Lato.Medium}
               color={theme._2C6587}>
-              {'10:00 am'}
+              {item?.chosen_date_time ? moment(item?.chosen_date_time).format('hh:mm A') : ''}
             </Text>
           </View>
         </View>
-        <Image
-          style={styles(theme).imageView}
-          source={{uri: 'https://picsum.photos/id/1/200/300'}}
-        />
+        {item?.service_details?.subcategory?.icon ? (
+          <Image
+            style={styles(theme).imageView}
+            resizeMode='cover'
+            source={{ uri: item?.service_details?.subcategory?.icon }}
+          />
+        ) : (
+          <View style={[styles(theme).imageView, { backgroundColor: theme._EAF0F3 }]} />  
+        )}
       </View>
       <View style={styles(theme).deviderView} />
-      <View style={{flexDirection: 'row'}}>
+      <View style={{ flexDirection: 'row' }}>
         <TouchableOpacity
           style={styles(theme).buttonView}
           activeOpacity={1}
@@ -158,10 +164,10 @@ const styles = (theme: ThemeContextType['theme']) =>
       width: getScaleSize(118),
       alignSelf: 'center',
       borderRadius: getScaleSize(12),
+      overflow: 'hidden',
     },
     deviderView: {
       height: 1,
-      // flex: 1.0,
       backgroundColor: '#F2F2F2',
       marginTop: getScaleSize(16),
     },

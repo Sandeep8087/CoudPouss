@@ -1,4 +1,4 @@
-import React, { useContext, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import {
   View,
   StatusBar,
@@ -10,6 +10,8 @@ import {
   Image,
   TouchableOpacity,
   FlatList,
+  Platform,
+  Alert,
 } from 'react-native';
 import Animated, {
   useSharedValue,
@@ -20,54 +22,159 @@ import Animated, {
   withTiming,
   runOnJS,
 } from 'react-native-reanimated';
-import { ThemeContext, ThemeContextType } from '../../context';
+import { AuthContext, ThemeContext, ThemeContextType } from '../../context';
 import { FONTS, IMAGES } from '../../assets';
-import { getScaleSize, useString } from '../../constant';
+import { getScaleSize, SHOW_TOAST, useString } from '../../constant';
 import {
   Text,
   HomeHeader,
   SearchComponent,
   RequestItem,
-  Favourites,
+  FavouritesItem,
+  ProgressView,
 } from '../../components';
-import { useFocusEffect } from '@react-navigation/native';
+import { CommonActions, useFocusEffect, useIsFocused } from '@react-navigation/native';
 import { SCREENS, TABS } from '..';
+import { API } from '../../api';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
-const HEADER_HEIGHT = 500;
 
 export default function Home(props: any) {
   const STRING = useString();
   const { theme } = useContext<any>(ThemeContext);
 
+  const [isLoading, setLoading] = useState(false);
+  const [allServices, setAllServices] = useState([]);
+  const [recentRequests, setRecentRequests] = useState([]);
+  const [favoriteProfessionals, setFavoriteProfessionals] = useState([]);
+  const [professionalConnectedCount, setProfessionalConnectedCount] = useState(0);
+
   useFocusEffect(
     React.useCallback(() => {
-      StatusBar.setBackgroundColor(theme.primary);
-      StatusBar.setBarStyle('light-content');
+      if (Platform.OS === 'android') {
+        setTimeout(() => {
+          StatusBar.setBackgroundColor(theme.primary);
+          StatusBar.setBarStyle('light-content');
+        }, 600);
+      }
     }, []),
   );
+
+  const isFocused = useIsFocused();
+  useEffect(() => {
+    if (isFocused) {
+      getHomeData();
+      getFavoriteProfessionals()
+      getAllRequests()
+    }
+  }, [isFocused]);
+
+  async function getHomeData() {
+    try {
+      setLoading(true);
+      const result = await API.Instance.get(API.API_ROUTES.getHomeData);
+      if (result.status) {
+        setProfessionalConnectedCount(result?.data?.data?.professional_connected_count);
+        setAllServices(result?.data?.data?.services);
+      } else {
+        SHOW_TOAST(result?.data?.message ?? '', 'error')
+      }
+    } catch (error: any) {
+      SHOW_TOAST(error?.message ?? '', 'error');
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  async function getFavoriteProfessionals() {
+    try {
+      setLoading(true);
+      const result = await API.Instance.get(API.API_ROUTES.getFavoriteProfessionals + `?page=${1}&limit=${2}`);
+      if (result.status) {
+        console.log('favoriteProfessionals==', result?.data?.data?.results)
+        setFavoriteProfessionals(result?.data?.data?.results ?? []);
+      } else {
+        SHOW_TOAST(result?.data?.message ?? '', 'error')
+      }
+    } catch (error: any) {
+      SHOW_TOAST(error?.message ?? '', 'error');
+      console.log(error?.message)
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  async function removeFavoriteProfessional(id: any) {
+    try {
+      setLoading(true);
+      const result = await API.Instance.delete(API.API_ROUTES.removeFavoriteProfessional + `/${id}`);
+      if (result.status) {
+        SHOW_TOAST(result?.data?.message ?? '', 'success')
+        getFavoriteProfessionals()
+      } else {
+        SHOW_TOAST(result?.data?.message ?? '', 'error')
+      }
+    } catch (error: any) {
+      SHOW_TOAST(error?.message ?? '', 'error');
+    } 
+  }
+
+  async function getAllRequests() {
+
+    try {
+      const result: any = await API.Instance.get(API.API_ROUTES.getAllRequests + `?page=${1}&limit=${2}&status=all`);
+      if (result.status) {
+        const newData: any = result?.data?.data?.recent_requests?.items ?? []
+        setRecentRequests(newData);
+      } else {
+        SHOW_TOAST(result?.data?.message ?? '', 'error')
+      }
+    } catch (error: any) {
+      SHOW_TOAST(error?.message ?? '', 'error');
+      console.log(error?.message)
+    } finally {
+      setLoading(false);
+    }
+  }
+
+
 
   return (
     <View style={styles(theme).container}>
       <StatusBar
-        barStyle="light-content"
+        translucent={true}
+        animated
         backgroundColor={theme.primary}
-        translucent={false}
-      />
-
+        barStyle={'light-content'} />
       {/* HEADER */}
-
       <ScrollView
         showsVerticalScrollIndicator={false}
         scrollEnabled={true}
-        style={[styles(theme).container]}>
+        style={{}}>
         <View>
           <HomeHeader
+            professionalConnectedCount={professionalConnectedCount}
+            onSearchPress={() => {
+              props.navigation.navigate(SCREENS.Search.identifier);
+            }}
             onPressNotification={() => {
               props.navigation.navigate(SCREENS.Notification.identifier);
             }}
+            onPressUserProfile={() => {
+              props.navigation.dispatch(
+                CommonActions.reset({
+                  index: 0,
+                  routes: [
+                    {
+                      name: SCREENS.BottomBar.identifier,
+                      params: { isProfile: true },
+                    },
+                  ],
+                }),
+              );
+            }}
           />
         </View>
-
         <Text
           size={getScaleSize(20)}
           font={FONTS.Lato.SemiBold}
@@ -81,7 +188,14 @@ export default function Home(props: any) {
         <TouchableOpacity style={styles(theme).bannerContainer}
           activeOpacity={1}
           onPress={() => {
-            props.navigation.navigate(SCREENS.Assistance.identifier)
+            const service = allServices.find((item: any) => item.name === "Home Assistance");
+            if (service) {
+              props.navigation.navigate(SCREENS.Assistance.identifier, {
+                service: service
+              })
+            } else {
+              SHOW_TOAST('Service not found', 'error');
+            }
           }}>
           <Text
             style={{ flex: 1.0, alignSelf: 'center' }}
@@ -103,7 +217,14 @@ export default function Home(props: any) {
             ]}
             activeOpacity={1}
             onPress={() => {
-              props.navigation.navigate(SCREENS.Transport.identifier)
+              const service = allServices.find((item: any) => item.name === "Transport");
+              if (service) {
+                props.navigation.navigate(SCREENS.Assistance.identifier, {
+                  service: service
+                })
+              } else {
+                SHOW_TOAST('Service not found', 'error');
+              }
             }}>
             <Image
               resizeMode="contain"
@@ -124,7 +245,14 @@ export default function Home(props: any) {
             ]}
             activeOpacity={1}
             onPress={() => {
-              props.navigation.navigate(SCREENS.Transport.identifier)
+              const service = allServices.find((item: any) => item.name === "Personal Care");
+              if (service) {
+                props.navigation.navigate(SCREENS.Assistance.identifier, {
+                  service: service
+                })
+              } else {
+                SHOW_TOAST('Service not found', 'error');
+              }
             }}>
             <Image
               style={styles(theme).iconImage}
@@ -146,7 +274,14 @@ export default function Home(props: any) {
             ]}
             activeOpacity={1}
             onPress={() => {
-              props.navigation.navigate(SCREENS.Transport.identifier)
+              const service = allServices.find((item: any) => item.name === "Tech Support");
+              if (service) {
+                props.navigation.navigate(SCREENS.Assistance.identifier, {
+                  service: service
+                })
+              } else {
+                SHOW_TOAST('Service not found', 'error');
+              }
             }}>
             <Image
               resizeMode="contain"
@@ -167,6 +302,7 @@ export default function Home(props: any) {
           style={{
             flexDirection: 'row',
             marginTop: getScaleSize(31),
+            marginBottom: getScaleSize(18),
             marginHorizontal: getScaleSize(22),
           }}>
           <Text
@@ -176,62 +312,115 @@ export default function Home(props: any) {
             color={theme._323232}>
             {STRING.ResentRequests}
           </Text>
-          <Text
-            size={getScaleSize(16)}
-            font={FONTS.Lato.Regular}
-            onPress={() => {
-              props.navigation.navigate(TABS.Request.identifier);
-            }}
-            style={{ alignSelf: 'center' }}
-            color={theme._999999}>
-            {STRING.ViewAll}
-          </Text>
-        </View>
-        {['', ''].map((item: any) => {
-          return (
-            <RequestItem
+          {recentRequests.length > 0 &&
+            <Text
+              size={getScaleSize(16)}
+              font={FONTS.Lato.Regular}
               onPress={() => {
-                props.navigation.navigate(SCREENS.RequestDetails.identifier);
+                props.navigation.navigate(TABS.Request.identifier);
               }}
-            />
-          );
-        })}
-        <View
-          style={{
-            flexDirection: 'row',
-            marginTop: getScaleSize(31),
-            marginHorizontal: getScaleSize(22),
-          }}>
-          <Text
-            size={getScaleSize(20)}
-            font={FONTS.Lato.SemiBold}
-            style={{ flex: 1.0 }}
-            color={theme._323232}>
-            {STRING.FavoriteProfessionals}
-          </Text>
-          <Text
-            size={getScaleSize(16)}
-            font={FONTS.Lato.Regular}
-            onPress={() => { }}
-            style={{ alignSelf: 'center' }}
-            color={theme._999999}>
-            {STRING.ViewAll}
-          </Text>
+              style={{ alignSelf: 'center' }}
+              color={theme._999999}>
+              {STRING.ViewAll}
+            </Text>
+          }
         </View>
-        <FlatList
-          data={['', '']}
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          renderItem={({item, index}) => {
-            return (
-              <View style={{ marginTop: getScaleSize(26) }}>
-                <Favourites />
-              </View>
-            );
-          }}
-        />
-        <View style={{ height: 32 }}></View>
+        {recentRequests.length > 0 ? (
+          <>
+            {recentRequests.map((item: any, index: number) => {
+              return (
+                <RequestItem
+                  key={index}
+                  item={item}
+                  onPress={() => {
+                    if (item?.status === 'open') {
+                      props.navigation.navigate(SCREENS.OpenRequestDetails.identifier, {
+                        item: item
+                      })
+                    } else if (item?.status === 'pending') {
+                      props.navigation.navigate(SCREENS.RequestDetails.identifier, {
+                        item: item
+                      })
+                    } else if (item?.status === 'accepted') {
+                      props.navigation.navigate(SCREENS.CompletedTaskDetails.identifier, {
+                        item: item
+                      })
+                    } else if (item?.status === 'completed') {
+                      props.navigation.navigate(SCREENS.CompletedTaskDetails.identifier, {
+                        item: item
+                      })
+                    }
+                  }}
+                />
+              );
+            })}
+            {favoriteProfessionals?.length > 0 &&
+              <>
+                <View
+                  style={{
+                    flexDirection: 'row',
+                    marginTop: getScaleSize(13),
+                    marginHorizontal: getScaleSize(22),
+                  }}>
+                  <Text
+                    size={getScaleSize(20)}
+                    font={FONTS.Lato.SemiBold}
+                    style={{ flex: 1.0 }}
+                    color={theme._323232}>
+                    {STRING.FavoriteProfessionals}
+                  </Text>
+                  <Text
+                    onPress={() => {
+                      props.navigation.navigate(SCREENS.Favourites.identifier);
+                    }}
+                    size={getScaleSize(16)}
+                    font={FONTS.Lato.Regular}
+                    style={{ alignSelf: 'center' }}
+                    color={theme._999999}>
+                    {STRING.ViewAll}
+                  </Text>
+                </View>
+                <View style={{ marginHorizontal: getScaleSize(24), flexDirection: 'row', justifyContent: 'space-between' }}>
+                  {favoriteProfessionals?.length > 0 && favoriteProfessionals.map((item: any, index: number) => {
+                    return (
+                      <View key={index} style={{ marginTop: getScaleSize(26) }}>
+                        <FavouritesItem
+                          item={item}
+                          itemContainer={{}}
+                          onPressFavorite={(item: any) => {
+                            removeFavoriteProfessional(item?.provider?.id)
+                          }}
+                          onPressItem={(item: any) => {
+                            props.navigation.navigate(SCREENS.OtherUserProfile.identifier, {
+                              item: item?.provider ?? ''
+                            })
+                          }}
+                        />
+                      </View>
+                    );
+                  })}
+                </View>
+              </>
+            }
+          </>
+        ) : (
+          <View style={styles(theme).emptyView}>
+            <Image style={styles(theme).emptyImage} source={IMAGES.empty} />
+            <Text
+              size={getScaleSize(16)}
+              font={FONTS.Lato.Regular}
+              align="center"
+              color={theme._939393}
+              style={{
+                marginTop: getScaleSize(20),
+              }}>
+              {STRING.Youhavenotcreatedanyrequest}
+            </Text>
+          </View>
+        )}
+        <View style={{ height: getScaleSize(50) }} />
       </ScrollView>
+      {isLoading && <ProgressView />}
     </View>
   );
 }
@@ -279,5 +468,18 @@ const styles = (theme: ThemeContextType['theme']) =>
       marginTop: getScaleSize(35),
       height: getScaleSize(6),
       backgroundColor: '#F8F8F8',
+    },
+    emptyView: {
+      flex: 1.0,
+      alignSelf: 'center',
+      marginTop: getScaleSize(26),
+    },
+    emptyImage: {
+      height: getScaleSize(140),
+      width: getScaleSize(119),
+      alignSelf: 'center',
+    },
+    statusBar: {
+      height: StatusBar.currentHeight
     },
   });

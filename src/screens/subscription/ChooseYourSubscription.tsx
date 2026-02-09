@@ -13,6 +13,8 @@ import { SCREENS } from '..';
 
 //COMPONENTS
 import { Header, Input, Text, Button } from '../../components';
+import { API } from '../../api';
+import { CommonActions } from '@react-navigation/native';
 
 
 export default function ChooseYourSubscription(props: any) {
@@ -21,15 +23,52 @@ export default function ChooseYourSubscription(props: any) {
 
     const { theme } = useContext<any>(ThemeContext);
     const { setMyPlan } = useContext<any>(AuthContext);
+    const isFromSubscriptionButton: any = props?.route?.params?.isFromSubscriptionButton ?? false;
+    const [selectedPlan, setSelectedPlan] = useState<any>('');
+    const [allPlans, setAllPlans] = useState([]);
+    const [isLoading, setLoading] = useState(false);
 
-    const [selectedPlan, setSelectedPlan] = useState('');
+    useEffect(() => {
+        getAllPlans();
+    }, []);
+
+    async function getAllPlans() {
+        try {
+            setLoading(true);
+            const result = await API.Instance.get(API.API_ROUTES.getAllPlans);
+            setLoading(false);
+            console.log('result', result.status, result)
+            if (result.status) {
+                const array: any = [...result?.data?.data?.professional, ...result?.data?.data?.non_professional]
+                setAllPlans(array);
+            } else {
+                SHOW_TOAST(result?.data?.message ?? '', 'error')
+                console.log('error==>', result?.data?.message)
+            }
+        } catch (error: any) {
+            setLoading(false);
+            SHOW_TOAST(error?.message ?? '', 'error');
+            console.log(error?.message)
+        } finally {
+            setLoading(false);
+        }
+    }
 
 
     return (
         <View style={styles(theme).container}>
             <Header
                 onBack={() => {
-                    props.navigation.goBack();
+                    if (isFromSubscriptionButton) {
+                        props.navigation.goBack();
+                    } else {
+                        props.navigation.dispatch(
+                            CommonActions.reset({
+                                index: 0,
+                                routes: [{ name: SCREENS.BottomBar.identifier }],
+                            }),
+                        );
+                    }
                 }}
                 screenName={STRING.choose_your_subscription}
             />
@@ -49,86 +88,51 @@ export default function ChooseYourSubscription(props: any) {
                             style={{ marginBottom: getScaleSize(12) }}>
                             {STRING.all_premium_plans}
                         </Text>
-                        <TouchableOpacity
-                            onPress={() => {
-                                setSelectedPlan('professional_certified');
-                            }}
-                            style={styles(theme).subscriptionItem}>
-                            <View style={[styles(theme).flexView, { marginBottom: getScaleSize(18) }]}>
-                                <Text
-                                    size={getScaleSize(19)}
-                                    font={FONTS.Lato.Bold}
-                                    color={theme._214C65}>
-                                    {STRING.professional_certified}
-                                </Text>
-                                <View>
-                                    {selectedPlan === 'professional_certified' ?
-                                        <Image source={IMAGES.ic_check} style={styles(theme).selectedView} />
-                                        :
-                                        <View style={styles(theme).selectedView} />
-                                    }
-                                </View>
-                            </View>
-                            <Text
-                                size={getScaleSize(18)}
-                                font={FONTS.Lato.Medium}
-                                color={theme._214C65}>
-                                {STRING.monthly}
-                            </Text>
-                            <Text
-                                size={getScaleSize(19)}
-                                font={FONTS.Lato.Bold}
-                                color={theme._214C65}
-                                style={{ marginVertical: getScaleSize(8) }}>
-                                {'€15.99'}
-                            </Text>
-                            <Text
-                                size={getScaleSize(12)}
-                                font={FONTS.Lato.Regular}
-                                color={theme._214C65}>
-                                {STRING.billed_recurring_monthly_cancel_anytime}
-                            </Text>
-                        </TouchableOpacity>
-                        <TouchableOpacity
-                            onPress={() => {
-                                setSelectedPlan('non_certified_provider');
-                            }}
-                            style={styles(theme).subscriptionItem}>
-                            <View style={[styles(theme).flexView, { marginBottom: getScaleSize(18) }]}>
-                                <Text
-                                    size={getScaleSize(19)}
-                                    font={FONTS.Lato.Bold}
-                                    color={theme._214C65}>
-                                    {STRING.non_certified_provider}
-                                </Text>
-                                <View>
-                                    {selectedPlan === 'non_certified_provider' ?
-                                        <Image source={IMAGES.ic_check} style={styles(theme).selectedView} />
-                                        :
-                                        <View style={styles(theme).selectedView} />
-                                    }
-                                </View>
-                            </View>
-                            <Text
-                                size={getScaleSize(18)}
-                                font={FONTS.Lato.Medium}
-                                color={theme._214C65}>
-                                {STRING.monthly}
-                            </Text>
-                            <Text
-                                size={getScaleSize(19)}
-                                font={FONTS.Lato.Bold}
-                                color={theme._214C65}
-                                style={{ marginVertical: getScaleSize(8) }}>
-                                {'€15.99'}
-                            </Text>
-                            <Text
-                                size={getScaleSize(12)}
-                                font={FONTS.Lato.Regular}
-                                color={theme._214C65}>
-                                {STRING.billed_recurring_monthly_cancel_anytime}
-                            </Text>
-                        </TouchableOpacity>
+                        {allPlans.map((item: any) => {
+                            return (
+                                <TouchableOpacity
+                                    key={item?.id}
+                                    onPress={() => {
+                                        setSelectedPlan(item);
+                                    }}
+                                    style={styles(theme).subscriptionItem}>
+                                    <View style={[styles(theme).flexView, { marginBottom: getScaleSize(16) }]}>
+                                        <Text
+                                            size={getScaleSize(19)}
+                                            font={FONTS.Lato.Bold}
+                                            color={theme._214C65}>
+                                            {item.name ?? ''}
+                                        </Text>
+                                        <View>
+                                            {selectedPlan?.type === item?.type ?
+                                                <Image source={IMAGES.ic_check} style={styles(theme).selectedView} />
+                                                :
+                                                <View style={styles(theme).selectedView} />
+                                            }
+                                        </View>
+                                    </View>
+                                    <Text
+                                        size={getScaleSize(18)}
+                                        font={FONTS.Lato.Medium}
+                                        color={theme._214C65}>
+                                        {item?.duration ?? ''}
+                                    </Text>
+                                    <Text
+                                        size={getScaleSize(19)}
+                                        font={FONTS.Lato.Bold}
+                                        color={theme._214C65}
+                                        style={{ marginVertical: getScaleSize(8) }}>
+                                        {`€${item?.price ?? '0.00'}`}
+                                    </Text>
+                                    <Text
+                                        size={getScaleSize(12)}
+                                        font={FONTS.Lato.Regular}
+                                        color={theme._214C65}>
+                                        {STRING.billed_recurring_monthly_cancel_anytime}
+                                    </Text>
+                                </TouchableOpacity>
+                            )
+                        })}
                         <Text
                             size={getScaleSize(11)}
                             font={FONTS.Lato.Regular}
@@ -139,7 +143,15 @@ export default function ChooseYourSubscription(props: any) {
                     </View>
                 </View>
             </ScrollView>
-            <TouchableOpacity>
+            <TouchableOpacity
+                onPress={() => {
+                    props.navigation.dispatch(
+                        CommonActions.reset({
+                            index: 0,
+                            routes: [{ name: SCREENS.BottomBar.identifier }],
+                        }),
+                    );
+                }}>
                 <Text
                     size={getScaleSize(14)}
                     font={FONTS.Lato.SemiBold}
@@ -156,8 +168,10 @@ export default function ChooseYourSubscription(props: any) {
                     if (!selectedPlan) {
                         SHOW_TOAST(STRING.please_select_a_plan, 'error');
                     } else {
-                        setMyPlan(selectedPlan);
-                        props.navigation.navigate(SCREENS.SelectedPlanDetails.identifier);
+                        props.navigation.navigate(SCREENS.SelectedPlanDetails.identifier, {
+                            plan: selectedPlan,
+                            isFromSubscriptionButton: isFromSubscriptionButton
+                        });
                     }
                 }}
             />

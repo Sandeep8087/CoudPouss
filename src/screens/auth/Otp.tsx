@@ -21,7 +21,9 @@ import { API } from '../../api';
 export default function Otp(props: any) {
 
     const STRING = useString();
-    const { isFromSignup } = props.route.params || false;
+    const isFromSignup = props?.route?.params?.isFromSignup || false;
+    const isPhoneNumber = props?.route?.params?.isPhoneNumber || false;
+    const countryCode = props?.route?.params?.countryCode || '+91';
     const email = props?.route?.params?.email || '';
 
     const { theme } = useContext<any>(ThemeContext);
@@ -30,6 +32,25 @@ export default function Otp(props: any) {
     const [otp, setOtp] = useState('');
     const [otpError, setOtpError] = useState('');
     const [isLoading, setLoading] = useState(false);
+    const [timer, setTimer] = useState(60); // seconds
+    const [isResendDisabled, setIsResendDisabled] = useState(true);
+
+    useEffect(() => {
+        let interval: any;
+        if (isResendDisabled) {
+            interval = setInterval(() => {
+                setTimer(prev => {
+                    if (prev <= 1) {
+                        clearInterval(interval);
+                        setIsResendDisabled(false);
+                        return 0;
+                    }
+                    return prev - 1;
+                });
+            }, 1000);
+        }
+        return () => clearInterval(interval);
+    }, [isResendDisabled]);
 
     async function onOtp() {
         if (isFromSignup) {
@@ -44,10 +65,19 @@ export default function Otp(props: any) {
             setOtpError(STRING.please_enter_your_otp);
         } else {
             setOtpError('');
-            const params = {
-                email: email,
-                otp: otp,
-            };
+            let params = {}
+            if (isPhoneNumber) {
+                params = {
+                    mobile: email,
+                    phone_country_code: countryCode,
+                    otp: otp,
+                }
+            } else {
+                params = {
+                    email: email,
+                    otp: otp,
+                }
+            }
             try {
                 setLoading(true);
                 const result = await API.Instance.post(API.API_ROUTES.verifyResetPassword, params);
@@ -57,6 +87,8 @@ export default function Otp(props: any) {
                     SHOW_TOAST(result?.data?.message ?? '', 'success')
                     props.navigation.navigate(SCREENS.NewPassword.identifier, {
                         email: email,
+                        isPhoneNumber: isPhoneNumber,
+                        countryCode: countryCode,
                     });
                 } else {
                     SHOW_TOAST(result?.data?.message ?? '', 'error')
@@ -72,16 +104,24 @@ export default function Otp(props: any) {
         }
     }
 
-
     async function onSignup() {
         if (!otp) {
             setOtpError(STRING.please_enter_your_otp);
         } else {
             setOtpError('');
-            const params = {
-                email: email,
-                otp: otp,
-            };
+            let params = {}
+            if (isPhoneNumber) {
+                params = {
+                    mobile: email,
+                    phone_country_code: countryCode,
+                    otp: otp,
+                }
+            } else {
+                params = {
+                    email: email,
+                    otp: otp,
+                }
+            }
             try {
                 setLoading(true);
                 const result = await API.Instance.post(API.API_ROUTES.verifyOtp, params);
@@ -90,7 +130,9 @@ export default function Otp(props: any) {
                 if (result.status) {
                     SHOW_TOAST(result?.data?.message ?? '', 'success')
                     props.navigation.navigate(SCREENS.CreatePassword.identifier, {
-                        email: email
+                        email: email,
+                        isPhoneNumber: isPhoneNumber,
+                        countryCode: countryCode,
                     });
                 } else {
                     SHOW_TOAST(result?.data?.message ?? '', 'error')
@@ -108,13 +150,26 @@ export default function Otp(props: any) {
 
     async function onResendOtp() {
         try {
+            let params = {}
+            if (isPhoneNumber) {
+                params = {
+                    mobile: email,
+                    phone_country_code: countryCode,
+                }
+            } else {
+                params = {
+                    email: email,
+                }
+            }
             setLoading(true);
-            const result = await API.Instance.post(API.API_ROUTES.resendOtp, { email: email });
+            const result = await API.Instance.post(API.API_ROUTES.resendOtp, params);
             setLoading(false);
             console.log('result', result.status, result)
             if (result.status) {
                 SHOW_TOAST(result?.data?.message ?? '', 'success')
                 otpInput.current?.clear();
+                setTimer(60);
+                setIsResendDisabled(true);
             } else {
                 SHOW_TOAST(result?.data?.message ?? '', 'error')
                 console.log('error==>', result?.data?.message)
@@ -158,9 +213,12 @@ export default function Otp(props: any) {
                         <OTPTextInput
                             ref={otpInput}
                             inputCount={4}
-                            handleTextChange={(val: string) => setOtp(val)}
-                            tintColor={theme.primary} // border color when active
-                            offTintColor={theme._BFBFBF} // border color when inactive
+                            handleTextChange={(val: string) => {
+                                setOtp(val);
+                                setOtpError('');
+                            }}
+                            tintColor={otpError ? theme._EF5350 : theme.primary} // border color when active
+                            offTintColor={otpError ? theme._EF5350 : theme._BFBFBF} // border color when inactive
                             textInputStyle={styles(theme).textInput}
                         />
                         {otpError &&
@@ -173,22 +231,33 @@ export default function Otp(props: any) {
                             </Text>
                         }
                     </View>
-
                 </View>
             </ScrollView>
-            <TouchableOpacity
-                onPress={() => {
-                    onResendOtp();
-                }}>
-                <Text
-                    size={getScaleSize(20)}
-                    font={FONTS.Lato.SemiBold}
-                    color={theme._2C6587}
-                    align="center"
-                    style={{ marginBottom: getScaleSize(16) }}>
-                    {STRING.resend_code}
-                </Text>
-            </TouchableOpacity>
+            <View style={styles(theme).resendOtpView}>
+                {isResendDisabled ? (
+                    <Text
+                        font={FONTS.Lato.SemiBold}
+                        color={theme._2C6587}
+                        size={getScaleSize(18)}
+                        align="center">
+                        {`Resend code in ${timer} seconds`}
+                    </Text>
+                ) : (
+                    <TouchableOpacity
+                        onPress={() => {
+                            onResendOtp();
+                        }}>
+                        <Text
+                            size={getScaleSize(20)}
+                            font={FONTS.Lato.SemiBold}
+                            color={theme._2C6587}
+                            align="center"
+                            style={{ marginBottom: getScaleSize(16) }}>
+                            {STRING.resend_code}
+                        </Text>
+                    </TouchableOpacity>
+                )}
+            </View>
             <Button
                 title={isFromSignup ? STRING.verify_OTP : STRING.continue}
                 disabled={!otp}
@@ -228,5 +297,10 @@ const styles = (theme: ThemeContextType['theme']) =>
             fontFamily: FONTS.Lato.Bold,
             color: theme._31302F,
             backgroundColor: theme.white,
+        },
+        resendOtpView: {
+            alignItems: 'center',
+            marginTop: getScaleSize(12),
+            marginBottom: getScaleSize(10)
         },
     });

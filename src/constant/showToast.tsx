@@ -10,3 +10,11 @@ export async function SHOW_TOAST(message: string | null | undefined, type: any) 
     })
 
 }
+
+export function SHOW_SUCCESS_TOAST(message: string) {
+    Toast.show({
+        type: 'success',
+        text1: message,
+        position: 'bottom'
+    })
+}

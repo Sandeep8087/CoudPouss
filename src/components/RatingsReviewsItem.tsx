@@ -4,10 +4,12 @@ import { ThemeContext, ThemeContextType } from '../context';
 import { getScaleSize, useString } from '../constant';
 import { FONTS, IMAGES } from '../assets';
 import Text from './Text';
+import { Rating } from 'react-native-ratings';
+import moment from 'moment';
 
 export default function RatingsReviewsItem(props: any) {
 
-    const { onPressShowMore, showMore, itemContainer } = props;
+    const { onPressShowMore, showMore, itemContainer, item } = props;
 
     const { theme } = useContext<any>(ThemeContext);
     const STRING = useString();
@@ -15,26 +17,35 @@ export default function RatingsReviewsItem(props: any) {
     return (
         <View style={[styles(theme).itemContainer, itemContainer]}>
             <View style={styles(theme).flexView}>
-                <View style={styles(theme).profileIcon} />
+                {item?.profile_photo_url ?
+                    <Image source={{ uri: item?.profile_photo_url }} style={styles(theme).profileIcon} />
+                    :
+                    <View style={styles(theme).profileIcon} />
+                }
                 <View style={{ flex: 1.0 }}>
                     <Text
                         size={getScaleSize(16)}
                         font={FONTS.Lato.SemiBold}
                         color={theme._2B2B2B}>
-                        {'Reviewer Name'}
+                        {item?.full_name ?? ''}
                     </Text>
                     <Text size={getScaleSize(14)}
                         font={FONTS.Lato.Medium}
                         color={theme._6D6D6D}>
-                        {'2 days ago'}
+                        {item?.created_at ? moment(item?.created_at).fromNow() : '0 days ago'}
                     </Text>
                 </View>
                 <View style={styles(theme).flexView}>
-                    <Image source={IMAGES.ic_star} style={styles(theme).starIcon} />
-                    <Image source={IMAGES.ic_star} style={styles(theme).starIcon} />
-                    <Image source={IMAGES.ic_star} style={styles(theme).starIcon} />
-                    <Image source={IMAGES.ic_star_blank} style={styles(theme).starIcon} />
-                    <Image source={IMAGES.ic_star_blank} style={styles(theme).starIcon} />
+                    <Rating
+                        type="custom"
+                        ratingBackgroundColor="#EDEFF0"
+                        tintColor="#fff" // background color, useful for layout
+                        ratingCount={5}
+                        ratingColor={'#F0B52C'} // grey color
+                        startingValue={item?.average_rating ?? 0}
+                        imageSize={18}
+                        readonly
+                    />
                 </View>
             </View>
             <Text
@@ -42,18 +53,20 @@ export default function RatingsReviewsItem(props: any) {
                 size={getScaleSize(14)}
                 font={FONTS.Lato.Medium}
                 color={theme._131313}
-                numberOfLines={showMore ? undefined : 2}>
-                {'The service was prompt and professional. I was very pleased with the outcome and would definitely work with them again.'}
+                numberOfLines={showMore ? undefined : 3}>
+                {item?.review_description ?? ''}
             </Text>
-            <Text size={getScaleSize(11)}
-                font={FONTS.Lato.Regular}
-                color={theme._436A00}
-                style={{ marginTop: getScaleSize(4) }}
-                onPress={onPressShowMore}>
-                {showMore ? STRING.show_less : STRING.read_more}
-            </Text>
+            {item?.review_description?.length > 100 &&
+                <Text size={getScaleSize(11)}
+                    font={FONTS.Lato.Regular}
+                    color={theme._436A00}
+                    style={{ marginTop: getScaleSize(4) }}
+                    onPress={onPressShowMore}>
+                    {showMore ? STRING.show_less : STRING.read_more}
+                </Text>
+            }
             <View style={styles(theme).likeView}>
-                <View style={styles(theme).flexView} >
+                <View style={styles(theme).flexView}>
                     <View style={styles(theme).flexView}>
                         <Image source={IMAGES.ic_thumbsDown} style={styles(theme).starIcon} />
                         <Text
@@ -68,7 +81,7 @@ export default function RatingsReviewsItem(props: any) {
                     <View style={styles(theme).flexView}>
                         <Image source={IMAGES.ic_thumbsUp} style={styles(theme).starIcon} />
                         <Text
-                        size={getScaleSize(12)}
+                            size={getScaleSize(12)}
                             font={FONTS.Lato.Regular}
                             style={{ marginLeft: getScaleSize(2) }}
                             color={theme._707D85}>

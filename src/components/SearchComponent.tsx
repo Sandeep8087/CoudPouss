@@ -34,10 +34,9 @@ const SearchComponent = (props: any) => {
         <TextInput
           style={styles(theme).searchInput}
           placeholderTextColor={'#939393'}
-          placeholder={props.placeholder ?? STRING.Search}
-          value={props.value ?? ''}
-          onChangeText={props.onChangeText}
-          onSubmitEditing={props.onSubmitEditing}
+          placeholder={STRING.Search}
+          value={props.value}
+          onChangeText={text => props.onChangeText(text)}
         />
       </View>
       <TouchableOpacity
@@ -89,6 +88,7 @@ const styles = (theme: ThemeContextType['theme']) =>
       fontSize: getScaleSize(18),
       color: theme.black,
       marginLeft: getScaleSize(12),
+      flex: 1.0,
     },
     microPhoneContainer: {
       backgroundColor: theme.white,

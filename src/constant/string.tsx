@@ -174,6 +174,7 @@ export const useString = () => {
       'Thank you for choosing a category. Please select a service so we can provide you with the right support.',
     Choose_a_Service: 'Choose a Service',
     DescribeAboutService: 'Describe About Service',
+    barter_product_details: 'Barter Product Details',
     descriptionMessage:
       'Great job! You’ve selected your service. Now, please describe what you need so the professional can understand your request better.',
     EnterServicedescription: 'Enter Service description ',
@@ -226,8 +227,6 @@ export const useString = () => {
     Rejectedforanotherreason: 'Rejected for another reason',
     Cancel: 'Cancel',
     ConfirmServicerequest: 'Confirm Service request ?',
-    popup_message:
-      'You are about to confirm a service at the rate of 499€ with the Provider Wade Warren, Are you sure you want to continue? ',
     No: 'No',
     Yes: 'Yes',
     Proceedtopayment: 'Proceed to payment',
@@ -356,6 +355,86 @@ export const useString = () => {
     please_enter_your_address: 'Please enter your address',
     password_validation_message:
       'Password must be at least 8 characters and include an uppercase letter, a number, and a special character',
+    profile_updated_successfully: 'Profile updated successfully',
+    add_details_of_the_product_or_thing_you_want_to_offer_in_exchange_for_the_service:
+      'Add details of the product or thing you want to offer in exchange for the service.',
+    add_product_name: 'Add Product Name',
+    upload_photos_of_a_product: 'Upload Photos of a Product',
+    quantity: 'Quantity',
+    product_images: 'Product Images',
+    want_to_add_more_service_categories:
+      'Want to add more service\ncategories?',
+    view: 'View',
+    accept: 'Accept',
+    exchange_product: 'Exchange Product',
+    what_are_you_looking_for: 'What are you looking for?',
+    filters: 'Filters',
+    Choose_Date_Time: 'Choose Date & Time',
+    product: 'Product',
+    service_cancelled: 'Service Cancelled',
+    cancelled_message:
+      'This cancellation is happened in less than 48 hours before the scheduled service time. According to policy, your payment will not be fully refunded. A 5% service fee is charged.',
+    service_cancelled_message:
+      'Your service has been successfully cancelled. Here are the details regarding your payment and the cancellation policy.',
+    service_fee: 'Service Fee (5%)',
+    cancel_scheduled_service: 'Cancel Scheduled Service',
+    are_you_sure_you_want_to_cancel_your_scheduled_service_with_the_expert:
+      'Are you sure you want to cancel your scheduled service with the expert?',
+    payment_breakdown: 'Payment Breakdown',
+    confirm_cancellation: 'Confirm Cancellation',
+    keep_booking: 'Keep Booking',
+    you_have_not_sent_any_quote_please_sent_a_quotes_to_the_service_request:
+      'You have not sent any quote, please sent\na quotes to the service request',
+    you_can_also_upload_a_video: '(You can also upload a video)',
+    cancellation_not_possible: 'Cancellation not possible',
+    are_you_sure_you_want_to_logout: 'Are you sure you want to\nlogout?',
+    no_data_found: 'No data found',
+    you_have_not_accepted_any_request_please_accept_a_request:
+      'You have not accepted any request,\nplease accept a request',
+    please_enter_your_email_mobile_number:
+      'Please enter your email/ mobile number',
+    earnings: 'Earnings',
+    no_data_available: 'No data available',
+    no_earnings_this_month: 'No earnings for this month',
+    no_transactions_data_found: 'No transactions data found',
+    OutForService: 'Out for Service',
+    out_for_service_message:
+      'Sharing your location with the client is required to start the service. Would you like to continue?',
+    location_permission:
+      'Once you arrive at the specified location shared by the client, you can begin the service.',
+    task_status: 'Task Status',
+    map_view: 'Map View',
+    we_have_detected_that_you_are_at_your_clients_address_do_you_confirm_the_start_of_the_service:
+      'We have detected that you are at your Client’s address. Do you confirm the start of the service?',
+    security_code_text:
+      'Does the provided security code match the one shown below?',
+    you_have_not_subscribed_to_any_plan: 'You have not subscribed to any plan',
+    you_have_already_subscribed_to_a_plan:
+      'You have already subscribed to a plan',
+    reached_client_location: 'Reached Client Location',
+    show_security_code: 'Show Security Code',
+    the_client_has_confirmed_your_arrival_you_can_now_proceed_to_start_the_service_at_the_specified_location:
+      'The client has confirmed your arrival. You can now proceed to start the service at the specified location.',
+    renegotiate: 'Renegotiate',
+    mark_as_completed: 'Mark as Completed',
+    renegotiate_message:
+      'If you believe the task is more extensive than planned, you can request a price increase (max +20%)',
+    current_payment_breakdown: 'Current Payment Breakdown',
+    Platform_Fee_15: 'Platform Fee (15%)',
+    enter_requested_adjustment: 'Enter Requested Adjustment',
+    Enter_Requested_Adjustment: 'Enter Requested Adjustment',
+    the_client_has_rejected_your_initial_request_please_resend_it_or_check_your_map_for_accurate_location_detection:
+      'The client has rejected your initial request. Please resend it or check your map for accurate location detection.',
+    detect: 'Detect',
+    resend_request: 'Resend Request',
+    the_client_has_approved_your_request_Would_you_like_to_proceed_with_the_next_steps:
+      'The client has approved your request. Would you like to proceed with the next steps?',
+    enter_security_code: 'Enter Security Code',
+    enter_security_code_message:
+      'The user will receive the last three digits of the code. Enter these digits provided by the user to validate the service and initiate the process.',
+    validate: 'Validate',
+    security_code_validated_successfully:
+      'Security Code validated successfully.',
   };
 };
 
