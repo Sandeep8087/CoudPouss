@@ -22,6 +22,7 @@ export default function SubscriptionSuccessful(props: any) {
     const planDetails: any = props?.route?.params?.planDetails ?? {};
     const { theme } = useContext<any>(ThemeContext);
 
+
     return (
         <View style={styles(theme).container}>
             <Header
@@ -38,7 +39,7 @@ export default function SubscriptionSuccessful(props: any) {
                         style={{ marginBottom: getScaleSize(16) }}>
                         {STRING.welcome_aboard_your_subscription_is_now_active_you_can_start_exploring_all_features_immediately}
                     </Text>
-                    <View style={styles(theme).infoContainer}>
+                    {/* <View style={styles(theme).infoContainer}>
                         <View style={[styles(theme).flexView, { marginBottom: getScaleSize(16) }]}>
                             <Text size={getScaleSize(16)}
                                 font={FONTS.Lato.Bold}
@@ -118,8 +119,9 @@ export default function SubscriptionSuccessful(props: any) {
                                 {"26 Sept 2025"}
                             </Text>
                         </View>
-                    </View>
-                    <View style={{flexDirection: 'row'}}>
+                    </View> */}
+                   
+                    {/* <View style={{flexDirection: 'row'}}>
                         <Image source={IMAGES.ic_info} style={styles(theme).infoIcon} />
                         <Text size={getScaleSize(16)}
                             font={FONTS.Lato.Bold}
@@ -132,7 +134,7 @@ export default function SubscriptionSuccessful(props: any) {
                         color={theme._555555}
                         style={{ marginTop: getScaleSize(8) }}>
                         {STRING.no_paymentwas_taken_today_your_first_month_is_free}
-                    </Text>
+                    </Text> */}
                 </View>
             </ScrollView>
             <Button
@@ -165,7 +167,8 @@ const styles = (theme: ThemeContextType['theme']) =>
             flex: 1.0,
             marginHorizontal: getScaleSize(24),
             marginVertical: getScaleSize(14),
-            justifyContent: 'center'
+            justifyContent: 'center',
+            alignItems: 'center'
         },
         successIcon: {
             width: getScaleSize(120),

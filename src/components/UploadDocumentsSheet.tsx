@@ -14,13 +14,16 @@ interface UploadDocumentsSheetProps {
     description?: string;
     buttonTitle?: string;
     onPressButton?: () => void;
+    onPressDocument?: any,
+    certificate?: any
+    kbisExtract?: any
 }
 
 export default function UploadDocumentsSheet(props: UploadDocumentsSheetProps) {
     const { theme } = useContext<any>(ThemeContext);
     const STRING = useString();
 
-    const { bottomSheetRef, height, title, description, buttonTitle, onPressButton } = props;
+    const { bottomSheetRef, height, onPressDocument, buttonTitle, onPressButton, certificate, kbisExtract } = props;
 
     return (
         <RBSheet
@@ -60,19 +63,25 @@ export default function UploadDocumentsSheet(props: UploadDocumentsSheetProps) {
                         {STRING.a_copy_of_ID}
                     </Text>
                     <TouchableOpacity
-                        style={[styles(theme).uploadButton]}
+                        style={[styles(theme).uploadButton, { paddingVertical: certificate?.length > 0 ? getScaleSize(12) : getScaleSize(24), }]}
                         activeOpacity={1}
-                        onPress={() => { }}>
-                        <Image
-                            style={styles(theme).attachmentIcon}
-                            source={IMAGES.upload_attachment}
-                        />
-                        <Text
-                            size={getScaleSize(12)}
-                            font={FONTS.Lato.Regular}
-                            color={theme._818285}>
-                            {STRING.upload_from_device}
-                        </Text>
+                        onPress={() => { onPressDocument('id') }}>
+                        {certificate?.length > 0 ? (
+                            <Image source={{ uri: certificate?.[0]?.uri }} style={styles(theme).imageIcon} />
+                        ) : (
+                            <>
+                                <Image
+                                    style={styles(theme).attachmentIcon}
+                                    source={IMAGES.upload_attachment}
+                                />
+                                <Text
+                                    size={getScaleSize(12)}
+                                    font={FONTS.Lato.Regular}
+                                    color={theme._818285}>
+                                    {STRING.upload_from_device}
+                                </Text>
+                            </>
+                        )}
                     </TouchableOpacity>
                     <Text
                         size={getScaleSize(17)}
@@ -81,19 +90,25 @@ export default function UploadDocumentsSheet(props: UploadDocumentsSheetProps) {
                         {STRING.kbis_extract}
                     </Text>
                     <TouchableOpacity
-                        style={[styles(theme).uploadButton]}
+                        style={[styles(theme).uploadButton, { paddingVertical: kbisExtract?.length > 0 ? getScaleSize(12) : getScaleSize(24) }]}
                         activeOpacity={1}
-                        onPress={() => { }}>
-                        <Image
-                            style={styles(theme).attachmentIcon}
-                            source={IMAGES.upload_attachment}
-                        />
-                        <Text
-                            size={getScaleSize(12)}
-                            font={FONTS.Lato.Regular}
-                            color={theme._818285}>
-                            {STRING.upload_from_device}
-                        </Text>
+                        onPress={() => { onPressDocument('kbis') }}>
+                        {kbisExtract?.length > 0 ? (
+                            <Image source={{ uri: kbisExtract?.[0]?.uri }} style={styles(theme).imageIcon} />
+                        ) : (
+                            <>
+                                <Image
+                                    style={styles(theme).attachmentIcon}
+                                    source={IMAGES.upload_attachment}
+                                />
+                                <Text
+                                    size={getScaleSize(12)}
+                                    font={FONTS.Lato.Regular}
+                                    color={theme._818285}>
+                                    {STRING.upload_from_device}
+                                </Text>
+                            </>
+                        )}
                     </TouchableOpacity>
                 </View>
                 <Button
@@ -102,7 +117,7 @@ export default function UploadDocumentsSheet(props: UploadDocumentsSheetProps) {
                     onPress={onPressButton}
                 />
             </View>
-        </RBSheet>
+        </RBSheet >
     )
 }
 
@@ -129,7 +144,6 @@ const styles = (theme: ThemeContextType['theme']) =>
             borderRadius: getScaleSize(8),
             flexDirection: 'row',
             alignItems: 'center',
-            paddingVertical: getScaleSize(24),
             justifyContent: 'center',
             marginTop: getScaleSize(8),
             marginBottom: getScaleSize(24),
@@ -140,4 +154,8 @@ const styles = (theme: ThemeContextType['theme']) =>
             width: getScaleSize(24),
             marginRight: getScaleSize(8),
         },
+        imageIcon: {
+            height: getScaleSize(48),
+            width: getScaleSize(48),
+        }
     });

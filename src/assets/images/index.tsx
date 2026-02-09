@@ -117,4 +117,10 @@ export const IMAGES = {
   diy: require('./diy.png'),
   transportIcon: require('./transportIcon.png'),
   personalCareIcon: require('./persononalCare.png'),
+  trash2: require('./trash2.png'),
+  edit: require('./edit.png'),
+  pinIcon: require('./pinIcon.png'),
+  ic_like: require('./ic_like.png'),
+  renegotiationIcon: require('./renegotiationIcon.png'),
+  ic_succes: require('./ic_succes.png'),
 };

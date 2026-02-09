@@ -18,6 +18,7 @@ function BottomBar(props: any) {
 
   const isProfile = props?.route?.params?.isProfile ?? false;
   const isValidationService = props?.route?.params?.isValidationService ?? false;
+  const isTask = props?.route?.params?.isTask ?? false;
 
   function getInitialRouteName() {
     if (isProfile) {
@@ -29,6 +30,15 @@ function BottomBar(props: any) {
     }
   }
 
+  function getProfessionalRouteName() {
+    console.log('isTask==>', isTask)
+    if (isTask) {
+      return TABS.Task.identifier;
+    } else {
+      return TABS.ProfessionalHome.identifier
+    }
+  }
+
   if (userType === 'service_provider') {
     return (
       <>
@@ -36,7 +46,7 @@ function BottomBar(props: any) {
           screenOptions={{
             headerShown: false,
           }}
-          initialRouteName={TABS.ProfessionalHome.identifier}
+          initialRouteName={getProfessionalRouteName()}
           tabBar={props => {
             return <Tabbar {...props} />;
           }}>

@@ -44,6 +44,9 @@ export default function OtherUserProfile(props: any) {
 
   const item = props?.route?.params?.item ?? {};
 
+
+  console.log('item==>', item)
+
   const [isLoading, setLoading] = useState(false);
   const [showMore, setShowMore] = useState(false);
   const [showMoreExperience, setShowMoreExperience] = useState(false);

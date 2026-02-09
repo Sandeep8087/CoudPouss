@@ -89,6 +89,8 @@ export default function CreateRequest(props: any) {
   const [secondProductImage, setSecondProductImage] = useState<any>(null);
   const [firstProductImageURL, setFirstProductImageURL] = useState<any>(null);
   const [secondProductImageURL, setSecondProductImageURL] = useState<any>(null);
+  const [address, setAddress] = useState('');
+  const [addressError, setAddressError] = useState('')
 
   useEffect(() => {
     getAllCategories();
@@ -264,7 +266,10 @@ export default function CreateRequest(props: any) {
         setSelectedProgress(4);
       }
     } else if (selectedProgress === 4) {
-      if (!firstImageURL) {
+      if (!address) {
+        setAddressError('Please enter an address');
+        return;
+      } else if (!firstImageURL) {
         SHOW_TOAST('Please upload a photo', 'error');
         return;
       } else if (!description) {
@@ -431,6 +436,9 @@ export default function CreateRequest(props: any) {
           sub_category_id: selectSubCategoryItem?.id,
           description: description.trim(),
           description_files: imageUrls,
+          service_address: address.trim(),
+          latitude: 23.2156,
+          longitude: 72.6369,
           validation_amount: valuation,
           chosen_datetime: dateTime
         }
@@ -442,6 +450,9 @@ export default function CreateRequest(props: any) {
           description: description.trim(),
           description_files: imageUrls,
           chosen_datetime: dateTime,
+          service_address: address.trim(),
+          latitude: 23.2156,
+          longitude: 72.6369,
           barter_product: {
             product_name: productName,
             quantity: quantity,
@@ -787,11 +798,13 @@ export default function CreateRequest(props: any) {
             inputTitle={STRING.enter_address}
             inputColor={true}
             searchBox={IMAGES.search}
-            continerStyle={{marginTop: getScaleSize(12) }}
-            value={description}
+            continerStyle={{ marginTop: getScaleSize(12) }}
+            value={address}
             onChangeText={(text: any) => {
-              setDescription(text);
+              setAddress(text);
+              setAddressError('');
             }}
+            isError={addressError}
           />
           <Text
             style={{ marginTop: getScaleSize(12) }}

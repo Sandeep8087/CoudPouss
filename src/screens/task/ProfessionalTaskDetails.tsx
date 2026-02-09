@@ -61,20 +61,20 @@ export default function ProfessionalTaskDetails(props: any) {
     }
   }, []);
 
-  function getItemUrl() {
-    if (item?.quote_status === 'send') {
-      return '/quotes'
-    } else if (item?.quote_status === 'accepted') {
-      return '/accepted'
-    } else if (item?.quote_status === 'completed') {
-      return '/completed'
-    }
-  }
+  // function getItemUrl() {
+  //   if (item?.quote_status === 'send') {
+  //     return '/quotes'
+  //   } else if (item?.quote_status === 'accepted') {
+  //     return '/accepted'
+  //   } else if (item?.quote_status === 'completed') {
+  //     return '/completed'
+  //   }
+  // }
 
   async function getServiceDetails() {
     try {
       setLoading(true);
-      const result = await API.Instance.get(API.API_ROUTES.getTsakDetails + `${getItemUrl()}/${item?.service_request_id}`);
+      const result = await API.Instance.get(API.API_ROUTES.getTsakDetails + `/quotes/${item?.service_request_id}`);
       if (result.status) {
         setTaskDetails(result?.data?.data ?? {});
         setAttachments(normalizeAttachments(result?.data?.data?.task));

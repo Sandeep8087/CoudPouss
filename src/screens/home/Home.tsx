@@ -390,6 +390,11 @@ export default function Home(props: any) {
                           onPressFavorite={(item: any) => {
                             removeFavoriteProfessional(item?.provider?.id)
                           }}
+                          onPressItem={(item: any) => {
+                            props.navigation.navigate(SCREENS.OtherUserProfile.identifier, {
+                              item: item?.provider ?? ''
+                            })
+                          }}
                         />
                       </View>
                     );

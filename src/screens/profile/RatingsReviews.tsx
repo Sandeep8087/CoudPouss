@@ -11,7 +11,7 @@ import { API } from '../../api';
 import { Header, ProgressView, RatingsReviewsItem, Text } from '../../components';
 
 //CONTEXT
-import { ThemeContext, ThemeContextType } from '../../context';
+import { AuthContext, ThemeContext, ThemeContextType } from '../../context';
 
 //CONSTANTS
 import { getScaleSize, SHOW_TOAST, useString } from '../../constant';
@@ -20,6 +20,7 @@ export default function RatingsReviews(props: any) {
 
     const { theme } = useContext<any>(ThemeContext);
     const STRING = useString();
+    const { userType, profile } = useContext<any>(AuthContext);
 
     const PAGE_SIZE = 10;
 

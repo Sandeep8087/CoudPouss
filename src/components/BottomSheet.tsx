@@ -2,7 +2,7 @@ import { Image, StyleSheet, TouchableOpacity, View } from 'react-native'
 import React, { useContext } from 'react'
 import { ThemeContext, ThemeContextType } from '../context/ThemeProvider';
 import RBSheet from 'react-native-raw-bottom-sheet';
-import { getScaleSize } from '../constant';
+import { getScaleSize, useString } from '../constant';
 import { FONTS, IMAGES } from '../assets';
 import Text from './Text';
 import Button from './Button';
@@ -20,12 +20,24 @@ interface BottomSheetProps {
     isInfo?: boolean;
     addMoreServices?: boolean;
     type?: string;
+    security_Code?: any;
+    isNotCloseable?: boolean;
+    image?: any;
 }
 
 export default function BottomSheet(props: BottomSheetProps) {
     const { theme } = useContext<any>(ThemeContext);
-
-    const { bottomSheetRef, height, title, description, buttonTitle, isInfo, onPressButton, addMoreServices, isStatus, secondButtonTitle, onPressSecondButton, type } = props;
+    const STRING = useString();
+    const { bottomSheetRef,
+        height, title,
+        description, buttonTitle,
+        isInfo, onPressButton,
+        addMoreServices, isStatus,
+        secondButtonTitle, onPressSecondButton,
+        type, security_Code,
+        isNotCloseable,
+        image
+    } = props;
     return (
         <RBSheet
             ref={bottomSheetRef}
@@ -45,7 +57,7 @@ export default function BottomSheet(props: BottomSheetProps) {
                 },
             }}
             draggable={false}
-            closeOnPressMask={true}>
+            closeOnPressMask={isNotCloseable ? false : true}>
             <View style={styles(theme).container}>
                 {isStatus && (
                     <View style={styles(theme).statusContainer}>
@@ -140,6 +152,70 @@ export default function BottomSheet(props: BottomSheetProps) {
                         </Text>
                     </View>
                 )}
+                {type === 'out_of_service' && (
+                    <View style={[styles(theme).mainContainer, { marginHorizontal: getScaleSize(50) }]}>
+                        <Image source={image} style={[styles(theme).alartIcon, { marginBottom: getScaleSize(12) }]} />
+                        <Text
+                            size={getScaleSize(22)}
+                            font={FONTS.Lato.SemiBold}
+                            align="center"
+                            color={theme._555555}>
+                            {title}
+                        </Text>
+                    </View>
+                )}
+                {type === 'map_view' && (
+                    <View style={styles(theme).mainContainer}>
+                        <Image source={IMAGES.pinIcon} style={[styles(theme).alartIcon, { marginBottom: getScaleSize(12) }]} />
+                        <Text
+                            size={getScaleSize(22)}
+                            font={FONTS.Lato.SemiBold}
+                            align="center"
+                            color={theme._555555}>
+                            {title}
+                        </Text>
+                        <View style={styles(theme).informationView}>
+                            <Text
+                                font={FONTS.Lato.Medium}
+                                size={getScaleSize(16)}
+                                color={theme._2C6587} >
+                                {STRING.SecurityCode}
+                            </Text>
+                            <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: getScaleSize(40), marginTop: getScaleSize(20) }}>
+                                {security_Code.split('').map((char: any, index: any) => (
+                                    <View key={index} style={{ marginVertical: getScaleSize(10) }} >
+                                        <Text
+                                            font={FONTS.Lato.SemiBold}
+                                            size={getScaleSize(16)}
+                                            align="center"
+                                            color={theme._0F232F} >
+                                            {char}
+                                        </Text>
+                                    </View>
+                                ))}
+                            </View>
+                        </View>
+                        <Text
+                            size={getScaleSize(22)}
+                            font={FONTS.Lato.SemiBold}
+                            align="center"
+                            color={theme._555555}>
+                            {description}
+                        </Text>
+                    </View>
+                )}
+                {type === 'success' && (
+                    <View style={styles(theme).mainContainer}>
+                        <Image source={image} style={[styles(theme).alartIcon, { marginBottom: getScaleSize(24) }]} />
+                        <Text
+                            size={getScaleSize(18)}
+                            font={FONTS.Lato.SemiBold}
+                            align="center"
+                            color={theme._565656}>
+                            {title}
+                        </Text>
+                    </View>
+                )}
                 {secondButtonTitle ?
                     <View style={styles(theme).buttonContainer}>
                         <TouchableOpacity
@@ -207,5 +283,18 @@ const styles = (theme: ThemeContextType['theme']) =>
             alignItems: 'center',
             justifyContent: 'center',
             flex: 1.0,
-        }
+        },
+        date: {
+            fontSize: 12,
+            color: '#737373',
+            fontFamily: FONTS.Lato.Regular,
+        },
+        informationView: {
+            marginVertical: getScaleSize(24),
+            borderRadius: getScaleSize(12),
+            paddingHorizontal: getScaleSize(20),
+            paddingVertical: getScaleSize(16),
+            borderWidth: 1,
+            borderColor: theme._E6E6E6,
+        },
     });

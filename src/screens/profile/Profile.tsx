@@ -103,29 +103,33 @@ export default function Profile(props: any) {
             {(profile?.user?.first_name ?? "") + " " + (profile?.user?.last_name ?? "")}
           </Text>
           {userType === 'service_provider' && (
-            <View style={styles(theme).checkStatusContainer}>
-              <Image source={IMAGES.ic_alart} style={styles(theme).alartIcon} />
-              <Text
-                size={getScaleSize(19)}
-                font={FONTS.Lato.Bold}
-                align="center"
-                color={theme._214C65}>
-                {STRING.account_under_verification}
-              </Text>
-              <TouchableOpacity
-                onPress={() => {
-                  props.navigation.navigate(SCREENS.ApplicationStatus.identifier);
-                }}
-                style={styles(theme).checkStatusButton}>
-                <Text
-                  size={getScaleSize(16)}
-                  font={FONTS.Lato.SemiBold}
-                  align="center"
-                  color={theme.white}>
-                  {STRING.check_status}
-                </Text>
-              </TouchableOpacity>
-            </View>
+            <>
+              {profile?.provider_info?.is_docs_verified == false && (
+                <View style={styles(theme).checkStatusContainer}>
+                  <Image source={IMAGES.ic_alart} style={styles(theme).alartIcon} />
+                  <Text
+                    size={getScaleSize(19)}
+                    font={FONTS.Lato.Bold}
+                    align="center"
+                    color={theme._214C65}>
+                    {STRING.account_under_verification}
+                  </Text>
+                  <TouchableOpacity
+                    onPress={() => {
+                      props.navigation.navigate(SCREENS.ApplicationStatus.identifier);
+                    }}
+                    style={styles(theme).checkStatusButton}>
+                    <Text
+                      size={getScaleSize(16)}
+                      font={FONTS.Lato.SemiBold}
+                      align="center"
+                      color={theme.white}>
+                      {STRING.check_status}
+                    </Text>
+                  </TouchableOpacity>
+                </View>
+              )}
+            </>
           )}
           <View style={{ marginTop: userType === 'service_provider' ? getScaleSize(20) : getScaleSize(40) }}>
             {getProfileItems().map((item: any, index: number) => {

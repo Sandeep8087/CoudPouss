@@ -26,7 +26,7 @@ export default function AdditionalDetails(props: any) {
     const { theme } = useContext<any>(ThemeContext);
 
     const planDetails: any = props?.route?.params?.planDetails ?? {};
-
+    const isFromApplicationStatus: any = props?.route?.params?.isFromApplicationStatus ?? false;
     const [copyOfId, setCopyOfId] = useState<any>([]);
     const [kbisExtract, setKbisExtract] = useState<any>([]);
     const [proofOfResidence, setProofOfResidence] = useState<any>([]);
@@ -77,7 +77,7 @@ export default function AdditionalDetails(props: any) {
             });
             formData.append('proof_of_residence', {
                 uri: proofOfResidence?.[0]?.uri,
-                name: proofOfResidence?.[0]?.name ,
+                name: proofOfResidence?.[0]?.name,
                 type: proofOfResidence?.[0]?.type,
             });
             console.log('formData==>', formData)
@@ -90,9 +90,13 @@ export default function AdditionalDetails(props: any) {
             setLoading(false);
             console.log('result', result.status, result)
             if (result.status) {
-                props.navigation.navigate(SCREENS.YearsOfExperience.identifier,{
-                    planDetails: planDetails,
-                });
+                if (isFromApplicationStatus) {
+                    props.navigation.navigate(SCREENS.ApplicationStatus.identifier);
+                } else {
+                    props.navigation.navigate(SCREENS.YearsOfExperience.identifier, {
+                        planDetails: planDetails,
+                    });
+                }
             } else {
                 SHOW_TOAST(result?.data?.message ?? '', 'error')
             }

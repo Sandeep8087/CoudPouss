@@ -15,6 +15,7 @@ import { SCREENS } from '..';
 import { Header, Input, Text, Button } from '../../components';
 import { EventRegister } from 'react-native-event-listeners';
 import { API } from '../../api';
+import { CommonActions } from '@react-navigation/native';
 
 
 export default function PaymentMethod(props: any) {
@@ -22,7 +23,9 @@ export default function PaymentMethod(props: any) {
     const STRING = useString();
 
     const planDetails: any = props?.route?.params?.planDetails ?? {};
+    const isFromSubscriptionButton: any = props?.route?.params?.isFromSubscriptionButton ?? false;
     const { theme } = useContext<any>(ThemeContext);
+    const { fetchProfile, profile } = useContext<any>(AuthContext);
 
     const [isLoading, setLoading] = useState(false);
     const [paymentDetails, setPaymentDetails] = useState<any>({});
@@ -53,11 +56,19 @@ export default function PaymentMethod(props: any) {
             if (url.includes('payment-success')) {
                 const params = parseParams(url);
                 const type = params.type;
-                if (type == 'subscription_payment') {
-                    Alert.alert('Payment successful');
+                if (type == 'add') {
+                    fetchProfile()
                     props.navigation.navigate(SCREENS.SubscriptionSuccessful.identifier, {
-                        planDetails: planDetails,
+                        planDetails: params,
                     });
+                } else if (type == 'update') {
+                    fetchProfile()
+                    props?.navigation?.dispatch(
+                        CommonActions.reset({
+                            index: 0,
+                            routes: [{ name: SCREENS.ManageSubscription.identifier }],
+                        }),
+                    );
                 }
             }
 
@@ -65,11 +76,9 @@ export default function PaymentMethod(props: any) {
                 const params = parseParams(url);
                 const error = params.error || 'Payment cancelled';
                 const type = params.type;
-
-                if (type == 'subscription_payment') {
-                   
-                    Alert.alert(error ?? 'Payment cancelled');
-                }
+                EventRegister.emit('subscriptionPaymentCancel', {
+                    message: error,
+                });
             }
         });
 
@@ -80,14 +89,23 @@ export default function PaymentMethod(props: any) {
                 const params = parseParams(url);
                 const type = params.type;
 
-                if (type == 'subscription_payment') {
+                if (type == 'add') {
+                    fetchProfile()
                     setTimeout(() => {
                         props.navigation.navigate(SCREENS.SubscriptionSuccessful.identifier, {
-                            planDetails: planDetails,
+                            planDetails: params,
                         });
                     }, 2000);
-                } else {
-
+                } else if (type == 'update') {
+                    fetchProfile()
+                    setTimeout(() => {
+                        props?.navigation?.dispatch(
+                            CommonActions.reset({
+                                index: 0,
+                                routes: [{ name: SCREENS.ManageSubscription.identifier }],
+                            }),
+                        );
+                    }, 2000);
                 }
                 return;
             }
@@ -96,12 +114,9 @@ export default function PaymentMethod(props: any) {
                 const params = parseParams(url);
                 const error = params.error || 'Payment cancelled';
                 const type = params.type;
-
-                if (type == 'subscription_payment') {
-                    EventRegister.emit('subscriptionPaymentCancel', {
-                        message: error,
-                    });
-                }
+                EventRegister.emit('subscriptionPaymentCancel', {
+                    message: error,
+                });
                 return;
             }
         };
@@ -113,19 +128,27 @@ export default function PaymentMethod(props: any) {
         };
     }, []);
 
+    useEffect(() => {
+        EventRegister.addEventListener('subscriptionPaymentCancel', (data: any) => {
+            SHOW_TOAST(data?.message ?? '', 'error')
+        });
+        return () => {
+            EventRegister.removeEventListener('subscriptionPaymentCancel')
+        }
+    }, []);
+
+    console.log(profile, 'profile')
     async function onPayment() {
-        openStripeCheckout('https://checkout.stripe.com/c/pay/cs_test_a1UTvrpr86juQMsToFj3JPKUE2gsspUACBifpcqduYESTNCrFcrdyWMpNp#fidnandhYHdWcXxpYCc%2FJ2FgY2RwaXEnKSdkdWxOYHwnPyd1blpxYHZxWjA0V2JGTXRPaX1CdnZpakROTjBsQFc9YjFOdzNsU2poPXJkR3ZLQ1RdcEtoTXNoQ25naXNmf09MfXBxSjxvfHZgTE1hTkFIZGJGRkY8SHJBNTJfYWE3M3dQNTVWXGs3VG9CbycpJ2N3amhWYHdzYHcnP3F3cGApJ2dkZm5id2pwa2FGamlqdyc%2FJyZjY2NjY2MnKSdpZHxqcHFRfHVgJz8ndmxrYmlgWmxxYGgnKSdga2RnaWBVaWRmYG1qaWFgd3YnP3F3cGB4JSUl');
-return
         try {
             setLoading(true);
             const params = {
                 plan_id: planDetails?.id,
             }
-            const result = await API.Instance.post(API.API_ROUTES.subscriptionPayment, params);
+            const result = await API.Instance.post(API.API_ROUTES.subscriptionPayment + `?action=${isFromSubscriptionButton ? 'update' : 'add'}&platform=app`, params);
             if (result.status) {
-                console.log('paymentDetails==>', result?.data?.data)
                 setPaymentDetails(result?.data?.data ?? {});
                 const STRIPE_URL = result?.data?.data?.checkout_url ?? '';
+                openStripeCheckout(STRIPE_URL);
             } else {
                 SHOW_TOAST(result?.data?.message ?? '', 'error')
             }
@@ -232,7 +255,11 @@ return
                     title={STRING.proceed_to_pay}
                     style={{ flex: 1.0 }}
                     onPress={() => {
-                        onPayment()
+                        if(profile?.has_purchased){
+                            SHOW_TOAST(STRING.you_have_already_subscribed_to_a_plan, 'info')
+                        }else{
+                            onPayment()
+                        }
                     }}
                 />
             </View>

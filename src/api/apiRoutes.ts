@@ -51,12 +51,27 @@ const API_ROUTES = {
     onWriteReview: "service_confirmation/ratings/submit?type=both",
     getCancelServiceDetails: "service_request/get-payment",
     onCancelService: "service_request/cancel",
-    getAllService: "userService/auth/get-selected-services",
+    getAllService: "userService/provider-services",
     getTsakDetails: "quote_accept/service-provider",
     getRefreshToken: "userService/auth/refresh-token",
     subscriptionPayment: "subscription_and_payment/subscription/select-plan",
     getTaskStatus: "quote_accept/service-provider/task-status",
+    getEarningsDashboard: "subscription_and_payment/wallet-withdraw/dashboard",
+    getWithdrawHistory: "subscription_and_payment/wallet-withdraw/user-withdraw",
+    getMyWalletBalance: "subscription_and_payment/wallet-withdraw/my-wallet",
+    removeService: "userService/remove-service",
+    getProviderTransactions: "subscription_and_payment/wallet-withdraw/provider-transactions",
+    onProceedOutOfService: "quote_accept/proceed-out-for-service",
+    onSelectedCategoriesNonProfessional: "subscription_and_payment/categories/purchase",
+    getSubscriptionPlanDetails: "userService/auth/plans",
+    getApplicationStatus: "userService/verify/profile",
+    onProceedFurther: "quote_accept/procced_futher",
+    onVerifySecurityCode: "quote_accept/provider/confirm_start",
+    getRenegotiationDetails: "quote_accept/service-provider/renegotiation",
+    onProcessRenegotiation: 'quote_accept',
+    onMarkAsCompleted: 'quote_accept/mark-service-completed',
 }
 
+//quote_accept/service-provider/renegotiation/544aec5f-f918-4c56-8176-bc787c13160e
 
 export { API_ROUTES, API_BASE_URL, DISABLE_API_LOGS }

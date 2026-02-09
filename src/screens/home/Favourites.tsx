@@ -10,6 +10,7 @@ import { getScaleSize, SHOW_TOAST, useString } from '../../constant';
 //CONTEXT
 import { ThemeContext, ThemeContextType } from '../../context';
 import { API } from '../../api';
+import { SCREENS } from '..';
 
 
 const PAGE_SIZE = 10;
@@ -135,6 +136,11 @@ export default function Favourites(props: any) {
                             itemContainer={styles(theme).itemContainer}
                             onPressFavorite={(item: any) => {
                                 removeFavoriteProfessional(item?.provider?.id)
+                            }}
+                            onPressItem={(item: any) => {
+                                props.navigation.navigate(SCREENS.OtherUserProfile.identifier, {
+                                    item: item?.provider ?? ''
+                                })
                             }}
                         />
                     );

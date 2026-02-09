@@ -64,6 +64,7 @@ import Task from './task/Task';
 import ServiceCancelled from './request/ServiceCancelled';
 import Search from './home/Search';
 import WebViewScreen from './WebViewScreen';
+import MapView from './task/MapView';
 
 export const SCREENS = {
   Splash: {
@@ -290,7 +291,11 @@ export const SCREENS = {
   WebViewScreen: {
     identifier: 'WebViewScreen',
     component: WebViewScreen,
-  }
+  },
+  MapView: {
+    identifier: 'MapView',
+    component: MapView,
+  },
 };
 
 export const TABS = {

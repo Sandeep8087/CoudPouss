@@ -18,23 +18,35 @@ const StatusItem = (props: any) => {
   const STRING = useString();
   const { theme } = useContext<any>(ThemeContext);
 
-  const { item } = props;
+  const { item, isLast } = props;
+
+  console.log('item==>', item?.name == 'Started service' && item?.completed)
 
   function getImage() {
-    if (props?.item?.serviceRunning) {
-      return IMAGES.service_running;
-    } else {
-      if (props?.item?.isRejected) {
-        return IMAGES.ic_rejected;
-      } else {
-        if (props?.item?.completed) {
-          return IMAGES.status_green;
-        } else {
-          return IMAGES.empty_view;
-        }
+    if (item?.name === 'Started service') {
+      if (item?.completed) {
+        return IMAGES.service_running;
       }
     }
+
+    if (item?.serviceRunning) {
+      return IMAGES.service_running;
+    }
+
+    // 2️⃣ Service rejected
+    if (item?.isRejected) {
+      return IMAGES.ic_rejected;
+    }
+
+    // 3️⃣ Service completed
+    if (item?.completed) {
+      return IMAGES.status_green;
+    }
+
+    // 4️⃣ Default / empty state
+    return IMAGES.empty_view;
   }
+
 
   return (
     <View style={[styles(theme).statusItem, {}]}>
@@ -44,26 +56,26 @@ const StatusItem = (props: any) => {
           style={{
             height: getScaleSize(24),
             width: getScaleSize(24),
-            resizeMode: 'cover',
+            resizeMode: 'contain',
           }}
           source={getImage()}
         />
         {!item?.completed && item?.id && (
           <Text
-            style={{ position: 'absolute', top: getScaleSize(4) }}
+            style={{ position: 'absolute', top: getScaleSize(3.2) }}
             size={getScaleSize(12)}
             font={FONTS.Lato.Medium}
             color={theme.white}
           >
-            {item?.id ?? ''}
+            {String(item?.id != null ? item.id + 1 : 0)}
           </Text>
         )}
-        {!props?.isLast && (
+        {!isLast && (
           <View
             style={[
               styles(theme).timelineLine,
               {
-                backgroundColor: props?.item?.isRejected ? 'red' : props?.item?.completed ? '#2E7D32' : '#424242',
+                backgroundColor: item?.isRejected ? 'red' : item?.completed ? '#2E7D32' : '#424242',
               },
             ]}
           />
@@ -73,21 +85,26 @@ const StatusItem = (props: any) => {
       {/* Content */}
       <View style={styles(theme).content}>
         <Text
-          style={[
-            styles(theme).title,
-            item?.completed
-              ? styles(theme).completedTitle
-              : styles(theme).pendingTitle,
-          ]}>
+          size={getScaleSize(16)}
+          font={FONTS.Lato.SemiBold}
+          color={theme._2B2B2B}
+          style={{}} >
           {item?.name ?? ''}
         </Text>
         <Text
-          style={styles(theme).date}>
+          size={getScaleSize(12)}
+          font={FONTS.Lato.Regular}
+          color={theme._737373}
+          style={{ marginTop: getScaleSize(4) }} >
           {item?.time ? moment(item?.time).format('ddd, DD MMM’ YYYY  -  h:mma') : '-'}
         </Text>
-        {props?.item?.securityCode && (
+        {/* {props?.item?.securityCode && (
           <>
-            <Text style={[styles(theme).date, { marginTop: getScaleSize(8) }]}>
+            <Text
+              size={getScaleSize(14)}
+              font={FONTS.Lato.Regular}
+              color={theme._737373}
+              style={{ marginTop: getScaleSize(8) }}>
               {
                 'Please keep this security code safe — it will be required to confirm completion and release payment.'
               }
@@ -120,7 +137,7 @@ const StatusItem = (props: any) => {
               </Text>
             </View>
           </>
-        )}
+        )} */}
       </View>
     </View>
   );
@@ -194,20 +211,6 @@ const styles = (theme: ThemeContextType['theme']) =>
       fontFamily: FONTS.Lato.SemiBold,
       marginBottom: 4,
       color: '#2B2B2B',
-    },
-    completedTitle: {
-      fontFamily: FONTS.Lato.SemiBold,
-      marginBottom: 4,
-      color: '#2B2B2B',
-      fontSize: 16,
-      marginTop: -5,
-    },
-    pendingTitle: {
-      fontFamily: FONTS.Lato.SemiBold,
-      marginBottom: 4,
-      color: '#2B2B2B',
-      fontSize: 16,
-      marginTop: -5,
     },
     date: {
       fontSize: 12,

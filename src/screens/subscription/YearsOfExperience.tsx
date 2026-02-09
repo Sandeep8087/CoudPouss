@@ -41,9 +41,7 @@ export default function YearsOfExperience(props: any) {
             setLoading(false);
             if (result.status) {
                 setSelectedServices([]);
-                props.navigation.navigate(SCREENS.AddServices.identifier,{
-                    planDetails: planDetails,
-                });
+                props.navigation.navigate(SCREENS.AddServices.identifier);
             } else {
                 SHOW_TOAST(result?.data?.message ?? '', 'error')
             }

@@ -23,10 +23,14 @@ import Text from './Text';
 function FavouritesItem(props: any) {
   const STRING = useString();
   const { theme } = useContext(ThemeContext);
-  const { itemContainer, item } = props;
+  const { itemContainer, item, onPressItem } = props;
 
   return (
-    <View style={[styles(theme).container, itemContainer]}>
+    <TouchableOpacity
+    onPress={() => {
+      onPressItem(item);
+    }}
+     style={[styles(theme).container, itemContainer]}>
       <Image style={styles(theme).userImage} source={{ uri: item?.provider?.profile_picture_url }} />
       <TouchableOpacity
         style={styles(theme).likeImageContainer}
@@ -58,7 +62,7 @@ function FavouritesItem(props: any) {
           {`(${item?.total_reviews ?? '0'} Reviews)`}
         </Text>
       </View>
-    </View>
+    </TouchableOpacity>
   );
 }
 

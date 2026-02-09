@@ -129,7 +129,7 @@ const HomeHeader = (props: any) => {
             font={FONTS.Lato.Regular}
             color={theme.white}>
             {
-              'Lorem ipsum a pharetra mattis dilt\npulvinar tortor amet vulputate.'
+              'Verified professionals ready to\nhelp you today'
             }
           </Text>
         </View>

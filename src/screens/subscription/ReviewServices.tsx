@@ -21,7 +21,7 @@ export default function ReviewServices(props: any) {
     const STRING = useString();
 
     const { theme } = useContext<any>(ThemeContext);
-    const { selectedServices, setSelectedServices, myPlan } = useContext<any>(AuthContext);
+    const { selectedServices, setSelectedServices, myPlan, profile } = useContext<any>(AuthContext);
 
     const [isLoading, setLoading] = useState(false);
 
@@ -36,7 +36,7 @@ export default function ReviewServices(props: any) {
         setSelectedServices(updated);
     };
 
-    async function onSelectedCategories() {
+    async function onSelectedCategoriesProfessional() {
         const output = selectedServices.map((item: any) => ({
             category_id: item.category.id,
             sub_category_ids: item.service.map((e: any) => e.id),
@@ -46,9 +46,37 @@ export default function ReviewServices(props: any) {
         }
         try {
             setLoading(true);
-            const result = await API.Instance.post(API.API_ROUTES.onSendCategoryIds, params);
+            const result = await API.Instance.post(API.API_ROUTES.onSendCategoryIds + `?action=add`, params);
             if (result.status) {
                 setSelectedServices([]);
+                if (myPlan === 'professional') {
+                    props.navigation.navigate(SCREENS.AddBankDetails.identifier);
+                } else {
+                    props.navigation.navigate(SCREENS.AccountCreatedSuccessfully.identifier);
+                }
+            } else {
+                SHOW_TOAST(result?.data?.message, 'error')
+            }
+        } catch (error: any) {
+            SHOW_TOAST(error?.message ?? '', 'error');
+            console.log(error?.message)
+        } finally {
+            setLoading(false);
+        }
+    }
+
+    async function onSelectedCategoriesNonProfessional() {
+        const output = selectedServices.map((item: any) => ({
+            category_id: item.category.id,
+            sub_category_ids: item.service.map((e: any) => e.id),
+        }));
+        const params = {
+            services: output
+        }
+        try {
+            setLoading(true);
+            const result = await API.Instance.post(API.API_ROUTES.onSelectedCategoriesNonProfessional + `?platform=app&action=update`, params);
+            if (result.status) {
                 if (myPlan === 'professional') {
                     props.navigation.navigate(SCREENS.AddBankDetails.identifier);
                 } else {
@@ -92,10 +120,10 @@ export default function ReviewServices(props: any) {
                             return (
                                 <View key={index} style={styles(theme).itemContainer}>
                                     <View style={styles(theme).sectionHeaderContainer}>
-                                        <Image 
-                                        source={arrayIcons[section?.category?.category_name?.toLowerCase() as keyof typeof arrayIcons] ?? arrayIcons['diy'] as any} 
-                                        style={[styles(theme).sectionHeaderIcon, { tintColor: theme._2C6587 }]} 
-                                        resizeMode='cover' />
+                                        <Image
+                                            source={arrayIcons[section?.category?.category_name?.toLowerCase() as keyof typeof arrayIcons] ?? arrayIcons['diy'] as any}
+                                            style={[styles(theme).sectionHeaderIcon, { tintColor: theme._2C6587 }]}
+                                            resizeMode='cover' />
                                         <Text size={getScaleSize(16)}
                                             font={FONTS.Lato.SemiBold}
                                             color={theme._2C6587}>
@@ -139,7 +167,11 @@ export default function ReviewServices(props: any) {
                     title={STRING.next}
                     style={{ flex: 1.0 }}
                     onPress={() => {
-                        onSelectedCategories();
+                        if (profile?.user?.service_provider_type === 'professional') {
+                            onSelectedCategoriesProfessional();
+                        } else {
+                            onSelectedCategoriesNonProfessional();
+                        }
                     }}
                 />
             </View>

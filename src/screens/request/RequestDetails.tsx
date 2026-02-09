@@ -184,7 +184,7 @@ export default function RequestDetails(props: any) {
         quote_id: serviceDetails?.quote_id,
       }
       setLoading(true);
-      const result = await API.Instance.put(API.API_ROUTES.onAcceptService, params);
+      const result = await API.Instance.put(API.API_ROUTES.onAcceptService + `?platform=app`, params);
       if (result.status) {
         const STRIPE_URL = result?.data?.data?.checkout_url ?? '';
         paymentRef.current.close();

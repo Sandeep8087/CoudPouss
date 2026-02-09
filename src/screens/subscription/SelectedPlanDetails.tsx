@@ -21,7 +21,9 @@ export default function SelectedPlanDetails(props: any) {
     const STRING = useString();
     const { theme } = useContext<any>(ThemeContext);
     const { user } = useContext<any>(AuthContext);
+
     const plan: any = props?.route?.params?.plan ?? '';
+    const isFromSubscriptionButton: any = props?.route?.params?.isFromSubscriptionButton ?? false;
 
     const [isLoading, setLoading] = useState(false);
     const [planDetails, setPlanDetails] = useState<any>({});
@@ -137,6 +139,7 @@ export default function SelectedPlanDetails(props: any) {
                     onPress={() => {
                         props.navigation.navigate(SCREENS.PaymentMethod.identifier, {
                             planDetails: planDetails,
+                            isFromSubscriptionButton: isFromSubscriptionButton
                         });
                     }}
                 />

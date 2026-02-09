@@ -1,4 +1,4 @@
-import { Dimensions, FlatList, Image, ScrollView, StyleSheet, TouchableOpacity, View } from 'react-native';
+import { Alert, Dimensions, FlatList, Image, Linking, ScrollView, StyleSheet, TouchableOpacity, View } from 'react-native';
 import React, { useContext, useEffect, useRef, useState } from 'react';
 
 //CONTEXT
@@ -6,27 +6,27 @@ import { AuthContext, ThemeContext, ThemeContextType } from '../../context';
 
 //CONSTANT & ASSETS
 import { FONTS, IMAGES } from '../../assets';
-import { getScaleSize, useString, SHOW_TOAST} from '../../constant';
+import { getScaleSize, useString, SHOW_TOAST, openStripeCheckout } from '../../constant';
 
 //SCREENS
 import { SCREENS } from '..';
 
 //COMPONENTS
-import { Header, Input, Text, Button, CategoryDropdown, ServiceItem, BottomSheet } from '../../components';
+import { Header, Input, Text, Button, CategoryDropdown, ServiceItem, BottomSheet, ProgressView } from '../../components';
 import { API } from '../../api';
+import { EventRegister } from 'react-native-event-listeners';
 
 
 export default function AddServices(props: any) {
 
     const STRING = useString();
 
-    const planDetails: any = props?.route?.params?.planDetails ?? {};
     const isFromManageServices: boolean = props?.route?.params?.isFromManageServices ?? false;
 
-    console.log('planDetails==>', planDetails)
-
-    const { setSelectedServices, selectedServices, myPlan } = useContext<any>(AuthContext);
+    const { setSelectedServices, selectedServices, profile } = useContext<any>(AuthContext);
     const { theme } = useContext<any>(ThemeContext);
+
+    console.log('profile==>', profile)
 
     const bottomSheetRef = useRef<any>(null);
     const [selectedCategory, setSelectedCategory] = useState<any>(null);
@@ -35,11 +35,88 @@ export default function AddServices(props: any) {
     const [subCategoryList, setSubCategoryList] = useState([]);
     const [paymentPopup, setPaymentPopup] = useState(false);
 
-    console.log('selectedCategory==>', selectedCategory, selectedServices)
     useEffect(() => {
         getAllCategories();
     }, []);
 
+    useEffect(() => {
+        const parseParams = (url: string) => {
+            const queryString = url.split('?')[1] || '';
+            const params: Record<string, string> = {};
+
+            queryString.split('&').forEach(item => {
+                if (!item) return;
+                const [key, value] = item.split('=');
+                params[key] = decodeURIComponent(value || '');
+            });
+
+            return params;
+        };
+
+        Linking.getInitialURL().then((url: any) => {
+            if (!url) return;
+
+            if (url.includes('payment-success')) {
+                const params = parseParams(url);
+                const type = params.type;
+                if (type == 'subscription_payment') {
+                    Alert.alert('Payment successful');
+                    props.navigation.navigate(SCREENS.SubscriptionSuccessful.identifier, {
+                        planDetails: params,
+                    });
+                }
+            }
+
+            if (url.includes('payment-cancel')) {
+                const params = parseParams(url);
+                const error = params.error || 'Payment cancelled';
+                const type = params.type;
+
+                if (type == 'subscription_payment') {
+                    Alert.alert(error ?? 'Payment cancelled');
+                }
+            }
+        });
+
+        const handleUrl = ({ url }: { url: string }) => {
+            console.log('Deep link:', url);
+            // ✅ PAYMENT SUCCESS
+            if (url.startsWith('coudpouss://payment-success')) {
+                const params = parseParams(url);
+                const type = params.type;
+
+                if (type == 'subscription') {
+                    setTimeout(() => {
+                        props.navigation.navigate(SCREENS.SubscriptionSuccessful.identifier, {
+                            planDetails: params,
+                        });
+                    }, 2000);
+                } else {
+
+                }
+                return;
+            }
+            // ❌ PAYMENT CANCEL
+            if (url.startsWith('coudpouss://payment-cancel')) {
+                const params = parseParams(url);
+                const error = params.error || 'Payment cancelled';
+                const type = params.type;
+
+                if (type == 'subscription') {
+                    EventRegister.emit('onPaymentCancel', {
+                        message: error,
+                    });
+                }
+                return;
+            }
+        };
+
+        Linking.addEventListener('url', handleUrl);
+
+        return () => {
+            Linking.removeAllListeners('url')
+        };
+    }, []);
 
     async function getAllCategories() {
         try {
@@ -97,15 +174,8 @@ export default function AddServices(props: any) {
     }
 
     async function onSelectServices(item: any) {
-        const mySelectedPlan = myPlan === 'non_professional'
         if (selectedServices && selectedServices.length > 0) {
             const categoryItem = selectedServices.find((e: any) => e?.category?.id === selectedCategory?.id);
-
-            //---=============== Payment popup logic ================
-
-
-
-            //---=============== Payment popup logic End================
             if (categoryItem) {
                 const newCategoryItem = { ...categoryItem };
 
@@ -149,17 +219,7 @@ export default function AddServices(props: any) {
         }
     };
 
-
-    async function showPaymentPopup() {
-        if (paymentPopup) {
-            return true;
-        } else {
-            bottomSheetRef.current.open();
-            return false;
-        }
-    }
-
-    async function onSelectedCategories() {
+    async function onSelectedCategoriesProfessional() {
         const output = selectedServices.map((item: any) => ({
             category_id: item.category.id,
             sub_category_ids: item.service.map((e: any) => e.id),
@@ -169,10 +229,38 @@ export default function AddServices(props: any) {
         }
         try {
             setLoading(true);
-            const result = await API.Instance.post(API.API_ROUTES.onSendCategoryIds, params);
+            const result = await API.Instance.post(API.API_ROUTES.onSendCategoryIds + `?action=update`, params);
             if (result.status) {
                 props.navigation.goBack();
+                setSelectedServices([]);
                 SHOW_TOAST(result?.data?.message, 'success')
+            } else {
+                SHOW_TOAST(result?.data?.message, 'error')
+            }
+        } catch (error: any) {
+            SHOW_TOAST(error?.message ?? '', 'error');
+            console.log(error?.message)
+        } finally {
+            setLoading(false);
+        }
+    }
+
+    async function onSelectedCategoriesNonProfessional() {
+        const output = selectedServices.map((item: any) => ({
+            category_id: item.category.id,
+            sub_category_ids: item.service.map((e: any) => e.id),
+        }));
+        const params = {
+            categories_subcategory_ids: output
+        }
+        try {
+            setLoading(true);
+            const result = await API.Instance.post(API.API_ROUTES.onSelectedCategoriesNonProfessional + `?platform=app&action=update`, params);
+            if (result.status) {
+                const STRIPE_URL = result?.data?.data?.checkout_url ?? '';
+                openStripeCheckout(STRIPE_URL);
+                setSelectedServices([]);
+                bottomSheetRef.current.close();
             } else {
                 SHOW_TOAST(result?.data?.message, 'error')
             }
@@ -278,9 +366,17 @@ export default function AddServices(props: any) {
                     title={STRING.next}
                     style={{ flex: 1.0 }}
                     onPress={() => {
-                        if(isFromManageServices){
-                            onSelectedCategories();
-                        }else{
+                        if (isFromManageServices) {
+                            if (profile?.user?.service_provider_type === 'professional') {
+                                onSelectedCategoriesProfessional();
+                            } else {
+                                if (selectedServices.length > 1) {
+                                    bottomSheetRef.current.open();
+                                } else {
+                                    onSelectedCategoriesNonProfessional();
+                                }
+                            }
+                        } else {
                             props.navigation.navigate(SCREENS.ReviewServices.identifier);
                         }
                     }}
@@ -295,13 +391,14 @@ export default function AddServices(props: any) {
                 buttonTitle={STRING.proceed_to_pay}
                 secondButtonTitle={STRING.cancel}
                 onPressButton={() => {
-                    setPaymentPopup(true);
-                    bottomSheetRef.current.close();
+                    onSelectedCategoriesNonProfessional()
+
                 }}
                 onPressSecondButton={() => {
                     bottomSheetRef.current.close();
                 }}
             />
+            {isLoading && <ProgressView />}
         </View>
     );
 }

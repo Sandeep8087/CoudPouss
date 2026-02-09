@@ -1,16 +1,17 @@
 import { Image, Platform, ScrollView, StyleSheet, TextInput, TouchableOpacity, View } from 'react-native'
-import React, { useContext, useState } from 'react'
+import React, { useContext, useEffect, useState } from 'react'
 
 //COMPONENTS
 import { Button, Header, Input, Text } from '../../components';
 
 //CONSTANTS & ASSETS
-import { getScaleSize, useString } from '../../constant';
+import { getScaleSize, SHOW_TOAST, useString } from '../../constant';
 import { FONTS, IMAGES } from '../../assets';
 
 //CONTEXT
 import { ThemeContext, ThemeContextType } from '../../context';
 import { SCREENS } from '..';
+import { API } from '../../api';
 
 export default function MoneyWithdrawal(props: any) {
 
@@ -19,9 +20,33 @@ export default function MoneyWithdrawal(props: any) {
 
     const [amount, setAmount] = useState('');
     const [amountError, setAmountError] = useState('');
-    const [transferTo, setTransferTo] = useState('');
     const [visiblePaymentMethod, setVisiblePaymentMethod] = useState(false);
     const [selectedPaymentMethod, setSelectedPaymentMethod] = useState('');
+    const [myWalletBalance, setMyWalletBalance] = useState<any>(null);
+    const [isLoading, setLoading] = useState(true);
+
+    useEffect(() => {
+        fetchMyWalletBalance();
+    }, []);
+
+    async function fetchMyWalletBalance() {
+        try {
+            setLoading(true);
+            const result: any = await API.Instance.get(API.API_ROUTES.getMyWalletBalance);
+            if (result?.status) {
+                console.log('result=====', result);
+                setMyWalletBalance(result?.data?.data ?? '');
+            }
+            else {
+                SHOW_TOAST(result?.data?.message, 'error');
+            }
+        } catch (error: any) {
+            SHOW_TOAST(error?.message ?? '', 'error');
+        } finally {
+            setLoading(false);
+        }
+    }
+
     return (
         <View style={styles(theme).container}>
             <Header
@@ -46,7 +71,7 @@ export default function MoneyWithdrawal(props: any) {
                         color={theme._0E1B27}
                         align="center"
                         style={{ marginBottom: getScaleSize(36) }}>
-                        {'€45,672.89'}
+                        {myWalletBalance?.balance ? `€${myWalletBalance?.balance}` : '€0.00'}
                     </Text>
                     <Input
                         placeholder={STRING.specify_amount_to_transfer}
@@ -61,14 +86,14 @@ export default function MoneyWithdrawal(props: any) {
                         }}
                         isError={amountError}
                     />
-                    <Text
+                    {/* <Text
                         size={getScaleSize(17)}
                         font={FONTS.Lato.Medium}
                         color={theme._424242}
                         style={{ marginBottom: getScaleSize(8) }}>
                         {STRING.transfer_to}
-                    </Text>
-                    <View style={[styles(theme).transferToContainer, { padding: visiblePaymentMethod ? getScaleSize(24) : getScaleSize(17) }]}>
+                    </Text> */}
+                    {/* <View style={[styles(theme).transferToContainer, { padding: visiblePaymentMethod ? getScaleSize(24) : getScaleSize(17) }]}>
                         <TouchableOpacity
                             style={{ flexDirection: 'row', alignItems: 'center' }}
                             onPress={() => {
@@ -196,7 +221,7 @@ export default function MoneyWithdrawal(props: any) {
                                 </TouchableOpacity>
                             </View>
                         )}
-                    </View>
+                    </View> */}
                     <Button
                         title={STRING.request_withdrawal}
                         style={{ marginTop: visiblePaymentMethod ? getScaleSize(24) : getScaleSize(40) }}
