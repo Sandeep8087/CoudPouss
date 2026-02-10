@@ -22,8 +22,6 @@ export default function YearsOfExperience(props: any) {
     const { setSelectedServices } = useContext<any>(AuthContext);
     const { theme } = useContext<any>(ThemeContext);
     
-    const planDetails: any = props?.route?.params?.planDetails ?? {};
-
     const [yearsOfExperience, setYearsOfExperience] = useState('');
     const [isLoading, setLoading] = useState(false);
 

@@ -15,6 +15,7 @@ import { SCREENS } from '..';
 import { Header, Input, Text, Button, CategoryDropdown, ServiceItem, BottomSheet, ProgressView } from '../../components';
 import { API } from '../../api';
 import { EventRegister } from 'react-native-event-listeners';
+import { CommonActions } from '@react-navigation/native';
 
 
 export default function AddServices(props: any) {
@@ -22,6 +23,8 @@ export default function AddServices(props: any) {
     const STRING = useString();
 
     const isFromManageServices: boolean = props?.route?.params?.isFromManageServices ?? false;
+    const isEdit: boolean = props?.route?.params?.isEdit ?? false;
+    const categoryId: string = props?.route?.params?.categoryId ?? '';
 
     const { setSelectedServices, selectedServices, profile } = useContext<any>(AuthContext);
     const { theme } = useContext<any>(ThemeContext);
@@ -29,11 +32,21 @@ export default function AddServices(props: any) {
     console.log('profile==>', profile)
 
     const bottomSheetRef = useRef<any>(null);
+    const [allCategories, setAllCategories] = useState([]);
     const [selectedCategory, setSelectedCategory] = useState<any>(null);
     const [isLoading, setLoading] = useState(false);
-    const [allCategories, setAllCategories] = useState([]);
     const [subCategoryList, setSubCategoryList] = useState([]);
     const [paymentPopup, setPaymentPopup] = useState(false);
+
+    console.log('isEdit==>', isEdit)
+    console.log('categoryId==>', categoryId)
+    console.log('selectedCategory==>', selectedCategory)
+
+    useEffect(() => {
+        if (isEdit) {
+            setSelectedCategory(allCategories?.find((item: any) => item.id === categoryId));
+        }
+    }, [isEdit, categoryId]);
 
     useEffect(() => {
         getAllCategories();
@@ -56,24 +69,33 @@ export default function AddServices(props: any) {
         Linking.getInitialURL().then((url: any) => {
             if (!url) return;
 
-            if (url.includes('payment-success')) {
+            if (url.includes('categories-updated')) {
                 const params = parseParams(url);
                 const type = params.type;
-                if (type == 'subscription_payment') {
-                    Alert.alert('Payment successful');
-                    props.navigation.navigate(SCREENS.SubscriptionSuccessful.identifier, {
-                        planDetails: params,
-                    });
+                if (type == 'update') {
+                    setTimeout(() => {
+                        props?.navigation?.dispatch(
+                            CommonActions.reset({
+                                index: 0,
+                                routes: [{
+                                    name: SCREENS.ManageServices.identifier,
+                                    params: {
+                                        isFromSelectServices: true,
+                                    },
+                                }],
+                            }),
+                        );
+                    }, 2000);
                 }
             }
 
-            if (url.includes('payment-cancel')) {
+            if (url.includes('categories-cancelled')) {
                 const params = parseParams(url);
                 const error = params.error || 'Payment cancelled';
                 const type = params.type;
 
-                if (type == 'subscription_payment') {
-                    Alert.alert(error ?? 'Payment cancelled');
+                if (type == 'update') {
+                    SHOW_TOAST(error ?? 'Payment cancelled', 'error');
                 }
             }
         });
@@ -81,15 +103,23 @@ export default function AddServices(props: any) {
         const handleUrl = ({ url }: { url: string }) => {
             console.log('Deep link:', url);
             // ✅ PAYMENT SUCCESS
-            if (url.startsWith('coudpouss://payment-success')) {
+            if (url.startsWith('coudpouss://categories-updated')) {
                 const params = parseParams(url);
                 const type = params.type;
 
-                if (type == 'subscription') {
+                if (type == 'update') {
                     setTimeout(() => {
-                        props.navigation.navigate(SCREENS.SubscriptionSuccessful.identifier, {
-                            planDetails: params,
-                        });
+                        props?.navigation?.dispatch(
+                            CommonActions.reset({
+                                index: 0,
+                                routes: [{
+                                    name: SCREENS.ManageServices.identifier,
+                                    params: {
+                                        isFromSelectServices: true,
+                                    },
+                                }],
+                            }),
+                        );
                     }, 2000);
                 } else {
 
@@ -97,15 +127,13 @@ export default function AddServices(props: any) {
                 return;
             }
             // ❌ PAYMENT CANCEL
-            if (url.startsWith('coudpouss://payment-cancel')) {
+            if (url.startsWith('coudpouss://categories-cancelled')) {
                 const params = parseParams(url);
                 const error = params.error || 'Payment cancelled';
                 const type = params.type;
 
-                if (type == 'subscription') {
-                    EventRegister.emit('onPaymentCancel', {
-                        message: error,
-                    });
+                if (type == 'update') {
+                    SHOW_TOAST(error ?? 'Payment cancelled', 'error');
                 }
                 return;
             }
@@ -219,6 +247,39 @@ export default function AddServices(props: any) {
         }
     };
 
+    function onSelectServicesForManageServices(item: any) {
+        const current = selectedServices[0];
+
+        // reset services if category changed
+        let services =
+            current?.category?.id === selectedCategory?.id
+                ? current.service
+                : [];
+
+        // toggle service
+        const exists = services.some((e: any) => e.id === item.id);
+
+        services = exists
+            ? services.filter((e: any) => e.id !== item.id)
+            : [...services, item];
+
+        // clear if empty
+        if (services.length === 0) {
+            setSelectedServices([]);
+            return;
+        }
+
+        // always save ONE category
+        setSelectedServices([
+            {
+                category: selectedCategory,
+                service: services,
+            },
+        ]);
+    }
+
+
+    console.log('selectedServices==>', selectedServices)
     async function onSelectedCategoriesProfessional() {
         const output = selectedServices.map((item: any) => ({
             category_id: item.category.id,
@@ -338,7 +399,11 @@ export default function AddServices(props: any) {
                                         isSelectedBox={true}
                                         isSelected={isSelected}
                                         onPress={(e: any) => {
-                                            onSelectServices(e);
+                                            if (isFromManageServices) {
+                                                onSelectServicesForManageServices(e);
+                                            } else {
+                                                onSelectServices(e);
+                                            }
                                         }}
                                     />
 
@@ -352,7 +417,9 @@ export default function AddServices(props: any) {
                 <TouchableOpacity
                     onPress={() => {
                         props.navigation.goBack();
-                    }} style={styles(theme).backButton}>
+                        setSelectedServices([]);
+                    }}
+                    style={styles(theme).backButton}>
                     <Text
                         size={getScaleSize(19)}
                         font={FONTS.Lato.Bold}

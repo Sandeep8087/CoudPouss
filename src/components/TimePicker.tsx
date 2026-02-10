@@ -1,4 +1,4 @@
-import React, { useContext, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import { View, StyleSheet, TouchableOpacity, Alert, Image } from 'react-native';
 import { ThemeContext, ThemeContextType } from '../context';
 import { getScaleSize, SHOW_TOAST } from '../constant';
@@ -10,7 +10,14 @@ const TimePicker = (props: any) => {
   const { onTimeChange, selectedDate } = props;
   const { theme } = useContext<any>(ThemeContext);
 
-  const currentHour24 = moment().hour();
+  useEffect(() => {
+    onTimeChange &&
+      onTimeChange(selectedHour, selectedMinute, isAM);
+  }, []);
+
+  const defaultTime = moment().add(2, 'hours').add(1, 'minute');
+
+  const currentHour24 = defaultTime.hour();
   const currentHour12 = currentHour24 % 12 === 0 ? 12 : currentHour24 % 12;
   const isCurrentAM = currentHour24 < 12;
 
@@ -19,30 +26,62 @@ const TimePicker = (props: any) => {
   const [isAM, setIsAM] = useState(isCurrentAM);
 
 
+  // const isFutureDateTime = (
+  //   selectedDate: string | Date,
+  //   hour: number,
+  //   minute: number,
+  //   am: boolean
+  // ): boolean => {
+  //   // Convert to 24-hour format
+  //   let hour24 = hour % 12;
+  //   if (!am) hour24 += 12;
+
+  //   const selectedDateTime = moment(selectedDate).hour(hour24).minute(minute).second(0).millisecond(0);
+
+  //   const now = moment();
+
+  //   return selectedDateTime.isAfter(now);
+  // };
+
+  // const updateParent = (hour: number, minute: number, am: boolean) => {
+  //   if (isFutureDateTime(selectedDate, hour, minute, am)) {
+  //     onTimeChange && onTimeChange(hour, minute, am);
+  //     return true;
+  //   }
+  //   else {
+  //     SHOW_TOAST('Please select a future time', 'error');
+  //     return false;
+  //   }
+  // };
+
   const isFutureDateTime = (
     selectedDate: string | Date,
     hour: number,
     minute: number,
     am: boolean
   ): boolean => {
-    // Convert to 24-hour format
+    // convert to 24h format
     let hour24 = hour % 12;
     if (!am) hour24 += 12;
 
-    const selectedDateTime = moment(selectedDate).hour(hour24).minute(minute).second(0).millisecond(0);
+    const selectedDateTime = moment(selectedDate)
+      .hour(hour24)
+      .minute(minute)
+      .second(0)
+      .millisecond(0);
 
-    const now = moment();
+    // current time + 2 hours
+    const minAllowedTime = moment().add(2, 'hours');
 
-    return selectedDateTime.isAfter(now);
+    return selectedDateTime.isSameOrAfter(minAllowedTime);
   };
 
   const updateParent = (hour: number, minute: number, am: boolean) => {
     if (isFutureDateTime(selectedDate, hour, minute, am)) {
       onTimeChange && onTimeChange(hour, minute, am);
       return true;
-    }
-    else {
-      SHOW_TOAST('Please select a future time', 'error');
+    } else {
+      SHOW_TOAST('Please select a time at least 2 hours from now', 'error');
       return false;
     }
   };

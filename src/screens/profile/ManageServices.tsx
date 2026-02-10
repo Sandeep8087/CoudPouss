@@ -29,9 +29,10 @@ import {
 } from '../../components';
 import { SCREENS } from '..';
 import { API } from '../../api';
-import { useIsFocused } from '@react-navigation/native';
+import { CommonActions, useIsFocused } from '@react-navigation/native';
 
 export default function ManageServices(props: any) {
+    const isFromSelectServices: boolean = props?.route?.params?.isFromSelectServices ?? false;
     const { theme } = useContext<any>(ThemeContext);
     const STRING = useString();
     const bottomSheetRef = useRef<any>(null);
@@ -127,7 +128,13 @@ export default function ManageServices(props: any) {
                             onRemove={() =>
                                 removeService(item.sub_category_id)
                             }
-                            onEdit={() => { }}
+                            onEdit={(item: any) => { 
+                                props.navigation.navigate(SCREENS.AddServices.identifier, {
+                                    isFromManageServices: true,
+                                    isEdit: true,
+                                    categoryId: item,
+                                });
+                            }}
                         />
                     )}
                 />
@@ -147,11 +154,24 @@ export default function ManageServices(props: any) {
         }
     }
 
-
     return (
         <View style={styles(theme).container}>
             <Header
-                onBack={() => props.navigation.goBack()}
+                onBack={() => {
+                    if (isFromSelectServices) {
+                        props.navigation.dispatch(
+                            CommonActions.reset({
+                                index: 0,
+                                routes: [{
+                                    name: SCREENS.BottomBar.identifier,
+                                    params: { isProfessionalProfile: true }
+                                }],
+                            }),
+                        );
+                    } else {
+                        props.navigation.goBack();
+                    }
+                }}
                 screenName={STRING.manage_services}
             />
             {profile?.has_purchased ? (
@@ -170,56 +190,51 @@ export default function ManageServices(props: any) {
                             <View style={styles(theme).divider} />
                             <View style={styles(theme).serviceContainer}>
                                 <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-                                    {(services?.services ?? []).map(
-                                        (item: any, index: number) => {
-                                            const isSelected =
-                                                selectedCategoryId === item.category_id;
-
-                                            return (
-                                                <TouchableOpacity
-                                                    key={item.category_id}
-                                                    onPress={() =>
-                                                        setSelectedCategoryId(
-                                                            item.category_id
-                                                        )
-                                                    }
+                                    {(services?.services ?? []).map((item: any, index: number) => {
+                                        const isSelected = selectedCategoryId === item.category_id;
+                                        const isLast = index === services?.services.length - 1;
+                                        return (
+                                            <TouchableOpacity
+                                                key={item.category_id}
+                                                onPress={() =>
+                                                    setSelectedCategoryId(
+                                                        item.category_id
+                                                    )
+                                                }
+                                                style={[
+                                                    styles(theme).serviceItemContainer,
+                                                    {
+                                                        marginRight: isLast ? getScaleSize(24) : 0,
+                                                        marginLeft: index === 0 ? getScaleSize(24) : getScaleSize(16),
+                                                        backgroundColor: isSelected
+                                                            ? theme._2C6587
+                                                            : theme._F7F7F7,
+                                                    },
+                                                ]}>
+                                                <Image
+                                                    source={IMAGES.ic_hammer_wrench}
                                                     style={[
-                                                        styles(theme)
-                                                            .serviceItemContainer,
+                                                        styles(theme).itemIcon,
                                                         {
-                                                            marginLeft:
-                                                                index === 0
-                                                                    ? getScaleSize(24)
-                                                                    : getScaleSize(16),
-                                                            backgroundColor: isSelected
-                                                                ? theme._2C6587
-                                                                : theme._F7F7F7,
-                                                        },
-                                                    ]}>
-                                                    <Image
-                                                        source={IMAGES.ic_hammer_wrench}
-                                                        style={[
-                                                            styles(theme).itemIcon,
-                                                            {
-                                                                tintColor: isSelected
-                                                                    ? theme.white
-                                                                    : theme._C1C1C1,
-                                                            },
-                                                        ]}
-                                                    />
-                                                    <Text
-                                                        size={getScaleSize(16)}
-                                                        font={FONTS.Lato.SemiBold}
-                                                        color={
-                                                            isSelected
+                                                            tintColor: isSelected
                                                                 ? theme.white
-                                                                : theme._818285
-                                                        }>
-                                                        {item?.category_name ?? ''}
-                                                    </Text>
-                                                </TouchableOpacity>
-                                            );
-                                        }
+                                                                : theme._C1C1C1,
+                                                        },
+                                                    ]}
+                                                />
+                                                <Text
+                                                    size={getScaleSize(16)}
+                                                    font={FONTS.Lato.SemiBold}
+                                                    color={
+                                                        isSelected
+                                                            ? theme.white
+                                                            : theme._818285
+                                                    }>
+                                                    {item?.category_name ?? ''}
+                                                </Text>
+                                            </TouchableOpacity>
+                                        );
+                                    }
                                     )}
                                 </ScrollView>
                             </View>
@@ -254,7 +269,7 @@ export default function ManageServices(props: any) {
                                 { isFromManageServices: true }
                             );
                         } else {
-                            if (services) {
+                            if (services?.services?.length > 0) {
                                 bottomSheetRef.current.open();
                             } else {
                                 props.navigation.navigate(

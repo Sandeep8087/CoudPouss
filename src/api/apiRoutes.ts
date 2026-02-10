@@ -70,8 +70,9 @@ const API_ROUTES = {
     getRenegotiationDetails: "quote_accept/service-provider/renegotiation",
     onProcessRenegotiation: 'quote_accept',
     onMarkAsCompleted: 'quote_accept/mark-service-completed',
+    onValidateSecurityCode: 'quote_accept/validate-service-code',
 }
 
-//quote_accept/service-provider/renegotiation/544aec5f-f918-4c56-8176-bc787c13160e
+///userService/auth/select-provider-services?action=update' \
 
 export { API_ROUTES, API_BASE_URL, DISABLE_API_LOGS }

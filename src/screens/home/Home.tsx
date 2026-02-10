@@ -116,7 +116,7 @@ export default function Home(props: any) {
       }
     } catch (error: any) {
       SHOW_TOAST(error?.message ?? '', 'error');
-    } 
+    }
   }
 
   async function getAllRequests() {
@@ -312,7 +312,7 @@ export default function Home(props: any) {
             color={theme._323232}>
             {STRING.ResentRequests}
           </Text>
-          {recentRequests.length > 0 &&
+          {recentRequests?.length > 0 &&
             <Text
               size={getScaleSize(16)}
               font={FONTS.Lato.Regular}
@@ -369,16 +369,18 @@ export default function Home(props: any) {
                     color={theme._323232}>
                     {STRING.FavoriteProfessionals}
                   </Text>
-                  <Text
-                    onPress={() => {
-                      props.navigation.navigate(SCREENS.Favourites.identifier);
-                    }}
-                    size={getScaleSize(16)}
-                    font={FONTS.Lato.Regular}
-                    style={{ alignSelf: 'center' }}
-                    color={theme._999999}>
-                    {STRING.ViewAll}
-                  </Text>
+                  {favoriteProfessionals?.length > 2 &&
+                    <Text
+                      onPress={() => {
+                        props.navigation.navigate(SCREENS.Favourites.identifier);
+                      }}
+                      size={getScaleSize(16)}
+                      font={FONTS.Lato.Regular}
+                      style={{ alignSelf: 'center' }}
+                      color={theme._999999}>
+                      {STRING.ViewAll}
+                    </Text>
+                  }
                 </View>
                 <View style={{ marginHorizontal: getScaleSize(24), flexDirection: 'row', justifyContent: 'space-between' }}>
                   {favoriteProfessionals?.length > 0 && favoriteProfessionals.map((item: any, index: number) => {

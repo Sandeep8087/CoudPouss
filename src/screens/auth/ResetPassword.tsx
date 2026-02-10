@@ -24,36 +24,36 @@ export default function ResetPassword(props: any) {
     const [email, setEmail] = useState('');
     const [emailError, setEmailError] = useState('');
     const [isLoading, setLoading] = useState(false);
-    const [isPhoneNumber, setIsPhoneNumber] = useState(false);
+    // const [isPhoneNumber, setIsPhoneNumber] = useState(false);
     const [countryCode, setCountryCode] = useState('+91');
     const [visibleCountry, setVisibleCountry] = useState(false);
 
-    useEffect(() => {
-        if (email.length >= 3) {
-            const isNumber = REGEX.phoneRegex.test(email);
-            setIsPhoneNumber(isNumber)
-        }
-        else {
-            setIsPhoneNumber(false)
-        }
-    }, [email])
+    // useEffect(() => {
+    //     if (email.length >= 3) {
+    //         const isNumber = REGEX.phoneRegex.test(email);
+    //         setIsPhoneNumber(isNumber)
+    //     }
+    //     else {
+    //         setIsPhoneNumber(false)
+    //     }
+    // }, [email])
 
     async function onResetPassword() {
         if (!email) {
-            setEmailError(STRING.please_enter_your_email_mobile_number);
+            setEmailError(STRING.please_enter_your_email);
         } else {
             setEmailError('');
-            let params = {}
-            if (isPhoneNumber) {
-                params = {
-                    mobile: email,
-                    phone_country_code: countryCode,
-                }
-            } else {
-                params = {
-                    email: email,
-                };
-            }
+            // let params = {}
+            // if (isPhoneNumber) {
+            //     params = {
+            //         mobile: email,
+            //         phone_country_code: countryCode,
+            //     }
+            // } else {
+            const params = {
+                email: email,
+            };
+            // }
             try {
                 setLoading(true);
                 const result = await API.Instance.post(API.API_ROUTES.resetPassword, params);
@@ -63,7 +63,7 @@ export default function ResetPassword(props: any) {
                     SHOW_TOAST(result?.data?.message ?? '', 'success')
                     props.navigation.navigate(SCREENS.Otp.identifier, {
                         email: email,
-                        isPhoneNumber: isPhoneNumber,
+                        // isPhoneNumber: isPhoneNumber,
                         countryCode: countryCode,
                     });
                 } else {
@@ -99,7 +99,7 @@ export default function ResetPassword(props: any) {
                         {STRING.enter_your_registered_email_or_phone_number_below_to_get_reset_your_password}
                     </Text>
                     <View style={styles(theme).inputContainer}>
-                        {isPhoneNumber ? (
+                        {/* {isPhoneNumber ? (
                             <Input
                                 placeholder={STRING.enter_email_or_mobile_number}
                                 placeholderTextColor={theme._939393}
@@ -119,7 +119,7 @@ export default function ResetPassword(props: any) {
                                     setVisibleCountry(true);
                                 }}
                             />
-                        ) : (
+                        ) : ( */}
                             <Input
                                 placeholder={STRING.enter_email_or_mobile_number}
                                 placeholderTextColor={theme._939393}
@@ -134,11 +134,11 @@ export default function ResetPassword(props: any) {
                                 }}
                                 isError={emailError}
                             />
-                        )}
+                        {/* )} */}
                     </View>
                 </View>
             </ScrollView>
-            <SelectCountrySheet
+            {/* <SelectCountrySheet
                 height={getScaleSize(500)}
                 isVisible={visibleCountry}
                 onPress={(e: any) => {
@@ -149,7 +149,7 @@ export default function ResetPassword(props: any) {
                 onClose={() => {
                     setVisibleCountry(false);
                 }}
-            />
+            /> */}
             <Button
                 title={STRING.continue}
                 style={{ marginVertical: getScaleSize(24), marginHorizontal: getScaleSize(24) }}

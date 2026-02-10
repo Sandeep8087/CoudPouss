@@ -3,28 +3,42 @@ import InAppBrowser from 'react-native-inappbrowser-reborn';
 import { Linking } from "react-native";
 import { PermissionsAndroid, Platform } from 'react-native';
 
-export const formatDecimalInput = (text: string, decimalLimit: number = 2): string => {
-  // Allow digits and dot only
-  let cleaned = text.replace(/[^0-9.]/g, '');
+export const formatDecimalInput = (
+  text: string,
+  decimalLimit: number = 2
+): string => {
+  // Remove invalid characters
+  let value = text.replace(/[^0-9.]/g, '');
 
-  // Prevent dot as first character
-  if (cleaned.startsWith('.')) {
-    cleaned = cleaned.substring(1);
-  }
+  // Allow typing "." → "0."
+  if (value === '.') return '0.';
 
   // Allow only one dot
-  const parts = cleaned.split('.');
-  if (parts.length > 2) {
-    cleaned = parts[0] + '.' + parts[1];
+  const firstDot = value.indexOf('.');
+  if (firstDot !== -1) {
+    value =
+      value.slice(0, firstDot + 1) +
+      value.slice(firstDot + 1).replace(/\./g, '');
   }
 
-  // Limit decimal places
-  if (parts[1]?.length > decimalLimit) {
-    cleaned = parts[0] + '.' + parts[1].slice(0, decimalLimit);
+  let [intPart = '', decPart] = value.split('.');
+
+  // Max 7 digits before decimal
+  if (intPart.length > 7) {
+    intPart = intPart.slice(0, 7);
   }
 
-  return cleaned;
+  // Max 2 digits after decimal
+  if (decPart && decPart.length > decimalLimit) {
+    decPart = decPart.slice(0, decimalLimit);
+  }
+
+  // Rebuild value safely
+  return value.includes('.')
+    ? `${intPart}.${decPart ?? ''}`
+    : intPart;
 };
+
 
 
 export const openStripeCheckout = async (url: any) => {

@@ -478,7 +478,8 @@ export default function CreateRequest(props: any) {
     } catch (error: any) {
       setLoading(false);
       SHOW_TOAST(error?.message ?? '', 'error');
-      console.log(error?.message)
+
+      console.log('erro sbqwhdr==>', error?.message)
     } finally {
       setLoading(false);
     }
@@ -757,7 +758,6 @@ export default function CreateRequest(props: any) {
           <TimePicker
             selectedDate={selectedDate}
             onTimeChange={(hour: number, minute: number, am: boolean) => {
-              // setSelectedTime(hour, minute, am);
               let hour24 = hour % 12;
               if (!am) hour24 += 12;
               const utcString = moment()

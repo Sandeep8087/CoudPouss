@@ -12,21 +12,29 @@ import { getScaleSize, useString, SHOW_TOAST } from '../../constant';
 import { SCREENS } from '..';
 
 //COMPONENTS
-import { Header, Input, Text, Button } from '../../components';
+import { Header, Input, Text, Button, ProgressView } from '../../components';
 
 
 export default function SubscriptionSuccessful(props: any) {
 
     const STRING = useString();
 
-    const planDetails: any = props?.route?.params?.planDetails ?? {};
     const { theme } = useContext<any>(ThemeContext);
+    const { profile, fetchProfile } = useContext<any>(AuthContext);
+    const [isLoading, setLoading] = useState(false);
 
+    useEffect(() => {
+        setLoading(true);
+        setTimeout(() => {
+            fetchProfile().then(() => {
+                setLoading(false);
+            });
+        }, 2000);
+    }, []);
 
     return (
         <View style={styles(theme).container}>
             <Header
-               
                 screenName={STRING.payment_method}
             />
             <ScrollView showsVerticalScrollIndicator={false}>
@@ -120,7 +128,7 @@ export default function SubscriptionSuccessful(props: any) {
                             </Text>
                         </View>
                     </View> */}
-                   
+
                     {/* <View style={{flexDirection: 'row'}}>
                         <Image source={IMAGES.ic_info} style={styles(theme).infoIcon} />
                         <Text size={getScaleSize(16)}
@@ -141,17 +149,14 @@ export default function SubscriptionSuccessful(props: any) {
                 title={STRING.complete_profile_now}
                 style={{ marginBottom: getScaleSize(24), marginHorizontal: getScaleSize(24) }}
                 onPress={() => {
-                    if (planDetails?.type === 'professional') {
-                        props.navigation.navigate(SCREENS.AdditionalDetails.identifier,{
-                            planDetails: planDetails,
-                        });
+                    if (profile?.user?.service_provider_type === 'professional') {
+                        props.navigation.navigate(SCREENS.AdditionalDetails.identifier);
                     } else {
-                        props.navigation.navigate(SCREENS.YearsOfExperience.identifier,{
-                            planDetails: planDetails,
-                        });
+                        props.navigation.navigate(SCREENS.YearsOfExperience.identifier);
                     }
                 }}
             />
+            {isLoading && <ProgressView />}
         </View>
     );
 }

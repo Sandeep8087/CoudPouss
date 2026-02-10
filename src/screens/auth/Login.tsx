@@ -32,22 +32,22 @@ export default function Login(props: any) {
   const [emailError, setEmailError] = useState('');
   const [isLoading, setLoading] = useState(false);
   const [visibleCountry, setVisibleCountry] = useState(false);
-  const [countryCode, setCountryCode] = useState('+91');
-  const [isPhoneNumber, setIsPhoneNumber] = useState(false);
+  // const [countryCode, setCountryCode] = useState('+91');
+  // const [isPhoneNumber, setIsPhoneNumber] = useState(false);
 
-  useEffect(() => {
-    if (email.length >= 3) {
-      const isNumber = REGEX.phoneRegex.test(email);
-      setIsPhoneNumber(isNumber)
-    }
-    else {
-      setIsPhoneNumber(false)
-    }
-  }, [email])
+  // useEffect(() => {
+  //   if (email.length >= 3) {
+  //     const isNumber = REGEX.phoneRegex.test(email);
+  //     setIsPhoneNumber(isNumber)
+  //   }
+  //   else {
+  //     setIsPhoneNumber(false)
+  //   }
+  // }, [email])
 
   async function onVerification() {
     if (!email) {
-      setEmailError(STRING.please_enter_your_email_mobile_number);
+      setEmailError(STRING.please_enter_your_email);
     } else if (!password) {
       setPasswordError(STRING.please_enter_your_password);
     } else {
@@ -58,19 +58,19 @@ export default function Login(props: any) {
   }
 
   async function onLogin() {
-    let params = {}
-    if (isPhoneNumber) {
-      params = {
-        mobile: email,
-        phone_country_code: countryCode,
-        password: password,
-      }
-    } else {
-      params = {
+    // let params = {}
+    // if (isPhoneNumber) {
+    //   params = {
+    //     mobile: email,
+    //     phone_country_code: countryCode,
+    //     password: password,
+    //   }
+    // } else {
+    const  params = {
         email: email,
         password: password,
       }
-    }
+    // }
     try {
       setLoading(true);
       const result = await API.Instance.post(API.API_ROUTES.login, params);
@@ -139,11 +139,11 @@ export default function Login(props: any) {
             {STRING.enter_your_email_and_password_to_login}
           </Text>
           <View style={styles(theme).inputContainer}>
-            {isPhoneNumber ? (
+            {/* {isPhoneNumber ? (
               <Input
-                placeholder={STRING.enter_email_or_mobile_number}
+                placeholder={STRING.enter_email}
                 placeholderTextColor={theme._939393}
-                inputTitle={STRING.email_or_mobile_number}
+                inputTitle={STRING.email}
                 inputColor={false}
                 value={email}
                 maxLength={10}
@@ -159,11 +159,11 @@ export default function Login(props: any) {
                 }}
                 isError={emailError}
               />
-            ) : (
+            ) : ( */}
               <Input
-                placeholder={STRING.enter_email_or_mobile_number}
+                placeholder={STRING.enter_email}
                 placeholderTextColor={theme._939393}
-                inputTitle={STRING.email_or_mobile_number}
+                inputTitle={STRING.email}
                 inputColor={false}
                 value={email}
                 keyboardType="email-address"
@@ -174,7 +174,7 @@ export default function Login(props: any) {
                 }}
                 isError={emailError}
               />
-            )}
+            {/* )} */}
           </View>
           <View style={styles(theme).inputContainer}>
             <Input
@@ -233,7 +233,7 @@ export default function Login(props: any) {
           </Text>
         </View>
       </ScrollView>
-      <SelectCountrySheet
+      {/* <SelectCountrySheet
         height={getScaleSize(500)}
         isVisible={visibleCountry}
         onPress={(e: any) => {
@@ -244,7 +244,7 @@ export default function Login(props: any) {
         onClose={() => {
           setVisibleCountry(false);
         }}
-      />
+      /> */}
       {isLoading && <ProgressView />}
     </View>
   );

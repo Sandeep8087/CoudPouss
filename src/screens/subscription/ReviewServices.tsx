@@ -1,4 +1,4 @@
-import { Dimensions, FlatList, Image, ScrollView, SectionList, StyleSheet, TouchableOpacity, View } from 'react-native';
+import { Dimensions, FlatList, Image, Linking, ScrollView, SectionList, StyleSheet, TouchableOpacity, View } from 'react-native';
 import React, { useContext, useEffect, useRef, useState } from 'react';
 
 //CONTEXT
@@ -6,7 +6,7 @@ import { AuthContext, ThemeContext, ThemeContextType } from '../../context';
 
 //CONSTANT & ASSETS
 import { FONTS, IMAGES } from '../../assets';
-import { getScaleSize, useString, SHOW_TOAST, arrayIcons } from '../../constant';
+import { getScaleSize, useString, SHOW_TOAST, arrayIcons, openStripeCheckout } from '../../constant';
 
 //SCREENS
 import { SCREENS } from '..';
@@ -14,6 +14,7 @@ import { SCREENS } from '..';
 //COMPONENTS
 import { Header, Input, Text, Button, ServiceItem } from '../../components';
 import { API } from '../../api';
+import { CommonActions } from '@react-navigation/native';
 
 
 export default function ReviewServices(props: any) {
@@ -24,6 +25,76 @@ export default function ReviewServices(props: any) {
     const { selectedServices, setSelectedServices, myPlan, profile } = useContext<any>(AuthContext);
 
     const [isLoading, setLoading] = useState(false);
+
+    useEffect(() => {
+        const parseParams = (url: string) => {
+            const queryString = url.split('?')[1] || '';
+            const params: Record<string, string> = {};
+
+            queryString.split('&').forEach(item => {
+                if (!item) return;
+                const [key, value] = item.split('=');
+                params[key] = decodeURIComponent(value || '');
+            });
+
+            return params;
+        };
+
+        Linking.getInitialURL().then((url: any) => {
+            if (!url) return;
+
+            if (url.includes('categories-added')) {
+                const params = parseParams(url);
+                const type = params.type;
+                if (type == 'add') {
+                    props.navigation.navigate(SCREENS.AccountCreatedSuccessfully.identifier);
+                }
+            }
+
+            if (url.includes('categories-cancelled')) {
+                const params = parseParams(url);
+                const error = params.error || 'Payment cancelled';
+                const type = params.type;
+
+                if (type == 'add') {
+                    SHOW_TOAST(error ?? 'Payment cancelled', 'error');
+                }
+            }
+        });
+
+        const handleUrl = ({ url }: { url: string }) => {
+            console.log('Deep link:', url);
+            // ✅ PAYMENT SUCCESS
+            if (url.startsWith('coudpouss://categories-added')) {
+                const params = parseParams(url);
+                const type = params.type;
+
+                if (type == 'add') {
+                    props.navigation.navigate(SCREENS.AccountCreatedSuccessfully.identifier);
+                } else {
+
+                }
+                return;
+            }
+            // ❌ PAYMENT CANCEL
+            if (url.startsWith('coudpouss://categories-cancelled')) {
+                const params = parseParams(url);
+                const error = params.error || 'Payment cancelled';
+                const type = params.type;
+
+                if (type == 'add') {
+                    SHOW_TOAST(error ?? 'Payment cancelled', 'error');
+                }
+                return;
+            }
+        };
+
+        Linking.addEventListener('url', handleUrl);
+
+        return () => {
+            Linking.removeAllListeners('url')
+        };
+    }, []);
 
     const onDeleteService = (service: any) => {
         const updated = selectedServices
@@ -71,17 +142,14 @@ export default function ReviewServices(props: any) {
             sub_category_ids: item.service.map((e: any) => e.id),
         }));
         const params = {
-            services: output
+            categories_subcategory_ids: output
         }
         try {
             setLoading(true);
-            const result = await API.Instance.post(API.API_ROUTES.onSelectedCategoriesNonProfessional + `?platform=app&action=update`, params);
+            const result = await API.Instance.post(API.API_ROUTES.onSelectedCategoriesNonProfessional + `?platform=app&action=add`, params);
             if (result.status) {
-                if (myPlan === 'professional') {
-                    props.navigation.navigate(SCREENS.AddBankDetails.identifier);
-                } else {
-                    props.navigation.navigate(SCREENS.AccountCreatedSuccessfully.identifier);
-                }
+                const STRIPE_URL = result?.data?.data?.checkout_url ?? '';
+                openStripeCheckout(STRIPE_URL);
             } else {
                 SHOW_TOAST(result?.data?.message, 'error')
             }

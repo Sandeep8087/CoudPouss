@@ -9,7 +9,7 @@ import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 //PACKAGES
 import { TABS } from '.';
 import { AuthContext } from '../context';
-import { View } from 'react-native';
+import { Alert, Linking, PermissionsAndroid, Platform, View } from 'react-native';
 
 const Tab = createBottomTabNavigator();
 
@@ -19,6 +19,7 @@ function BottomBar(props: any) {
   const isProfile = props?.route?.params?.isProfile ?? false;
   const isValidationService = props?.route?.params?.isValidationService ?? false;
   const isTask = props?.route?.params?.isTask ?? false;
+  const isProfessionalProfile = props?.route?.params?.isProfessionalProfile ?? false;
 
   function getInitialRouteName() {
     if (isProfile) {
@@ -34,10 +35,105 @@ function BottomBar(props: any) {
     console.log('isTask==>', isTask)
     if (isTask) {
       return TABS.Task.identifier;
+    }if (isProfessionalProfile) {
+      return TABS.Profile.identifier;
     } else {
       return TABS.ProfessionalHome.identifier
     }
   }
+
+//   useEffect(() => {
+//     getNotificationTokens()
+// }, [])
+
+// async function getNotificationTokens() {
+//     try {
+//         const token: any = await requestPermissionsAndToken()
+//         console.log('token===', JSON.stringify(token))
+//         if (token) {
+//             console.log('token===', JSON.stringify(token))
+//             // onUpdateFcmToken(token)
+//         } else {
+//             console.log('No FCM token received');
+//         }
+//     } catch (e) {
+//         console.log(JSON.stringify(e));
+//     }
+// }
+
+// async function requestPermissionsAndToken() {
+//     if (Platform.OS === 'android') {
+//         try {
+//             const status = await PermissionsAndroid.request(PermissionsAndroid.PERMISSIONS.POST_NOTIFICATIONS);
+//             if (status) {
+//                 const app: any = getApp();
+//                 let fcmToken = await getMessaging(app).getToken();
+//                 return fcmToken
+//             }
+//         }
+//         catch (error) {
+//             Alert.alert('Notification was declined.', 'Go to your settings and enable notifications always.', [{
+//                 text: 'No',
+//                 onPress: () => {
+
+//                 }
+//             }, {
+//                 text: 'Open Settings',
+//                 onPress: () => {
+//                     Linking.openSettings()
+//                 }
+//             }])
+
+//             return null
+//         }
+//     }
+//     else {
+//         const fcmToken = await requestFCMToken();
+//         return fcmToken;
+//     }
+// }
+
+// const requestFCMToken = async (): Promise<string | null> => {
+//     try {
+//         // Initialize app if not already
+//         const app: any = getApp();
+
+//         const messaging = getMessaging(app);
+
+//         // Register the device
+//         await registerDeviceForRemoteMessages(messaging);
+
+//         // Request permission
+//         const authStatus = await messaging.requestPermission();
+
+//         const enabled =
+//             authStatus === AuthorizationStatus.AUTHORIZED ||
+//             authStatus === AuthorizationStatus.PROVISIONAL;
+
+//         if (enabled) {
+//             const fcmToken = await messaging.getToken();
+//             return fcmToken;
+//         } else {
+//             Alert.alert(
+//                 'Notification was declined.',
+//                 'Go to your settings and enable notifications always.',
+//                 [
+//                     { text: 'No', style: 'cancel' },
+//                     {
+//                         text: 'Open Settings',
+//                         onPress: () => {
+//                             Linking.openSettings();
+//                         },
+//                     },
+//                 ],
+//             );
+//             return null;
+//         }
+//     } catch (error) {
+//         console.error('FCM Token Error:', error);
+//         return null;
+//     }
+// };
 
   if (userType === 'service_provider') {
     return (

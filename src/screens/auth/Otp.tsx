@@ -22,8 +22,8 @@ export default function Otp(props: any) {
 
     const STRING = useString();
     const isFromSignup = props?.route?.params?.isFromSignup || false;
-    const isPhoneNumber = props?.route?.params?.isPhoneNumber || false;
-    const countryCode = props?.route?.params?.countryCode || '+91';
+    // const isPhoneNumber = props?.route?.params?.isPhoneNumber || false;
+    // const countryCode = props?.route?.params?.countryCode || '+91';
     const email = props?.route?.params?.email || '';
 
     const { theme } = useContext<any>(ThemeContext);
@@ -65,19 +65,19 @@ export default function Otp(props: any) {
             setOtpError(STRING.please_enter_your_otp);
         } else {
             setOtpError('');
-            let params = {}
-            if (isPhoneNumber) {
-                params = {
-                    mobile: email,
-                    phone_country_code: countryCode,
-                    otp: otp,
-                }
-            } else {
-                params = {
-                    email: email,
-                    otp: otp,
-                }
+            // let params = {}
+            // if (isPhoneNumber) {
+            //     params = {
+            //         mobile: email,
+            //         phone_country_code: countryCode,
+            //         otp: otp,
+            //     }
+            // } else {
+            const params = {
+                email: email,
+                otp: otp,
             }
+            // }
             try {
                 setLoading(true);
                 const result = await API.Instance.post(API.API_ROUTES.verifyResetPassword, params);
@@ -87,8 +87,8 @@ export default function Otp(props: any) {
                     SHOW_TOAST(result?.data?.message ?? '', 'success')
                     props.navigation.navigate(SCREENS.NewPassword.identifier, {
                         email: email,
-                        isPhoneNumber: isPhoneNumber,
-                        countryCode: countryCode,
+                        // isPhoneNumber: isPhoneNumber,
+                        // countryCode: countryCode,
                     });
                 } else {
                     SHOW_TOAST(result?.data?.message ?? '', 'error')
@@ -109,19 +109,19 @@ export default function Otp(props: any) {
             setOtpError(STRING.please_enter_your_otp);
         } else {
             setOtpError('');
-            let params = {}
-            if (isPhoneNumber) {
-                params = {
-                    mobile: email,
-                    phone_country_code: countryCode,
-                    otp: otp,
-                }
-            } else {
-                params = {
-                    email: email,
-                    otp: otp,
-                }
+            // let params = {}
+            // if (isPhoneNumber) {
+            //     params = {
+            //         mobile: email,
+            //         phone_country_code: countryCode,
+            //         otp: otp,
+            //     }
+            // } else {
+            const params = {
+                email: email,
+                otp: otp,
             }
+            // }
             try {
                 setLoading(true);
                 const result = await API.Instance.post(API.API_ROUTES.verifyOtp, params);
@@ -131,8 +131,8 @@ export default function Otp(props: any) {
                     SHOW_TOAST(result?.data?.message ?? '', 'success')
                     props.navigation.navigate(SCREENS.CreatePassword.identifier, {
                         email: email,
-                        isPhoneNumber: isPhoneNumber,
-                        countryCode: countryCode,
+                        // isPhoneNumber: isPhoneNumber,
+                        // countryCode: countryCode,
                     });
                 } else {
                     SHOW_TOAST(result?.data?.message ?? '', 'error')
@@ -150,17 +150,17 @@ export default function Otp(props: any) {
 
     async function onResendOtp() {
         try {
-            let params = {}
-            if (isPhoneNumber) {
-                params = {
-                    mobile: email,
-                    phone_country_code: countryCode,
-                }
-            } else {
-                params = {
-                    email: email,
-                }
+            // let params = {}
+            // if (isPhoneNumber) {
+            //     params = {
+            //         mobile: email,
+            //         phone_country_code: countryCode,
+            //     }
+            // } else {
+            const params = {
+                email: email,
             }
+            // }
             setLoading(true);
             const result = await API.Instance.post(API.API_ROUTES.resendOtp, params);
             setLoading(false);

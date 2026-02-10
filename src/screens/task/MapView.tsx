@@ -68,13 +68,24 @@ export default function MapViewScreen(props: any) {
         const currentStage = taskStatusLastItem.stage;
         const prevStage = prevStageRef.current;
 
+        console.log('currentStage==>', currentStage);
+        console.log('prevStage==>', prevStage);
+
         // pending ➜ accepted
-        if (prevStage === 'pending' && currentStage === 'accepted') {
+        if (prevStage === 'pending' && currentStage === 'accepted' ) {
+            confirmStartBottomSheetRef.current?.open();
+        }
+
+        if (prevStage === 'accepted' && currentStage === 'accepted' ) {
             confirmStartBottomSheetRef.current?.open();
         }
 
         // pending ➜ rejected
         if (prevStage === 'pending' && currentStage === 'rejected') {
+            rejectedBottomSheetRef.current?.open();
+        }
+
+        if (prevStage === 'rejected' && currentStage === 'rejected') {
             rejectedBottomSheetRef.current?.open();
         }
 
@@ -319,7 +330,7 @@ export default function MapViewScreen(props: any) {
             />
             <BottomSheet
                 type='out_of_service'
-                isNotCloseable={true}
+                // isNotCloseable={true}
                 image={IMAGES.ic_alart}
                 bottomSheetRef={rejectedBottomSheetRef}
                 height={getScaleSize(300)}
@@ -330,7 +341,7 @@ export default function MapViewScreen(props: any) {
                     rejectedBottomSheetRef?.current?.close();
                 }}
                 onPressButton={() => {
-                    onProceedFurther()
+                    onProceedFurther(true)
                 }}
             />
             <BottomSheet

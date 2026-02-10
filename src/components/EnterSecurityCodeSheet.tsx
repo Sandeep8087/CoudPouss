@@ -109,9 +109,8 @@ export default function EnterSecurityCodeSheet(props: EnterSecurityCodeProps) {
                         ref={otpInput}
                         inputCount={3}
                         handleTextChange={onChangeOtp}
-                        value={otp}
-                        tintColor={otpError ? theme._EF5350 : theme.primary} // border color when active
-                        offTintColor={otpError ? theme._EF5350 : theme._BFBFBF} // border color when inactive
+                        tintColor={otpError ? theme._EF5350 : theme.primary}
+                        offTintColor={otpError ? theme._EF5350 : theme._BFBFBF}
                         textInputStyle={styles(theme).textInput}
                         containerStyle={{ flexDirection: 'row', justifyContent: 'center', gap: getScaleSize(12) }}
                     />

@@ -159,6 +159,7 @@ export default function TaskStatus(props: any) {
     const expertConfirmed = timeline.find(i => i.name === 'Expert confirmed');
     const startedService = timeline.find(i => i.name === 'Started service');
     const serviceCompleted = timeline.find(i => i.name === 'Service completed');
+    const paymentReceived = timeline.find(i => i.name === 'Payment received');
 
 
     setServiceFlags({
@@ -166,7 +167,7 @@ export default function TaskStatus(props: any) {
       isExpertConfirmed: !!outForService?.completed && !expertConfirmed?.completed,
       isStartedService: !!expertConfirmed?.completed && !startedService?.completed,
       isServiceCompleted: (startedService?.completed === true && serviceCompleted?.completed === false),
-      isServiceFinalized: (serviceCompleted?.completed === true && startedService?.completed === true)
+      isServiceFinalized: (serviceCompleted?.completed === true && startedService?.completed === true && paymentReceived?.completed === false)
     });
   };
 
@@ -304,6 +305,29 @@ export default function TaskStatus(props: any) {
     }
   }
 
+  async function onVerifySecurityCode() {
+    try {
+      setLoading(true);
+      const params = {
+        entered_code: otp,
+      }
+      const result = await API.Instance.post(API.API_ROUTES.onValidateSecurityCode + `/${item?.service_request_id}`, params);
+      if (result.status) {
+        enterSecurityCodeSheetRef.current?.close();
+        setTimeout(() => {
+          successBottomSheetRef.current?.open();
+        }, 500);
+      } else {
+        SHOW_TOAST(result?.data?.message ?? '', 'error');
+      }
+    }
+    catch (error: any) {
+      SHOW_TOAST(error?.message ?? '', 'error');
+    } finally {
+      setLoading(false);
+    }
+  }
+
   return (
     <View style={styles(theme).container}>
       <Header
@@ -401,7 +425,7 @@ export default function TaskStatus(props: any) {
         <View style={{ flexDirection: 'row', alignItems: 'center', marginHorizontal: getScaleSize(24), marginBottom: getScaleSize(24) }}>
           <Button
             style={{ flex: 1 }}
-            title={STRING.mark_as_completed}
+            title={STRING.procced_to_payment}
             onPress={() => {
               enterSecurityCodeSheetRef.current?.open();
             }}
@@ -435,6 +459,7 @@ export default function TaskStatus(props: any) {
           mapViewRef.current?.close();
         }}
         onPressButton={() => {
+          mapViewRef.current?.close();
           props.navigation.navigate(SCREENS.MapView.identifier, { item: item });
         }}
       />
@@ -483,23 +508,23 @@ export default function TaskStatus(props: any) {
             setOtpError('Please enter Valid Code');
             return;
           } else {
-            enterSecurityCodeSheetRef.current?.close();
-            setTimeout(() => {
-              successBottomSheetRef.current?.open();
-            }, 500);
+            onVerifySecurityCode();
           }
-
         }}
       />
-       <BottomSheet
+      <BottomSheet
         type='success'
+        isNotCloseable={true}
         bottomSheetRef={successBottomSheetRef}
         height={getScaleSize(200)}
         image={IMAGES.ic_succes}
         title={STRING.security_code_validated_successfully}
         buttonTitle={STRING.proceed}
         onPressButton={() => {
-          successBottomSheetRef.current?.close();
+          getTaskStatus();
+          setTimeout(() => {
+            successBottomSheetRef.current?.close();
+          }, 500);
         }}
       />
       {isLoading && <ProgressView />}

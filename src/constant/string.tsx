@@ -49,7 +49,7 @@ export const useString = () => {
       'Enter your Registered Email or Phone Number below to get reset your password.',
     continue: 'Continue',
     To_reset_your_password_Please_enter_the_4_Digit_PIN_sent_to_your_Email_or_Phone_Number:
-      'To reset your password. Please enter the 4 Digit PIN sent to your Email or Phone Number.',
+      'To reset your password. Please enter the 4 Digit PIN sent to your Email',
     code: 'Code',
     resend_code: 'Resend code',
     Your_new_password_must_be_different_from_previously_used_passwords:
@@ -403,7 +403,8 @@ export const useString = () => {
     enter_security_code: "Enter Security Code",
     enter_security_code_message: "The user will receive the last three digits of the code. Enter these digits provided by the user to validate the service and initiate the process.",
     validate: "Validate",
-    security_code_validated_successfully: "Security Code validated successfully."
+    security_code_validated_successfully: "Security Code validated successfully.",
+    procced_to_payment: "Proceed to Payment"
   };
 };
 

@@ -24,8 +24,6 @@ const CategoryDropdown = (props: DropdownProps) => {
     
     const [isFocus, setIsFocus] = useState(false);
 
-    console.log('selectedItem==>', selectedItem)
-
     const renderItem = (item: any) => {
         const isSelected = item?.id === selectedItem?.id;
         return (

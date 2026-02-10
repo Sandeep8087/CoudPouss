@@ -12,9 +12,6 @@ export default function ServiceItem(props: any) {
     const { item, itemContainer, isSelected, onPress, isReview, isSelectedBox, isManage, isOpen, onRemove, onEdit } = props;
     const { theme } = useContext<any>(ThemeContext);
 
-    const insets = useSafeAreaInsets();
-
-    console.log('isOpen==>', isOpen)
     const [visible, setVisible] = useState(false);
     return (
         <TouchableOpacity
@@ -25,20 +22,20 @@ export default function ServiceItem(props: any) {
             style={[styles(theme).container, itemContainer]}>
             {isSelectedBox &&
                 <Image
-                    source={item.image}
+                    source={{ uri: item.image }}
                     resizeMode='cover'
                     style={styles(theme).iconView}
                 />
             }
             {isReview &&
                 <Image
-                    source={item.image}
+                    source={{ uri: item.image }}
                     resizeMode='cover'
                     style={styles(theme).reviewIcon}
                 />
             }
             {isManage &&
-                <View style={styles(theme).iconView} />
+                <Image source={{ uri: item.image }} resizeMode='cover' style={styles(theme).iconView} />
             }
             <Text
                 style={styles(theme).nameView}

@@ -51,7 +51,7 @@ export default function ManageSubscription(props: any) {
                 }}
                 screenName={STRING.manage_subscription}
             />
-            {!profile?.has_purchased ? (
+            {profile?.has_purchased ? (
                 <ScrollView showsVerticalScrollIndicator={false}>
                     <View style={styles(theme).mainContainer}>
                         <Text
@@ -165,7 +165,9 @@ export default function ManageSubscription(props: any) {
                         title={STRING.manage_plan}
                         style={{ flex: 1.0 }}
                         onPress={() => {
-
+                            props.navigation.navigate(SCREENS.ChooseYourSubscription.identifier, {
+                                isFromSubscriptionButton: true,
+                            });
                         }}
                     />
                 </View>

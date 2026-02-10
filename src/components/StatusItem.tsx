@@ -20,8 +20,6 @@ const StatusItem = (props: any) => {
 
   const { item, isLast } = props;
 
-  console.log('item==>', item?.name == 'Started service' && item?.completed)
-
   function getImage() {
     if (item?.name === 'Started service') {
       if (item?.completed) {

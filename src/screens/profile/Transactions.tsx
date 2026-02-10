@@ -34,7 +34,6 @@ export default function Transactions(props: any) {
     const [visible, setVisible] = useState(false);
     const [open, setOpen] = useState(false);
 
-    /** 🔥 SINGLE COMMON STATE */
     const [requestData, setRequestData] = useState<any>({
         transactions: [],
         page: 1,
@@ -45,8 +44,6 @@ export default function Transactions(props: any) {
         startDate: null,
         endDate: null,
     });
-
-    /* ================= API ================= */
 
     const fetchTransactions = async ({ reset = false } = {}) => {
         if (requestData.isLoading) return;
@@ -84,12 +81,10 @@ export default function Transactions(props: any) {
         }
     };
 
-    /* ============== INITIAL LOAD ============== */
     useEffect(() => {
         fetchTransactions({ reset: true });
     }, []);
 
-    /* ============== PAGINATION ============== */
     useEffect(() => {
         if (requestData.page > 1) {
             fetchTransactions();
@@ -104,8 +99,6 @@ export default function Transactions(props: any) {
             }));
         }
     };
-
-    /* ============== FILTER HANDLERS ============== */
 
     const onStatusChange = (status: any) => {
         setRequestData((prev: any) => ({
@@ -134,8 +127,6 @@ export default function Transactions(props: any) {
         fetchTransactions({ reset: true });
     };
 
-    /* ================= UI ================= */
-
     return (
         <View style={styles(theme).container}>
             <Header
@@ -143,9 +134,7 @@ export default function Transactions(props: any) {
                 screenName={STRING.transactions}
             />
 
-            {/* FILTER HEADER */}
             <View style={styles(theme).headerStyle}>
-                {/* STATUS FILTER */}
                 <View style={styles(theme).filterView}>
                     <Text size={14} font={FONTS.Lato.Medium} color={theme._2B2B2B}>
                         {requestData.selectedStatus.title == 'All' ? 'Status' : requestData.selectedStatus.title}
@@ -194,7 +183,6 @@ export default function Transactions(props: any) {
                     </Tooltip>
                 </View>
 
-                {/* DATE FILTER */}
                 <View style={styles(theme).filterView}>
                     <Text size={14} font={FONTS.Lato.Medium} color={theme._2B2B2B}>
                         {`${requestData.startDate
@@ -211,7 +199,6 @@ export default function Transactions(props: any) {
                 </View>
             </View>
 
-            {/* LIST */}
             <SectionList
                 sections={requestData.transactions}
                 keyExtractor={(item, index) => index.toString()}
@@ -241,7 +228,6 @@ export default function Transactions(props: any) {
                 )}
             />
 
-            {/* DATE MODAL */}
             <DateRangeModal
                 visible={open}
                 onClose={() => setOpen(false)}

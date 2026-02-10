@@ -34,6 +34,7 @@ interface InputProps {
   inputTitle?: string;
   inputColor?: boolean;
   countryCode?: string;
+  countryFlag?: string;
   onPressCountryCode?: () => void;
   quantityIcon?: any;
   onPressQuantityRemove?: () => void;
@@ -54,6 +55,7 @@ function Input(props: InputProps & TextInputProps) {
     inputTitle,
     inputColor,
     countryCode,
+    countryFlag,
     onPressCountryCode,
     quantityIcon,
     onPressQuantityRemove,
@@ -84,9 +86,18 @@ function Input(props: InputProps & TextInputProps) {
               flexDirection: 'row',
               alignItems: 'center',
               marginRight: getScaleSize(14),
+              paddingHorizontal: getScaleSize(10),
             },
             ]}>
             <Text
+              size={getScaleSize(20)}
+              font={FONTS.Lato.Bold}
+              color={theme._2B2B2B}
+            >
+              {countryFlag}
+            </Text>
+            <Text
+              style={{ marginLeft: getScaleSize(5) }}
               size={getScaleSize(16)}
               font={FONTS.Lato.Medium}
               color={theme._2B2B2B}
@@ -215,7 +226,7 @@ const styles = (theme: ThemeContextType['theme']) =>
     downIcon: {
       width: getScaleSize(20),
       height: getScaleSize(20),
-      marginLeft: getScaleSize(10),
+      marginLeft: getScaleSize(5),
     },
     flexView: {
       flexDirection: 'row',

@@ -32,14 +32,14 @@ export default function AddPersonalDetails(props: any) {
   const { userType, setUser, setUserType, setProfile } = useContext<any>(AuthContext);
 
   const isEmail = props?.route?.params?.email || '';
-  const isPhoneNumber = props?.route?.params?.isPhoneNumber || false;
-  const isCountryCode = props?.route?.params?.countryCode || '+91';
+  // const isPhoneNumber = props?.route?.params?.isPhoneNumber || false;
+  // const isCountryCode = props?.route?.params?.countryCode || '+91';
 
   const [name, setName] = useState('');
   const [nameError, setNameError] = useState('');
   const [mobileNo, setMobileNo] = useState('');
   const [mobileNoError, setMobileNoError] = useState('');
-  const [email, setEmail] = useState('');
+  const [email, setEmail] = useState(isEmail ? isEmail : '');
   const [emailError, setEmailError] = useState('');
   const [address, setAddress] = useState('');
   const [addressError, setAddressError] = useState('');
@@ -47,15 +47,16 @@ export default function AddPersonalDetails(props: any) {
   const [visibleCountry, setVisibleCountry] = useState(false);
   const [countryCode, setCountryCode] = useState('+91');
   const [profileImage, setProfileImage] = useState<any>(null);
+  const [countryFlag, setCountryFlag] = useState('🇮🇳');
 
-  useEffect(() => {
-    if (isPhoneNumber) {
-      setMobileNo(isEmail);
-      setCountryCode(isCountryCode);
-    } else {
-      setEmail(isEmail);
-    }
-  }, [isEmail]);
+  // useEffect(() => {
+  //   if (isPhoneNumber) {
+  //     setMobileNo(isEmail);
+  //     setCountryCode(isCountryCode);
+  //   } else {
+  //     setEmail(isEmail);
+  //   }
+  // }, [isEmail]);
 
   const pickImage = async () => {
     launchImageLibrary({ mediaType: 'photo' }, (response) => {
@@ -72,7 +73,7 @@ export default function AddPersonalDetails(props: any) {
   async function uploadProfileImage(asset: any) {
     try {
       const formData = new FormData();
-      formData.append(isPhoneNumber ? 'mobile' : 'email', isEmail);
+      formData.append('email', isEmail);
       formData.append('file', {
         uri: asset?.uri,
         name: asset?.fileName || 'profile_image.jpg',
@@ -235,6 +236,7 @@ export default function AddPersonalDetails(props: any) {
             inputColor={true}
             continerStyle={{ marginBottom: getScaleSize(16) }}
             value={name}
+            maxLength={30}
             onChangeText={text => {
               setName(text);
               setNameError('');
@@ -248,13 +250,14 @@ export default function AddPersonalDetails(props: any) {
             inputColor={true}
             continerStyle={{ marginBottom: getScaleSize(16) }}
             value={mobileNo}
-            editable={!isPhoneNumber}
+            // editable={!isPhoneNumber}
             onChangeText={text => {
               setMobileNo(text);
               setMobileNoError('');
             }}
             isError={mobileNoError}
             countryCode={countryCode}
+            countryFlag={countryFlag}
             onPressCountryCode={() => {
               setVisibleCountry(true);
             }}
@@ -266,7 +269,7 @@ export default function AddPersonalDetails(props: any) {
             inputColor={true}
             continerStyle={{ marginBottom: getScaleSize(16) }}
             value={email}
-            editable={isPhoneNumber}
+            editable={isEmail ? false : true}
             onChangeText={text => {
               setEmail(text);
               setEmailError('');
@@ -302,7 +305,9 @@ export default function AddPersonalDetails(props: any) {
         height={getScaleSize(500)}
         isVisible={visibleCountry}
         onPress={(e: any) => {
+          console.log('e', e)
           setCountryCode(e.dial_code);
+          setCountryFlag(e.flag);
           setVisibleCountry(false);
         }}
         onClose={() => {

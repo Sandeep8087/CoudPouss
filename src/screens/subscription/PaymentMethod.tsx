@@ -37,6 +37,15 @@ export default function PaymentMethod(props: any) {
     ]
 
     useEffect(() => {
+        EventRegister.addEventListener('subscriptionPaymentCancel', (data: any) => {
+            SHOW_TOAST(data?.message ?? '', 'error')
+        });
+        return () => {
+            EventRegister.removeEventListener('subscriptionPaymentCancel')
+        }
+    }, []);
+
+    useEffect(() => {
         const parseParams = (url: string) => {
             const queryString = url.split('?')[1] || '';
             const params: Record<string, string> = {};
@@ -57,16 +66,15 @@ export default function PaymentMethod(props: any) {
                 const params = parseParams(url);
                 const type = params.type;
                 if (type == 'add') {
+                    Alert.alert('Payment successful');
                     fetchProfile()
-                    props.navigation.navigate(SCREENS.SubscriptionSuccessful.identifier, {
-                        planDetails: params,
-                    });
+                    props.navigation.navigate(SCREENS.SubscriptionSuccessful.identifier);
                 } else if (type == 'update') {
                     fetchProfile()
                     props?.navigation?.dispatch(
                         CommonActions.reset({
                             index: 0,
-                            routes: [{ name: SCREENS.ManageSubscription.identifier }],
+                            routes: [{ name: SCREENS.BottomBar.identifier }],
                         }),
                     );
                 }
@@ -92,9 +100,7 @@ export default function PaymentMethod(props: any) {
                 if (type == 'add') {
                     fetchProfile()
                     setTimeout(() => {
-                        props.navigation.navigate(SCREENS.SubscriptionSuccessful.identifier, {
-                            planDetails: params,
-                        });
+                        props.navigation.navigate(SCREENS.SubscriptionSuccessful.identifier);
                     }, 2000);
                 } else if (type == 'update') {
                     fetchProfile()
@@ -102,7 +108,7 @@ export default function PaymentMethod(props: any) {
                         props?.navigation?.dispatch(
                             CommonActions.reset({
                                 index: 0,
-                                routes: [{ name: SCREENS.ManageSubscription.identifier }],
+                                routes: [{ name: SCREENS.BottomBar.identifier }],
                             }),
                         );
                     }, 2000);
