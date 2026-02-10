@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "912798241934",
+    "project_id": "coudpouss-b213b",
+    "storage_bucket": "coudpouss-b213b.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:912798241934:android:b1a26167c836e597bb65df",
+        "android_client_info": {
+          "package_name": "com.coudpouss"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBJX8i39uy5KAu5dl1dPQlxh7E9q2TYVHc"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

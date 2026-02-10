@@ -1,7 +1,7 @@
-import { IMAGES } from "../assets";
+import {IMAGES} from '../assets';
 import InAppBrowser from 'react-native-inappbrowser-reborn';
-import { Linking } from "react-native";
-import { PermissionsAndroid, Platform } from 'react-native';
+import {Linking} from 'react-native';
+import {PermissionsAndroid, Platform} from 'react-native';
 
 export const formatDecimalInput = (
   text: string,
@@ -39,8 +39,6 @@ export const formatDecimalInput = (
     : intPart;
 };
 
-
-
 export const openStripeCheckout = async (url: any) => {
   try {
     if (await InAppBrowser.isAvailable()) {
@@ -59,7 +57,6 @@ export const openStripeCheckout = async (url: any) => {
         enableDefaultShare: false,
         forceCloseOnRedirection: false,
       });
-
     } else {
       // Fallback
       Linking.openURL(url);
@@ -70,16 +67,16 @@ export const openStripeCheckout = async (url: any) => {
 };
 
 export const arrayIcons = {
-  "pets": IMAGES.pets,
-  "homecare": IMAGES.homecare,
-  "housekeeping": IMAGES.housekeeping,
-  "childcare": IMAGES.childcare,
-  "diy": IMAGES.diy,
-  "transport": IMAGES.transportIcon,
-  "personal care": IMAGES.personalCareIcon,
-  "tech support": IMAGES.it,
-  "gardening": IMAGES.gardening,
-}
+  pets: IMAGES.pets,
+  homecare: IMAGES.homecare,
+  housekeeping: IMAGES.housekeeping,
+  childcare: IMAGES.childcare,
+  diy: IMAGES.diy,
+  transport: IMAGES.transportIcon,
+  'personal care': IMAGES.personalCareIcon,
+  'tech support': IMAGES.it,
+  gardening: IMAGES.gardening,
+};
 
 export const requestLocationPermission = async () => {
   if (Platform.OS === 'android') {

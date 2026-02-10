@@ -1,29 +1,41 @@
-import { Dimensions, Image, ScrollView, StyleSheet, View } from 'react-native';
-import React, { useContext, useEffect, useState } from 'react';
+import {Dimensions, Image, ScrollView, StyleSheet, View} from 'react-native';
+import React, {useContext, useState} from 'react';
 
 //CONTEXT
-import { AuthContext, ThemeContext, ThemeContextType } from '../../context';
+import {AuthContext, ThemeContext, ThemeContextType} from '../../context';
 
 //CONSTANT & ASSETS
-import { FONTS, IMAGES } from '../../assets';
-import { getScaleSize, REGEX, SHOW_TOAST, Storage, useString } from '../../constant';
+import {FONTS, IMAGES} from '../../assets';
+import {
+  getScaleSize,
+  REGEX,
+  SHOW_TOAST,
+  Storage,
+  useString,
+} from '../../constant';
 
 //COMPONENTS
-import { Header, Input, Text, Button, SelectCountrySheet, ProgressView } from '../../components';
+import {
+  Header,
+  Input,
+  Text,
+  Button,
+  SelectCountrySheet,
+  ProgressView,
+} from '../../components';
 
 //SCREENS
-import { SCREENS } from '..';
+import {SCREENS} from '..';
 
 //PACKAGES
-import { CommonActions } from '@react-navigation/native';
-import { launchImageLibrary } from 'react-native-image-picker';
-import { API } from '../../api';
+import {CommonActions} from '@react-navigation/native';
+import {launchImageLibrary} from 'react-native-image-picker';
+import {API} from '../../api';
 
 export default function Login(props: any) {
-
   const STRING = useString();
-  const { setUser, setUserType, setProfile } = useContext<any>(AuthContext);
-  const { theme } = useContext<any>(ThemeContext);
+  const {setUser, setUserType, setProfile} = useContext<any>(AuthContext);
+  const {theme} = useContext<any>(ThemeContext);
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -53,7 +65,7 @@ export default function Login(props: any) {
     } else {
       setEmailError('');
       setPasswordError('');
-      onLogin()
+      onLogin();
     }
   }
 
@@ -80,7 +92,7 @@ export default function Login(props: any) {
         setUserType(result?.data?.data?.user_data?.role);
         getProfileData();
       } else {
-        SHOW_TOAST(result?.data?.message, 'error')
+        SHOW_TOAST(result?.data?.message, 'error');
       }
     } catch (error: any) {
       SHOW_TOAST(error?.message ?? '', 'error');
@@ -94,19 +106,21 @@ export default function Login(props: any) {
       setLoading(true);
       const result = await API.Instance.get(API.API_ROUTES.getUserDetails);
       if (result.status) {
-        console.log('profile result==>', JSON.stringify(result?.data?.data))
-        setProfile(result?.data?.data)
+        console.log('profile result==>', JSON.stringify(result?.data?.data));
+        setProfile(result?.data?.data);
         props.navigation.dispatch(
           CommonActions.reset({
             index: 0,
-            routes: [{
-              name: SCREENS.BottomBar.identifier,
-            }],
+            routes: [
+              {
+                name: SCREENS.BottomBar.identifier,
+              },
+            ],
           }),
-        )
+        );
       } else {
-        SHOW_TOAST(result?.data?.message, 'error')
-        console.log('ERR', result?.data?.message)
+        SHOW_TOAST(result?.data?.message, 'error');
+        console.log('ERR', result?.data?.message);
       }
     } catch (error: any) {
       SHOW_TOAST(error?.message ?? '', 'error');
@@ -127,7 +141,7 @@ export default function Login(props: any) {
             font={FONTS.Lato.ExtraBold}
             color={theme._2C6587}
             align="center"
-            style={{ marginBottom: getScaleSize(12) }}>
+            style={{marginBottom: getScaleSize(12)}}>
             {STRING.welcome_back}
           </Text>
           <Text
@@ -135,7 +149,7 @@ export default function Login(props: any) {
             font={FONTS.Lato.SemiBold}
             color={theme._565656}
             align="center"
-            style={{ marginBottom: getScaleSize(36) }}>
+            style={{marginBottom: getScaleSize(36)}}>
             {STRING.enter_your_email_and_password_to_login}
           </Text>
           <View style={styles(theme).inputContainer}>
@@ -201,15 +215,15 @@ export default function Login(props: any) {
                 props.navigation.navigate(SCREENS.ResetPassword.identifier);
               }}
               color={theme._2C6587}
-              align='right'
-              style={{ marginTop: getScaleSize(12) }}>
+              align="right"
+              style={{marginTop: getScaleSize(12)}}>
               {STRING.forgot_password}
             </Text>
           </View>
 
           <Button
             title="Log In"
-            style={{ marginBottom: getScaleSize(24) }}
+            style={{marginBottom: getScaleSize(24)}}
             onPress={() => {
               onVerification();
             }}
@@ -219,7 +233,7 @@ export default function Login(props: any) {
             font={FONTS.Lato.Regular}
             color={theme._999999}
             align="center"
-            style={{ marginTop: getScaleSize(12) }}>
+            style={{marginTop: getScaleSize(12)}}>
             {STRING.dont_have_an_account}{' '}
             <Text
               size={getScaleSize(20)}
@@ -237,7 +251,7 @@ export default function Login(props: any) {
         height={getScaleSize(500)}
         isVisible={visibleCountry}
         onPress={(e: any) => {
-          console.log('e000', e)
+          console.log('e000', e);
           setCountryCode(e.dial_code);
           setVisibleCountry(false);
         }}
@@ -255,13 +269,13 @@ const styles = (theme: ThemeContextType['theme']) =>
     container: {
       flex: 1.0,
       backgroundColor: theme.white,
-      justifyContent: 'center'
+      justifyContent: 'center',
     },
     mainContainer: {
       flex: 1.0,
       marginHorizontal: getScaleSize(24),
       marginVertical: getScaleSize(24),
-      justifyContent: 'center'
+      justifyContent: 'center',
     },
     logo: {
       width: Dimensions.get('window').width - getScaleSize(240),

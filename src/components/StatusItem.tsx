@@ -1,24 +1,18 @@
-import React, { useContext, useRef, useState } from 'react';
-import {
-  View,
-  StyleSheet,
-  TouchableOpacity,
-  Alert,
-  Image
-} from 'react-native';
-import { ThemeContext, ThemeContextType } from '../context';
-import { getScaleSize, useString } from '../constant';
-import { FONTS, IMAGES } from '../assets';
-import { constant } from 'lodash';
+import React, {useContext, useRef, useState} from 'react';
+import {View, StyleSheet, TouchableOpacity, Alert, Image} from 'react-native';
+import {ThemeContext, ThemeContextType} from '../context';
+import {getScaleSize, useString} from '../constant';
+import {FONTS, IMAGES} from '../assets';
+import {constant} from 'lodash';
 import RBSheet from 'react-native-raw-bottom-sheet';
 import Text from './Text';
 import moment from 'moment';
 
 const StatusItem = (props: any) => {
   const STRING = useString();
-  const { theme } = useContext<any>(ThemeContext);
+  const {theme} = useContext<any>(ThemeContext);
 
-  const { item, isLast } = props;
+  const {item, isLast} = props;
 
   function getImage() {
     if (item?.name === 'Started service') {
@@ -45,7 +39,6 @@ const StatusItem = (props: any) => {
     return IMAGES.empty_view;
   }
 
-
   return (
     <View style={[styles(theme).statusItem, {}]}>
       {/* Timeline line */}
@@ -60,11 +53,10 @@ const StatusItem = (props: any) => {
         />
         {!item?.completed && item?.id && (
           <Text
-            style={{ position: 'absolute', top: getScaleSize(3.2) }}
+            style={{position: 'absolute', top: getScaleSize(3.2)}}
             size={getScaleSize(12)}
             font={FONTS.Lato.Medium}
-            color={theme.white}
-          >
+            color={theme.white}>
             {String(item?.id != null ? item.id + 1 : 0)}
           </Text>
         )}
@@ -73,7 +65,11 @@ const StatusItem = (props: any) => {
             style={[
               styles(theme).timelineLine,
               {
-                backgroundColor: item?.isRejected ? 'red' : item?.completed ? '#2E7D32' : '#424242',
+                backgroundColor: item?.isRejected
+                  ? 'red'
+                  : item?.completed
+                    ? '#2E7D32'
+                    : '#424242',
               },
             ]}
           />
@@ -86,15 +82,17 @@ const StatusItem = (props: any) => {
           size={getScaleSize(16)}
           font={FONTS.Lato.SemiBold}
           color={theme._2B2B2B}
-          style={{}} >
+          style={{}}>
           {item?.name ?? ''}
         </Text>
         <Text
           size={getScaleSize(12)}
           font={FONTS.Lato.Regular}
           color={theme._737373}
-          style={{ marginTop: getScaleSize(4) }} >
-          {item?.time ? moment(item?.time).format('ddd, DD MMM’ YYYY  -  h:mma') : '-'}
+          style={{marginTop: getScaleSize(4)}}>
+          {item?.time
+            ? moment(item?.time).format('ddd, DD MMM’ YYYY  -  h:mma')
+            : '-'}
         </Text>
         {/* {props?.item?.securityCode && (
           <>
@@ -128,7 +126,7 @@ const StatusItem = (props: any) => {
                     color: '#2C6587',
                     marginTop: getScaleSize(2),
                     textAlign: 'center',
-                    alignSelf: 'center'
+                    alignSelf: 'center',
                   },
                 ]}>
                 {'7    9    6'}

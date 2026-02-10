@@ -1,38 +1,80 @@
-import React, {useContext, useState} from 'react';
+import React, {useContext, useEffect, useMemo, useState} from 'react';
 import {
   View,
   StatusBar,
   StyleSheet,
-  Dimensions,
-  NativeScrollEvent,
-  NativeSyntheticEvent,
-  Alert,
-  ScrollView,
-  FlatList,
   TouchableOpacity,
   Image,
   Platform,
   TextInput,
+  FlatList,
+  KeyboardAvoidingView,
+  ActivityIndicator,
+  StyleProp,
+  ViewStyle,
 } from 'react-native';
 
 //ASSETS
 import {FONTS, IMAGES} from '../../assets';
 
 //CONTEXT
-import {ThemeContext, ThemeContextType} from '../../context';
+import {ThemeContext, ThemeContextType, AuthContext} from '../../context';
 
 //CONSTANT
 import {getScaleSize, useString} from '../../constant';
 
 //COMPONENT
-import {Header, SearchComponent, Text} from '../../components';
+import {Text} from '../../components';
 
 //PACKAGES
 import {useFocusEffect} from '@react-navigation/native';
+import {
+  ChatMessage,
+  buildThreadId,
+  ensureThreadDocument,
+  sendTextMessage,
+  subscribeToMessages,
+} from '../../services/chat';
+import {FirebaseFirestoreTypes} from '@react-native-firebase/firestore';
 
 export default function ChatDetails(props: any) {
   const STRING = useString();
   const {theme} = useContext<any>(ThemeContext);
+  const {user} = useContext<any>(AuthContext);
+  const peerUser = props?.route?.params?.peerUser;
+  const existingThreadId = props?.route?.params?.threadId;
+  const [message, setMessage] = useState('');
+  const [messages, setMessages] = useState<ChatMessage[]>([]);
+  const [loadingMessages, setLoadingMessages] = useState(true);
+  const [isSending, setIsSending] = useState(false);
+  const currentUserId = user?.user_id;
+  const currentUserName = user?.name;
+  const currentUserEmail = user?.email;
+  const currentUserAvatar = user?.avatarUrl;
+  const peerUserId = peerUser?.user_id;
+  const peerUserName = peerUser?.name;
+  const peerUserEmail = peerUser?.email;
+  const peerUserAvatar = peerUser?.avatarUrl;
+  const messageListContentStyle = useMemo<StyleProp<ViewStyle>>(
+    () => ({
+      paddingVertical: getScaleSize(12),
+      flexGrow: 1,
+      justifyContent: 'flex-end',
+    }),
+    [],
+  );
+
+  const threadId = useMemo(() => {
+    if (existingThreadId) {
+      return existingThreadId;
+    }
+
+    if (currentUserId && peerUserId) {
+      return buildThreadId(currentUserId, peerUserId);
+    }
+
+    return undefined;
+  }, [existingThreadId, currentUserId, peerUserId]);
 
   useFocusEffect(
     React.useCallback(() => {
@@ -40,11 +82,137 @@ export default function ChatDetails(props: any) {
         StatusBar.setBackgroundColor(theme.white);
         StatusBar.setBarStyle('dark-content');
       }
-    }, []),
+    }, [theme.white]),
   );
 
+  useEffect(() => {
+    if (!threadId || !currentUserId || !peerUserId) {
+      return;
+    }
+
+    ensureThreadDocument(threadId, [
+      {
+        user_id: currentUserId,
+        name: currentUserName,
+        email: currentUserEmail,
+        avatarUrl: currentUserAvatar,
+      },
+      {
+        user_id: peerUserId,
+        name: peerUserName,
+        email: peerUserEmail,
+        avatarUrl: peerUserAvatar,
+      },
+    ]);
+  }, [
+    threadId,
+    currentUserId,
+    currentUserName,
+    currentUserEmail,
+    currentUserAvatar,
+    peerUserId,
+    peerUserName,
+    peerUserEmail,
+    peerUserAvatar,
+  ]);
+
+  useEffect(() => {
+    if (!threadId) {
+      setMessages([]);
+      setLoadingMessages(false);
+      return;
+    }
+
+    setLoadingMessages(true);
+    const unsubscribe = subscribeToMessages(
+      threadId,
+      list => {
+        setMessages(list);
+        setLoadingMessages(false);
+      },
+      error => {
+        console.log('Failed to subscribe to messages', error);
+        setLoadingMessages(false);
+      },
+    );
+
+    return unsubscribe;
+  }, [threadId]);
+
+  const handleSendMessage = async () => {
+    if (!threadId || !currentUserId || !peerUserId || !message.trim()) {
+      return;
+    }
+
+    setIsSending(true);
+    try {
+      await sendTextMessage({
+        threadId,
+        text: message,
+        senderId: currentUserId,
+        receiverId: peerUserId,
+      });
+      setMessage('');
+    } catch (error) {
+      console.log('Failed to send message', error);
+    } finally {
+      setIsSending(false);
+    }
+  };
+
+  const renderMessage = ({item}: {item: ChatMessage}) => {
+    const isMe = item.senderId === currentUserId;
+    return (
+      <View
+        style={[
+          styles(theme).messageRow,
+          isMe ? styles(theme).messageRowRight : styles(theme).messageRowLeft,
+        ]}>
+        {!isMe && (
+          <Image
+            style={styles(theme).userProfilePic}
+            source={
+              peerUserAvatar ? {uri: peerUserAvatar} : IMAGES.user_placeholder
+            }
+          />
+        )}
+        <View
+          style={[
+            styles(theme).messageContainer,
+            isMe ? styles(theme).selfBubble : styles(theme).peerBubble,
+          ]}>
+          <Text
+            size={getScaleSize(16)}
+            font={FONTS.Lato.SemiBold}
+            color={isMe ? theme.white : theme._818285}>
+            {item.text}
+          </Text>
+          <Text
+            size={getScaleSize(10)}
+            font={FONTS.Lato.Regular}
+            color={isMe ? theme.white : theme._ACADAD}
+            style={[styles(theme).messageTime]}>
+            {formatTimestamp(item.createdAt)}
+          </Text>
+        </View>
+        {isMe && (
+          <Image
+            style={styles(theme).userProfilePic}
+            source={
+              currentUserAvatar
+                ? {uri: currentUserAvatar}
+                : IMAGES.user_placeholder
+            }
+          />
+        )}
+      </View>
+    );
+  };
+
   return (
-    <View style={styles(theme).container}>
+    <KeyboardAvoidingView
+      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+      style={styles(theme).container}>
       <StatusBar
         barStyle="dark-content"
         backgroundColor={theme.white}
@@ -61,42 +229,41 @@ export default function ChatDetails(props: any) {
         </TouchableOpacity>
         <Image
           style={styles(theme).userImage}
-          source={IMAGES.user_placeholder}
+          source={
+            peerUserAvatar ? {uri: peerUserAvatar} : IMAGES.user_placeholder
+          }
         />
-        <View style={{alignSelf: 'center', marginLeft: getScaleSize(12)}}>
+        <View style={styles(theme).headerDetails}>
           <Text
             size={getScaleSize(16)}
             font={FONTS.Lato.Bold}
             color={theme._2B2B2B}
             style={{}}>
-            {'Jordan Smith'}
+            {peerUserName || STRING.unknown_user}
           </Text>
           <Text
             size={getScaleSize(14)}
             font={FONTS.Lato.Medium}
             color={theme.primary}>
-            {'Available'}
+            {peerUser?.status || ''}
           </Text>
         </View>
       </View>
       <View style={styles(theme).deviderView} />
-      <View style={{flex: 1.0, alignItems: 'flex-end'}}>
-        <View style={styles(theme).leftContainer}>
-          <View style={styles(theme).messageContainer}>
-            <Text
-              size={getScaleSize(16)}
-              font={FONTS.Lato.SemiBold}
-              color={theme._818285}>
-              {
-                'Hi Jordan Smith! 🖐🏻 How are you today? I appreciate your response. Lets finalize the terms.'
-              }
-            </Text>
+      <View style={styles(theme).messagesWrapper}>
+        {loadingMessages ? (
+          <View style={styles(theme).loaderContainer}>
+            <ActivityIndicator size="small" color={theme.primary} />
           </View>
-          <Image
-            style={styles(theme).userProfilePic}
-            source={IMAGES.user_placeholder}
+        ) : (
+          <FlatList
+            data={messages}
+            renderItem={renderMessage}
+            keyExtractor={item => item.id}
+            contentContainerStyle={messageListContentStyle}
+            showsVerticalScrollIndicator={false}
           />
-        </View>
+        )}
       </View>
       <View style={styles(theme).sendMessageContainer}>
         <Image style={styles(theme).microphoneImage} source={IMAGES.mic} />
@@ -104,22 +271,39 @@ export default function ChatDetails(props: any) {
           style={styles(theme).searchInput}
           placeholderTextColor={'#939393'}
           placeholder={STRING.Sendamessagehere}
+          value={message}
+          onChangeText={setMessage}
+          multiline
         />
-        <Image
-          style={[
-            styles(theme).microphoneImage,
-            {marginRight: getScaleSize(12)},
-          ]}
-          source={IMAGES.attachment}
-        />
-        <Image
-          style={styles(theme).microphoneImage}
-          source={IMAGES.message_send}
-        />
+        <TouchableOpacity
+          style={styles(theme).sendButtonWrapper}
+          activeOpacity={0.7}
+          disabled={isSending || !message.trim()}
+          onPress={handleSendMessage}>
+          <Image
+            style={[
+              styles(theme).microphoneImage,
+              (isSending || !message.trim()) && styles(theme).disabledSendIcon,
+            ]}
+            source={IMAGES.message_send}
+          />
+        </TouchableOpacity>
       </View>
-    </View>
+    </KeyboardAvoidingView>
   );
 }
+
+const formatTimestamp = (
+  timestamp?: FirebaseFirestoreTypes.Timestamp | null,
+) => {
+  if (!timestamp) {
+    return '';
+  }
+  const date = timestamp.toDate
+    ? timestamp.toDate()
+    : new Date(timestamp as any);
+  return date.toLocaleTimeString([], {hour: '2-digit', minute: '2-digit'});
+};
 
 const styles = (theme: ThemeContextType['theme']) =>
   StyleSheet.create({
@@ -128,6 +312,10 @@ const styles = (theme: ThemeContextType['theme']) =>
       paddingVertical: getScaleSize(12),
       flexDirection: 'row',
       marginHorizontal: getScaleSize(22),
+    },
+    headerDetails: {
+      alignSelf: 'center',
+      marginLeft: getScaleSize(12),
     },
     backImage: {
       height: getScaleSize(32),
@@ -145,6 +333,15 @@ const styles = (theme: ThemeContextType['theme']) =>
       height: 1,
       backgroundColor: '#F5F5F5',
     },
+    messagesWrapper: {
+      flex: 1,
+      paddingHorizontal: getScaleSize(16),
+    },
+    loaderContainer: {
+      flex: 1,
+      justifyContent: 'center',
+      alignItems: 'center',
+    },
     sendMessageContainer: {
       marginHorizontal: getScaleSize(24),
       marginBottom: getScaleSize(17),
@@ -161,32 +358,54 @@ const styles = (theme: ThemeContextType['theme']) =>
     },
     searchInput: {
       fontFamily: FONTS.Lato.Regular,
-      fontSize: getScaleSize(20),
+      fontSize: getScaleSize(16),
       color: theme.black,
       marginLeft: getScaleSize(12),
       flex: 1.0,
+      maxHeight: getScaleSize(80),
+      paddingTop: 0,
     },
     userProfilePic: {
-      height: getScaleSize(30),
-      width: getScaleSize(30),
-      borderRadius: getScaleSize(15),
-      alignSelf:'flex-end'
+      height: getScaleSize(32),
+      width: getScaleSize(32),
+      borderRadius: getScaleSize(16),
+      alignSelf: 'flex-end',
     },
     messageContainer: {
       paddingVertical: getScaleSize(10),
       paddingHorizontal: getScaleSize(17),
       borderRadius: getScaleSize(16),
-      backgroundColor: '#F5F5F5',
-      width:getScaleSize(300),
-      marginRight:getScaleSize(12)
+      maxWidth: '75%',
     },
-    leftContainer: {
-      flex: 1.0,
-      alignSelf: 'flex-end',
+    selfBubble: {
+      backgroundColor: theme.primary,
+      marginLeft: getScaleSize(40),
+      marginRight: getScaleSize(12),
+    },
+    peerBubble: {
+      backgroundColor: '#F5F5F5',
+      marginLeft: getScaleSize(12),
+      marginRight: getScaleSize(40),
+    },
+    messageTime: {
+      marginTop: getScaleSize(4),
+    },
+    messageRow: {
       flexDirection: 'row',
-      marginHorizontal: getScaleSize(22),
-      marginBottom: getScaleSize(16),
-      position: 'absolute',
-      bottom: getScaleSize(16),
+      marginBottom: getScaleSize(12),
+      alignItems: 'flex-end',
+    },
+    messageRowLeft: {
+      justifyContent: 'flex-start',
+    },
+    messageRowRight: {
+      justifyContent: 'flex-end',
+    },
+    sendButtonWrapper: {
+      marginRight: getScaleSize(12),
+      justifyContent: 'center',
+    },
+    disabledSendIcon: {
+      opacity: 0.5,
     },
   });

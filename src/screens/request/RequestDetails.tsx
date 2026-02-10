@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useRef, useState } from 'react';
+import React, {useContext, useEffect, useRef, useState} from 'react';
 import {
   View,
   StyleSheet,
@@ -11,11 +11,17 @@ import {
 } from 'react-native';
 
 //ASSETS & CONSTANT
-import { FONTS, IMAGES } from '../../assets';
-import { arrayIcons, getScaleSize, openStripeCheckout, SHOW_TOAST, useString } from '../../constant';
+import {FONTS, IMAGES} from '../../assets';
+import {
+  arrayIcons,
+  getScaleSize,
+  openStripeCheckout,
+  SHOW_TOAST,
+  useString,
+} from '../../constant';
 
 //CONTEXT
-import { ThemeContext, ThemeContextType } from '../../context';
+import {ThemeContext, ThemeContextType} from '../../context';
 
 //COMPONENT
 import {
@@ -31,20 +37,19 @@ import {
 } from '../../components';
 
 //SCREENS
-import { SCREENS } from '..';
+import {SCREENS} from '..';
 
 //API
-import { API } from '../../api';
+import {API} from '../../api';
 
 //PACKAGES
 import moment from 'moment';
-import { EventRegister } from 'react-native-event-listeners';
-import { CommonActions } from '@react-navigation/native';
-
+import {EventRegister} from 'react-native-event-listeners';
+import {CommonActions} from '@react-navigation/native';
 
 export default function RequestDetails(props: any) {
   const STRING = useString();
-  const { theme } = useContext<any>(ThemeContext);
+  const {theme} = useContext<any>(ThemeContext);
   const item = props.route.params?.item ?? {};
 
   const rejectRef = useRef<any>(null);
@@ -57,8 +62,8 @@ export default function RequestDetails(props: any) {
   const [reason, setReason] = useState('');
   const [serviceAmount, setServiceAmount] = useState<any>({});
   const [paymentDetails, setPaymentDetails] = useState<any>({});
-  const [visibleModelWebView, setVisibleModelWebView] = useState<boolean>(false);
-
+  const [visibleModelWebView, setVisibleModelWebView] =
+    useState<boolean>(false);
 
   useEffect(() => {
     if (item) {
@@ -68,33 +73,36 @@ export default function RequestDetails(props: any) {
 
   useEffect(() => {
     EventRegister.addEventListener('onPaymentCancel', (data: any) => {
-      SHOW_TOAST(data?.message ?? '', 'error')
+      SHOW_TOAST(data?.message ?? '', 'error');
     });
     return () => {
-      EventRegister.removeEventListener('onPaymentCancel')
-    }
+      EventRegister.removeEventListener('onPaymentCancel');
+    };
   }, []);
 
   async function getServiceDetails() {
     try {
       const params = {
-        service_id: item?.id
-      }
+        service_id: item?.id,
+      };
       setLoading(true);
-      const result = await API.Instance.post(API.API_ROUTES.getServiceDetails, params);
+      const result = await API.Instance.post(
+        API.API_ROUTES.getServiceDetails,
+        params,
+      );
       setLoading(false);
-      console.log('result', result.status, result)
+      console.log('result', result.status, result);
       if (result.status) {
-        console.log('serviceDetails==', result?.data?.data)
+        console.log('serviceDetails==', result?.data?.data);
         setServiceDetails(result?.data?.data ?? {});
       } else {
-        SHOW_TOAST(result?.data?.message ?? '', 'error')
-        console.log('error==>', result?.data?.message)
+        SHOW_TOAST(result?.data?.message ?? '', 'error');
+        console.log('error==>', result?.data?.message);
       }
     } catch (error: any) {
       setLoading(false);
       SHOW_TOAST(error?.message ?? '', 'error');
-      console.log(error?.message)
+      console.log(error?.message);
     } finally {
       setLoading(false);
     }
@@ -103,12 +111,15 @@ export default function RequestDetails(props: any) {
   async function addFavoriteProfessional() {
     try {
       setLoading(true);
-      const result = await API.Instance.post(API.API_ROUTES.addFavoriteProfessional + `/${serviceDetails?.provider?.id}`);
+      const result = await API.Instance.post(
+        API.API_ROUTES.addFavoriteProfessional +
+          `/${serviceDetails?.provider?.id}`,
+      );
       if (result.status) {
-        SHOW_TOAST(result?.data?.message ?? '', 'success')
-        getServiceDetails()
+        SHOW_TOAST(result?.data?.message ?? '', 'success');
+        getServiceDetails();
       } else {
-        SHOW_TOAST(result?.data?.message ?? '', 'error')
+        SHOW_TOAST(result?.data?.message ?? '', 'error');
       }
     } catch (error: any) {
       SHOW_TOAST(error?.message ?? '', 'error');
@@ -119,12 +130,15 @@ export default function RequestDetails(props: any) {
   async function removeFavoriteProfessional() {
     try {
       setLoading(true);
-      const result = await API.Instance.delete(API.API_ROUTES.removeFavoriteProfessional + `/${serviceDetails?.provider?.id}`);
+      const result = await API.Instance.delete(
+        API.API_ROUTES.removeFavoriteProfessional +
+          `/${serviceDetails?.provider?.id}`,
+      );
       if (result.status) {
-        SHOW_TOAST(result?.data?.message ?? '', 'success')
-        getServiceDetails()
+        SHOW_TOAST(result?.data?.message ?? '', 'success');
+        getServiceDetails();
       } else {
-        SHOW_TOAST(result?.data?.message ?? '', 'error')
+        SHOW_TOAST(result?.data?.message ?? '', 'error');
       }
     } catch (error: any) {
       SHOW_TOAST(error?.message ?? '', 'error');
@@ -135,12 +149,12 @@ export default function RequestDetails(props: any) {
 
   async function onRejectReason() {
     if (selectedCategory == 0) {
-      SHOW_TOAST('Please select a reason', 'error')
+      SHOW_TOAST('Please select a reason', 'error');
       return;
     }
     if (selectedCategory == 3) {
       if (reason == '') {
-        SHOW_TOAST('Please enter a reason', 'error')
+        SHOW_TOAST('Please enter a reason', 'error');
         return;
       }
     }
@@ -150,24 +164,28 @@ export default function RequestDetails(props: any) {
         failure_reason: reason,
         service_id: serviceDetails?.service_id,
         quote_id: serviceDetails?.quote_id,
-      }
+      };
       setLoading(true);
-      const result = await API.Instance.put(API.API_ROUTES.onServiceReject, params);
+      const result = await API.Instance.put(
+        API.API_ROUTES.onServiceReject,
+        params,
+      );
       if (result.status) {
-        SHOW_TOAST(result?.data?.message ?? '', 'success')
+        SHOW_TOAST(result?.data?.message ?? '', 'success');
         rejectRef.current.close();
         props?.navigation?.dispatch(
           CommonActions.reset({
             index: 0,
-            routes: [{
-              name: SCREENS.BottomBar.identifier,
-              params: { isValidationService: true },
-            }
+            routes: [
+              {
+                name: SCREENS.BottomBar.identifier,
+                params: {isValidationService: true},
+              },
             ],
           }),
         );
       } else {
-        SHOW_TOAST(result?.data?.message ?? '', 'error')
+        SHOW_TOAST(result?.data?.message ?? '', 'error');
       }
     } catch (error: any) {
       SHOW_TOAST(error?.message ?? '', 'error');
@@ -176,22 +194,23 @@ export default function RequestDetails(props: any) {
     }
   }
 
-
   async function onAcceptService() {
     try {
       const params = {
         service_id: serviceDetails?.service_id,
         quote_id: serviceDetails?.quote_id,
-      }
+      };
       setLoading(true);
-      const result = await API.Instance.put(API.API_ROUTES.onAcceptService + `?platform=app`, params);
+      const result = await API.Instance.put(
+        API.API_ROUTES.onAcceptService + `?platform=app`,
+        params,
+      );
       if (result.status) {
         const STRIPE_URL = result?.data?.data?.checkout_url ?? '';
         paymentRef.current.close();
         openStripeCheckout(STRIPE_URL);
-
       } else {
-        SHOW_TOAST(result?.data?.message ?? '', 'error')
+        SHOW_TOAST(result?.data?.message ?? '', 'error');
       }
     } catch (error: any) {
       SHOW_TOAST(error?.message ?? '', 'error');
@@ -203,16 +222,18 @@ export default function RequestDetails(props: any) {
   async function getServiceAmount() {
     try {
       setLoading(true);
-      const result = await API.Instance.get(API.API_ROUTES.getServiceAmount + `/${serviceDetails?.service_id}`);
+      const result = await API.Instance.get(
+        API.API_ROUTES.getServiceAmount + `/${serviceDetails?.service_id}`,
+      );
       if (result.status) {
-        console.log('serviceAmount==>', result?.data?.data)
+        console.log('serviceAmount==>', result?.data?.data);
         setServiceAmount(result?.data?.data ?? {});
         acceptRef.current.close();
         setTimeout(() => {
           paymentRef.current.open();
         }, 500);
       } else {
-        SHOW_TOAST(result?.data?.message ?? '', 'error')
+        SHOW_TOAST(result?.data?.message ?? '', 'error');
       }
     } catch (error: any) {
       SHOW_TOAST(error?.message ?? '', 'error');
@@ -233,15 +254,20 @@ export default function RequestDetails(props: any) {
         style={styles(theme).scrolledContainer}
         showsVerticalScrollIndicator={false}>
         <View style={styles(theme).imageContainer}>
-          {serviceDetails?.sub_category_logo ?
+          {serviceDetails?.sub_category_logo ? (
             <Image
               style={styles(theme).imageView}
-              resizeMode='cover'
-              source={{ uri: serviceDetails?.sub_category_logo }}
+              resizeMode="cover"
+              source={{uri: serviceDetails?.sub_category_logo}}
             />
-            :
-            <View style={[styles(theme).imageView, { backgroundColor: theme._D5D5D5 }]} />
-          }
+          ) : (
+            <View
+              style={[
+                styles(theme).imageView,
+                {backgroundColor: theme._D5D5D5},
+              ]}
+            />
+          )}
           <Text
             style={{
               marginVertical: getScaleSize(12),
@@ -267,7 +293,11 @@ export default function RequestDetails(props: any) {
                   size={getScaleSize(12)}
                   font={FONTS.Lato.Medium}
                   color={theme.primary}>
-                  {serviceDetails?.chosen_datetime ? moment(serviceDetails?.chosen_datetime).format('DD MMM, YYYY') : '-'}
+                  {serviceDetails?.chosen_datetime
+                    ? moment(serviceDetails?.chosen_datetime).format(
+                        'DD MMM, YYYY',
+                      )
+                    : '-'}
                 </Text>
               </View>
               <View style={styles(theme).itemView}>
@@ -283,25 +313,34 @@ export default function RequestDetails(props: any) {
                   size={getScaleSize(12)}
                   font={FONTS.Lato.Medium}
                   color={theme.primary}>
-                  {serviceDetails?.chosen_datetime ? moment(serviceDetails?.chosen_datetime).format('hh:mm A') : '-'}
+                  {serviceDetails?.chosen_datetime
+                    ? moment(serviceDetails?.chosen_datetime).format('hh:mm A')
+                    : '-'}
                 </Text>
               </View>
             </View>
             <View
               style={[
                 styles(theme).horizontalView,
-                { marginTop: getScaleSize(12) },
+                {marginTop: getScaleSize(12)},
               ]}>
               <View style={styles(theme).itemView}>
-                {serviceDetails?.category_name ?
+                {serviceDetails?.category_name ? (
                   <Image
-                    style={[styles(theme).informationIcon, { tintColor: theme._1A3D51 }]}
-                    source={arrayIcons[serviceDetails?.category_name?.toLowerCase() as keyof typeof arrayIcons] ?? arrayIcons['diy'] as any}
-                    resizeMode='cover'
+                    style={[
+                      styles(theme).informationIcon,
+                      {tintColor: theme._1A3D51},
+                    ]}
+                    source={
+                      arrayIcons[
+                        serviceDetails?.category_name?.toLowerCase() as keyof typeof arrayIcons
+                      ] ?? (arrayIcons['diy'] as any)
+                    }
+                    resizeMode="cover"
                   />
-                  :
+                ) : (
                   <View style={[styles(theme).informationIcon]} />
-                }
+                )}
                 <Text
                   style={{
                     marginHorizontal: getScaleSize(8),
@@ -333,7 +372,7 @@ export default function RequestDetails(props: any) {
           </View>
         </View>
         <Text
-          style={{ marginTop: getScaleSize(24) }}
+          style={{marginTop: getScaleSize(24)}}
           size={getScaleSize(18)}
           font={FONTS.Lato.SemiBold}
           color={theme._323232}>
@@ -341,7 +380,7 @@ export default function RequestDetails(props: any) {
         </Text>
         <View style={styles(theme).amountContainer}>
           <Text
-            style={{ flex: 1.0, alignSelf: 'center' }}
+            style={{flex: 1.0, alignSelf: 'center'}}
             size={getScaleSize(27)}
             font={FONTS.Lato.Bold}
             color={theme._323232}>
@@ -351,7 +390,10 @@ export default function RequestDetails(props: any) {
             style={styles(theme).negociateButton}
             activeOpacity={1}
             onPress={() => {
-              props.navigation.navigate(SCREENS.ChatDetails.identifier);
+              const peerUser = getPeerUser(user?.user_id);
+              props.navigation.navigate(SCREENS.ChatDetails.identifier, {
+                peerUser,
+              });
             }}>
             <Text
               size={getScaleSize(14)}
@@ -364,7 +406,7 @@ export default function RequestDetails(props: any) {
         <View style={styles(theme).profileContainer}>
           <View style={styles(theme).horizontalView}>
             <Text
-              style={{ flex: 1.0 }}
+              style={{flex: 1.0}}
               size={getScaleSize(18)}
               font={FONTS.Lato.SemiBold}
               color={theme._323232}>
@@ -380,34 +422,41 @@ export default function RequestDetails(props: any) {
                   addFavoriteProfessional();
                 }
               }}>
-              <Image style={styles(theme).likeIcon} source={serviceDetails?.provider?.is_favorate ? IMAGES.like : IMAGES.like_unfill} />
+              <Image
+                style={styles(theme).likeIcon}
+                source={
+                  serviceDetails?.provider?.is_favorate
+                    ? IMAGES.like
+                    : IMAGES.like_unfill
+                }
+              />
             </TouchableOpacity>
           </View>
           <View
             style={[
               styles(theme).horizontalView,
-              { marginTop: getScaleSize(16) },
+              {marginTop: getScaleSize(16)},
             ]}>
-            {serviceDetails?.provider?.profile_photo_url ?
+            {serviceDetails?.provider?.profile_photo_url ? (
               <Image
                 style={styles(theme).profilePicView}
-                resizeMode='cover'
-                source={{ uri: serviceDetails?.provider?.profile_photo_url }}
+                resizeMode="cover"
+                source={{uri: serviceDetails?.provider?.profile_photo_url}}
               />
-              :
+            ) : (
               <Image
                 style={styles(theme).profilePicView}
                 source={IMAGES.user_placeholder}
               />
-            }
+            )}
             <Text
-              style={{ alignSelf: 'center', marginLeft: getScaleSize(16) }}
+              style={{alignSelf: 'center', marginLeft: getScaleSize(16)}}
               size={getScaleSize(20)}
               font={FONTS.Lato.SemiBold}
               color={'#0F232F'}>
               {serviceDetails?.provider?.full_name ?? ''}
             </Text>
-            {serviceDetails?.provider?.is_verified &&
+            {serviceDetails?.provider?.is_verified && (
               <Image
                 style={{
                   height: getScaleSize(25),
@@ -417,18 +466,21 @@ export default function RequestDetails(props: any) {
                 }}
                 source={IMAGES.verify}
               />
-            }
+            )}
           </View>
           <View
             style={[
               styles(theme).horizontalView,
-              { marginTop: getScaleSize(16) },
+              {marginTop: getScaleSize(16)},
             ]}>
             <TouchableOpacity
               activeOpacity={1}
-              style={[styles(theme).newButton, { marginRight: getScaleSize(6) }]}
+              style={[styles(theme).newButton, {marginRight: getScaleSize(6)}]}
               onPress={() => {
-                props.navigation.navigate(SCREENS.ChatDetails.identifier);
+                const peerUser = getPeerUser(user?.user_id);
+                props.navigation.navigate(SCREENS.ChatDetails.identifier, {
+                  peerUser,
+                });
               }}>
               <Text
                 size={getScaleSize(14)}
@@ -439,9 +491,11 @@ export default function RequestDetails(props: any) {
             </TouchableOpacity>
             <TouchableOpacity
               activeOpacity={1}
-              style={[styles(theme).newButton, { marginLeft: getScaleSize(6) }]}
+              style={[styles(theme).newButton, {marginLeft: getScaleSize(6)}]}
               onPress={() => {
-                props.navigation.navigate(SCREENS.OtherUserProfile.identifier, { item: serviceDetails?.provider });
+                props.navigation.navigate(SCREENS.OtherUserProfile.identifier, {
+                  item: serviceDetails?.provider,
+                });
               }}>
               <Text
                 size={getScaleSize(14)}
@@ -453,7 +507,7 @@ export default function RequestDetails(props: any) {
           </View>
         </View>
         <Text
-          style={{ marginTop: getScaleSize(24) }}
+          style={{marginTop: getScaleSize(24)}}
           size={getScaleSize(18)}
           font={FONTS.Lato.SemiBold}
           color={theme._323232}>
@@ -468,7 +522,7 @@ export default function RequestDetails(props: any) {
           </Text>
         </View>
         <Text
-          style={{ marginTop: getScaleSize(24) }}
+          style={{marginTop: getScaleSize(24)}}
           size={getScaleSize(18)}
           font={FONTS.Lato.SemiBold}
           color={theme._323232}>
@@ -478,21 +532,26 @@ export default function RequestDetails(props: any) {
           data={serviceDetails?.Supporting_docs ?? []}
           horizontal
           showsHorizontalScrollIndicator={false}
-          contentContainerStyle={{ gap: getScaleSize(16), marginTop: getScaleSize(12) }}
-          renderItem={({ item, index }) => {
+          contentContainerStyle={{
+            gap: getScaleSize(16),
+            marginTop: getScaleSize(12),
+          }}
+          renderItem={({item, index}) => {
             return (
               <TouchableOpacity
                 style={[styles(theme).uploadButton]}
                 activeOpacity={1}
                 onPress={() => {
-                  props.navigation.navigate(SCREENS.WebViewScreen.identifier, { url: item });
+                  props.navigation.navigate(SCREENS.WebViewScreen.identifier, {
+                    url: item,
+                  });
                 }}>
                 <Image
                   style={styles(theme).attachmentIcon}
                   source={IMAGES.pdf_icon}
                 />
                 <Text
-                  style={{ marginTop: getScaleSize(8) }}
+                  style={{marginTop: getScaleSize(8)}}
                   size={getScaleSize(15)}
                   font={FONTS.Lato.Regular}
                   color={theme._818285}>
@@ -503,7 +562,7 @@ export default function RequestDetails(props: any) {
           }}
         />
         <Text
-          style={{ marginTop: getScaleSize(24) }}
+          style={{marginTop: getScaleSize(24)}}
           size={getScaleSize(18)}
           font={FONTS.Lato.SemiBold}
           color={theme._323232}>
@@ -513,13 +572,16 @@ export default function RequestDetails(props: any) {
           data={serviceDetails?.supporting_photo_urls ?? []}
           horizontal
           showsHorizontalScrollIndicator={false}
-          contentContainerStyle={{ gap: getScaleSize(16), marginBottom: getScaleSize(24) }}
-          renderItem={({ item, index }) => {
+          contentContainerStyle={{
+            gap: getScaleSize(16),
+            marginBottom: getScaleSize(24),
+          }}
+          renderItem={({item, index}) => {
             return (
               <Image
                 style={[styles(theme).photosView]}
                 resizeMode="cover"
-                source={{ uri: item }}
+                source={{uri: item}}
               />
             );
           }}
@@ -536,7 +598,7 @@ export default function RequestDetails(props: any) {
             size={getScaleSize(19)}
             font={FONTS.Lato.Bold}
             color={theme.primary}
-            style={{ alignSelf: 'center' }}>
+            style={{alignSelf: 'center'}}>
             {STRING.Reject}
           </Text>
         </TouchableOpacity>
@@ -550,7 +612,7 @@ export default function RequestDetails(props: any) {
             size={getScaleSize(19)}
             font={FONTS.Lato.Bold}
             color={theme.white}
-            style={{ alignSelf: 'center' }}>
+            style={{alignSelf: 'center'}}>
             {STRING.Accept}
           </Text>
         </TouchableOpacity>
@@ -585,7 +647,7 @@ export default function RequestDetails(props: any) {
           paymentRef.current.close();
         }}
         proceedToPay={() => {
-          onAcceptService()
+          onAcceptService();
         }}
       />
       {/* <ModelWebView
@@ -602,7 +664,7 @@ export default function RequestDetails(props: any) {
 
 const styles = (theme: ThemeContextType['theme']) =>
   StyleSheet.create({
-    container: { flex: 1, backgroundColor: theme.white },
+    container: {flex: 1, backgroundColor: theme.white},
     scrolledContainer: {
       marginTop: getScaleSize(19),
       marginHorizontal: getScaleSize(24),
@@ -697,7 +759,6 @@ const styles = (theme: ThemeContextType['theme']) =>
       paddingHorizontal: 16,
     },
     imageUploadContent: {
-
       flexDirection: 'row',
     },
     uploadButton: {

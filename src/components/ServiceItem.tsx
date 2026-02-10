@@ -1,16 +1,34 @@
-import { Image, Modal, StatusBar, StyleSheet, TouchableOpacity, View } from 'react-native'
-import React, { useContext, useState } from 'react'
-import { ThemeContext, ThemeContextType } from '../context/ThemeProvider';
-import { getScaleSize } from '../constant';
+import {
+  Image,
+  Modal,
+  StatusBar,
+  StyleSheet,
+  TouchableOpacity,
+  View,
+} from 'react-native';
+import React, {useContext, useState} from 'react';
+import {ThemeContext, ThemeContextType} from '../context/ThemeProvider';
+import {getScaleSize} from '../constant';
 import Text from './Text';
-import { FONTS, IMAGES } from '../assets';
+import {FONTS, IMAGES} from '../assets';
 import Tooltip from 'react-native-walkthrough-tooltip';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 export default function ServiceItem(props: any) {
 
-    const { item, itemContainer, isSelected, onPress, isReview, isSelectedBox, isManage, isOpen, onRemove, onEdit } = props;
-    const { theme } = useContext<any>(ThemeContext);
+  const {
+    item,
+    itemContainer,
+    isSelected,
+    onPress,
+    isReview,
+    isSelectedBox,
+    isManage,
+    isOpen,
+    onRemove,
+    onEdit,
+  } = props;
+  const {theme} = useContext<any>(ThemeContext);
 
     const [visible, setVisible] = useState(false);
     return (
@@ -131,73 +149,72 @@ export default function ServiceItem(props: any) {
 }
 
 const styles = (theme: ThemeContextType['theme']) =>
-    StyleSheet.create({
-        container: {
-            padding: getScaleSize(10),
-            backgroundColor: theme._F2F2F2,
-            borderRadius: getScaleSize(20),
-            flexDirection: 'row',
-            alignItems: 'center',
-            // position: 'relative',
-            zIndex: 0,
-            overflow: 'visible',
-        },
+  StyleSheet.create({
+    container: {
+      padding: getScaleSize(10),
+      backgroundColor: theme._F2F2F2,
+      borderRadius: getScaleSize(20),
+      flexDirection: 'row',
+      alignItems: 'center',
+      // position: 'relative',
+      zIndex: 0,
+      overflow: 'visible',
+    },
 
-        iconView: {
-            width: getScaleSize(100),
-            height: getScaleSize(80),
-            borderRadius: getScaleSize(12),
-            overflow: 'hidden',
-            backgroundColor: theme._D5D5D5,
-        },
-        reviewIcon: {
-            width: getScaleSize(80),
-            height: getScaleSize(70),
-            borderRadius: getScaleSize(12),
-            overflow: 'hidden',
-            backgroundColor: theme._D5D5D5,
-        },
-        nameView: {
-            flex: 1.0,
-            marginLeft: getScaleSize(16),
-        },
-        icon: {
-            width: getScaleSize(24),
-            height: getScaleSize(24),
-            marginHorizontal: getScaleSize(10)
-        },
-        deleteIcon: {
-            width: getScaleSize(20),
-            height: getScaleSize(20),
-            marginHorizontal: getScaleSize(10)
-        },
-        iconContainer: {
-            paddingVertical: getScaleSize(15),
-            paddingHorizontal: getScaleSize(10),
-        },
-        tooltipContent: {  
-            width: getScaleSize(130),
-            paddingVertical: getScaleSize(12),
-            paddingHorizontal: getScaleSize(13),
-            backgroundColor: '#fff',
-            borderRadius: getScaleSize(6),
-            elevation: getScaleSize(5),
-            shadowColor: theme.black,
-            shadowOffset: { width: 0, height: getScaleSize(2) },
-            shadowOpacity: 0.2,
-            shadowRadius: getScaleSize(4),
-        },
-        dropdownItem: {
-            paddingVertical: getScaleSize(5),
-        },
-        dropdownItemContainer: {
-            flexDirection: 'row',
-            alignItems: 'center',
-           
-        },
-        itemIcon:{
-            width: getScaleSize(20),
-            height: getScaleSize(20),
-            marginLeft: getScaleSize(10),
-        }
-    })
+    iconView: {
+      width: getScaleSize(100),
+      height: getScaleSize(80),
+      borderRadius: getScaleSize(12),
+      overflow: 'hidden',
+      backgroundColor: theme._D5D5D5,
+    },
+    reviewIcon: {
+      width: getScaleSize(80),
+      height: getScaleSize(70),
+      borderRadius: getScaleSize(12),
+      overflow: 'hidden',
+      backgroundColor: theme._D5D5D5,
+    },
+    nameView: {
+      flex: 1.0,
+      marginLeft: getScaleSize(16),
+    },
+    icon: {
+      width: getScaleSize(24),
+      height: getScaleSize(24),
+      marginHorizontal: getScaleSize(10),
+    },
+    deleteIcon: {
+      width: getScaleSize(20),
+      height: getScaleSize(20),
+      marginHorizontal: getScaleSize(10),
+    },
+    iconContainer: {
+      paddingVertical: getScaleSize(15),
+      paddingHorizontal: getScaleSize(10),
+    },
+    tooltipContent: {
+      width: getScaleSize(130),
+      paddingVertical: getScaleSize(12),
+      paddingHorizontal: getScaleSize(13),
+      backgroundColor: '#fff',
+      borderRadius: getScaleSize(6),
+      elevation: getScaleSize(5),
+      shadowColor: theme.black,
+      shadowOffset: {width: 0, height: getScaleSize(2)},
+      shadowOpacity: 0.2,
+      shadowRadius: getScaleSize(4),
+    },
+    dropdownItem: {
+      paddingVertical: getScaleSize(5),
+    },
+    dropdownItemContainer: {
+      flexDirection: 'row',
+      alignItems: 'center',
+    },
+    itemIcon: {
+      width: getScaleSize(20),
+      height: getScaleSize(20),
+      marginLeft: getScaleSize(10),
+    },
+  });

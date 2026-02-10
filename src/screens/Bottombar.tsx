@@ -1,10 +1,10 @@
-import React, { useContext, useEffect, useRef } from 'react';
+import React, {useContext, useEffect, useRef} from 'react';
 
 //COMPONENTS
-import { Tabbar } from '../components';
+import {Tabbar} from '../components';
 
 //PACKAGES
-import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import {createBottomTabNavigator} from '@react-navigation/bottom-tabs';
 
 //PACKAGES
 import { TABS } from '.';
@@ -14,10 +14,11 @@ import { Alert, Linking, PermissionsAndroid, Platform, View } from 'react-native
 const Tab = createBottomTabNavigator();
 
 function BottomBar(props: any) {
-  const { userType } = useContext<any>(AuthContext);
+  const {userType} = useContext<any>(AuthContext);
 
   const isProfile = props?.route?.params?.isProfile ?? false;
-  const isValidationService = props?.route?.params?.isValidationService ?? false;
+  const isValidationService =
+    props?.route?.params?.isValidationService ?? false;
   const isTask = props?.route?.params?.isTask ?? false;
   const isProfessionalProfile = props?.route?.params?.isProfessionalProfile ?? false;
 
@@ -32,13 +33,13 @@ function BottomBar(props: any) {
   }
 
   function getProfessionalRouteName() {
-    console.log('isTask==>', isTask)
+    console.log('isTask==>', isTask);
     if (isTask) {
       return TABS.Task.identifier;
     }if (isProfessionalProfile) {
       return TABS.Profile.identifier;
     } else {
-      return TABS.ProfessionalHome.identifier
+      return TABS.ProfessionalHome.identifier;
     }
   }
 
@@ -184,10 +185,7 @@ function BottomBar(props: any) {
             name={TABS.Request.identifier}
             component={TABS.Request.component}
           />
-          <Tab.Screen
-            name={'plus'}
-            component={() => <View />}
-          />
+          <Tab.Screen name={'plus'} component={() => <View />} />
           <Tab.Screen
             name={TABS.Chat.identifier}
             component={TABS.Chat.component}

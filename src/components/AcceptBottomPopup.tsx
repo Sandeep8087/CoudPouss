@@ -1,24 +1,22 @@
-import React, { useContext, useRef, useState } from 'react';
+import React, {useContext, useRef, useState} from 'react';
 import {
   View,
   StyleSheet,
   TouchableOpacity,
-  Alert,
   Image,
-  Dimensions,
   Animated,
   Easing,
 } from 'react-native';
-import { ThemeContext, ThemeContextType } from '../context';
-import { getScaleSize, useString } from '../constant';
-import { FONTS, IMAGES } from '../assets';
+import {ThemeContext, ThemeContextType} from '../context';
+import {getScaleSize, useString} from '../constant';
+import {FONTS, IMAGES} from '../assets';
 import Text from './Text';
-import { constant } from 'lodash';
+import {constant} from 'lodash';
 import RBSheet from 'react-native-raw-bottom-sheet';
 
 const AcceptBottomPopup = (props: any) => {
   const STRING = useString();
-  const { theme } = useContext<any>(ThemeContext);
+  const {theme} = useContext<any>(ThemeContext);
 
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const slideAnim = useRef(new Animated.Value(50)).current;
@@ -78,7 +76,7 @@ const AcceptBottomPopup = (props: any) => {
   };
 
   return (
-    <View style={{ backgroundColor: 'rgba(0,0,0,0.3)' }}>
+    <View style={{backgroundColor: 'rgba(0,0,0,0.3)'}}>
       <RBSheet
         ref={props.onRef}
         closeOnDragDown={true}
@@ -101,7 +99,7 @@ const AcceptBottomPopup = (props: any) => {
               size={getScaleSize(22)}
               font={FONTS.Lato.Bold}
               color={theme.primary}
-              style={{ alignSelf: 'center', marginTop: getScaleSize(16) }}>
+              style={{alignSelf: 'center', marginTop: getScaleSize(16)}}>
               {STRING.ConfirmServicerequest}
             </Text>
             <Text
@@ -122,13 +120,13 @@ const AcceptBottomPopup = (props: any) => {
               style={styles(theme).backButtonContainer}
               activeOpacity={1}
               onPress={() => {
-                props?.onClose()
+                props?.onClose();
               }}>
               <Text
                 size={getScaleSize(19)}
                 font={FONTS.Lato.Bold}
                 color={theme.primary}
-                style={{ alignSelf: 'center' }}>
+                style={{alignSelf: 'center'}}>
                 {STRING.No}
               </Text>
             </TouchableOpacity>
@@ -136,13 +134,13 @@ const AcceptBottomPopup = (props: any) => {
               style={styles(theme).nextButtonContainer}
               activeOpacity={1}
               onPress={() => {
-                props?.onNavigate()
+                props?.onNavigate();
               }}>
               <Text
                 size={getScaleSize(19)}
                 font={FONTS.Lato.Bold}
                 color={theme.white}
-                style={{ alignSelf: 'center' }}>
+                style={{alignSelf: 'center'}}>
                 {STRING.Yes}
               </Text>
             </TouchableOpacity>
