@@ -9,6 +9,7 @@ import {
 } from './utils';
 import {Storage} from './storage';
 import {REGEX} from './regex';
+import {getPeerUser, convertProviderToPeerUser} from './chatUsers';
 
 export {
   getScaleSize,
@@ -21,4 +22,6 @@ export {
   formatDecimalInput,
   openStripeCheckout,
   requestLocationPermission,
+  getPeerUser,
+  convertProviderToPeerUser,
 };

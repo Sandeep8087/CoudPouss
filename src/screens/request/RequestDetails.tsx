@@ -8,6 +8,8 @@ import {
   TouchableOpacity,
   Image,
   Linking,
+  Modal,
+  TextInput,
 } from 'react-native';
 
 //ASSETS & CONSTANT
@@ -19,6 +21,7 @@ import {
   SHOW_TOAST,
   useString,
 } from '../../constant';
+import {convertProviderToPeerUser} from '../../constant/chatUsers';
 
 //CONTEXT
 import {ThemeContext, ThemeContextType} from '../../context';
@@ -64,6 +67,9 @@ export default function RequestDetails(props: any) {
   const [paymentDetails, setPaymentDetails] = useState<any>({});
   const [visibleModelWebView, setVisibleModelWebView] =
     useState<boolean>(false);
+  const [showOfferModal, setShowOfferModal] = useState(false);
+  const [newQuoteAmount, setNewQuoteAmount] = useState('');
+  const [newQuoteAmountError, setNewQuoteAmountError] = useState('');
 
   useEffect(() => {
     if (item) {
@@ -390,10 +396,9 @@ export default function RequestDetails(props: any) {
             style={styles(theme).negociateButton}
             activeOpacity={1}
             onPress={() => {
-              const peerUser = getPeerUser(user?.user_id);
-              props.navigation.navigate(SCREENS.ChatDetails.identifier, {
-                peerUser,
-              });
+              setNewQuoteAmount('');
+              setNewQuoteAmountError('');
+              setShowOfferModal(true);
             }}>
             <Text
               size={getScaleSize(14)}
@@ -477,10 +482,16 @@ export default function RequestDetails(props: any) {
               activeOpacity={1}
               style={[styles(theme).newButton, {marginRight: getScaleSize(6)}]}
               onPress={() => {
-                const peerUser = getPeerUser(user?.user_id);
-                props.navigation.navigate(SCREENS.ChatDetails.identifier, {
-                  peerUser,
-                });
+                const peerUser = convertProviderToPeerUser(
+                  serviceDetails?.provider,
+                );
+                if (peerUser) {
+                  props.navigation.navigate(SCREENS.ChatDetails.identifier, {
+                    peerUser,
+                  });
+                } else {
+                  SHOW_TOAST('Provider information not found', 'error');
+                }
               }}>
               <Text
                 size={getScaleSize(14)}
@@ -632,7 +643,9 @@ export default function RequestDetails(props: any) {
       />
       <AcceptBottomPopup
         onRef={acceptRef}
-        title={`You are about to confirm a service at the rate of €${serviceDetails?.total_renegotiated ?? 0} with the Provider Wade Warren, Are you sure you want to continue? `}
+        title={`You are about to confirm a service at the rate of €${
+          serviceDetails?.total_renegotiated ?? 0
+        } with the Provider Wade Warren, Are you sure you want to continue? `}
         onClose={() => {
           acceptRef.current.close();
         }}
@@ -650,6 +663,105 @@ export default function RequestDetails(props: any) {
           onAcceptService();
         }}
       />
+      <Modal
+        visible={showOfferModal}
+        transparent={true}
+        animationType="fade"
+        onRequestClose={() => setShowOfferModal(false)}>
+        <View style={styles(theme).modalOverlay}>
+          <View style={styles(theme).modalContent}>
+            <Text
+              size={getScaleSize(18)}
+              font={FONTS.Lato.SemiBold}
+              color={theme._323232}
+              style={{marginBottom: getScaleSize(16)}}>
+              Enter Your Offer Amount
+            </Text>
+            <View
+              style={[
+                styles(theme).inputContainer,
+                {
+                  borderColor: newQuoteAmountError
+                    ? theme._EF5350
+                    : theme._D5D5D5,
+                },
+              ]}>
+              <TextInput
+                style={styles(theme).offerInput}
+                placeholder={'€0.00'}
+                placeholderTextColor={theme._818285}
+                value={newQuoteAmount ? `€${newQuoteAmount}` : ''}
+                keyboardType="decimal-pad"
+                onChangeText={(text: string) => {
+                  setNewQuoteAmount(text.replace('€', ''));
+                  if (text.replace('€', '').trim() === '') {
+                    setNewQuoteAmountError('Please enter an offer amount');
+                  } else {
+                    setNewQuoteAmountError('');
+                  }
+                }}
+              />
+            </View>
+            {newQuoteAmountError ? (
+              <Text
+                style={{marginTop: getScaleSize(8)}}
+                size={getScaleSize(12)}
+                font={FONTS.Lato.Regular}
+                color={theme._EF5350}>
+                {newQuoteAmountError}
+              </Text>
+            ) : null}
+            <View style={styles(theme).modalButtonContainer}>
+              <TouchableOpacity
+                style={styles(theme).modalCancelButton}
+                activeOpacity={0.8}
+                onPress={() => setShowOfferModal(false)}>
+                <Text
+                  size={getScaleSize(16)}
+                  font={FONTS.Lato.Medium}
+                  color={theme.primary}>
+                  Cancel
+                </Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={styles(theme).modalSubmitButton}
+                activeOpacity={0.8}
+                onPress={() => {
+                  if (!newQuoteAmount || newQuoteAmount.trim() === '') {
+                    setNewQuoteAmountError('Please enter an offer amount');
+                    return;
+                  }
+                  setShowOfferModal(false);
+                  const peerUser = convertProviderToPeerUser(
+                    serviceDetails?.provider,
+                  );
+                  if (peerUser) {
+                    props.navigation.navigate(SCREENS.ChatDetails.identifier, {
+                      peerUser,
+                      offerAmount: newQuoteAmount,
+                      pricingBreakdown: {
+                        serviceName: serviceDetails?.sub_category_name,
+                        originalValuation:
+                          serviceDetails?.total_renegotiated || '0',
+                        initialQuote: serviceDetails?.validation_amount,
+                        yourOffer: newQuoteAmount,
+                      },
+                    });
+                  } else {
+                    SHOW_TOAST('Provider information not found', 'error');
+                  }
+                }}>
+                <Text
+                  size={getScaleSize(16)}
+                  font={FONTS.Lato.Medium}
+                  color={theme.white}>
+                  Submit
+                </Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
       {/* <ModelWebView
         visible={visibleModelWebView}
         onRequestClose={() => {
@@ -806,5 +918,52 @@ const styles = (theme: ThemeContextType['theme']) =>
       paddingVertical: getScaleSize(18),
       backgroundColor: theme.primary,
       marginLeft: getScaleSize(8),
+    },
+    modalOverlay: {
+      flex: 1,
+      backgroundColor: 'rgba(0, 0, 0, 0.5)',
+      justifyContent: 'center',
+      alignItems: 'center',
+    },
+    modalContent: {
+      backgroundColor: theme.white,
+      borderRadius: getScaleSize(16),
+      padding: getScaleSize(24),
+      width: '85%',
+      maxWidth: getScaleSize(350),
+    },
+    inputContainer: {
+      borderWidth: 1,
+      borderRadius: getScaleSize(12),
+      paddingHorizontal: getScaleSize(16),
+      height: getScaleSize(56),
+      justifyContent: 'center',
+    },
+    offerInput: {
+      fontSize: getScaleSize(16),
+      color: theme._323232,
+      padding: 0,
+    },
+    modalButtonContainer: {
+      flexDirection: 'row',
+      marginTop: getScaleSize(24),
+      gap: getScaleSize(12),
+    },
+    modalCancelButton: {
+      flex: 1,
+      borderWidth: 1,
+      borderColor: theme.primary,
+      borderRadius: getScaleSize(8),
+      paddingVertical: getScaleSize(12),
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    modalSubmitButton: {
+      flex: 1,
+      backgroundColor: theme.primary,
+      borderRadius: getScaleSize(8),
+      paddingVertical: getScaleSize(12),
+      alignItems: 'center',
+      justifyContent: 'center',
     },
   });

@@ -31,10 +31,12 @@ import {SCREENS} from '..';
 import {CommonActions} from '@react-navigation/native';
 import {launchImageLibrary} from 'react-native-image-picker';
 import {API} from '../../api';
+import {upsertUserProfile, testFirebaseConnection} from '../../services/chat';
 
 export default function Login(props: any) {
   const STRING = useString();
-  const {setUser, setUserType, setProfile} = useContext<any>(AuthContext);
+  const {setUser, setUserType, setProfile, profile} =
+    useContext<any>(AuthContext);
   const {theme} = useContext<any>(ThemeContext);
 
   const [email, setEmail] = useState('');
@@ -44,6 +46,8 @@ export default function Login(props: any) {
   const [emailError, setEmailError] = useState('');
   const [isLoading, setLoading] = useState(false);
   const [visibleCountry, setVisibleCountry] = useState(false);
+
+  console.log('profile==>', profile);
   // const [countryCode, setCountryCode] = useState('+91');
   // const [isPhoneNumber, setIsPhoneNumber] = useState(false);
 
@@ -78,10 +82,10 @@ export default function Login(props: any) {
     //     password: password,
     //   }
     // } else {
-    const  params = {
-        email: email,
-        password: password,
-      }
+    const params = {
+      email: email,
+      password: password,
+    };
     // }
     try {
       setLoading(true);
@@ -106,8 +110,47 @@ export default function Login(props: any) {
       setLoading(true);
       const result = await API.Instance.get(API.API_ROUTES.getUserDetails);
       if (result.status) {
-        console.log('profile result==>', JSON.stringify(result?.data?.data));
+        console.log('=== Full API Response ===');
+        console.log(JSON.stringify(result?.data, null, 2));
+
+        // API returns data.data.user structure
+        const userProfileData = result?.data?.data?.user;
+        console.log('=== Login: Profile Data Received ===');
+        console.log(
+          'userProfileData:',
+          JSON.stringify(userProfileData, null, 2),
+        );
+        console.log('All available keys:', Object.keys(userProfileData || {}));
         setProfile(result?.data?.data);
+
+        // Save user to Firebase for chat functionality
+        try {
+          console.log('🧪 Testing Firebase connection first...');
+          const isConnected = await testFirebaseConnection();
+          if (!isConnected) {
+            console.log('⚠️ Firebase connection failed, but continuing...');
+          }
+
+          // Map profile data fields correctly - use actual field names from API
+          console.log('=== Extracting Firebase Data ===');
+          const firebaseUserData = {
+            user_id: userProfileData?.id,
+            name: userProfileData?.first_name || '',
+            email: userProfileData?.email || '',
+            mobile: userProfileData?.phone_number || '',
+            role: userProfileData?.role || '',
+            address:
+              userProfileData?.elder_address || userProfileData?.address || '',
+            avatarUrl: userProfileData?.profile_photo_url || '',
+          };
+          console.log('=== Firebase Data to Send ===');
+          console.log(JSON.stringify(firebaseUserData, null, 2));
+          await upsertUserProfile(firebaseUserData);
+          console.log('✅ User saved to Firebase successfully');
+        } catch (firebaseError: any) {
+          console.log('❌ Failed to save user to Firebase:', firebaseError);
+        }
+
         props.navigation.dispatch(
           CommonActions.reset({
             index: 0,
@@ -174,20 +217,20 @@ export default function Login(props: any) {
                 isError={emailError}
               />
             ) : ( */}
-              <Input
-                placeholder={STRING.enter_email}
-                placeholderTextColor={theme._939393}
-                inputTitle={STRING.email}
-                inputColor={false}
-                value={email}
-                keyboardType="email-address"
-                autoCapitalize="none"
-                onChangeText={text => {
-                  setEmail(text);
-                  setEmailError('');
-                }}
-                isError={emailError}
-              />
+            <Input
+              placeholder={STRING.enter_email}
+              placeholderTextColor={theme._939393}
+              inputTitle={STRING.email}
+              inputColor={false}
+              value={email}
+              keyboardType="email-address"
+              autoCapitalize="none"
+              onChangeText={text => {
+                setEmail(text);
+                setEmailError('');
+              }}
+              isError={emailError}
+            />
             {/* )} */}
           </View>
           <View style={styles(theme).inputContainer}>

@@ -51,3 +51,20 @@ export function getPeerUser(currentUserId?: string) {
     avatarUrl: undefined,
   };
 }
+
+/**
+ * Convert provider/service data to peerUser format for chat
+ * Maps provider data from API response to the format expected by ChatDetails screen
+ */
+export function convertProviderToPeerUser(provider?: any) {
+  if (!provider) {
+    return null;
+  }
+
+  return {
+    user_id: provider?.id,
+    name: provider?.full_name || provider?.first_name || '',
+    email: provider?.email || '',
+    avatarUrl: provider?.profile_photo_url || undefined,
+  };
+}

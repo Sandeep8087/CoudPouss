@@ -41,18 +41,26 @@ export const buildThreadId = (first: string, second: string) =>
   [first, second].sort().join('__');
 
 export async function upsertUserProfile(user: FirestoreUser) {
+  console.log('=== upsertUserProfile Called ===');
+  console.log('Received user object:', JSON.stringify(user, null, 2));
+  console.log('user_id:', user?.user_id);
+
   if (!user?.user_id) {
+    console.log('❌ ERROR: user_id is missing or undefined!');
+    console.log('User object keys:', Object.keys(user || {}));
     return;
   }
 
-  const userRef = firestore().collection(USERS_COLLECTION).doc(user.user_id);
-  const snapshot = await userRef.get();
-  const timestamp = firestore.FieldValue.serverTimestamp();
+  try {
+    console.log('✅ user_id exists:', user.user_id);
+    const userRef = firestore().collection(USERS_COLLECTION).doc(user.user_id);
+    const snapshot = await userRef.get();
+    const timestamp = firestore.FieldValue.serverTimestamp();
 
-  const exists = snapshot.exists();
+    const exists = snapshot.exists();
+    console.log('Document exists:', exists);
 
-  await userRef.set(
-    {
+    const dataToSave = {
       user_id: user.user_id,
       name: user.name ?? '',
       email: user.email ?? '',
@@ -62,9 +70,33 @@ export async function upsertUserProfile(user: FirestoreUser) {
       avatarUrl: user.avatarUrl ?? '',
       updatedAt: timestamp,
       createdAt: exists ? snapshot.data()?.createdAt ?? timestamp : timestamp,
-    },
-    {merge: true},
-  );
+    };
+
+    console.log('Data to save:', JSON.stringify(dataToSave, null, 2));
+
+    await userRef.set(dataToSave, {merge: true});
+    console.log('✅ User successfully saved to Firebase:', user.user_id);
+  } catch (error) {
+    console.log('❌ Error saving user to Firebase:', error);
+    throw error;
+  }
+}
+
+export async function testFirebaseConnection() {
+  try {
+    console.log('=== Testing Firebase Connection ===');
+    const testRef = firestore().collection('test').doc('connection_test');
+    await testRef.set({
+      timestamp: firestore.FieldValue.serverTimestamp(),
+      test: true,
+      message: 'Firebase connection test',
+    });
+    console.log('✅ Firebase connection successful!');
+    return true;
+  } catch (error) {
+    console.log('❌ Firebase connection failed!', error);
+    return false;
+  }
 }
 
 export async function ensureThreadDocument(

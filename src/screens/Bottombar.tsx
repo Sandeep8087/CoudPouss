@@ -1,30 +1,35 @@
-import React, { useContext, useEffect, useRef } from 'react';
-import { Alert, Linking, PermissionsAndroid, Platform, View } from 'react-native';
+import React, {useContext, useEffect, useRef} from 'react';
+import {Alert, Linking, PermissionsAndroid, Platform, View} from 'react-native';
 
 //COMPONENTS
-import { Tabbar } from '../components';
+import {Tabbar} from '../components';
 
 //SCREENS
-import { TABS } from '.';
+import {TABS} from '.';
 
 //CONTEXT
-import { AuthContext } from '../context';
+import {AuthContext} from '../context';
 
 //PACKAGES
-import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import { getApp } from '@react-native-firebase/app';
-import { getMessaging, registerDeviceForRemoteMessages, AuthorizationStatus } from '@react-native-firebase/messaging';
+import {createBottomTabNavigator} from '@react-navigation/bottom-tabs';
+import {getApp} from '@react-native-firebase/app';
+import {
+  getMessaging,
+  registerDeviceForRemoteMessages,
+  AuthorizationStatus,
+} from '@react-native-firebase/messaging';
 
 const Tab = createBottomTabNavigator();
 
 function BottomBar(props: any) {
-  const { userType } = useContext<any>(AuthContext);
+  const {userType} = useContext<any>(AuthContext);
 
   const isProfile = props?.route?.params?.isProfile ?? false;
   const isValidationService =
     props?.route?.params?.isValidationService ?? false;
   const isTask = props?.route?.params?.isTask ?? false;
-  const isProfessionalProfile = props?.route?.params?.isProfessionalProfile ?? false;
+  const isProfessionalProfile =
+    props?.route?.params?.isProfessionalProfile ?? false;
 
   function getInitialRouteName() {
     if (isProfile) {
@@ -40,7 +45,8 @@ function BottomBar(props: any) {
     console.log('isTask==>', isTask);
     if (isTask) {
       return TABS.Task.identifier;
-    } if (isProfessionalProfile) {
+    }
+    if (isProfessionalProfile) {
       return TABS.Profile.identifier;
     } else {
       return TABS.ProfessionalHome.identifier;
@@ -48,15 +54,15 @@ function BottomBar(props: any) {
   }
 
   useEffect(() => {
-    getNotificationTokens()
-  }, [])
+    getNotificationTokens();
+  }, []);
 
   async function getNotificationTokens() {
     try {
-      const token: any = await requestPermissionsAndToken()
-      console.log('token===', JSON.stringify(token))
+      const token: any = await requestPermissionsAndToken();
+      console.log('token===', JSON.stringify(token));
       if (token) {
-        console.log('token===', JSON.stringify(token))
+        console.log('token===', JSON.stringify(token));
         // onUpdateFcmToken(token)
       } else {
         console.log('No FCM token received');
@@ -69,30 +75,35 @@ function BottomBar(props: any) {
   async function requestPermissionsAndToken() {
     if (Platform.OS === 'android') {
       try {
-        const status = await PermissionsAndroid.request(PermissionsAndroid.PERMISSIONS.POST_NOTIFICATIONS);
+        const status = await PermissionsAndroid.request(
+          PermissionsAndroid.PERMISSIONS.POST_NOTIFICATIONS,
+        );
         if (status) {
           const app: any = getApp();
           let fcmToken = await getMessaging(app).getToken();
-          return fcmToken
+          return fcmToken;
         }
-      }
-      catch (error) {
-        Alert.alert('Notification was declined.', 'Go to your settings and enable notifications always.', [{
-          text: 'No',
-          onPress: () => {
+      } catch (error) {
+        Alert.alert(
+          'Notification was declined.',
+          'Go to your settings and enable notifications always.',
+          [
+            {
+              text: 'No',
+              onPress: () => {},
+            },
+            {
+              text: 'Open Settings',
+              onPress: () => {
+                Linking.openSettings();
+              },
+            },
+          ],
+        );
 
-          }
-        }, {
-          text: 'Open Settings',
-          onPress: () => {
-            Linking.openSettings()
-          }
-        }])
-
-        return null
+        return null;
       }
-    }
-    else {
+    } else {
       const fcmToken = await requestFCMToken();
       return fcmToken;
     }
@@ -123,7 +134,7 @@ function BottomBar(props: any) {
           'Notification was declined.',
           'Go to your settings and enable notifications always.',
           [
-            { text: 'No', style: 'cancel' },
+            {text: 'No', style: 'cancel'},
             {
               text: 'Open Settings',
               onPress: () => {

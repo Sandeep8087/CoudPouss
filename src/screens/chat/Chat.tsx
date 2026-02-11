@@ -1,20 +1,17 @@
-import React, {useContext, useState} from 'react';
+import React, {useContext, useEffect, useState, useMemo} from 'react';
 import {
   View,
-  StatusBar,
   StyleSheet,
   TouchableOpacity,
   Image,
-  Platform,
-  ActivityIndicator,
-  FlatList,
+  ScrollView,
 } from 'react-native';
 
 //ASSETS
 import {FONTS, IMAGES} from '../../assets';
 
 //CONTEXT
-import {ThemeContext, ThemeContextType} from '../../context';
+import {ThemeContext, ThemeContextType, AuthContext} from '../../context';
 
 //CONSTANT
 import {getScaleSize, useString} from '../../constant';
@@ -22,16 +19,24 @@ import {getScaleSize, useString} from '../../constant';
 //COMPONENT
 import {Header, SearchComponent, Text} from '../../components';
 
-//PACKAGES
-import {useFocusEffect} from '@react-navigation/native';
+//SERVICES
+import {ChatThread, subscribeToThreads} from '../../services/chat';
+import {FirebaseFirestoreTypes} from '@react-native-firebase/firestore';
+
 import {SCREENS} from '..';
 
 export default function Chat(props: any) {
   const STRING = useString();
   const {theme} = useContext<any>(ThemeContext);
+  const {profile} = useContext<any>(AuthContext);
+
+  const [threads, setThreads] = useState<ChatThread[]>([]);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [_isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
-    if (!user?.user_id) {
+    const userId = profile?.user?.id;
+    if (!userId) {
       setThreads([]);
       setIsLoading(false);
       return;
@@ -39,7 +44,7 @@ export default function Chat(props: any) {
 
     setIsLoading(true);
     const unsubscribe = subscribeToThreads(
-      user.user_id,
+      userId,
       results => {
         setThreads(results);
         setIsLoading(false);
@@ -51,22 +56,24 @@ export default function Chat(props: any) {
     );
 
     return unsubscribe;
-  }, [user?.user_id]);
+  }, [profile?.user?.id]);
 
   const filteredThreads = useMemo(() => {
+    const userId = profile?.user?.id;
     const query = searchQuery.trim().toLowerCase();
     if (!query) {
       return threads;
     }
 
     return threads.filter(thread => {
-      const peer = getPeerMeta(thread, user?.user_id);
+      const peer = getPeerMeta(thread, userId);
       return peer.name.toLowerCase().includes(query);
     });
-  }, [threads, searchQuery, user?.user_id]);
+  }, [threads, searchQuery, profile?.user?.id]);
 
   const renderThread = ({item}: {item: ChatThread}) => {
-    const peer = getPeerMeta(item, user?.user_id);
+    const userId = profile?.user?.id;
+    const peer = getPeerMeta(item, userId);
     return (
       <TouchableOpacity
         style={styles(theme).itemContainer}
@@ -119,53 +126,55 @@ export default function Chat(props: any) {
     <View style={styles(theme).container}>
       <Header type="profile" screenName={STRING.Chat} />
       <View style={styles(theme).searchContainer}>
-        <SearchComponent />
+        <SearchComponent
+          value={searchQuery}
+          onChangeText={setSearchQuery}
+          onPressMicrophone={() => {}}
+        />
       </View>
       <ScrollView
         style={styles(theme).scrolledContainer}
         showsVerticalScrollIndicator={false}>
-        {['', '', '', '', ''].map((item: any, index: number) => {
-          return (
-            <TouchableOpacity
-              style={styles(theme).itemContainer}
-              activeOpacity={1}
-              onPress={() => {
-                props.navigation.navigate(SCREENS.ChatDetails.identifier);
-              }}>
-              <Image
-                style={styles(theme).userImage}
-                source={IMAGES.user_placeholder}
-              />
-              <View
-                style={{
-                  alignSelf: 'center',
-                  marginLeft: getScaleSize(12),
-                  flex: 1.0,
-                }}>
-                <Text
-                  size={getScaleSize(16)}
-                  font={FONTS.Lato.Medium}
-                  color={theme._2B2B2B}>
-                  {'Emily Johnson'}
-                </Text>
-                <Text
-                  size={getScaleSize(12)}
-                  font={FONTS.Lato.Regular}
-                  color={theme._ACADAD}>
-                  {'I really appreciated your feedback on the project;'}
-                </Text>
-              </View>
-              <View style={styles(theme).messageContainer}>
-                <Text
-                  size={getScaleSize(12)}
-                  font={FONTS.Lato.Medium}
-                  color={theme.white}>
-                  {'1'}
-                </Text>
-              </View>
-            </TouchableOpacity>
-          );
-        })}
+        {filteredThreads.length > 0
+          ? filteredThreads.map(item => renderThread({item}))
+          : ['', '', '', '', ''].map((_: any, index: number) => {
+              return (
+                <TouchableOpacity
+                  key={index}
+                  style={styles(theme).itemContainer}
+                  activeOpacity={1}
+                  onPress={() => {
+                    props.navigation.navigate(SCREENS.ChatDetails.identifier);
+                  }}>
+                  <Image
+                    style={styles(theme).userImage}
+                    source={IMAGES.user_placeholder}
+                  />
+                  <View style={styles(theme).threadContent}>
+                    <Text
+                      size={getScaleSize(16)}
+                      font={FONTS.Lato.Medium}
+                      color={theme._2B2B2B}>
+                      {'Emily Johnson'}
+                    </Text>
+                    <Text
+                      size={getScaleSize(12)}
+                      font={FONTS.Lato.Regular}
+                      color={theme._ACADAD}>
+                      {'I really appreciated your feedback on the project;'}
+                    </Text>
+                  </View>
+                  <View style={styles(theme).messageContainer}>
+                    <Text
+                      size={getScaleSize(12)}
+                      font={FONTS.Lato.Medium}
+                      color={theme.white}>
+                      {'1'}
+                    </Text>
+                  </View>
+                </TouchableOpacity>
+              );
+            })}
       </ScrollView>
     </View>
   );
@@ -232,6 +241,15 @@ const styles = (theme: ThemeContextType['theme']) =>
     itemContainer: {
       marginBottom: getScaleSize(24),
       flexDirection: 'row',
+    },
+    threadContent: {
+      alignSelf: 'center',
+      marginLeft: getScaleSize(12),
+      flex: 1.0,
+    },
+    threadMeta: {
+      alignSelf: 'center',
+      marginRight: getScaleSize(8),
     },
     messageContainer: {
       height: getScaleSize(24),
