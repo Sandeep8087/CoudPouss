@@ -29,7 +29,6 @@ import { getScaleSize } from '../../constant';
 import {
   AssistanceItems,
   CalendarComponent,
-  CategoryDropdown,
   Header,
   Input,
   ProgressSlider,

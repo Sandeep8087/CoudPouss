@@ -15,6 +15,12 @@ if linkage != nil
 end
 
  pod 'IQKeyboardManagerSwift', :git => 'https://github.com/douglasjunior/IQKeyboardManager.git', :branch => 'react-native-keyboard-manager'
+ pod 'FirebaseCore', :modular_headers => true
+ pod 'GoogleUtilities', :modular_headers => true
+ pod 'FirebaseAuthInterop', modular_headers: true
+ pod 'FirebaseAppCheckInterop', modular_headers: true
+ pod 'RecaptchaInterop', modular_headers: true
+ pod 'FirebaseFirestoreInternal', modular_headers: true
 
 target 'coudPouss' do
   config = use_native_modules!

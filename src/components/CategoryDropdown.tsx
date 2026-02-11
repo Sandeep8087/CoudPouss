@@ -1,7 +1,7 @@
-import React, {useContext, useState} from 'react';
-import {View, StyleSheet, Image, StyleProp, ViewStyle} from 'react-native';
-import {Dropdown} from 'react-native-element-dropdown';
-import {IMAGES} from '../assets/images';
+import React, { useContext, useState } from 'react';
+import { View, StyleSheet, Image, StyleProp, ViewStyle } from 'react-native';
+import { Dropdown } from 'react-native-element-dropdown';
+import { IMAGES } from '../assets/images';
 import Text from './Text';
 import { getScaleSize } from '../constant/scaleSize';
 import { FONTS } from '../assets';
@@ -9,17 +9,16 @@ import { ThemeContext, ThemeContextType } from '../context/ThemeProvider';
 import { arrayIcons, useString } from '../constant';
 
 interface DropdownProps {
-  container?: StyleProp<ViewStyle>;
-  data?: any;
-  selectedItem?: any;
-  onChange: (item: any) => void;
+    container?: StyleProp<ViewStyle>;
+    data?: any;
+    selectedItem?: any;
+    onChange: (item: any) => void;
 }
 
 const CategoryDropdown = (props: DropdownProps) => {
-  const {container, data, selectedItem, onChange} = props;
-  const {theme} = useContext<any>(ThemeContext);
 
-  const STRING = useString();
+    const { container, data, selectedItem, onChange } = props;
+    const { theme } = useContext<any>(ThemeContext);
 
     const STRING = useString();
     
@@ -87,57 +86,7 @@ const CategoryDropdown = (props: DropdownProps) => {
                 }}
             />
         </View>
-        {isSelected ? (
-          <Image
-            source={IMAGES.ic_radio_select}
-            style={styles(theme).radioInner}
-          />
-        ) : (
-          <Image
-            source={IMAGES.ic_radio_unselect}
-            style={styles(theme).radioInner}
-          />
-        )}
-      </View>
     );
-  };
-
-  return (
-    <View style={container}>
-      <Dropdown
-        style={[styles(theme).dropdown]}
-        placeholderStyle={styles(theme).placeholderStyle}
-        selectedTextStyle={styles(theme).selectedTextStyle}
-        containerStyle={styles(theme).containerStyle}
-        data={data}
-        showsVerticalScrollIndicator={false}
-        maxHeight={getScaleSize(400)}
-        labelField="label"
-        valueField="value"
-        placeholder={STRING.select_category}
-        value={selectedItem?.value}
-        onFocus={() => setIsFocus(true)}
-        onBlur={() => setIsFocus(false)}
-        onChange={item => {
-          onChange(item);
-          setIsFocus(false);
-        }}
-        renderItem={renderItem}
-        renderLeftIcon={() => {
-          return (
-            <>
-              {selectedItem?.icon && (
-                <Image
-                  source={selectedItem?.icon}
-                  style={[styles(theme).icon, {tintColor: theme._2C6587}]}
-                />
-              )}
-            </>
-          );
-        }}
-      />
-    </View>
-  );
 };
 
 const styles = (theme: ThemeContextType['theme']) =>

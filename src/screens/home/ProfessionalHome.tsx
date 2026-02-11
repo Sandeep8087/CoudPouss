@@ -194,9 +194,9 @@ export default function ProfessionalHome(props: any) {
           }}
         />
       </View>
-      <View style={{height: 400}}>
-        <SpeechToText />
-      </View>
+      {/* <View style={{height: 400}}>
+        {/* <SpeechToText /> */}
+      {/* </View> */} 
       <ScrollView
         style={styles(theme).scrolledContainer}
         showsVerticalScrollIndicator={false}>
