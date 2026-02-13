@@ -89,6 +89,8 @@ export default function OtherUserProfile(props: any) {
     }
   };
 
+  console.log('userProfile?.profile_photo_url', userProfile?.profile_photo_url)
+
   return (
     <View style={styles(theme).container}>
       <Header
@@ -151,20 +153,23 @@ export default function OtherUserProfile(props: any) {
                   style={{alignSelf: 'center'}}>
                   {'4.6'}
                 </Text> */}
-                <Image
-                  style={{
-                    height: getScaleSize(24),
-                    width: getScaleSize(24),
-                    alignSelf: 'center',
-                  }}
-                  source={IMAGES.verify}
-                />
+                {item?.is_certified === true &&
+                  <Image
+                    style={{
+                      height: getScaleSize(24),
+                      width: getScaleSize(24),
+                      alignSelf: 'center',
+                    }}
+                    source={IMAGES.verify}
+                  />
+                }
                 <Text
                   size={getScaleSize(12)}
                   font={FONTS.Lato.Medium}
                   color={'#214C65'}
-                  style={{ alignSelf: 'center', marginTop: getScaleSize(4) }}>
-                  {STRING.Certified}
+                  align='center'
+                  style={{ marginTop: getScaleSize(4) }}>
+                  {item?.is_certified === true ? STRING.Certified : 'Not\ncertified'}
                 </Text>
               </View>
             </View>

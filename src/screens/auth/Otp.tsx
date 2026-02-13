@@ -52,6 +52,7 @@ export default function Otp(props: any) {
         return () => clearInterval(interval);
     }, [isResendDisabled]);
 
+    
     async function onOtp() {
         if (isFromSignup) {
             onSignup()
@@ -200,7 +201,7 @@ export default function Otp(props: any) {
                         font={FONTS.Lato.SemiBold}
                         color={theme._939393}
                         style={{ marginBottom: getScaleSize(32) }}>
-                        {STRING.To_reset_your_password_Please_enter_the_4_Digit_PIN_sent_to_your_Email_or_Phone_Number}
+                        {STRING.please_enter_four_digit_pin_sent_on_email}
                     </Text>
                     <View style={styles(theme).inputContainer}>
                         <Text

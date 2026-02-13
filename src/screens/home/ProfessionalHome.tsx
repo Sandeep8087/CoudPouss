@@ -1,4 +1,4 @@
-import React, {useContext, useEffect, useState} from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import {
   View,
   StatusBar,
@@ -16,13 +16,13 @@ import {
 } from 'react-native';
 
 //ASSETS
-import {FONTS, IMAGES} from '../../assets';
+import { FONTS, IMAGES } from '../../assets';
 
 //API
-import {API} from '../../api';
+import { API } from '../../api';
 
 //CONTEXT
-import {AuthContext, ThemeContext, ThemeContextType} from '../../context';
+import { AuthContext, ThemeContext, ThemeContextType } from '../../context';
 
 //CONSTANT
 import {
@@ -52,20 +52,26 @@ import {
 } from '@react-navigation/native';
 
 //SCREENS
-import {SCREENS} from '..';
+import { SCREENS } from '..';
 import Geolocation from '@react-native-community/geolocation';
 
 export default function ProfessionalHome(props: any) {
+
+  const skipSubscription = props?.route?.params?.skipSubscription;
+
+  console.log('skipSubscription',skipSubscription)
+
   const STRING = useString();
 
-  const {theme} = useContext<any>(ThemeContext);
+  const { theme } = useContext<any>(ThemeContext);
 
-  const {profile} = useContext(AuthContext);
+  const { profile } = useContext(AuthContext);
 
   console.log('profile==', profile);
 
   const [isLoading, setLoading] = useState(false);
   const [serviceList, setServiceList] = useState<any>([]);
+  const [searchText, setSearchText] = useState('');
 
   const isFocused = useIsFocused();
 
@@ -88,10 +94,10 @@ export default function ProfessionalHome(props: any) {
 
       Geolocation.getCurrentPosition(
         (position: any) => {
-          const {latitude, longitude} = position.coords;
+          const { latitude, longitude } = position.coords;
           console.log('latitude', latitude);
           console.log('longitude', longitude);
-          getAllServices({latitude, longitude});
+          getAllServices({ latitude, longitude });
         },
         (error: any) => {
           setLoading(false);
@@ -104,6 +110,7 @@ export default function ProfessionalHome(props: any) {
         },
       );
     } catch (error: any) {
+       if (skipSubscription) return;
       setLoading(false);
       SHOW_TOAST(error?.message ?? '', 'error');
     }
@@ -117,6 +124,7 @@ export default function ProfessionalHome(props: any) {
       const result: any = await API.Instance.get(
         `${API.API_ROUTES.getProfessionalAllServices}?provider_lat=${location?.latitude}&provider_lon=${location?.longitude}&page=${page}&limit=${limit}`,
       );
+      setLoading(false)
       if (result?.status) {
         console.log('result==>', result?.data?.data);
         setServiceList(result.data.data ?? []);
@@ -157,7 +165,7 @@ export default function ProfessionalHome(props: any) {
         <TouchableOpacity
           style={[
             styles(theme).notifiationIcon,
-            {marginRight: getScaleSize(8)},
+            { marginRight: getScaleSize(8) },
           ]}
           activeOpacity={1}
           onPress={() => {
@@ -177,7 +185,7 @@ export default function ProfessionalHome(props: any) {
           {profile?.user?.profile_photo_url ? (
             <Image
               style={styles(theme).profilePic}
-              source={{uri: profile?.user?.profile_photo_url}}
+              source={{ uri: profile?.user?.profile_photo_url }}
             />
           ) : (
             <Image
@@ -187,16 +195,18 @@ export default function ProfessionalHome(props: any) {
           )}
         </TouchableOpacity>
       </View>
-      <View style={styles(theme).searchView}>
+      {/* <View style={styles(theme).searchView}>
         <SearchComponent
+          value={searchText}
+          onChangeText={setSearchText}
           onPressMicrophone={() => {
             console.log('onPressMicrophone');
           }}
         />
-      </View>
+      </View> */}
       {/* <View style={{height: 400}}>
         {/* <SpeechToText /> */}
-      {/* </View> */} 
+      {/* </View> */}
       <ScrollView
         style={styles(theme).scrolledContainer}
         showsVerticalScrollIndicator={false}>
@@ -205,7 +215,7 @@ export default function ProfessionalHome(props: any) {
           resizeMode="cover"
           source={IMAGES.homeBanner}>
           <View style={styles(theme).textView}>
-            <View style={{flexDirection: 'row', alignItems: 'center'}}>
+            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
               <Text
                 size={getScaleSize(40)}
                 font={FONTS.Lato.Bold}
@@ -221,7 +231,7 @@ export default function ProfessionalHome(props: any) {
               </Text>
             </View>
             <Text
-              style={{marginTop: getScaleSize(8)}}
+              style={{ marginTop: getScaleSize(8) }}
               size={getScaleSize(12)}
               font={FONTS.Lato.Regular}
               color={theme.white}>
@@ -234,7 +244,7 @@ export default function ProfessionalHome(props: any) {
             <View
               style={[
                 styles(theme).directionView,
-                {marginBottom: getScaleSize(24)},
+                { marginBottom: getScaleSize(24) },
               ]}>
               <Text
                 size={getScaleSize(20)}
@@ -245,7 +255,7 @@ export default function ProfessionalHome(props: any) {
                 }}>
                 {STRING.ExploreServiceRequests}
               </Text>
-              <View style={{flex: 1}}></View>
+              <View style={{ flex: 1 }}></View>
               {serviceList?.open_services?.length > 0 && (
                 <TouchableOpacity
                   onPress={() => {
@@ -300,7 +310,7 @@ export default function ProfessionalHome(props: any) {
               </Text>
               {serviceList?.recent_tasks?.data?.length > 0 && (
                 <TouchableOpacity
-                  style={{paddingVertical: getScaleSize(8)}}
+                  style={{ paddingVertical: getScaleSize(8) }}
                   onPress={() => {
                     props.navigation.dispatch(
                       CommonActions.reset({
@@ -308,7 +318,7 @@ export default function ProfessionalHome(props: any) {
                         routes: [
                           {
                             name: SCREENS.BottomBar.identifier,
-                            params: {isTask: true},
+                            params: { isTask: true },
                           },
                         ],
                       }),
@@ -413,7 +423,7 @@ export default function ProfessionalHome(props: any) {
 
 const styles = (theme: ThemeContextType['theme']) =>
   StyleSheet.create({
-    container: {flex: 1, backgroundColor: theme.white},
+    container: { flex: 1, backgroundColor: theme.white },
     headerContainer: {
       flexDirection: 'row',
       marginHorizontal: getScaleSize(22),

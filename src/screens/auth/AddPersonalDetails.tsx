@@ -7,17 +7,17 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
-import React, {useContext, useEffect, useState} from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 
 //CONTEXT
-import {AuthContext, ThemeContext, ThemeContextType} from '../../context';
+import { AuthContext, ThemeContext, ThemeContextType } from '../../context';
 
 //CONSTANT & ASSETS
-import {FONTS, IMAGES} from '../../assets';
-import {getScaleSize, SHOW_TOAST, Storage, useString} from '../../constant';
+import { FONTS, IMAGES } from '../../assets';
+import { getScaleSize, REGEX, SHOW_TOAST, Storage, useString } from '../../constant';
 
 //SCREENS
-import {SCREENS} from '..';
+import { SCREENS } from '..';
 
 //COMPONENTS
 import {
@@ -27,15 +27,15 @@ import {
   Button,
   SelectCountrySheet,
 } from '../../components';
-import {CommonActions} from '@react-navigation/native';
-import {API} from '../../api';
-import {launchImageLibrary} from 'react-native-image-picker';
+import { CommonActions } from '@react-navigation/native';
+import { API } from '../../api';
+import { launchImageLibrary } from 'react-native-image-picker';
 
 export default function AddPersonalDetails(props: any) {
   const STRING = useString();
 
-  const {theme} = useContext<any>(ThemeContext);
-  const {userType, setUser, setUserType, setProfile} =
+  const { theme } = useContext<any>(ThemeContext);
+  const { userType, setUser, setUserType, setProfile } =
     useContext<any>(AuthContext);
 
   const isEmail = props?.route?.params?.email || '';
@@ -65,8 +65,23 @@ export default function AddPersonalDetails(props: any) {
   //   }
   // }, [isEmail]);
 
+  const getInitialName = (fullName: string) => {
+    if (!fullName) return '';
+
+    const words = fullName.trim().split(' ');
+
+    if (words.length === 1) {
+      return words[0][0]?.toUpperCase();
+    }
+
+    return (
+      words[0][0]?.toUpperCase() +
+      words[words.length - 1][0]?.toUpperCase()
+    );
+  };
+
   const pickImage = async () => {
-    launchImageLibrary({mediaType: 'photo'}, response => {
+    launchImageLibrary({ mediaType: 'photo' }, response => {
       if (!response.didCancel && !response.errorCode && response.assets) {
         const asset: any = response.assets[0];
         setProfileImage(asset);
@@ -115,34 +130,119 @@ export default function AddPersonalDetails(props: any) {
   }
 
   async function onSignup() {
-    if (!name) {
-      setNameError(STRING.please_enter_your_name);
-    } else if (!mobileNo) {
-      setMobileNoError(STRING.please_enter_your_mobile_number);
-    } else if (!email) {
-      setEmailError(STRING.please_enter_your_email);
-    } else if (!address) {
-      setAddressError(STRING.please_enter_your_address);
-    } else {
-      setNameError('');
-      setMobileNoError('');
-      setEmailError('');
-      setAddressError('');
 
+    const cleanName = name.trim();
+    const cleanMobile = mobileNo.trim();
+    const cleanAddress = address.trim();
+    const cleanEmail = email.trim();
+
+    let hasError = false;
+
+    setNameError('');
+    setMobileNoError('');
+    setEmailError('');
+    setAddressError('');
+
+    const nameRegex = /^[A-Za-z.\- ]+$/;
+    const emojiRegex =
+      /([\u2700-\u27BF]|[\uE000-\uF8FF]|[\uD83C-\uDBFF\uDC00-\uDFFF]+)/;
+    const mobileRegex = /^[0-9]{10}$/;
+    const onlySpecialChars = /^[^A-Za-z0-9]+$/;
+    const onlyNumbers = /^[0-9]+$/;
+    const htmlInjection = /<[^>]*>/;
+    const sqlInjection = /('|--|\b(OR|AND)\b)/i;
+
+    //NAME VALIDATION
+    if (!cleanName) {
+      setNameError(STRING.name_required);
+      hasError = true;
+    }
+    else if (emojiRegex.test(cleanName)) {
+      setNameError(STRING.emoji_not_allowed);
+      hasError = true;
+    }
+    else if (cleanName.length < 2 || cleanName.length > 50) {
+      setNameError(STRING.name_min_max_error);
+      hasError = true;
+    }
+    else if (!/^[A-Za-z.\- ]+$/.test(cleanName)) {
+      setNameError(STRING.name_invalid_characters);
+      hasError = true;
+    }
+
+    // MOBILE VALIDATION
+    else if (!cleanMobile) {
+      setMobileNoError(STRING.mobile_number_required);
+      hasError = true;
+    }
+    else if (!mobileRegex.test(cleanMobile)) {
+      setMobileNoError(STRING.mobile_must_be_10_digits);
+      hasError = true;
+    }
+
+    // EMAIL VALIDATION 
+    else if (!cleanEmail) {
+      setEmailError(STRING.email_required);
+      hasError = true;
+    }
+    else if (
+      cleanEmail.length < 6 ||
+      cleanEmail.length > 100 ||
+      !REGEX.email.test(cleanEmail)
+    ) {
+      setEmailError(STRING.please_enter_valid_email);
+      hasError = true;
+    }
+
+    //ADDRESS VALIDATION 
+    else if (!cleanAddress) {
+      setAddressError(STRING.address_required);
+      hasError = true;
+    }
+    else if (cleanAddress.length < 2 || cleanAddress.length > 250) {
+      setAddressError(STRING.address_min_max_error);
+      hasError = true;
+    }
+    else if (emojiRegex.test(cleanAddress)) {
+      setAddressError(STRING.emoji_not_allowed);
+      hasError = true;
+    }
+    else if (onlySpecialChars.test(cleanAddress)) {
+      setAddressError(STRING.address_special_char_error);
+      hasError = true;
+    }
+    else if (onlyNumbers.test(cleanAddress)) {
+      setAddressError(STRING.address_only_numbers_error);
+      hasError = true;
+    }
+    else if (htmlInjection.test(cleanAddress)) {
+      setAddressError(STRING.address_html_error);
+      hasError = true;
+    }
+    else if (sqlInjection.test(cleanAddress)) {
+      setAddressError(STRING.address_sql_error);
+      hasError = true;
+    }
+
+    if (hasError) return;
+
+    else {
       const params = {
-        mobile: mobileNo,
+        mobile: cleanMobile,
         phone_country_code: countryCode,
-        name: name,
-        email: email,
-        address: address,
+        name: cleanName,
+        email: cleanEmail,
+        address: cleanAddress,
         role: userType,
       };
+
       try {
         setLoading(true);
         const result = await API.Instance.post(
           API.API_ROUTES.addPersonalDetails,
           params,
         );
+
         if (result.status) {
           SHOW_TOAST(result?.data?.message ?? '', 'success');
           Storage.save(
@@ -154,11 +254,9 @@ export default function AddPersonalDetails(props: any) {
           getProfileData();
         } else {
           SHOW_TOAST(result?.data?.message ?? '', 'error');
-          console.log('error==>', result?.data?.message);
         }
       } catch (error: any) {
         SHOW_TOAST(error?.message ?? '', 'error');
-        console.log(error?.message);
       } finally {
         setLoading(false);
       }
@@ -191,7 +289,7 @@ export default function AddPersonalDetails(props: any) {
       props.navigation.dispatch(
         CommonActions.reset({
           index: 0,
-          routes: [{name: SCREENS.BottomBar.identifier}],
+          routes: [{ name: SCREENS.BottomBar.identifier }],
         }),
       );
     }
@@ -210,27 +308,25 @@ export default function AddPersonalDetails(props: any) {
           <View style={styles(theme).imageContainer}>
             {profileImage ? (
               <Image
-                source={{uri: profileImage?.uri}}
+                source={{ uri: profileImage?.uri }}
                 style={styles(theme).image}
               />
-            ) : (
+            ) : name.trim() ? (
               <View style={styles(theme).image}>
                 <Text
                   size={getScaleSize(24)}
                   font={FONTS.Lato.Regular}
                   color={theme._262B43E5}>
-                  {STRING.bc}
+                  {getInitialName(name)}
                 </Text>
               </View>
+            ) : (
+              <Image
+                source={IMAGES.user_placeholder}
+                style={styles(theme).image}
+                resizeMode="cover"
+              />
             )}
-            {/* <View style={styles(theme).image}>
-              <Text
-                size={getScaleSize(24)}
-                font={FONTS.Lato.Regular}
-                color={theme._262B43E5}>
-                {STRING.bc}
-              </Text>
-            </View> */}
             <TouchableOpacity
               onPress={() => {
                 pickImage();
@@ -248,7 +344,7 @@ export default function AddPersonalDetails(props: any) {
             size={getScaleSize(18)}
             font={FONTS.Lato.SemiBold}
             color={theme._565656}
-            style={{marginBottom: getScaleSize(16)}}>
+            style={{ marginBottom: getScaleSize(16) }}>
             {STRING.enter_profile_details}
           </Text>
           <Input
@@ -256,7 +352,7 @@ export default function AddPersonalDetails(props: any) {
             placeholderTextColor={theme._939393}
             inputTitle={STRING.name}
             inputColor={true}
-            continerStyle={{marginBottom: getScaleSize(16)}}
+            continerStyle={{ marginBottom: getScaleSize(16) }}
             value={name}
             maxLength={30}
             onChangeText={text => {
@@ -270,13 +366,16 @@ export default function AddPersonalDetails(props: any) {
             placeholderTextColor={theme._939393}
             inputTitle={STRING.mobile_no}
             inputColor={true}
-            continerStyle={{marginBottom: getScaleSize(16)}}
+            continerStyle={{ marginBottom: getScaleSize(16) }}
             value={mobileNo}
             // editable={!isPhoneNumber}
             onChangeText={text => {
-              setMobileNo(text);
+              const digitsOnly = text.replace(/[^0-9]/g, '');
+              setMobileNo(digitsOnly);
               setMobileNoError('');
             }}
+            keyboardType="number-pad"
+            maxLength={10}
             isError={mobileNoError}
             countryCode={countryCode}
             countryFlag={countryFlag}
@@ -289,7 +388,7 @@ export default function AddPersonalDetails(props: any) {
             placeholderTextColor={theme._939393}
             inputTitle={STRING.email}
             inputColor={true}
-            continerStyle={{marginBottom: getScaleSize(16)}}
+            continerStyle={{ marginBottom: getScaleSize(16) }}
             value={email}
             editable={isEmail ? false : true}
             onChangeText={text => {
@@ -303,7 +402,7 @@ export default function AddPersonalDetails(props: any) {
             placeholderTextColor={theme._939393}
             inputTitle={STRING.address}
             inputColor={true}
-            continerStyle={{marginBottom: getScaleSize(16)}}
+            continerStyle={{ marginBottom: getScaleSize(16) }}
             value={address}
             onChangeText={text => {
               setAddress(text);

@@ -59,9 +59,9 @@ export default function Login(props: any) {
 
   async function onVerification() {
     if (!email) {
-      setEmailError(STRING.please_enter_your_email);
+      setEmailError(STRING.email_required);
     } else if (!password) {
-      setPasswordError(STRING.please_enter_your_password);
+      setPasswordError(STRING.password_required);
     } else {
       setEmailError('');
       setPasswordError('');
@@ -220,7 +220,6 @@ export default function Login(props: any) {
               {STRING.forgot_password}
             </Text>
           </View>
-
           <Button
             title="Log In"
             style={{marginBottom: getScaleSize(24)}}

@@ -1,4 +1,4 @@
-import React, {useContext, useEffect, useState} from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import {
   View,
   StatusBar,
@@ -10,25 +10,25 @@ import {
 } from 'react-native';
 
 //ASSETS
-import {FONTS, IMAGES} from '../../assets';
+import { FONTS, IMAGES } from '../../assets';
 
 //CONTEXT
-import {ThemeContext, ThemeContextType} from '../../context';
+import { ThemeContext, ThemeContextType } from '../../context';
 
 //CONSTANT
-import {getScaleSize, SHOW_TOAST, useString} from '../../constant';
+import { getScaleSize, SHOW_TOAST, useString } from '../../constant';
 
 //COMPONENT
-import {TaskItem, Text} from '../../components';
+import { TaskItem, Text } from '../../components';
 
 //PACKAGES
-import {SCREENS} from '..';
-import {API} from '../../api';
-import {useIsFocused} from '@react-navigation/native';
+import { SCREENS } from '..';
+import { API } from '../../api';
+import { useIsFocused } from '@react-navigation/native';
 
 export default function Task(props: any) {
   const STRING = useString();
-  const {theme} = useContext<any>(ThemeContext);
+  const { theme } = useContext<any>(ThemeContext);
 
   const PAGE_SIZE = 5;
 
@@ -65,7 +65,7 @@ export default function Task(props: any) {
     try {
       const result = await API.Instance.get(
         API.API_ROUTES.getQuateList +
-          `?status=${getStatus()}&page=${quateList?.page}&limit=${PAGE_SIZE}`,
+        `?status=${getStatus()}&page=${quateList?.page}&limit=${PAGE_SIZE}`,
       );
       if (result.status) {
         const newData = result?.data?.data?.results ?? [];
@@ -132,11 +132,11 @@ export default function Task(props: any) {
               <ActivityIndicator
                 size="large"
                 color={theme.primary}
-                style={{margin: 20}}
+                style={{ margin: 20 }}
               />
             ) : null
           }
-          renderItem={({item, index}) => {
+          renderItem={({ item, index }) => {
             return (
               <TaskItem
                 key={index}
@@ -167,7 +167,7 @@ export default function Task(props: any) {
         <ActivityIndicator
           size="large"
           color={theme.primary}
-          style={{margin: 20}}
+          style={{ margin: 20 }}
         />
       );
     } else {
@@ -222,7 +222,7 @@ export default function Task(props: any) {
           <View
             style={[
               styles(theme).tabItemContainer,
-              {borderBottomWidth: quateList?.selectedIndex === 0 ? 2 : 0},
+              { borderBottomWidth: quateList?.selectedIndex === 0 ? 2 : 0 },
             ]}>
             <Text
               size={getScaleSize(14)}
@@ -252,7 +252,7 @@ export default function Task(props: any) {
           <View
             style={[
               styles(theme).tabItemContainer,
-              {borderBottomWidth: quateList?.selectedIndex === 1 ? 2 : 0},
+              { borderBottomWidth: quateList?.selectedIndex === 1 ? 2 : 0 },
             ]}>
             <Text
               size={getScaleSize(14)}
@@ -282,7 +282,7 @@ export default function Task(props: any) {
           <View
             style={[
               styles(theme).tabItemContainer,
-              {borderBottomWidth: quateList?.selectedIndex === 2 ? 2 : 0},
+              { borderBottomWidth: quateList?.selectedIndex === 2 ? 2 : 0 },
             ]}>
             <Text
               size={getScaleSize(14)}
@@ -303,7 +303,11 @@ export default function Task(props: any) {
 
 const styles = (theme: ThemeContextType['theme']) =>
   StyleSheet.create({
-    container: {flex: 1, backgroundColor: theme.white},
+    container: { flex: 1, backgroundColor: theme.white ,
+       marginTop: StatusBar.currentHeight
+        ? StatusBar.currentHeight + getScaleSize(10)
+        : getScaleSize(20),
+    },
     tabView: {
       marginTop: getScaleSize(24),
       flex: 1.0,

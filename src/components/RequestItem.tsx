@@ -7,14 +7,14 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
-import React, {useContext} from 'react';
+import React, { useContext } from 'react';
 
 //CONTEXT
-import {ThemeContext, ThemeContextType} from '../context';
+import { ThemeContext, ThemeContextType } from '../context';
 
 //CONSTANTS & ASSETS
-import {arrayIcons, getScaleSize, useString} from '../constant';
-import {FONTS, IMAGES} from '../assets';
+import { arrayIcons, getScaleSize, useString } from '../constant';
+import { FONTS, IMAGES } from '../assets';
 
 //COMPONENTS
 import Text from './Text';
@@ -22,9 +22,9 @@ import moment from 'moment';
 
 function RequestItem(props: any) {
   const STRING = useString();
-  const {theme} = useContext(ThemeContext);
+  const { theme } = useContext(ThemeContext);
 
-  const {item, selectedFilter} = props;
+  const { item, selectedFilter } = props;
 
   function getStatus(status: any) {
     if (status === 'open') {
@@ -52,10 +52,10 @@ function RequestItem(props: any) {
             <Image
               source={
                 arrayIcons[
-                  item?.category_name?.toLowerCase() as keyof typeof arrayIcons
+                item?.category_name?.toLowerCase() as keyof typeof arrayIcons
                 ] ?? (arrayIcons['diy'] as any)
               }
-              style={[styles(theme).imageIcon, {tintColor: theme.white}]}
+              style={[styles(theme).imageIcon, { tintColor: theme.white }]}
               resizeMode="cover"
             />
           ) : (
@@ -63,7 +63,7 @@ function RequestItem(props: any) {
           )}
         </View>
         <Text
-          style={{marginLeft: getScaleSize(16), alignSelf: 'center'}}
+          style={{ marginLeft: getScaleSize(16), alignSelf: 'center' }}
           size={getScaleSize(24)}
           font={FONTS.Lato.Bold}
           color={theme.primary}>
@@ -79,7 +79,7 @@ function RequestItem(props: any) {
           marginTop: getScaleSize(12),
         }}>
         <Text
-          style={{flex: 1.0}}
+          style={{ flex: 1.0 }}
           size={getScaleSize(20)}
           font={FONTS.Lato.SemiBold}
           color={theme.primary}>
@@ -99,7 +99,7 @@ function RequestItem(props: any) {
       <View style={styles(theme).detailsView}>
         <View style={styles(theme).horizontalContainer}>
           <Text
-            style={{flex: 1.0}}
+            style={{ flex: 1.0 }}
             size={getScaleSize(18)}
             font={FONTS.Lato.SemiBold}
             color={theme._989898}>
@@ -109,16 +109,20 @@ function RequestItem(props: any) {
             size={getScaleSize(20)}
             font={FONTS.Lato.SemiBold}
             color={theme.primary}>
-            {`€${item?.total_renegotiated}`}
+            {item?.total_renegotiated
+              ? item.total_renegotiated === 'Barter Product'
+                ? 'Barter Product'
+                : `€${item.total_renegotiated}`
+              : ''}
           </Text>
         </View>
         <View
           style={[
             styles(theme).horizontalContainer,
-            {marginTop: getScaleSize(3)},
+            { marginTop: getScaleSize(3) },
           ]}>
           <Text
-            style={{flex: 1.0}}
+            style={{ flex: 1.0 }}
             size={getScaleSize(18)}
             font={FONTS.Lato.SemiBold}
             color={theme._989898}>
@@ -134,10 +138,10 @@ function RequestItem(props: any) {
         <View
           style={[
             styles(theme).horizontalContainer,
-            {marginTop: getScaleSize(3)},
+            { marginTop: getScaleSize(3) },
           ]}>
           <Text
-            style={{flex: 1.0}}
+            style={{ flex: 1.0 }}
             size={getScaleSize(18)}
             font={FONTS.Lato.SemiBold}
             color={theme._989898}>

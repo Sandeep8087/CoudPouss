@@ -19,7 +19,6 @@ import { CommonActions } from '@react-navigation/native';
 import { pick, types, isErrorWithCode, errorCodes } from '@react-native-documents/picker';
 import { API } from '../../api';
 
-
 export default function AdditionalDetails(props: any) {
 
     const STRING = useString();

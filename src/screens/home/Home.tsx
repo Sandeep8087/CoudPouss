@@ -180,6 +180,7 @@ export default function Home(props: any) {
           font={FONTS.Lato.SemiBold}
           style={{
             marginTop: getScaleSize(31),
+            
             marginHorizontal: getScaleSize(22),
           }}
           color={theme._323232}>

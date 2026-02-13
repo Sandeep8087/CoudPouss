@@ -21,15 +21,19 @@ export default function YearsOfExperience(props: any) {
     const STRING = useString();
     const { setSelectedServices } = useContext<any>(AuthContext);
     const { theme } = useContext<any>(ThemeContext);
-    
+
     const [yearsOfExperience, setYearsOfExperience] = useState('');
     const [isLoading, setLoading] = useState(false);
 
     async function addYearsOfExperience() {
-        if (!yearsOfExperience) {
-            SHOW_TOAST('Please enter your years of experience', 'error')
+
+        const trimmedValue = yearsOfExperience.trim();
+
+        if (!trimmedValue) {
+            SHOW_TOAST('Please enter your years of experience', 'error');
             return;
         }
+
         try {
             const params = {
                 years_of_experience: yearsOfExperience,
@@ -51,6 +55,32 @@ export default function YearsOfExperience(props: any) {
             setLoading(false);
         }
     }
+
+    const validateExperienceInput = (text: string) => {
+        // Remove spaces
+        let value = text.trim();
+
+        // Allow only digits and dot
+        value = value.replace(/[^0-9.]/g, '');
+
+        // Prevent multiple dots
+        const parts = value.split('.');
+        if (parts.length > 2) {
+            value = parts[0] + '.' + parts[1];
+        }
+
+        // Allow only 2 decimal places
+        if (parts[1]?.length > 2) {
+            value = parts[0] + '.' + parts[1].slice(0, 2);
+        }
+
+        // Max value 99
+        if (parseFloat(value) > 99) {
+            value = '99';
+        }
+
+        return value;
+    };
 
     return (
         <View style={styles(theme).container}>
@@ -81,7 +111,8 @@ export default function YearsOfExperience(props: any) {
                         keyboardType="numeric"
                         value={yearsOfExperience}
                         onChangeText={(text) => {
-                            setYearsOfExperience(text);
+                            const cleanedValue = validateExperienceInput(text);
+                            setYearsOfExperience(cleanedValue);
                         }}
                     />
                 </View>

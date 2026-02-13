@@ -35,11 +35,11 @@ export default function CreatePassword(props: any) {
 
     async function onSignup() {
         if (!password) {
-            setPasswordError(STRING.please_enter_your_password);
+            setPasswordError(STRING.password_required);
         }else if (!REGEX.password.test(password)) {
             setPasswordError(STRING.password_validation_message);
         } else if (!confirmPassword) {
-            setConfirmPasswordError(STRING.please_enter_your_re_enter_password);
+            setConfirmPasswordError(STRING.confirm_password_required);
         } else if (password !== confirmPassword) {
             setConfirmPasswordError(STRING.passwords_do_not_match);
         } else {

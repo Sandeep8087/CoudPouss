@@ -39,9 +39,19 @@ export default function ResetPassword(props: any) {
     // }, [email])
 
     async function onResetPassword() {
-        if (!email) {
-            setEmailError(STRING.please_enter_your_email);
-        } else {
+        const trimmedEmail = email.trim();
+
+        if (!trimmedEmail) {
+            setEmailError(STRING.email_required);
+
+        } else if (trimmedEmail.length < 6 || trimmedEmail.length > 100) {
+            setEmailError(STRING.email_must_be_six_to_hundred_char_allow);
+
+        } else if (!REGEX.email.test(trimmedEmail)) {
+            setEmailError(STRING.please_enter_valid_email);
+
+        }
+        else {
             setEmailError('');
             // let params = {}
             // if (isPhoneNumber) {
@@ -87,7 +97,7 @@ export default function ResetPassword(props: any) {
                 onBack={() => {
                     props.navigation.goBack();
                 }}
-                screenName={STRING.reset_password}
+                screenName={STRING.forgotPassword}
             />
             <ScrollView showsVerticalScrollIndicator={false}>
                 <View style={styles(theme).mainContainer}>
@@ -120,20 +130,21 @@ export default function ResetPassword(props: any) {
                                 }}
                             />
                         ) : ( */}
-                            <Input
-                                placeholder={STRING.enter_email_or_mobile_number}
-                                placeholderTextColor={theme._939393}
-                                inputTitle={STRING.email_or_mobile_number}
-                                inputColor={false}
-                                value={email}
-                                keyboardType="email-address"
-                                autoCapitalize="none"
-                                onChangeText={text => {
-                                    setEmail(text);
-                                    setEmailError('');
-                                }}
-                                isError={emailError}
-                            />
+                        <Input
+                            placeholder={STRING.enter_email}
+                            placeholderTextColor={theme._939393}
+                            inputTitle={STRING.email}
+                            inputColor={false}
+                            value={email}
+                            maxLength={100}
+                            keyboardType="email-address"
+                            autoCapitalize="none"
+                            onChangeText={text => {
+                                setEmail(text.replace(/\s/g, ''));
+                                setEmailError('');
+                            }}
+                            isError={emailError}
+                        />
                         {/* )} */}
                     </View>
                 </View>
