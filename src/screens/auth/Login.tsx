@@ -1,14 +1,15 @@
-import {Dimensions, Image, ScrollView, StyleSheet, View} from 'react-native';
-import React, {useContext, useState} from 'react';
+import { Dimensions, Image, ScrollView, StyleSheet, View } from 'react-native';
+import React, { useContext, useEffect, useState } from 'react';
 
 //CONTEXT
-import {AuthContext, ThemeContext, ThemeContextType} from '../../context';
+import { AuthContext, ThemeContext, ThemeContextType } from '../../context';
 
 //CONSTANT & ASSETS
-import {FONTS, IMAGES} from '../../assets';
+import { FONTS, IMAGES } from '../../assets';
 import {
   getScaleSize,
   REGEX,
+  requestLocationPermission,
   SHOW_TOAST,
   Storage,
   useString,
@@ -25,20 +26,21 @@ import {
 } from '../../components';
 
 //SCREENS
-import {SCREENS} from '..';
+import { SCREENS } from '..';
 
 //PACKAGES
-import {CommonActions} from '@react-navigation/native';
-import {launchImageLibrary} from 'react-native-image-picker';
-import {API} from '../../api';
+import { CommonActions, useFocusEffect } from '@react-navigation/native';
+import { launchImageLibrary } from 'react-native-image-picker';
+import { API } from '../../api';
+import Geolocation from 'react-native-geolocation-service';
 
 export default function Login(props: any) {
   const STRING = useString();
-  const {setUser, setUserType, setProfile} = useContext<any>(AuthContext);
-  const {theme} = useContext<any>(ThemeContext);
+  const { setUser, setUserType, setProfile } = useContext<any>(AuthContext);
+  const { theme } = useContext<any>(ThemeContext);
 
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [email, setEmail] = useState('Professionaltest41@yopmail.com');
+  const [password, setPassword] = useState('Test@123');
   const [show, setShow] = useState(true);
   const [passwordError, setPasswordError] = useState('');
   const [emailError, setEmailError] = useState('');
@@ -57,6 +59,10 @@ export default function Login(props: any) {
   //   }
   // }, [email])
 
+  useEffect(() => {
+    getLocation();
+  }, []);
+
   async function onVerification() {
     if (!email) {
       setEmailError(STRING.please_enter_your_email);
@@ -69,6 +75,27 @@ export default function Login(props: any) {
     }
   }
 
+  const getLocation = async () => {
+    const hasPermission = await requestLocationPermission();
+    if (!hasPermission) return;
+
+    Geolocation.getCurrentPosition(
+      position => {
+       
+      },
+      error => {
+        console.log('Error:', error);
+      },
+      {
+        enableHighAccuracy: false,
+        timeout: 15000,
+        maximumAge: 10000,
+        forceRequestLocation: true,
+        showLocationDialog: true,
+      },
+    );
+  };
+
   async function onLogin() {
     // let params = {}
     // if (isPhoneNumber) {
@@ -78,10 +105,10 @@ export default function Login(props: any) {
     //     password: password,
     //   }
     // } else {
-    const  params = {
-        email: email,
-        password: password,
-      }
+    const params = {
+      email: email,
+      password: password,
+    }
     // }
     try {
       setLoading(true);
@@ -141,7 +168,7 @@ export default function Login(props: any) {
             font={FONTS.Lato.ExtraBold}
             color={theme._2C6587}
             align="center"
-            style={{marginBottom: getScaleSize(12)}}>
+            style={{ marginBottom: getScaleSize(12) }}>
             {STRING.welcome_back}
           </Text>
           <Text
@@ -149,7 +176,7 @@ export default function Login(props: any) {
             font={FONTS.Lato.SemiBold}
             color={theme._565656}
             align="center"
-            style={{marginBottom: getScaleSize(36)}}>
+            style={{ marginBottom: getScaleSize(36) }}>
             {STRING.enter_your_email_and_password_to_login}
           </Text>
           <View style={styles(theme).inputContainer}>
@@ -174,20 +201,20 @@ export default function Login(props: any) {
                 isError={emailError}
               />
             ) : ( */}
-              <Input
-                placeholder={STRING.enter_email}
-                placeholderTextColor={theme._939393}
-                inputTitle={STRING.email}
-                inputColor={false}
-                value={email}
-                keyboardType="email-address"
-                autoCapitalize="none"
-                onChangeText={text => {
-                  setEmail(text);
-                  setEmailError('');
-                }}
-                isError={emailError}
-              />
+            <Input
+              placeholder={STRING.enter_email}
+              placeholderTextColor={theme._939393}
+              inputTitle={STRING.email}
+              inputColor={false}
+              value={email}
+              keyboardType="email-address"
+              autoCapitalize="none"
+              onChangeText={text => {
+                setEmail(text);
+                setEmailError('');
+              }}
+              isError={emailError}
+            />
             {/* )} */}
           </View>
           <View style={styles(theme).inputContainer}>
@@ -216,14 +243,14 @@ export default function Login(props: any) {
               }}
               color={theme._2C6587}
               align="right"
-              style={{marginTop: getScaleSize(12)}}>
+              style={{ marginTop: getScaleSize(12) }}>
               {STRING.forgot_password}
             </Text>
           </View>
 
           <Button
             title="Log In"
-            style={{marginBottom: getScaleSize(24)}}
+            style={{ marginBottom: getScaleSize(24) }}
             onPress={() => {
               onVerification();
             }}
@@ -233,7 +260,7 @@ export default function Login(props: any) {
             font={FONTS.Lato.Regular}
             color={theme._999999}
             align="center"
-            style={{marginTop: getScaleSize(12)}}>
+            style={{ marginTop: getScaleSize(12) }}>
             {STRING.dont_have_an_account}{' '}
             <Text
               size={getScaleSize(20)}

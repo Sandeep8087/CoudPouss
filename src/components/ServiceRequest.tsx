@@ -63,7 +63,7 @@ export default function ServiceRequest(props: any) {
           size={getScaleSize(14)}
           font={FONTS.Lato.Medium}
           color={theme._737373}>
-          {getTimeAgo(data?.date, data?.time)}
+          {data?.created_ago ?? ''}
         </Text>
       </View>
       <View style={styles(theme).verticalView}>
@@ -137,7 +137,7 @@ export default function ServiceRequest(props: any) {
               font={FONTS.Lato.Medium}
               numberOfLines={4}
               color={theme._424242}>
-              {data?.location}
+              {data?.service_address ?? '-'}
             </Text>
           </View>
         </View>

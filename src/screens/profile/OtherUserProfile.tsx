@@ -63,7 +63,6 @@ export default function OtherUserProfile(props: any) {
       setLoading(true);
       const result = await API.Instance.post(API.API_ROUTES.otherUserProfile, params);
       if (result.status) {
-        console.log('otherUserProfile==>', result?.data?.data)
         setUserProfile(result?.data?.data ?? {});
         parseRatings(result?.data?.data?.customer_ratings)
       } else {

@@ -29,18 +29,12 @@ export default function AddServices(props: any) {
     const { setSelectedServices, selectedServices, profile } = useContext<any>(AuthContext);
     const { theme } = useContext<any>(ThemeContext);
 
-    console.log('profile==>', profile)
-
     const bottomSheetRef = useRef<any>(null);
     const [allCategories, setAllCategories] = useState([]);
     const [selectedCategory, setSelectedCategory] = useState<any>(null);
     const [isLoading, setLoading] = useState(false);
     const [subCategoryList, setSubCategoryList] = useState([]);
     const [paymentPopup, setPaymentPopup] = useState(false);
-
-    console.log('isEdit==>', isEdit)
-    console.log('categoryId==>', categoryId)
-    console.log('selectedCategory==>', selectedCategory)
 
     useEffect(() => {
         if (isEdit) {

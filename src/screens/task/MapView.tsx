@@ -12,7 +12,7 @@ import { BottomSheet, Button, Header, Text } from '../../components';
 
 // PACKAGES
 import MapView, { Marker, PROVIDER_GOOGLE, Polyline } from 'react-native-maps';
-import Geolocation from '@react-native-community/geolocation';
+import Geolocation from 'react-native-geolocation-service';
 import { IMAGES } from '../../assets';
 import { API } from '../../api';
 

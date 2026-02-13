@@ -123,4 +123,5 @@ export const IMAGES = {
   ic_like: require('./ic_like.png'),
   renegotiationIcon: require('./renegotiationIcon.png'),
   ic_succes: require('./ic_succes.png'),
+  ic_warning: require('./ic_warning.png'),
 };

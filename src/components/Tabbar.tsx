@@ -1,5 +1,5 @@
 import React, {useContext, useEffect} from 'react';
-import {Image, Linking, StyleSheet, TouchableOpacity, View} from 'react-native';
+import {Alert, Image, Linking, StyleSheet, TouchableOpacity, View} from 'react-native';
 
 // CONSTANT & ASSETS
 import {getScaleSize, useString, Storage} from '../constant';
@@ -41,7 +41,6 @@ function Tabbar(props: any) {
         const serviceId = params.service_id;
         const type = params.type;
         if (type == 'services_payment') {
-          Alert.alert('Payment successful');
           props.navigation.navigate(SCREENS.ServiceConfirmed.identifier, {
             serviceId: serviceId,
           });

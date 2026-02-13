@@ -1,4 +1,4 @@
-import React, {useContext, useEffect, useState} from 'react';
+import React, { useContext, useEffect, useRef, useState } from 'react';
 import {
   View,
   StatusBar,
@@ -10,26 +10,26 @@ import {
 } from 'react-native';
 
 //ASSETS
-import {FONTS, IMAGES} from '../../assets';
+import { FONTS, IMAGES } from '../../assets';
 
 //CONTEXT
-import {ThemeContext, ThemeContextType} from '../../context';
+import { ThemeContext, ThemeContextType } from '../../context';
 
 //CONSTANT
-import {getScaleSize, SHOW_TOAST, useString} from '../../constant';
+import { getScaleSize, SHOW_TOAST, useString } from '../../constant';
 
 //COMPONENT
-import {TaskItem, Text} from '../../components';
+import { TaskItem, Text } from '../../components';
 
 //PACKAGES
-import {SCREENS} from '..';
-import {API} from '../../api';
-import {useIsFocused} from '@react-navigation/native';
+import { SCREENS } from '..';
+import { API } from '../../api';
+import { useIsFocused } from '@react-navigation/native';
 
 export default function Task(props: any) {
   const STRING = useString();
-  const {theme} = useContext<any>(ThemeContext);
-
+  const { theme } = useContext<any>(ThemeContext);
+  const requestIdRef = useRef(0);
   const PAGE_SIZE = 5;
 
   const [quateList, setQuateList] = useState<any>({
@@ -59,44 +59,56 @@ export default function Task(props: any) {
     }
   }, [quateList?.selectedIndex, quateList?.page, isFocused]);
 
+  function getStatusByIndex(index: number) {
+    if (index === 0) return 'send';
+    if (index === 1) return 'accepted';
+    if (index === 2) return 'complete';
+  }
+
   async function getQuateList() {
-    if (!quateList?.hasMore) return;
+    if (!quateList.hasMore) return;
+
+    const currentRequestId = ++requestIdRef.current; 
+    const status =
+      quateList.selectedIndex === 0
+        ? 'send'
+        : quateList.selectedIndex === 1
+          ? 'accepted'
+          : 'complete';
 
     try {
       const result = await API.Instance.get(
         API.API_ROUTES.getQuateList +
-          `?status=${getStatus()}&page=${quateList?.page}&limit=${PAGE_SIZE}`,
+        `?status=${status}&page=${quateList.page}&limit=${PAGE_SIZE}`,
       );
+
+      // ❌ Agar ye latest request nahi hai → ignore
+      if (currentRequestId !== requestIdRef.current) return;
+
       if (result.status) {
         const newData = result?.data?.data?.results ?? [];
-        console.log('newData==>', newData);
-        if (newData.length < PAGE_SIZE) {
-          setQuateList((prev: any) => ({
-            ...prev,
-            hasMore: false,
-            allQuateList: [...(prev?.allQuateList ?? []), ...newData],
-            isLoading: false,
-          }));
-        } else {
-          setQuateList((prev: any) => ({
-            ...prev,
-            allQuateList: [...(prev?.allQuateList ?? []), ...newData],
-            isLoading: false,
-          }));
-        }
-      } else {
-        SHOW_TOAST(result?.data?.message ?? '', 'error');
+
+        setQuateList((prev: any) => ({
+          ...prev,
+          allQuateList:
+            prev?.page === 1 ? newData : [...prev.allQuateList, ...newData],
+          hasMore: newData.length === PAGE_SIZE,
+          isLoading: false,
+          hasMoreLoading: false,
+        }));
       }
     } catch (error: any) {
-      SHOW_TOAST(error?.message ?? '', 'error');
-    } finally {
-      setQuateList((prev: any) => ({
-        ...prev,
-        isLoading: false,
-        hasMoreLoading: false,
-      }));
+      if (currentRequestId === requestIdRef.current) {
+        SHOW_TOAST(error?.message ?? '', 'error');
+        setQuateList((prev: any) => ({
+          ...prev,
+          isLoading: false,
+          hasMoreLoading: false,
+        }));
+      }
     }
   }
+
 
   const loadMore = () => {
     if (
@@ -112,6 +124,19 @@ export default function Task(props: any) {
         hasMoreLoading: true,
       }));
     }
+  };
+
+  const onTabChange = (index: number) => {
+    requestIdRef.current++; // 🔥 old requests invalid
+
+    setQuateList({
+      allQuateList: [],
+      selectedIndex: index,
+      page: 1,
+      hasMore: true,
+      isLoading: true,
+      hasMoreLoading: false,
+    });
   };
 
   function renderFlatList() {
@@ -132,11 +157,11 @@ export default function Task(props: any) {
               <ActivityIndicator
                 size="large"
                 color={theme.primary}
-                style={{margin: 20}}
+                style={{ margin: 20 }}
               />
             ) : null
           }
-          renderItem={({item, index}) => {
+          renderItem={({ item, index }) => {
             return (
               <TaskItem
                 key={index}
@@ -167,7 +192,7 @@ export default function Task(props: any) {
         <ActivityIndicator
           size="large"
           color={theme.primary}
-          style={{margin: 20}}
+          style={{ margin: 20 }}
         />
       );
     } else {
@@ -209,20 +234,12 @@ export default function Task(props: any) {
           style={styles(theme).tabItem}
           activeOpacity={1}
           onPress={() => {
-            setQuateList((prev: any) => ({
-              ...prev,
-              allQuateList: [],
-              selectedIndex: 0,
-              page: 1,
-              hasMore: true,
-              isLoading: true,
-              hasMoreLoading: false,
-            }));
+            onTabChange(0);
           }}>
           <View
             style={[
               styles(theme).tabItemContainer,
-              {borderBottomWidth: quateList?.selectedIndex === 0 ? 2 : 0},
+              { borderBottomWidth: quateList?.selectedIndex === 0 ? 2 : 0 },
             ]}>
             <Text
               size={getScaleSize(14)}
@@ -239,20 +256,12 @@ export default function Task(props: any) {
           style={styles(theme).tabItem}
           activeOpacity={1}
           onPress={() => {
-            setQuateList((prev: any) => ({
-              ...prev,
-              allQuateList: [],
-              selectedIndex: 1,
-              page: 1,
-              hasMore: true,
-              isLoading: true,
-              hasMoreLoading: false,
-            }));
+            onTabChange(1);
           }}>
           <View
             style={[
               styles(theme).tabItemContainer,
-              {borderBottomWidth: quateList?.selectedIndex === 1 ? 2 : 0},
+              { borderBottomWidth: quateList?.selectedIndex === 1 ? 2 : 0 },
             ]}>
             <Text
               size={getScaleSize(14)}
@@ -269,20 +278,12 @@ export default function Task(props: any) {
           style={styles(theme).tabItem}
           activeOpacity={1}
           onPress={() => {
-            setQuateList((prev: any) => ({
-              ...prev,
-              allQuateList: [],
-              selectedIndex: 2,
-              page: 1,
-              hasMore: true,
-              isLoading: true,
-              hasMoreLoading: false,
-            }));
+            onTabChange(2);
           }}>
           <View
             style={[
               styles(theme).tabItemContainer,
-              {borderBottomWidth: quateList?.selectedIndex === 2 ? 2 : 0},
+              { borderBottomWidth: quateList?.selectedIndex === 2 ? 2 : 0 },
             ]}>
             <Text
               size={getScaleSize(14)}
@@ -303,7 +304,7 @@ export default function Task(props: any) {
 
 const styles = (theme: ThemeContextType['theme']) =>
   StyleSheet.create({
-    container: {flex: 1, backgroundColor: theme.white},
+    container: { flex: 1, backgroundColor: theme.white },
     tabView: {
       marginTop: getScaleSize(24),
       flex: 1.0,

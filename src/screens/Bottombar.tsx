@@ -12,8 +12,20 @@ import { AuthContext } from '../context';
 
 //PACKAGES
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import { getApp } from '@react-native-firebase/app';
-import { getMessaging, registerDeviceForRemoteMessages, AuthorizationStatus } from '@react-native-firebase/messaging';
+import { getApp, initializeApp, getApps } from '@react-native-firebase/app';
+import {
+  getMessaging,
+  registerDeviceForRemoteMessages,
+  AuthorizationStatus,
+  onNotificationOpenedApp,
+  getInitialNotification,
+  onMessage,
+} from '@react-native-firebase/messaging';
+import PushNotificationIOS from '@react-native-community/push-notification-ios';
+import PushNotification from 'react-native-push-notification';
+
+//API
+import { API } from '../api';
 
 const Tab = createBottomTabNavigator();
 
@@ -47,17 +59,65 @@ function BottomBar(props: any) {
     }
   }
 
+  const firebaseConfig = {
+    apiKey: 'your-api-key',
+    projectId: 'your-project-id',
+    appId: 'your-app-id',
+    messagingSenderId: 'your-sender-id',
+  };
+
   useEffect(() => {
-    getNotificationTokens()
-  }, [])
+    PushNotification.createChannel(
+      {
+        channelId: 'coudpouss_notification', // Must match the one you use in localNotification
+        channelName: 'CoudPouss Notifications',
+        channelDescription: 'Channel for CoudPouss foreground notifications',
+        playSound: true,
+        soundName: 'default',
+        importance: 4, // HIGH importance
+        vibrate: true,
+      },
+      created => console.log(`createChannel returned '${created}'`), // true if created, false if already exists
+    );
+    
+    const unsubscribe = getMessaging().onMessage(async remoteMessage => {
+      // When app in foreground
+      console.log('Message handled in the foregroud!', remoteMessage);
+      if (Platform.OS === 'ios') {
+        PushNotificationIOS.presentLocalNotification({
+          alertTitle: remoteMessage?.notification?.title,
+          alertBody: remoteMessage?.notification?.body ?? '',
+          userInfo: remoteMessage.data,
+        });
+      } else {
+        PushNotification.localNotification({
+          channelId: 'coudpouss_notification',
+          vibration: 300,
+          priority: 'high',
+          importance: 'high',
+          title: remoteMessage?.notification?.title ?? '',
+          message: remoteMessage?.notification?.body ?? '',
+          smallIcon: 'ic_stat_notification',
+          largeIcon: 'ic_stat_notification',
+          userInfo: remoteMessage?.data,
+        });
+      }
+    });
+
+    return unsubscribe;
+  }, []);
+
+  useEffect(() => {
+    getNotificationTokens();
+  }, []);
 
   async function getNotificationTokens() {
     try {
-      const token: any = await requestPermissionsAndToken()
-      console.log('token===', JSON.stringify(token))
+      const token: any = await requestPermissionsAndToken();
+      console.log('token===', JSON.stringify(token));
       if (token) {
-        console.log('token===', JSON.stringify(token))
-        // onUpdateFcmToken(token)
+        console.log('token===', JSON.stringify(token));
+        onNotification(token);
       } else {
         console.log('No FCM token received');
       }
@@ -66,33 +126,58 @@ function BottomBar(props: any) {
     }
   }
 
+  async function onNotification(token: any) {
+    try {
+      const params = {
+        token: token,
+        platform: Platform.OS,
+      }
+      const result = await API.Instance.post(API.API_ROUTES.onNotification, params);
+      console.log('result', result.status, result)
+      if (result.status) {
+        console.log('result==>', result?.data?.message)
+      } else {
+        console.log('error==>', result?.data?.message)
+
+      }
+    } catch (error: any) {
+      console.log(error?.message)
+    }
+  }
+
   async function requestPermissionsAndToken() {
     if (Platform.OS === 'android') {
       try {
-        const status = await PermissionsAndroid.request(PermissionsAndroid.PERMISSIONS.POST_NOTIFICATIONS);
+        const status = await PermissionsAndroid.request(
+          PermissionsAndroid.PERMISSIONS.POST_NOTIFICATIONS,
+        );
         if (status) {
-          const app: any = getApp();
+          const app: any =
+            getApps().length === 0 ? initializeApp(firebaseConfig) : getApp();
           let fcmToken = await getMessaging(app).getToken();
-          return fcmToken
+          return fcmToken;
         }
-      }
-      catch (error) {
-        Alert.alert('Notification was declined.', 'Go to your settings and enable notifications always.', [{
-          text: 'No',
-          onPress: () => {
+      } catch (error) {
+        Alert.alert(
+          'Notification was declined.',
+          'Go to your settings and enable notifications always.',
+          [
+            {
+              text: 'No',
+              onPress: () => { },
+            },
+            {
+              text: 'Open Settings',
+              onPress: () => {
+                Linking.openSettings();
+              },
+            },
+          ],
+        );
 
-          }
-        }, {
-          text: 'Open Settings',
-          onPress: () => {
-            Linking.openSettings()
-          }
-        }])
-
-        return null
+        return null;
       }
-    }
-    else {
+    } else {
       const fcmToken = await requestFCMToken();
       return fcmToken;
     }

@@ -71,8 +71,8 @@ const API_ROUTES = {
     onProcessRenegotiation: 'quote_accept',
     onMarkAsCompleted: 'quote_accept/mark-service-completed',
     onValidateSecurityCode: 'quote_accept/validate-service-code',
+    onNotification: "userService/devices-token/register-token",
+    getNotifications: "userService/notifications/get"
 }
-
-///userService/auth/select-provider-services?action=update' \
 
 export { API_ROUTES, API_BASE_URL, DISABLE_API_LOGS }

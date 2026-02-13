@@ -65,6 +65,7 @@ import ServiceCancelled from './request/ServiceCancelled';
 import Search from './home/Search';
 import WebViewScreen from './WebViewScreen';
 import MapView from './task/MapView';
+import TransactionsElder from './profile/TransactionsElder';
 
 export const SCREENS = {
   Splash: {
@@ -159,6 +160,10 @@ export const SCREENS = {
   Transactions: {
     identifier: 'Transactions',
     component: Transactions,
+  },
+  TransactionsElder:{
+    identifier: 'TransactionsElder',
+    component: TransactionsElder,
   },
   Notifications: {
     identifier: 'Notifications',

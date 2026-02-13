@@ -128,7 +128,7 @@ export default function MyEarnings(props: any) {
                         {itemData.map((item: any, index: number) => {
                             return (
                                 <TouchableOpacity
-                                    key={index}
+                                    key={item.id}
                                     style={styles(theme).itemContainer}
                                     onPress={() => { props.navigation.navigate(item.onPress) }}>
                                     <Text

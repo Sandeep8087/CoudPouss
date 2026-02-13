@@ -203,7 +203,7 @@ export default function ServicePreview(props: any) {
                   font={FONTS.Lato.Medium}
                   numberOfLines={4}
                   color={theme.primary}>
-                  {serviceDetails?.about_client?.address ?? '-'}
+                  {serviceDetails?.service_address ?? '-'}
                 </Text>
               </View>
             </View>

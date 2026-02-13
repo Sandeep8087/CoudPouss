@@ -1,22 +1,32 @@
-import React, {useContext, useRef, useState} from 'react';
-import {View, StyleSheet, TouchableOpacity, Alert, Image} from 'react-native';
-import {ThemeContext, ThemeContextType} from '../context';
-import {getScaleSize, useString} from '../constant';
-import {FONTS, IMAGES} from '../assets';
-import {constant} from 'lodash';
+import React, { useContext, useRef, useState } from 'react';
+import { View, StyleSheet, TouchableOpacity, Alert, Image } from 'react-native';
+import { ThemeContext, ThemeContextType } from '../context';
+import { getScaleSize, useString } from '../constant';
+import { FONTS, IMAGES } from '../assets';
+import { constant } from 'lodash';
 import RBSheet from 'react-native-raw-bottom-sheet';
 import Text from './Text';
 import moment from 'moment';
 
 const StatusItem = (props: any) => {
   const STRING = useString();
-  const {theme} = useContext<any>(ThemeContext);
+  const { theme } = useContext<any>(ThemeContext);
 
-  const {item, isLast} = props;
+  const { item, isLast, isPaymentReceived, taskStatusData } = props;
+
+  const isProcessing =
+    isPaymentReceived === false &&
+    taskStatusData?.is_otp_verifed?.status === true;
 
   function getImage() {
     if (item?.name === 'Started service') {
       if (item?.completed) {
+        return IMAGES.service_running;
+      }
+    }
+
+    if (item?.name === 'Payment received') {
+      if (isProcessing) {
         return IMAGES.service_running;
       }
     }
@@ -51,9 +61,9 @@ const StatusItem = (props: any) => {
           }}
           source={getImage()}
         />
-        {!item?.completed && item?.id && (
+        {!item?.completed && item?.id && getImage() !== IMAGES.service_running && (
           <Text
-            style={{position: 'absolute', top: getScaleSize(3.2)}}
+            style={{ position: 'absolute', top: getScaleSize(3.2) }}
             size={getScaleSize(12)}
             font={FONTS.Lato.Medium}
             color={theme.white}>
@@ -83,16 +93,17 @@ const StatusItem = (props: any) => {
           font={FONTS.Lato.SemiBold}
           color={theme._2B2B2B}
           style={{}}>
-          {item?.name ?? ''}
+          {(item?.name === 'Payment received' && isProcessing ? 'Processing Payment' : item?.name) ?? ''}
         </Text>
         <Text
           size={getScaleSize(12)}
           font={FONTS.Lato.Regular}
           color={theme._737373}
-          style={{marginTop: getScaleSize(4)}}>
-          {item?.time
-            ? moment(item?.time).format('ddd, DD MMM’ YYYY  -  h:mma')
-            : '-'}
+          style={{ marginTop: getScaleSize(4) }}>
+          {
+            (item?.name === 'Payment received' && isProcessing ? 'Scheduled on ' + moment(taskStatusData?.is_otp_verifed?.time).format('ddd, DD MMM’ YYYY  -  h:mma') :
+              item?.time ? moment(item?.time).format('ddd, DD MMM’ YYYY  -  h:mma')
+                : '-')}
         </Text>
         {/* {props?.item?.securityCode && (
           <>

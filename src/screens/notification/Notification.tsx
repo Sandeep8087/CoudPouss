@@ -1,4 +1,4 @@
-import React, {useContext, useRef, useState} from 'react';
+import React, { useContext, useEffect, useRef, useState } from 'react';
 import {
   View,
   StatusBar,
@@ -12,16 +12,17 @@ import {
   TouchableOpacity,
   Image,
   Platform,
+  ActivityIndicator,
 } from 'react-native';
 
 //ASSETS
-import {FONTS, IMAGES} from '../../assets';
+import { FONTS, IMAGES } from '../../assets';
 
 //CONTEXT
-import {AuthContext, ThemeContext, ThemeContextType} from '../../context';
+import { AuthContext, ThemeContext, ThemeContextType } from '../../context';
 
 //CONSTANT
-import {getScaleSize, useString} from '../../constant';
+import { getScaleSize, useString } from '../../constant';
 
 //COMPONENT
 import {
@@ -35,16 +36,24 @@ import {
 } from '../../components';
 
 //PACKAGES
-import {useFocusEffect} from '@react-navigation/native';
-import {SCREENS} from '..';
+import { useFocusEffect } from '@react-navigation/native';
+import { SCREENS } from '..';
+import { API } from '../../api';
+import moment from 'moment';
 
 export default function Notification(props: any) {
   const STRING = useString();
-  const {theme} = useContext<any>(ThemeContext);
+  const { theme } = useContext<any>(ThemeContext);
 
-  const {userType} = useContext<any>(AuthContext);
+  const { userType } = useContext<any>(AuthContext);
 
   const list = ['accept', 'service_started', 'task_status', 'task_details'];
+
+  const [isLoading, setLoading] = useState(false);
+  const [notification, setNotification] = useState<any[]>([]);
+  const [page, setPage] = useState(1);
+  const [hasMore, setHasMore] = useState(true);
+  const PAGE_SIZE = 10;
 
   useFocusEffect(
     React.useCallback(() => {
@@ -55,6 +64,42 @@ export default function Notification(props: any) {
     }, []),
   );
 
+  useEffect(() => {
+    getNotification();
+  }, [page]);
+
+  async function getNotification() {
+    try {
+      setLoading(true);
+      const result = await API.Instance.get(API.API_ROUTES.getNotifications + `?page=${page}&limit=${PAGE_SIZE}`);
+      if (result.status) {
+        console.log('notifications==>', result?.data?.data?.notifications)
+        const newData = result?.data?.data?.notifications ?? [];
+        if (newData?.length < PAGE_SIZE) {
+          setHasMore(false);
+          setNotification((prev: any[]) => [...prev, ...newData]);
+        }
+        else {
+          setNotification((prev: any[]) => [...prev, ...newData]);
+        }
+      } else {
+        setHasMore(false);
+        console.log('error==>', result?.data?.message);
+      }
+    } catch (error) {
+      setHasMore(false);
+      console.log(error);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  const loadMore = () => {
+    if (hasMore) {
+      setPage(page + 1);
+    }
+  }
+
   return (
     <View style={styles(theme).container}>
       <Header
@@ -64,32 +109,37 @@ export default function Notification(props: any) {
         screenName={'Notifications'}
       />
       <FlatList
-        data={list}
+        data={notification}
+        keyExtractor={(item: any, index: number) => index.toString()}
         showsVerticalScrollIndicator={false}
-        renderItem={(item: any) => {
+        contentContainerStyle={{ paddingBottom: getScaleSize(50) }}
+        onEndReached={loadMore}
+        onEndReachedThreshold={0.1}
+        ListFooterComponent={
+          isLoading ? <ActivityIndicator size="large" color={theme.primary} style={{ margin: 20 }} /> : null
+        }
+        renderItem={({ item, index }) => {
           return (
             <View style={styles(theme).notificationContainer}>
-              <View style={{flexDirection: 'row'}}>
+              <View style={{ flexDirection: 'row' }}>
                 <Image
                   style={styles(theme).profilePic}
                   source={IMAGES.user_placeholder}
                 />
                 <View style={{ flex: 1.0 }}>
-                  <Text
-                    style={{marginLeft: getScaleSize(16)}}
+                  {/* <Text
+                    style={{ marginLeft: getScaleSize(16) }}
                     size={getScaleSize(18)}
                     font={FONTS.Lato.Bold}
                     color={theme._424242}>
-                    {'Your service has started.'}
-                  </Text>
+                    {item?.title ?? ''}
+                  </Text> */}
                   <Text
-                    style={{marginLeft: getScaleSize(16)}}
+                    style={{ marginLeft: getScaleSize(16) }}
                     size={getScaleSize(16)}
                     font={FONTS.Lato.Medium}
                     color={'#595959'}>
-                    {
-                      'The provider has proposed a revised budget of €620 for your service..'
-                    }
+                    {item?.body ?? ''}
                   </Text>
                   <View
                     style={{
@@ -98,17 +148,17 @@ export default function Notification(props: any) {
                       marginTop: getScaleSize(4),
                     }}>
                     <Text
-                      style={{flex: 1.0}}
+                      style={{ flex: 1.0 }}
                       size={getScaleSize(12)}
                       font={FONTS.Lato.Regular}
                       color={'#818285'}>
-                      {'Friday 2:22 PM'}
+                      {moment(item?.sent_at).format('ddd, DD MMM YYYY - hh:mm A') ?? ''}
                     </Text>
                     <Text
                       size={getScaleSize(12)}
                       font={FONTS.Lato.Regular}
                       color={'#818285'}>
-                      {'3 hours ago'}
+                      {moment(item?.sent_at).fromNow() ?? ''}
                     </Text>
                   </View>
                 </View>
@@ -118,24 +168,24 @@ export default function Notification(props: any) {
                   <TouchableOpacity
                     style={styles(theme).nextButtonContainer}
                     activeOpacity={1}
-                    onPress={() => {}}>
+                    onPress={() => { }}>
                     <Text
                       size={getScaleSize(14)}
                       font={FONTS.Lato.Medium}
                       color={theme.white}
-                      style={{alignSelf: 'center'}}>
+                      style={{ alignSelf: 'center' }}>
                       {STRING.Accept}
                     </Text>
                   </TouchableOpacity>
                   <TouchableOpacity
                     style={styles(theme).backButtonContainer}
                     activeOpacity={1}
-                    onPress={() => {}}>
+                    onPress={() => { }}>
                     <Text
                       size={getScaleSize(14)}
                       font={FONTS.Lato.Medium}
                       color={'#ACADAD'}
-                      style={{alignSelf: 'center'}}>
+                      style={{ alignSelf: 'center' }}>
                       {'Decline'}
                     </Text>
                   </TouchableOpacity>
@@ -148,9 +198,7 @@ export default function Notification(props: any) {
                     activeOpacity={1}
                     onPress={() => {
                       if (userType === 'service_provider') {
-                        props.navigation.navigate(
-                          SCREENS.ProfessionalTaskStatus.identifier,
-                        );
+                        props.navigation.navigate(SCREENS.ProfessionalTaskStatus.identifier);
                       } else {
                         props.navigation.navigate(
                           SCREENS.TaskStatus.identifier,
@@ -161,30 +209,33 @@ export default function Notification(props: any) {
                       size={getScaleSize(14)}
                       font={FONTS.Lato.Medium}
                       color={theme.white}
-                      style={{alignSelf: 'center'}}>
+                      style={{ alignSelf: 'center' }}>
                       {'Check Task Status'}
                     </Text>
                   </TouchableOpacity>
                 </View>
               )}
-              {item?.item === 'task_details' && (
-                <View style={styles(theme).buttonContainer}>
-                  <TouchableOpacity
-                    style={styles(theme).nextButtonContainer}
-                    activeOpacity={1}
-                    onPress={() => {
-                      props.navigation.navigate(SCREENS.CompletedTaskDetails.identifier);
-                    }}>
-                    <Text
-                      size={getScaleSize(14)}
-                      font={FONTS.Lato.Medium}
-                      color={theme.white}
-                      style={{alignSelf: 'center'}}>
-                      {'Task Details'}
-                    </Text>
-                  </TouchableOpacity>
-                </View>
-              )}
+              {item?.data?.event === 'SERVICE_RENEGOTIATION_ACCEPTED'
+                || item?.data?.event === 'SERVICE_COMPLETED'
+                || item?.data?.event === 'QUOTE_ACCEPTED'
+                && (
+                  <View style={styles(theme).buttonContainer}>
+                    <TouchableOpacity
+                      style={styles(theme).nextButtonContainer}
+                      activeOpacity={1}
+                      onPress={() => {
+
+                      }}>
+                      <Text
+                        size={getScaleSize(14)}
+                        font={FONTS.Lato.Medium}
+                        color={theme.white}
+                        style={{ alignSelf: 'center' }}>
+                        {'Task Details'}
+                      </Text>
+                    </TouchableOpacity>
+                  </View>
+                )}
             </View>
           );
         }}
@@ -195,7 +246,7 @@ export default function Notification(props: any) {
 
 const styles = (theme: ThemeContextType['theme']) =>
   StyleSheet.create({
-    container: {flex: 1, backgroundColor: theme.white},
+    container: { flex: 1, backgroundColor: theme.white },
     notificationContainer: {
       marginHorizontal: getScaleSize(24),
       marginTop: getScaleSize(16),

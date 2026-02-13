@@ -56,8 +56,9 @@ export default function AddQuote(props: any) {
   const [doc1, setDoc1] = useState<any>(null);
   const [doc2, setDoc2] = useState<any>(null);
   const [video, setVideo] = useState<any>(null);
-  const [photoIds, setPhotoIds] = useState<string[]>([]);
-  const [videoIds, setVideoIds] = useState<string[]>([]);
+  const [doc1Id, setDoc1Id] = useState<string | null>(null);
+  const [doc2Id, setDoc2Id] = useState<string | null>(null);
+  const [videoId, setVideoId] = useState<string | null>(null);
   const [videoThumbnail, setVideoThumbnail] = useState<string | null>(null);
   const [isServiceDetails, setServiceDetails] = useState<any>(serviceDetails ?? '')
   const [amountError, setAmountError] = useState('');
@@ -72,7 +73,7 @@ export default function AddQuote(props: any) {
   }, [])
 
 
-  console.log('photoIds==>', photoIds.length > 0, photoIds, videoIds)
+  console.log('doc1Id==>', doc1Id, doc2Id)
 
 
 
@@ -113,7 +114,7 @@ export default function AddQuote(props: any) {
       });
       if (result.status) {
         SHOW_TOAST(result?.data?.message ?? '', 'success')
-        return result?.data?.storage_key;
+        return result?.data?.id;
       } else {
         SHOW_TOAST(result?.data?.message ?? '', 'error')
         return null;
@@ -152,19 +153,31 @@ export default function AddQuote(props: any) {
           setLoading(true);
 
           const id = await uploadFile(asset);
+          console.log('id==>', id, asset)
           if (id) {
-            setPhotoIds(prev => [...prev, id]);
-            if (index === 1) setDoc1(asset);
-            if (index === 2) setDoc2(asset);
+            if (index === 1) {
+              setDoc1(asset);
+              setDoc1Id(id);
+            }
+            if (index === 2) {
+              setDoc2(asset);
+              setDoc2Id(id);
+            }
+
             SHOW_TOAST('Document uploaded successfully', 'success');
           } else {
             SHOW_TOAST('Document upload failed', 'error');
           }
         } catch (e: any) {
           SHOW_TOAST('Document upload failed', 'error');
-          setPhotoIds(prev => prev.filter(id => id !== id));
-          if (index === 1) setDoc1(null);
-          if (index === 2) setDoc2(null);
+          if (index === 1) {
+            setDoc1(null);
+            setDoc1Id(null);
+          }
+          if (index === 2) {
+            setDoc2(null);
+            setDoc2Id(null);
+          }
         } finally {
           setLoading(false);
         }
@@ -206,7 +219,7 @@ export default function AddQuote(props: any) {
           //  Upload video
           const id = await uploadFile(asset);
           if (id) {
-            setVideoIds(prev => [...prev, id]);
+            setVideoId(id);
             setVideo(asset);
             SHOW_TOAST('Video uploaded successfully', 'success');
           } else {
@@ -235,15 +248,16 @@ export default function AddQuote(props: any) {
 
   async function sendQuote() {
 
+    const photoIds = [doc1Id, doc2Id].filter(Boolean)
+
     // amount validation only for professional
     if (profile?.user?.service_provider_type === 'professional' && !amount) {
       setAmountError('Please enter amount');
     } else if (!desctiption) {
       setDescriptionError('Please enter short description');
-
     } else if (photoIds.length === 0) {
       setDocError('Please upload at least one document');
-    } else if (videoIds.length == 0) {
+    } else if (!videoId) {
       setVideoError('Please upload a video');
     } else {
       try {
@@ -260,7 +274,7 @@ export default function AddQuote(props: any) {
             ...payload,
             provider_quote_amount: amount,
             offer_photoids: photoIds,
-            offer_videoids: videoIds,
+            offer_videoids: [videoId],
           };
         }
 
@@ -271,9 +285,9 @@ export default function AddQuote(props: any) {
             offer_photos: photoIds.map(key => ({
               storage_key: key,
             })),
-            offer_videos: videoIds.map(key => ({
-              storage_key: key,
-            })),
+            offer_videos: videoId
+              ? [{ storage_key: videoId }]
+              : [],
           };
         }
 
@@ -589,7 +603,11 @@ export default function AddQuote(props: any) {
       </ScrollView>
       <Button
         title={STRING.SubmitQuote}
-        disabled={amount === '' || desctiption === '' || photoIds.length === 0 || videoIds.length === 0 ? true : false}
+        disabled={
+          (profile?.user?.service_provider_type === 'professional' && amount === '') ||
+          desctiption === '' ||
+          !videoId
+        }
         style={{
           marginVertical: getScaleSize(24),
           marginHorizontal: getScaleSize(24),

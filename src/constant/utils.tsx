@@ -78,13 +78,16 @@ export const arrayIcons = {
   gardening: IMAGES.gardening,
 };
 
-export const requestLocationPermission = async () => {
-  if (Platform.OS === 'android') {
+
+export async function requestLocationPermission() {
+  if (Platform.OS === 'ios') return true;
+
+  try {
     const granted = await PermissionsAndroid.request(
       PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION,
       {
         title: 'Location Permission',
-        message: 'This app needs access to your location',
+        message: 'App needs access to your location',
         buttonNeutral: 'Ask Me Later',
         buttonNegative: 'Cancel',
         buttonPositive: 'OK',
@@ -92,6 +95,7 @@ export const requestLocationPermission = async () => {
     );
 
     return granted === PermissionsAndroid.RESULTS.GRANTED;
+  } catch (err) {
+    return false;
   }
-  return true;
-};
+}

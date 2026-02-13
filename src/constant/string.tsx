@@ -419,6 +419,10 @@ export const useString = () => {
     validate: "Validate",
     security_code_validated_successfully: "Security Code validated successfully.",
     procced_to_payment: "Proceed to Payment",
+    information_message: "Information message:",
+    information_message_text: "CoudPouss does not guarantee the quality of services exchanged from this point onward. Our role is to connect you with professionals and secure your transactions through escrow. All providers on our platform issue their own invoices directly to clients. Once you provide the validation code to your provider, you must request an invoice or receipt from them for your payment.",
+    location_permission_required: "Location permission is required to show nearby services",
+    open_settings: "Open Settings",
   };
 };
 

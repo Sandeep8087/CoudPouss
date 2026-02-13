@@ -62,9 +62,6 @@ export default function EditProfile(props: any) {
     const [secondProductImageURL, setSecondProductImageURL] = useState<any>(null);
     const [addressHeight, setAddressHeight] = useState(inputHeight);
 
-
-    console.log('profile==>', profile)
-
     useEffect(() => {
         setName((profile?.user?.first_name ?? "") + " " + (profile?.user?.last_name ?? ""));
         setEmail(profile?.user?.email ?? '');

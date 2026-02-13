@@ -17,7 +17,7 @@ export default function TaskItem(props: any) {
       return 'Quote Submitted';
     } else if (item?.quote_status === 'accepted') {
       return 'Quote Accepted';
-    } else if (item?.quote_status === 'completed') {
+    } else if (item?.quote_status === 'complete') {
       return 'Task Completed'
     }
   }

@@ -27,7 +27,7 @@ import moment from 'moment';
 
 const PAGE_SIZE = 10;
 
-export default function Transactions(props: any) {
+export default function TransactionsElder(props: any) {
     const { theme } = useContext<any>(ThemeContext);
     const STRING = useString();
 
@@ -72,9 +72,10 @@ export default function Transactions(props: any) {
             const selectedStatus = customStatus ?? requestData.selectedStatus;
 
             const result: any = await API.Instance.get(
-                API.API_ROUTES.getProviderTransactions +
-                `?start_date=${startDate ? moment(startDate).format('YYYY-MM-DD') : ''}` +
-                `&end_date=${endDate ? moment(endDate).format('YYYY-MM-DD') : ''}` +
+                API.API_ROUTES.fetchTransactions +
+                `?section=transactions` +
+                // `?section=transactions&start_date=${startDate ? moment(startDate).format('YYYY-MM-DD') : ''}` +
+                // `&end_date=${endDate ? moment(endDate).format('YYYY-MM-DD') : ''}` +
                 `&status=${selectedStatus?.value ?? ''}` +
                 `&page=${page}` +
                 `&limit=${PAGE_SIZE}`

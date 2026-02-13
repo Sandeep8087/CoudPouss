@@ -6,6 +6,7 @@ import {
   ScrollView,
   Platform,
   TouchableOpacity,
+  Image,
 } from 'react-native';
 
 // ASSETS
@@ -35,7 +36,7 @@ import { useFocusEffect, useIsFocused } from '@react-navigation/native';
 // API
 import { API } from '../../api';
 import BottomBar from '../Bottombar';
-import Geolocation from '@react-native-community/geolocation';
+import Geolocation from 'react-native-geolocation-service';
 import { } from '../../constant';
 import { SCREENS } from '..';
 
@@ -63,6 +64,7 @@ export default function TaskStatus(props: any) {
     isStartedService: false,
     isServiceCompleted: false,
     isServiceFinalized: false,
+    isPaymentReceived: false,
   });
   const bottomSheetRef = useRef<any>(null);
   const mapViewRef = useRef<any>(null);
@@ -167,7 +169,8 @@ export default function TaskStatus(props: any) {
       isExpertConfirmed: !!outForService?.completed && !expertConfirmed?.completed,
       isStartedService: !!expertConfirmed?.completed && !startedService?.completed,
       isServiceCompleted: (startedService?.completed === true && serviceCompleted?.completed === false),
-      isServiceFinalized: (serviceCompleted?.completed === true && startedService?.completed === true && paymentReceived?.completed === false)
+      isServiceFinalized: (serviceCompleted?.completed === true && startedService?.completed === true && paymentReceived?.completed === false),
+      isPaymentReceived: (paymentReceived?.completed === true && serviceCompleted?.completed === true && startedService?.completed === true)
     });
   };
 
@@ -328,6 +331,8 @@ export default function TaskStatus(props: any) {
     }
   }
 
+  console.log('serviceFlags.isServiceFinalized==>', serviceFlags.isServiceFinalized, taskStatusData?.is_otp_verifed?.status == 'false');
+
   return (
     <View style={styles(theme).container}>
       <Header
@@ -356,11 +361,32 @@ export default function TaskStatus(props: any) {
                   item={item}
                   index={index}
                   isLast={index === taskStatus?.length - 1}
+                  isPaymentReceived={serviceFlags.isPaymentReceived}
+                  taskStatusData={taskStatusData}
                 />
               ),
             )}
           </View>
         </View>
+        {taskStatusData?.is_otp_verifed?.status === true && (
+          <View style={styles(theme).lastInformationContainer}>
+            <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: getScaleSize(10) }}>
+              <Image source={IMAGES.ic_warning} style={styles(theme).infoIcon} />
+              <Text
+                size={getScaleSize(16)}
+                font={FONTS.Lato.Medium}
+                color={theme._2C6587}>
+                {STRING.information_message}
+              </Text>
+            </View>
+            <Text
+              size={getScaleSize(12)}
+              font={FONTS.Lato.Regular}
+              color={theme._323232}>
+              {STRING.information_message_text}
+            </Text>
+          </View>
+        )}
       </ScrollView>
       {serviceFlags.isOutForService && (
         <View style={{ flexDirection: 'row', alignItems: 'center', marginHorizontal: getScaleSize(24), marginBottom: getScaleSize(24) }}>
@@ -422,16 +448,21 @@ export default function TaskStatus(props: any) {
         </View>
       )}
       {serviceFlags.isServiceFinalized && (
-        <View style={{ flexDirection: 'row', alignItems: 'center', marginHorizontal: getScaleSize(24), marginBottom: getScaleSize(24) }}>
-          <Button
-            style={{ flex: 1 }}
-            title={STRING.procced_to_payment}
-            onPress={() => {
-              enterSecurityCodeSheetRef.current?.open();
-            }}
-          />
-        </View>
+        <>
+          {taskStatusData?.is_otp_verifed?.status === false && (
+            <View style={{ flexDirection: 'row', alignItems: 'center', marginHorizontal: getScaleSize(24), marginBottom: getScaleSize(24) }}>
+              <Button
+                style={{ flex: 1 }}
+                title={STRING.procced_to_payment}
+                onPress={() => {
+                  enterSecurityCodeSheetRef.current?.open();
+                }}
+              />
+            </View>
+          )}
+        </>
       )}
+
       <BottomSheet
         type='out_of_service'
         bottomSheetRef={bottomSheetRef}
@@ -552,8 +583,15 @@ const styles = (theme: ThemeContextType['theme']) =>
       height: 1,
       marginTop: getScaleSize(18),
     },
-
-    // ✅ ADD THIS STYLE
+    lastInformationContainer: {
+      marginTop: getScaleSize(24),
+      marginBottom: getScaleSize(30),
+    },
+    infoIcon: {
+      width: getScaleSize(20),
+      height: getScaleSize(20),
+      marginRight: getScaleSize(8),
+    },
     outForServiceContainer: {
       flex: 1,
       paddingVertical: getScaleSize(18),
