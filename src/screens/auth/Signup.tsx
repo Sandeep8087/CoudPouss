@@ -41,8 +41,17 @@ export default function Signup(props: any) {
     // }, [email])
 
     async function onSignup() {
-        if (!email) {
-            setEmailError(STRING.please_enter_your_email);
+        const trimmedEmail = email.trim();
+
+        if (!trimmedEmail) {
+            setEmailError(STRING.email_required);
+
+        } else if (trimmedEmail.length < 6 || trimmedEmail.length > 100) {
+            setEmailError(STRING.email_must_be_six_to_hundred_char_allow);
+
+        } else if (!REGEX.email.test(trimmedEmail)) {
+            setEmailError(STRING.please_enter_valid_email);
+
         } else {
             setEmailError('');
             // let params = {}
@@ -53,10 +62,10 @@ export default function Signup(props: any) {
             //         role: userType,
             //     }
             // } else {
-               const params = {
-                    email: email,
-                    role: userType,
-                }
+            const params = {
+                email: trimmedEmail,
+                role: userType,
+            }
             // }
             try {
                 setLoading(true);
@@ -127,21 +136,22 @@ export default function Signup(props: any) {
                             }}
                         />
                     ) : ( */}
-                        <Input
-                            placeholder={STRING.enter_email}
-                            placeholderTextColor={theme._939393}
-                            inputTitle={STRING.email}
-                            inputColor={false}
-                            continerStyle={{ marginTop: getScaleSize(82) }}
-                            value={email}
-                            keyboardType="email-address"
-                            autoCapitalize="none"
-                            onChangeText={text => {
-                                setEmail(text);
-                                setEmailError('');
-                            }}
-                            isError={emailError}
-                        />
+                    <Input
+                        placeholder={STRING.enter_email}
+                        placeholderTextColor={theme._939393}
+                        inputTitle={STRING.email}
+                        inputColor={false}
+                        continerStyle={{ marginTop: getScaleSize(82) }}
+                        value={email}
+                        maxLength={100}
+                        keyboardType="email-address"
+                        autoCapitalize="none"
+                        onChangeText={text => {
+                             setEmail(text.replace(/\s/g, ''));
+                            setEmailError('');
+                        }}
+                        isError={emailError}
+                    />
                     {/* )} */}
                     <Button
                         title={STRING.continue}

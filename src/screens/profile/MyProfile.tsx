@@ -17,7 +17,7 @@ import { FONTS, IMAGES } from '../../assets';
 import { getScaleSize, SHOW_SUCCESS_TOAST, SHOW_TOAST, useString } from '../../constant';
 
 //COMPONENTS
-import { Text, Header, Input, Button, BottomSheet } from '../../components';
+import { Text, Header, Input, Button, BottomSheet, SelectCountrySheet } from '../../components';
 
 //API
 import { API } from '../../api';
@@ -45,16 +45,22 @@ export default function MyProfile(props: any) {
     const [nameError, setNameError] = useState('');
     const [email, setEmail] = useState(profile?.user?.email ?? "");
     const [emailError, setEmailError] = useState('');
-    const [mobileNumber, setMobileNumber] = useState(profile?.user?.phone_number ?? "");
     const [mobileNumberError, setMobileNumberError] = useState('');
     const [address, setAddress] = useState(profile?.user?.address ?? "");
     const [addressError, setAddressError] = useState('');
-    const [showCountryCode, setShowCountryCode] = useState(false);
     const [isLoading, setLoading] = useState(false);
     const [profileImage, setProfileImage] = useState<any>(null);
     const [addressHeight, setAddressHeight] = useState(inputHeight);
+    const [visibleCountry, setVisibleCountry] = useState(false);
 
-    
+    const fullPhone = profile?.user?.phone_number ?? '';
+
+    const codeMatch = fullPhone.match(/^\+\d+/);
+    const numberMatch = fullPhone.replace(/^\+\d+/, '');
+
+    const [countryCode, setCountryCode] = useState(codeMatch || '+91');
+    const [countryFlag, setCountryFlag] = useState('🇮🇳');
+    const [mobileNumber, setMobileNumber] = useState(numberMatch);
 
     const pickImage = async () => {
         launchImageLibrary({ mediaType: 'photo' }, (response) => {
@@ -108,17 +114,82 @@ export default function MyProfile(props: any) {
         }
     }
 
+    const isOnlyWhitespace = (value: string) => !value || !value.trim();
+
+    const validateAddress = (value: string) => {
+        const trimmed = value.trim();
+
+        // 1. Only whitespace check
+        if (!trimmed) {
+            return "Address cannot be empty or only spaces";
+        }
+
+        // 2. Length check
+        if (trimmed.length < 2 || trimmed.length > 250) {
+            return "Address must be between 2 and 250 characters";
+        }
+
+        // 3. Invalid characters check
+        // Allows letters, numbers, spaces, comma, dot, dash
+        const validRegex = /^[a-zA-Z0-9\s,.\-#/]+$/;
+
+        if (!validRegex.test(trimmed)) {
+            return "Address contains invalid characters";
+        }
+
+        return ""; // valid
+    };
+
+    const validateName = (value: string) => {
+        const trimmed = value.trim();
+
+        if (!trimmed)
+            return "Name cannot be empty";
+
+        // first char cannot be special
+        if (!/^[A-Za-z]/.test(trimmed))
+            return "Name cannot start with special character";
+
+        // allow only letters & spaces
+        if (!/^[A-Za-z\s]+$/.test(trimmed))
+            return "Name contains invalid characters";
+
+        return "";
+    };
+
     async function onEditUserProfile() {
+
+        const trimmedAddress = address.trim();
+        const addressValidation = validateAddress(trimmedAddress);
+        const trimmedName = name.trim();
+
+        if (addressValidation) {
+            setAddressError(addressValidation);
+            return;
+        }
+
+        // Name validation
+        const nameValidation = validateName(trimmedName);
+        if (nameValidation) {
+            setNameError(nameValidation);
+            return;
+        }
+
+        // Mobile validation
+        if (isOnlyWhitespace(mobileNumber)) {
+            setMobileNumberError("Mobile number required");
+            return;
+        }
 
         try {
             const params = {
                 user_data: {
-                    name: name,
-                    // phone_country_code: countryCode,
-                    // phone_number: mobileNumber,
-                    address: address
+                    name: trimmedName,
+                    address: trimmedAddress,
+                    phone_number: mobileNumber,
+                    phone_country_code: countryCode,
                 }
-            }
+            };
 
             console.log('EDIT PARAMS', params)
 
@@ -247,17 +318,17 @@ export default function MyProfile(props: any) {
                         placeholderTextColor={theme._939393}
                         inputTitle={STRING.mobile_number}
                         inputColor={true}
-                        editable={false}
                         keyboardType="numeric"
                         continerStyle={{ marginBottom: getScaleSize(20) }}
                         value={mobileNumber}
                         maxLength={10}
-                        countryCode={'+91'}
+                        countryCode={`${countryFlag} ${countryCode}`}
                         onPressCountryCode={() => {
-                            setShowCountryCode(true);
+                            setVisibleCountry(true);
                         }}
                         onChangeText={text => {
-                            setMobileNumber(text);
+                            const cleaned = text.replace(/[^0-9]/g, '');
+                            setMobileNumber(cleaned);
                             setMobileNumberError('');
                         }}
                         isError={mobileNumberError}
@@ -273,17 +344,19 @@ export default function MyProfile(props: any) {
                         onContentSizeChange={(e) => {
                             const newHeight = e.nativeEvent.contentSize.height;
                             setAddressHeight(
-                              Math.min(getScaleSize(200), Math.max(inputHeight, newHeight))
+                                Math.min(getScaleSize(200), Math.max(inputHeight, newHeight))
                             );
                         }}
                         inputContainer={{
                             maxHeight: getScaleSize(200),
                             height: addressHeight,
-                            minHeight: inputHeight, 
+                            minHeight: inputHeight,
                         }}
                         continerStyle={{ marginBottom: getScaleSize(20) }}
                         onChangeText={text => {
-                            setAddress(text);
+                            const addressText = text.replace(/[<>]/g, '');
+
+                            setAddress(addressText);
                             setAddressError('');
                         }}
                         isError={addressError}
@@ -306,6 +379,19 @@ export default function MyProfile(props: any) {
                 buttonTitle={STRING.delete_profile}
                 onPressButton={() => {
                     onDeleteProfile()
+                }}
+            />
+            <SelectCountrySheet
+                height={getScaleSize(500)}
+                isVisible={visibleCountry}
+                onPress={(e: any) => {
+                    console.log('e', e)
+                    setCountryCode(e.dial_code);
+                    setCountryFlag(e.flag);
+                    setVisibleCountry(false);
+                }}
+                onClose={() => {
+                    setVisibleCountry(false);
                 }}
             />
             <SafeAreaView />

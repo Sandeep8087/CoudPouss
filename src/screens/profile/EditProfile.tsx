@@ -25,6 +25,7 @@ import {
     Input,
     Text,
     Button,
+    SelectCountrySheet,
 } from '../../components';
 
 //PACKAGES
@@ -49,25 +50,38 @@ export default function EditProfile(props: any) {
     const [nameError, setNameError] = useState('');
     const [email, setEmail] = useState('');
     const [emailError, setEmailError] = useState('');
-    const [mobileNumber, setMobileNumber] = useState('');
     const [mobileNumberError, setMobileNumberError] = useState('');
     const [address, setAddress] = useState('');
     const [addressError, setAddressError] = useState('');
     const [showCountryCode, setShowCountryCode] = useState(false);
     const [profileImage, setProfileImage] = useState<any>(null);
-    const [yearsOfExperience, setYearsOfExperience] = useState<number>(0);
+    const [yearsOfExperience, setYearsOfExperience] = useState<string>('');
     const [firstImageURL, setFirstImageURL] = useState<any>(null);
     const [secondImageURL, setSecondImageURL] = useState<any>(null);
     const [firstProductImageURL, setFirstProductImageURL] = useState<any>(null);
     const [secondProductImageURL, setSecondProductImageURL] = useState<any>(null);
     const [addressHeight, setAddressHeight] = useState(inputHeight);
+    const [visibleCountry, setVisibleCountry] = useState(false)
+
+    const fullPhone = profile?.user?.phone_number ?? '';
+
+    const codeMatch = fullPhone.match(/^\+\d+/);
+    const numberMatch = fullPhone.replace(/^\+\d+/, '');
+
+    const [countryCode, setCountryCode] = useState(codeMatch || '+91');
+    const [countryFlag, setCountryFlag] = useState('🇮🇳');
+    const [mobileNumber, setMobileNumber] = useState(numberMatch);
+
+    console.log('profile==>', profile)
 
     useEffect(() => {
         setName((profile?.user?.first_name ?? "") + " " + (profile?.user?.last_name ?? ""));
         setEmail(profile?.user?.email ?? '');
         setMobileNumber(profile?.user?.phone_number ?? '');
         setAddress(profile?.user?.address ?? '');
-        setYearsOfExperience(profile?.provider_info?.years_of_experience ?? '');
+        setYearsOfExperience(
+            String(profile?.provider_info?.years_of_experience ?? '')
+        );
         setBio(profile?.provider_info?.bio ?? '');
         setExperienceSpecialities(profile?.provider_info?.experience_speciality ?? '');
         setAchievements(profile?.provider_info?.achievements ?? '');
@@ -135,17 +149,40 @@ export default function EditProfile(props: any) {
     }
 
     async function onEditUserProfile() {
+
+        const nameErr = validateName(name);
+        const mobileErr = validateMobile(mobileNumber);
+        const addressErr = validateAddress(address);
+
+        const bioErr = validateOptionalText(bio);
+        const expErr = validateOptionalText(experienceSpecialities);
+        const achErr = validateOptionalText(achievements);
+
+        if (bioErr || expErr || achErr) {
+            setBioError(bioErr);
+            setExperienceSpecialitiesError(expErr);
+            setAchievementsError(achErr);
+            return;
+        }
+
+        if (nameErr || mobileErr || addressErr) {
+            setNameError(nameErr)
+            setMobileNumberError(mobileErr)
+            setAddressError(addressErr)
+            return;
+        }
+
         try {
             const params = {
                 "user_data": {
-                    "name": name,
-                    "address": address
+                    "name": name.trim(),
+                    "address": address.trim()
                 },
                 "provider_data": {
-                    "bio": bio,
-                    "experience_speciality": experienceSpecialities,
-                    "achievements": achievements,
-                    "years_of_experience": Number(yearsOfExperience) || 0,
+                    "bio": bio.trim(),
+                    "experience_speciality": experienceSpecialities.trim(),
+                    "achievements": achievements.trim(),
+                    "years_of_experience": parseFloat(yearsOfExperience) || 0,
                     past_work_image_keys: [firstImageURL, secondImageURL]
                 }
             }
@@ -200,6 +237,102 @@ export default function EditProfile(props: any) {
         }
     }
 
+    const validateExperienceInput = (text: string) => {
+        // Remove spaces
+        let value = text.trim();
+
+        // Allow only digits and dot
+        value = value.replace(/[^0-9.]/g, '');
+
+        // Prevent multiple dots
+        const parts = value.split('.');
+        if (parts.length > 2) {
+            value = parts[0] + '.' + parts[1];
+        }
+
+        // Allow only 2 decimal places
+        if (parts[1]?.length > 2) {
+            value = parts[0] + '.' + parts[1].slice(0, 2);
+        }
+
+        // Max value 99
+        if (parseFloat(value) > 99) {
+            value = '99';
+        }
+
+        return value;
+    };
+
+    const validateTextInputs = (text: string) => {
+        // Allow alphabets, numbers, spaces and selected special chars
+        let value = text.replace(/[^a-zA-Z0-9\s.,'\-_@]/g, '');
+
+        // Remove emojis & unsupported unicode
+        value = value.replace(
+            /([\u2700-\u27BF]|[\uE000-\uF8FF]|\uD83C[\uDC00-\uDFFF]|\uD83D[\uDC00-\uDFFF]|\uD83E[\uDC00-\uDFFF])/g,
+            ''
+        );
+
+        // Limit to 300 chars
+        return value.slice(0, 300);
+    };
+
+    const validateOptionalText = (value: string) => {
+        const trimmed = value.trim();
+
+        if (!trimmed) return '';
+
+        if (!/[a-zA-Z0-9]/.test(trimmed)) {
+            return 'Invalid input';
+        }
+
+        if (trimmed.length < 5) {
+            return 'Minimum 5 characters required';
+        }
+
+        if (trimmed.length > 300) {
+            return 'Maximum 300 characters allowed';
+        }
+
+        return '';
+    };
+
+    const validateName = (value: string) => {
+        const trimmed = value.trim();
+
+        if (!trimmed) return "Name is required";
+
+        if (!/^[A-Za-z]/.test(trimmed))
+            return "Name cannot start with special character";
+
+        if (!/^[A-Za-z\s]+$/.test(trimmed))
+            return "Only letters allowed";
+
+        return "";
+    };
+
+    const validateMobile = (value: string) => {
+        const trimmed = value.trim();
+
+        if (!trimmed) return "Mobile number required";
+
+        if (!/^[0-9]{10}$/.test(trimmed))
+            return "Enter valid 10 digit number";
+
+        return "";
+    };
+
+    const validateAddress = (value: string) => {
+        const trimmed = value.trim();
+
+        if (!trimmed) return "Address required";
+
+        if (trimmed.length < 2 || trimmed.length > 250)
+            return "Address must be 2–250 characters";
+
+        return "";
+    };
+
     return (
         <View style={styles(theme).container}>
             <Header
@@ -252,8 +385,10 @@ export default function EditProfile(props: any) {
                         inputTitle={STRING.full_name}
                         inputColor={true}
                         value={name}
+                        maxLength={50}
                         continerStyle={{ marginBottom: getScaleSize(20) }}
                         onChangeText={text => {
+                            if (text.length === 1 && !/[A-Za-z]/.test(text)) return;
                             setName(text);
                             setNameError('');
                         }}
@@ -266,6 +401,7 @@ export default function EditProfile(props: any) {
                         inputColor={true}
                         continerStyle={{ marginBottom: getScaleSize(20) }}
                         value={email}
+                        editable={false}
                         onChangeText={text => {
                             setEmail(text);
                             setEmailError('');
@@ -281,12 +417,13 @@ export default function EditProfile(props: any) {
                         continerStyle={{ marginBottom: getScaleSize(20) }}
                         value={mobileNumber}
                         maxLength={10}
-                        countryCode={'+91'}
+                        countryCode={`${countryFlag} ${countryCode}`}
                         onPressCountryCode={() => {
-                            setShowCountryCode(true);
+                            setVisibleCountry(true);
                         }}
                         onChangeText={text => {
-                            setMobileNumber(text);
+                            const cleaned = text.replace(/[^0-9]/g, '');
+                            setMobileNumber(cleaned);
                             setMobileNumberError('');
                         }}
                         isError={mobileNumberError}
@@ -322,9 +459,10 @@ export default function EditProfile(props: any) {
                         inputTitle={STRING.years_of_experience}
                         inputColor={true}
                         keyboardType='number-pad'
-                        value={yearsOfExperience.toString()}
+                        value={yearsOfExperience}
                         onChangeText={(text: any) => {
-                            setYearsOfExperience(text);
+                            const cleanedValue = validateExperienceInput(text);
+                            setYearsOfExperience(cleanedValue);
                         }}
                     />
                 </View>
@@ -345,8 +483,9 @@ export default function EditProfile(props: any) {
                         numberOfLines={8}
                         continerStyle={{ marginBottom: getScaleSize(20) }}
                         onChangeText={text => {
-                            setBio(text);
-                            setBioError('');
+                            const clean = validateTextInputs(text);
+                            setBio(clean);
+                            setBioError(validateOptionalText(clean));
                         }}
                         isError={bioError}
                     />
@@ -359,8 +498,9 @@ export default function EditProfile(props: any) {
                         numberOfLines={8}
                         continerStyle={{ marginBottom: getScaleSize(20) }}
                         onChangeText={text => {
-                            setExperienceSpecialities(text);
-                            setExperienceSpecialitiesError('');
+                            const clean = validateTextInputs(text);
+                            setExperienceSpecialities(clean);
+                            setExperienceSpecialitiesError(validateOptionalText(clean));
                         }}
                         isError={experienceSpecialitiesError}
                     />
@@ -373,8 +513,9 @@ export default function EditProfile(props: any) {
                         numberOfLines={8}
                         continerStyle={{ marginBottom: getScaleSize(20) }}
                         onChangeText={text => {
-                            setAchievements(text);
-                            setAchievementsError('');
+                            const clean = validateTextInputs(text);
+                            setAchievements(clean);
+                            setAchievementsError(validateOptionalText(clean));
                         }}
                         isError={achievementsError}
                     />
@@ -448,6 +589,19 @@ export default function EditProfile(props: any) {
                 style={styles(theme).updateButton}
                 onPress={() => {
                     onEditUserProfile()
+                }}
+            />
+            <SelectCountrySheet
+                height={getScaleSize(500)}
+                isVisible={visibleCountry}
+                onPress={(e: any) => {
+                    console.log('e', e)
+                    setCountryCode(e.dial_code);
+                    setCountryFlag(e.flag);
+                    setVisibleCountry(false);
+                }}
+                onClose={() => {
+                    setVisibleCountry(false);
                 }}
             />
             <SafeAreaView />

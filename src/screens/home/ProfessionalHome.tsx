@@ -60,6 +60,11 @@ import Geolocation from 'react-native-geolocation-service';
 import { PERMISSIONS, request, RESULTS } from 'react-native-permissions';
 
 export default function ProfessionalHome(props: any) {
+
+  const skipSubscription = props?.route?.params?.skipSubscription;
+
+  console.log('skipSubscription',skipSubscription)
+
   const STRING = useString();
 
   const { theme } = useContext<any>(ThemeContext);
@@ -137,6 +142,7 @@ export default function ProfessionalHome(props: any) {
       const result: any = await API.Instance.get(
         `${API.API_ROUTES.getProfessionalAllServices}?provider_lat=${location?.latitude}&provider_lon=${location?.longitude}&page=${page}&limit=${limit}`,
       );
+      setLoading(false)
       if (result?.status) {
         console.log('result==>', result?.data?.data);
         setServiceList(result.data.data ?? []);
@@ -217,13 +223,15 @@ export default function ProfessionalHome(props: any) {
           )}
         </TouchableOpacity>
       </View>
-      <View style={styles(theme).searchView}>
+       {/* <View style={styles(theme).searchView}>
         <SearchComponent
+          value={searchText}
+          onChangeText={setSearchText}
           onPressMicrophone={() => {
             console.log('onPressMicrophone');
           }}
         />
-      </View>
+      </View> */}
       {locationDenied ? (
         <EmptyView
           title={STRING.location_permission_required}

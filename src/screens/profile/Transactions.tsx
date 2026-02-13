@@ -102,7 +102,7 @@ export default function Transactions(props: any) {
                     isLoading: false,
                 }));
             } else {
-                SHOW_TOAST(result?.data?.message, 'error');
+                SHOW_TOAST(result?.data?.detail, 'error');
                 setRequestData((prev: any) => ({ ...prev, isLoading: false }));
             }
         } catch (error: any) {

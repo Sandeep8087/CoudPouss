@@ -1,5 +1,5 @@
-import {stubString} from 'lodash';
-import {useTranslation} from 'react-i18next';
+import { stubString } from 'lodash';
+import { useTranslation } from 'react-i18next';
 
 export const useString = () => {
   return {
@@ -46,7 +46,7 @@ export const useString = () => {
       'Please pick a category to begin. This will help us connect you with the right professional for your needs.',
     Selectacategory: 'Select a category',
     enter_your_registered_email_or_phone_number_below_to_get_reset_your_password:
-      'Enter your Registered Email or Phone Number below to get reset your password.',
+      'Enter your Registered Email below to get reset your password.',
     continue: 'Continue',
     To_reset_your_password_Please_enter_the_4_Digit_PIN_sent_to_your_Email_or_Phone_Number:
       'To reset your password. Please enter the 4 Digit PIN sent to your Email',
@@ -353,8 +353,7 @@ export const useString = () => {
     please_enter_your_re_enter_password: 'Please enter your re-enter password',
     passwords_do_not_match: 'Passwords do not match',
     please_enter_your_address: 'Please enter your address',
-    password_validation_message:
-      'Password must be at least 8 characters and include an uppercase letter, a number, and a special character',
+    password_validation_message: 'Password must contain at least 8 characters, including uppercase, lowercase, number, and special character.',
     profile_updated_successfully: 'Profile updated successfully',
     add_details_of_the_product_or_thing_you_want_to_offer_in_exchange_for_the_service:
       'Add details of the product or thing you want to offer in exchange for the service.',
@@ -423,10 +422,30 @@ export const useString = () => {
     information_message_text: "CoudPouss does not guarantee the quality of services exchanged from this point onward. Our role is to connect you with professionals and secure your transactions through escrow. All providers on our platform issue their own invoices directly to clients. Once you provide the validation code to your provider, you must request an invoice or receipt from them for your payment.",
     location_permission_required: "Location permission is required to show nearby services",
     open_settings: "Open Settings",
+    please_enter_valid_email: 'Please enter valid email',
+    email_must_be_six_to_hundred_char_allow: "Email must be between 6 and 100 characters.",
+    please_enter_four_digit_pin_sent_on_email: "Please enter the 4 Digit PIN sent to your Email or Phone Number.",
+    forgotPassword: 'Forgot Password',
+    email_required: 'Email is required',
+    password_required: 'Password is required',
+    name_required: 'Name is required',
+    mobile_number_required: 'Mobile number is required',
+    address_required: 'Address is required',
+    confirm_password_required: 'Confirm password is required',
+    name_min_max_error: "Name must be 2–50 characters",
+    name_invalid_characters: "Only alphabets, space, dot and hyphen allowed",
+    emoji_not_allowed: "Emoji not allowed",
+    mobile_must_be_10_digits: "Mobile must be 10 digits",
+    address_min_max_error: "Address must be 2–250 characters",
+    address_special_char_error: "Invalid address format",
+    address_only_numbers_error: "Address cannot be only numbers",
+    address_html_error: "HTML content not allowed",
+    address_sql_error: "Invalid address input"
+
   };
 };
 
 export function getTranslation(str: string) {
-  const {t} = useTranslation();
+  const { t } = useTranslation();
   return t(str);
 }

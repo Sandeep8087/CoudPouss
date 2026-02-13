@@ -148,7 +148,10 @@ export default function ChooseYourSubscription(props: any) {
                     props.navigation.dispatch(
                         CommonActions.reset({
                             index: 0,
-                            routes: [{ name: SCREENS.BottomBar.identifier }],
+                            routes: [{
+                                name: SCREENS.BottomBar.identifier,
+                                params: { skipSubscription: true }
+                            }],
                         }),
                     );
                 }}>
