@@ -24,13 +24,27 @@ export type ChatThread = {
   updatedAt?: FirebaseFirestoreTypes.Timestamp | null;
 };
 
+export type NegotiationOffer = {
+  amount: number;
+  addedBy: 'elderly_user' | 'service_provider';
+  createdAt?: FirebaseFirestoreTypes.Timestamp | null;
+};
+
 export type ChatMessage = {
   id: string;
-  text: string;
   senderId: string;
   receiverId: string;
   createdAt?: FirebaseFirestoreTypes.Timestamp | null;
-  type: 'text';
+  type: 'text' | 'negotiation';
+  text?: string;
+  serviceId?: string;
+  serviceName?: string;
+  originalAmount?: number;
+  initialQuote?: number;
+  offers?: NegotiationOffer[];
+  status?: 'pending' | 'accepted';
+  acceptedAmount?: number | null;
+  lastUpdatedBy?: string;
 };
 
 const USERS_COLLECTION = 'users';
@@ -238,4 +252,117 @@ export async function sendTextMessage(payload: {
     },
     {merge: true},
   );
+}
+
+export async function createNegotiationMessage(payload: {
+  threadId: string;
+  senderId: string;
+  receiverId: string;
+  serviceId: string;
+  serviceName?: string;
+  originalAmount: number;
+  initialQuote: number;
+  firstOfferAmount: number;
+  addedBy: 'elderly_user' | 'service_provider';
+}) {
+  const timestamp = firestore.FieldValue.serverTimestamp();
+  const messageRef = firestore()
+    .collection(THREADS_COLLECTION)
+    .doc(payload.threadId)
+    .collection(MESSAGES_SUBCOLLECTION)
+    .doc();
+
+  const docData: ChatMessage = {
+    id: messageRef.id,
+    senderId: payload.senderId,
+    receiverId: payload.receiverId,
+    type: 'negotiation',
+    serviceId: payload.serviceId,
+    serviceName: payload.serviceName,
+    originalAmount: payload.originalAmount,
+    initialQuote: payload.initialQuote,
+    offers: [
+      {
+        amount: payload.firstOfferAmount,
+        addedBy: payload.addedBy,
+        createdAt: timestamp as any,
+      },
+    ],
+    status: 'pending',
+    acceptedAmount: null,
+    lastUpdatedBy: payload.addedBy,
+    createdAt: timestamp as any,
+  };
+
+  await messageRef.set(docData);
+
+  await firestore().collection(THREADS_COLLECTION).doc(payload.threadId).set(
+    {
+      lastMessage: 'Negotiation started',
+      lastMessageSenderId: payload.senderId,
+      updatedAt: timestamp,
+    },
+    {merge: true},
+  );
+
+  return messageRef.id;
+}
+
+export async function appendNegotiationOffer(payload: {
+  threadId: string;
+  messageId: string;
+  amount: number;
+  addedBy: 'elderly_user' | 'service_provider';
+}) {
+  const msgRef = firestore()
+    .collection(THREADS_COLLECTION)
+    .doc(payload.threadId)
+    .collection(MESSAGES_SUBCOLLECTION)
+    .doc(payload.messageId);
+
+  await firestore().runTransaction(async tx => {
+    const snap = await tx.get(msgRef);
+    if (!snap.exists) {
+      throw new Error('Negotiation message not found');
+    }
+    const data = snap.data() as ChatMessage;
+    const offers = Array.isArray(data.offers) ? data.offers.slice() : [];
+    offers.push({
+      amount: payload.amount,
+      addedBy: payload.addedBy,
+      createdAt: firestore.FieldValue.serverTimestamp() as any,
+    });
+    tx.update(msgRef, {
+      offers,
+      lastUpdatedBy: payload.addedBy,
+      updatedAt: firestore.FieldValue.serverTimestamp(),
+    } as any);
+  });
+}
+
+export async function acceptNegotiation(payload: {
+  threadId: string;
+  messageId: string;
+}) {
+  const msgRef = firestore()
+    .collection(THREADS_COLLECTION)
+    .doc(payload.threadId)
+    .collection(MESSAGES_SUBCOLLECTION)
+    .doc(payload.messageId);
+
+  await firestore().runTransaction(async tx => {
+    const snap = await tx.get(msgRef);
+    if (!snap.exists) {
+      throw new Error('Negotiation message not found');
+    }
+    const data = snap.data() as ChatMessage;
+    const offers = Array.isArray(data.offers) ? data.offers : [];
+    const latest = offers.length > 0 ? offers[offers.length - 1] : null;
+    const acceptedAmount = latest ? latest.amount : null;
+    tx.update(msgRef, {
+      status: 'accepted',
+      acceptedAmount,
+      updatedAt: firestore.FieldValue.serverTimestamp(),
+    });
+  });
 }
