@@ -91,6 +91,8 @@ export default function CreateRequest(props: any) {
   const [secondProductImageURL, setSecondProductImageURL] = useState<any>(null);
   const [address, setAddress] = useState('');
   const [addressError, setAddressError] = useState('')
+  const [descriptionError, setDescriptionError] = useState('')
+  const [firstImageError, setFirstImageError] = useState('')
 
   useEffect(() => {
     getAllCategories();
@@ -208,23 +210,25 @@ export default function CreateRequest(props: any) {
       const formData = new FormData();
 
       const isVideo = asset?.type?.startsWith('video');
-
+      console.log('isVideo', isVideo, asset)
       formData.append('file', {
-        uri: isVideo ? asset.thumbnailUri : asset.uri,
+        uri: isVideo ? asset.uri : asset.uri,
         name: isVideo
-          ? `video_thumb_${Date.now()}.jpg`
+          ? `video_thumb_${Date.now()}.mp4`
           : asset?.fileName || 'profile_image.jpg',
-        type: isVideo ? 'image/jpeg' : asset?.type || 'image/jpeg',
+        type: isVideo ? asset?.type : asset?.type || 'image/jpeg',
       });
       setLoading(true);
       const result = await API.Instance.post(API.API_ROUTES.uploadServiceRequestImage, formData, {
         headers: { 'Content-Type': 'multipart/form-data' }
       });
       if (result.status) {
-        if (type === 'first') setFirstImageURL(result?.data);
-        else if (type === 'second') setSecondImageURL(result?.data);
-        else if (type === 'firstProduct') setFirstProductImageURL(result?.data);
-        else if (type === 'secondProduct') setSecondProductImageURL(result?.data);
+        const file = result?.data?.files?.[0];
+        if (!file) return;
+        if (type === 'first') setFirstImageURL(file);
+        else if (type === 'second') setSecondImageURL(file);
+        else if (type === 'firstProduct') setFirstProductImageURL(file);
+        else if (type === 'secondProduct') setSecondProductImageURL(file);
       } else {
         SHOW_TOAST(result?.data?.message ?? '', 'error');
         if (type === 'first') setFirstImage(null);
@@ -266,14 +270,19 @@ export default function CreateRequest(props: any) {
         setSelectedProgress(4);
       }
     } else if (selectedProgress === 4) {
-      if (!address) {
+      if (!address && !firstImageURL && !description) {
+        setAddressError('Please enter an address');
+        setFirstImageError('Please upload a photo');
+        setDescriptionError('Please enter a description');
+        return;
+      } else if (!address) {
         setAddressError('Please enter an address');
         return;
-      } else if (!firstImageURL) {
-        SHOW_TOAST('Please upload a photo', 'error');
-        return;
       } else if (!description) {
-        SHOW_TOAST('Please enter a description', 'error');
+        setDescriptionError('Please enter a description');
+        return;
+      } else if (!firstImageURL) {
+        setFirstImageError('Please upload a photo');
         return;
       } else {
         setSelectedProgress(5);
@@ -345,7 +354,7 @@ export default function CreateRequest(props: any) {
         setProductNameError('Please enter a product name');
         return;
       } else if (!quantity) {
-        setQuantityError('Please enter a quantity');
+        setQuantityError('Quantity is required.');
         return;
       } else if (!firstProductImageURL) {
         SHOW_TOAST('Please upload a photo', 'error');
@@ -813,13 +822,14 @@ export default function CreateRequest(props: any) {
             color={theme._424242}>
             {STRING.EnterServicedescription}
           </Text>
-          <View style={styles(theme).inputContainer}>
+          <View style={[styles(theme).inputContainer, { borderColor: descriptionError ? theme._EF5350 : theme._D5D5D5, }]}>
             <TextInput
               style={styles(theme).textInput}
               value={description}
               onChangeText={(text: any) => {
                 if (text.startsWith(' ')) return;
                 setDescription(text);
+                setDescriptionError('');
               }}
               placeholder={STRING.Enterdescriptionhere}
               placeholderTextColor="#999"
@@ -829,6 +839,15 @@ export default function CreateRequest(props: any) {
               returnKeyType="default"
             />
           </View>
+          {descriptionError && (
+            <Text
+              style={{ marginTop: getScaleSize(4) }}
+              size={getScaleSize(16)}
+              font={FONTS.Lato.SemiBold}
+              color={theme._EF5350}>
+              {descriptionError}
+            </Text>
+          )}
           <Text
             style={{ marginTop: getScaleSize(20) }}
             size={getScaleSize(17)}
@@ -838,10 +857,11 @@ export default function CreateRequest(props: any) {
           </Text>
           <View style={styles(theme).imageUploadContent}>
             <TouchableOpacity
-              style={[styles(theme).uploadButton, { marginRight: getScaleSize(9) }]}
+              style={[styles(theme).uploadButton, { marginRight: getScaleSize(9), borderColor: firstImageError ? theme._EF5350 : theme._818285, }]}
               activeOpacity={1}
               onPress={() => {
                 pickImage('first');
+                setFirstImageError('');
               }}>
               {firstImage ? (
                 <Image
@@ -866,9 +886,10 @@ export default function CreateRequest(props: any) {
               )}
             </TouchableOpacity>
             <TouchableOpacity
-              style={[styles(theme).uploadButton, { marginLeft: getScaleSize(9) }]}
+              style={[styles(theme).uploadButton, { marginLeft: getScaleSize(9), borderColor: firstImageError ? theme._EF5350 : theme._818285, }]}
               activeOpacity={1}
               onPress={() => {
+                setFirstImageError('');
                 pickImage('second');
               }}>
               {secondImage ? (
@@ -938,8 +959,11 @@ export default function CreateRequest(props: any) {
             inputColor={true}
             continerStyle={{ marginBottom: getScaleSize(22) }}
             value={productName}
-            onChangeText={text => {
-              setProductName(text.trim());
+            maxLength={50}
+            onChangeText={(text: any) => {
+              const filteredText = text.replace(/[^a-zA-Z0-9\-&.\(\)\s]/g, '')
+              setProductName(filteredText);
+              setProductNameError('');
             }}
             isError={productNameError}
           />
@@ -948,6 +972,7 @@ export default function CreateRequest(props: any) {
             placeholderTextColor={theme._939393}
             inputTitle={STRING.quantity}
             inputColor={true}
+            keyboardType="numeric"
             quantityIcon={true}
             continerStyle={{ marginBottom: getScaleSize(22) }}
             value={quantity.toString()}
@@ -972,7 +997,7 @@ export default function CreateRequest(props: any) {
           </Text>
           <View style={styles(theme).imageUploadContent}>
             <TouchableOpacity
-              style={[styles(theme).uploadButton, { marginRight: getScaleSize(9) }]}
+              style={[styles(theme).uploadButton, { marginRight: getScaleSize(9), borderColor: theme._818285, }]}
               activeOpacity={1}
               onPress={() => {
                 pickImage('firstProduct');
@@ -1000,7 +1025,7 @@ export default function CreateRequest(props: any) {
               )}
             </TouchableOpacity>
             <TouchableOpacity
-              style={[styles(theme).uploadButton, { marginLeft: getScaleSize(9) }]}
+              style={[styles(theme).uploadButton, { marginLeft: getScaleSize(9), borderColor: theme._818285, }]}
               activeOpacity={1}
               onPress={() => {
                 pickImage('secondProduct');
@@ -1338,7 +1363,7 @@ const styles = (theme: ThemeContextType['theme']) =>
     },
     inputContainer: {
       borderWidth: 1,
-      borderColor: theme._D5D5D5,
+
       borderRadius: getScaleSize(12),
       marginTop: getScaleSize(12),
     },

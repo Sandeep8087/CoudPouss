@@ -36,7 +36,7 @@ export default function Profile(props: any) {
     { id: 1, title: STRING.my_profile, icon: IMAGES.ic_my_profile, onPress: SCREENS.MyProfile.identifier },
     { id: 2, title: STRING.transactions, icon: IMAGES.ic_transactions, onPress: SCREENS.TransactionsElder.identifier },
     { id: 3, title: STRING.ratings_reviews, icon: IMAGES.ic_ratings_reviews, onPress: SCREENS.RatingsReviews.identifier },
-    { id: 4, title: STRING.notifications, icon: IMAGES.ic_notifications, onPress: SCREENS.Notifications.identifier },
+    { id: 4, title: STRING.notifications, icon: IMAGES.ic_notifications, onPress: SCREENS.Notification.identifier },
   ]
 
   const profieItemsProfessional = [
@@ -45,7 +45,7 @@ export default function Profile(props: any) {
     { id: 3, title: STRING.manage_services, icon: IMAGES.ic_manage_services, onPress: SCREENS.ManageServices.identifier },
     { id: 4, title: STRING.manage_subscription, icon: IMAGES.ic_manage_subscription, onPress: SCREENS.ManageSubscription.identifier },
     { id: 5, title: STRING.ratings_reviews, icon: IMAGES.ic_ratings_reviews, onPress: SCREENS.RatingsReviews.identifier },
-    { id: 6, title: STRING.notifications, icon: IMAGES.ic_notifications, onPress: SCREENS.Notifications.identifier },
+    { id: 6, title: STRING.notifications, icon: IMAGES.ic_notifications, onPress: SCREENS.Notification.identifier },
   ]
 
   function getProfileItems() {

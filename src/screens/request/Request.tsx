@@ -164,27 +164,9 @@ export default function Request(props: any) {
             <RequestItem
               selectedFilter={requestData?.selectedFilter}
               onPress={() => {
-                if (item?.status === 'open') {
-                  props.navigation.navigate(SCREENS.OpenRequestDetails.identifier, {
-                    item: item
-                  })
-                } else if (item?.status === 'pending') {
-                  props.navigation.navigate(SCREENS.RequestDetails.identifier, {
-                    item: item
-                  })
-                } else if (item?.status === 'completed') {
-                  props.navigation.navigate(SCREENS.CompletedTaskDetails.identifier, {
-                    item: item
-                  })
-                } else if (item?.status === 'accepted') {
-                  props.navigation.navigate(SCREENS.CompletedTaskDetails.identifier, {
-                    item: item
-                  })
-                } else if (item?.status === 'cancelled') {
-                  props.navigation.navigate(SCREENS.CompletedTaskDetails.identifier, {
-                    item: item
-                  })
-                }
+                props.navigation.navigate(SCREENS.RequestDetails.identifier, {
+                  item: item
+                })
               }}
               item={item} />
           )}

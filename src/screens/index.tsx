@@ -49,7 +49,6 @@ import OpenRequestDetails from './task/OpenRequestDetails';
 import MyProfile from './profile/MyProfile';
 import RatingsReviews from './profile/RatingsReviews';
 import Transactions from './profile/Transactions';
-import Notifications from './profile/Notifications';
 import MyProfileProfessional from './profile/MyProfileProfessional';
 import EditProfile from './profile/EditProfile';
 import ApplicationStatus from './profile/ApplicationStatus';
@@ -164,10 +163,6 @@ export const SCREENS = {
   TransactionsElder:{
     identifier: 'TransactionsElder',
     component: TransactionsElder,
-  },
-  Notifications: {
-    identifier: 'Notifications',
-    component: Notifications,
   },
   ChatDetails: {
     identifier: 'ChatDetails',

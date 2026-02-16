@@ -180,7 +180,7 @@ export default function Home(props: any) {
           font={FONTS.Lato.SemiBold}
           style={{
             marginTop: getScaleSize(31),
-            
+
             marginHorizontal: getScaleSize(22),
           }}
           color={theme._323232}>
@@ -334,23 +334,9 @@ export default function Home(props: any) {
                   key={index}
                   item={item}
                   onPress={() => {
-                    if (item?.status === 'open') {
-                      props.navigation.navigate(SCREENS.OpenRequestDetails.identifier, {
-                        item: item
-                      })
-                    } else if (item?.status === 'pending') {
-                      props.navigation.navigate(SCREENS.RequestDetails.identifier, {
-                        item: item
-                      })
-                    } else if (item?.status === 'accepted') {
-                      props.navigation.navigate(SCREENS.CompletedTaskDetails.identifier, {
-                        item: item
-                      })
-                    } else if (item?.status === 'completed') {
-                      props.navigation.navigate(SCREENS.CompletedTaskDetails.identifier, {
-                        item: item
-                      })
-                    }
+                    props.navigation.navigate(SCREENS.RequestDetails.identifier, {
+                      item: item
+                    })
                   }}
                 />
               );

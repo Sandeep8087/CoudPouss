@@ -13,6 +13,10 @@ export const formatDecimalInput = (
   // Allow typing "." → "0."
   if (value === '.') return '0.';
 
+  if (/^0\d+/.test(value)) {
+    return '0';
+  }
+
   // Allow only one dot
   const firstDot = value.indexOf('.');
   if (firstDot !== -1) {

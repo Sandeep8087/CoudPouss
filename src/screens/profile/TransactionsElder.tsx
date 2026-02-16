@@ -71,11 +71,13 @@ export default function TransactionsElder(props: any) {
             const endDate = customEndDate ?? requestData.endDate;
             const selectedStatus = customStatus ?? requestData.selectedStatus;
 
+            console.log('selectedStatus==>', selectedStatus);
+
             const result: any = await API.Instance.get(
                 API.API_ROUTES.fetchTransactions +
                 `?section=transactions` +
-                // `?section=transactions&start_date=${startDate ? moment(startDate).format('YYYY-MM-DD') : ''}` +
-                // `&end_date=${endDate ? moment(endDate).format('YYYY-MM-DD') : ''}` +
+                `&start_date=${startDate ? moment(startDate).format('YYYY-MM-DD') : ''}` +
+                `&end_date=${endDate ? moment(endDate).format('YYYY-MM-DD') : ''}` +
                 `&status=${selectedStatus?.value ?? ''}` +
                 `&page=${page}` +
                 `&limit=${PAGE_SIZE}`
@@ -209,11 +211,12 @@ export default function TransactionsElder(props: any) {
                         contentStyle={styles(theme).tooltipContent}
                         onClose={() => setVisible(false)}
                         content={
-                            <View>
+                            <View>'success', 'failed', 'pending'
                                 {[
                                     { id: '1', title: 'All', value: '' },
-                                    { id: '2', title: 'Completed', value: 'completed' },
-                                    { id: '3', title: 'Pending', value: 'pending' },
+                                    { id: '2', title: 'Success', value: 'success' },
+                                    { id: '3', title: 'Failed', value: 'failed' },
+                                    { id: '4', title: 'Pending', value: 'pending' },
                                 ].map(item => (
                                     <TouchableOpacity
                                         key={item.id}
