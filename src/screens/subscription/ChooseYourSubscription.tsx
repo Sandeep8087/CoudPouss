@@ -23,7 +23,7 @@ export default function ChooseYourSubscription(props: any) {
 
     const { theme } = useContext<any>(ThemeContext);
     const { setMyPlan } = useContext<any>(AuthContext);
-
+    const isFromSubscriptionButton: any = props?.route?.params?.isFromSubscriptionButton ?? false;
     const [selectedPlan, setSelectedPlan] = useState<any>('');
     const [allPlans, setAllPlans] = useState([]);
     const [isLoading, setLoading] = useState(false);
@@ -59,7 +59,16 @@ export default function ChooseYourSubscription(props: any) {
         <View style={styles(theme).container}>
             <Header
                 onBack={() => {
-                    props.navigation.goBack();
+                    if (isFromSubscriptionButton) {
+                        props.navigation.goBack();
+                    } else {
+                        props.navigation.dispatch(
+                            CommonActions.reset({
+                                index: 0,
+                                routes: [{ name: SCREENS.BottomBar.identifier }],
+                            }),
+                        );
+                    }
                 }}
                 screenName={STRING.choose_your_subscription}
             />
@@ -87,7 +96,7 @@ export default function ChooseYourSubscription(props: any) {
                                         setSelectedPlan(item);
                                     }}
                                     style={styles(theme).subscriptionItem}>
-                                    <View style={[styles(theme).flexView, { marginBottom: getScaleSize(18) }]}>
+                                    <View style={[styles(theme).flexView, { marginBottom: getScaleSize(16) }]}>
                                         <Text
                                             size={getScaleSize(19)}
                                             font={FONTS.Lato.Bold}
@@ -159,8 +168,9 @@ export default function ChooseYourSubscription(props: any) {
                     if (!selectedPlan) {
                         SHOW_TOAST(STRING.please_select_a_plan, 'error');
                     } else {
-                        props.navigation.navigate(SCREENS.SelectedPlanDetails.identifier,{
-                            plan: selectedPlan
+                        props.navigation.navigate(SCREENS.SelectedPlanDetails.identifier, {
+                            plan: selectedPlan,
+                            isFromSubscriptionButton: isFromSubscriptionButton
                         });
                     }
                 }}

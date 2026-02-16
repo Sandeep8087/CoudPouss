@@ -21,7 +21,9 @@ export default function SelectedPlanDetails(props: any) {
     const STRING = useString();
     const { theme } = useContext<any>(ThemeContext);
     const { user } = useContext<any>(AuthContext);
+
     const plan: any = props?.route?.params?.plan ?? '';
+    const isFromSubscriptionButton: any = props?.route?.params?.isFromSubscriptionButton ?? false;
 
     const [isLoading, setLoading] = useState(false);
     const [planDetails, setPlanDetails] = useState<any>({});
@@ -35,44 +37,12 @@ export default function SelectedPlanDetails(props: any) {
             setLoading(true);
             const result = await API.Instance.get(API.API_ROUTES.getPlanDetails + `?provider_type=${plan?.type}`);
             setLoading(false);
-            console.log('result', result.status, result)
             if (result.status) {
-                console.log('planDetails==', result?.data?.data)
                 setPlanDetails(result?.data?.data?.plan);
             } else {
                 SHOW_TOAST(result?.data?.message ?? '', 'error')
-                console.log('error==>', result?.data?.message)
             }
         } catch (error: any) {
-            setLoading(false);
-            SHOW_TOAST(error?.message ?? '', 'error');
-            console.log(error?.message)
-        } finally {
-            setLoading(false);
-        }
-    }
-    
-    async function onSelectPlan() {
-        const params = {
-            provider_id: user?.user_data?.user_id,
-            plan_id: planDetails?.id,
-            provider_type: planDetails?.type
-        }
-        try {
-            setLoading(true);
-            const result = await API.Instance.post(API.API_ROUTES.onSelectPlan, params);
-            setLoading(false);
-            if (result.status) {
-                console.log('planDetails==', result?.data?.data)
-                props.navigation.navigate(SCREENS.PaymentMethod.identifier, {
-                    planDetails: planDetails,
-                });
-            } else {
-                SHOW_TOAST(result?.data?.message ?? '', 'error')
-                console.log('error==>', result?.data?.message)
-            }
-        }
-        catch (error: any) {
             setLoading(false);
             SHOW_TOAST(error?.message ?? '', 'error');
             console.log(error?.message)
@@ -167,7 +137,10 @@ export default function SelectedPlanDetails(props: any) {
                     title={STRING.subscribe}
                     style={{ flex: 1.0 }}
                     onPress={() => {
-                        onSelectPlan()
+                        props.navigation.navigate(SCREENS.PaymentMethod.identifier, {
+                            planDetails: planDetails,
+                            isFromSubscriptionButton: isFromSubscriptionButton
+                        });
                     }}
                 />
             </View>

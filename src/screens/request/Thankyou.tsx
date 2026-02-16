@@ -1,4 +1,4 @@
-import React, {useContext, useEffect, useState} from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import {
   View,
   StatusBar,
@@ -17,19 +17,18 @@ import {
 } from 'react-native';
 
 //ASSETS
-import {FONTS, IMAGES} from '../../assets';
+import { FONTS, IMAGES } from '../../assets';
 
 //CONTEXT
-import {ThemeContext, ThemeContextType} from '../../context';
+import { ThemeContext, ThemeContextType } from '../../context';
 
 //CONSTANT
-import {CATEGORY_DATA, getScaleSize, useString} from '../../constant';
+import { getScaleSize } from '../../constant';
 
 //COMPONENT
 import {
   AssistanceItems,
   CalendarComponent,
-  CategoryDropdown,
   Header,
   Input,
   ProgressSlider,
@@ -40,13 +39,13 @@ import {
 } from '../../components';
 
 //PACKAGES
-import {CommonActions, useFocusEffect} from '@react-navigation/native';
+import { CommonActions, useFocusEffect } from '@react-navigation/native';
 import { SCREENS } from '..';
 
 export default function Thankyou(props: any) {
-  const {theme} = useContext<any>(ThemeContext);
+  const { theme } = useContext<any>(ThemeContext);
 
-  useEffect(()=>{
+  useEffect(() => {
     setTimeout(() => {
       props?.navigation?.dispatch(
         CommonActions.reset({
@@ -54,13 +53,13 @@ export default function Thankyou(props: any) {
           routes: [{ name: SCREENS.BottomBar.identifier }],
         }),
       );
-    }, 4000);
-  },[])
+    }, 1800);
+  }, [])
 
   return (
-     <View style={styles(theme).container}>
-      <Image style={styles(theme).imageView} source={IMAGES.request_submitteed}/>
-     </View>
+    <View style={styles(theme).container}>
+      <Image style={styles(theme).imageView} source={IMAGES.request_submitteed} />
+    </View>
   );
 }
 
@@ -71,10 +70,10 @@ const styles = (theme: ThemeContextType['theme']) =>
       backgroundColor: theme.white,
       justifyContent: 'center',
     },
-    imageView:{
-      width:Dimensions.get('window').width - getScaleSize(58),
-      height:getScaleSize(500),
-      resizeMode:'contain',
-      alignSelf:'center'
+    imageView: {
+      width: Dimensions.get('window').width - getScaleSize(58),
+      height: getScaleSize(500),
+      resizeMode: 'contain',
+      alignSelf: 'center'
     }
   });

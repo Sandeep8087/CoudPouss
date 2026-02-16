@@ -6,6 +6,7 @@ import {
   FlatList,
   TouchableOpacity,
   Image,
+  Pressable,
 
 } from 'react-native';
 
@@ -21,12 +22,21 @@ import { getScaleSize, SHOW_TOAST, useString } from '../../constant';
 //COMPONENT
 import {
   Header,
+  ProgressView,
   SearchComponent,
   Text,
 } from '../../components';
 
 //API
 import { API } from '../../api';
+import { SCREENS } from '..';
+import Animated, {
+  useSharedValue,
+  useAnimatedStyle,
+  useAnimatedScrollHandler,
+  interpolate,
+  Extrapolate,
+} from 'react-native-reanimated';
 
 const { width } = Dimensions.get('window');
 const cellSize = (width - 30) / 7;
@@ -38,12 +48,15 @@ export default function Assistance(props: any) {
   const { theme } = useContext<any>(ThemeContext);
 
   const [selectedCategory, setSelectedCategory] = useState<any>(null);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [categoryList, setCategoryList] = useState([]);
   const [subCategoryList, setSubCategoryList] = useState([]);
   const [bannerData, setBannerData] = useState<any>(null);
   const [searchText, setSearchText] = useState('');
   const [filteredSubCategories, setFilteredSubCategories] = useState([]);
+
+  const scrollY = useSharedValue(0);
+  const maxScrollOffset = getScaleSize(220);
 
   useEffect(() => {
     getCategoryData();
@@ -67,20 +80,13 @@ export default function Assistance(props: any) {
       const title = (item?.subcategory_name || "").toLowerCase();
       return title.includes(search);
     });
-
     setFilteredSubCategories(filtered);
-
-    console.log('Filtered', filtered)
   }, [searchText, subCategoryList]);
 
   async function getCategoryData() {
     try {
       setLoading(true);
       const result = await API.Instance.get(API.API_ROUTES.getHomeData + `?service_name=${service?.name}`);
-      setLoading(false);
-
-      console.log('MAIN CAT',JSON.stringify(result))
-
       if (result.status) {
         setCategoryList(result?.data?.data?.categories ?? []);
         if (result?.data?.data?.categories?.[0]?.id) {
@@ -91,7 +97,6 @@ export default function Assistance(props: any) {
         SHOW_TOAST(result?.data?.message ?? '', 'error')
       }
     } catch (error: any) {
-      setLoading(false);
       SHOW_TOAST(error?.message ?? '', 'error');
     } finally {
       setLoading(false);
@@ -102,8 +107,6 @@ export default function Assistance(props: any) {
     try {
       setLoading(true);
       const result = await API.Instance.get(API.API_ROUTES.getHomeData + `/${id}`);
-      setLoading(false);
-
       if (result.status) {
         console.log('subcategoryList==', JSON.stringify(result?.data?.data))
         setBannerData(result?.data?.data?.Banner ?? null);
@@ -113,7 +116,6 @@ export default function Assistance(props: any) {
         SHOW_TOAST(result?.data?.message ?? '', 'error')
       }
     } catch (error: any) {
-      setLoading(false);
       SHOW_TOAST(error?.message ?? '', 'error');
     } finally {
       setLoading(false);
@@ -121,7 +123,25 @@ export default function Assistance(props: any) {
   }
 
   // const patterns = searchText ? ['small'] : ['small', 'large', 'large', 'small'];
-    const patterns = ['small', 'large', 'large', 'small'];
+  const patterns = ['small', 'large', 'large', 'small'];
+
+  const scrollHandler = useAnimatedScrollHandler({
+    onScroll: (event) => {
+      scrollY.value = event.contentOffset.y;
+    },
+  });
+
+  const animatedHeaderStyle = useAnimatedStyle(() => {
+    const translateY = interpolate(
+      scrollY.value,
+      [0, maxScrollOffset],
+      [0, -maxScrollOffset],
+      Extrapolate.CLAMP
+    );
+    return {
+      transform: [{ translateY }],
+    };
+  });
 
   return (
     <View style={styles(theme).container}>
@@ -138,121 +158,158 @@ export default function Assistance(props: any) {
         }}>
         <SearchComponent
           value={searchText}
-          onChangeText={(text:any) => {
+          onChangeText={(text: any) => {
             console.log("SEARCH TEXT:", text);
             setSearchText(text);
           }} />
       </View>
       <View style={styles(theme).deviderView}></View>
-      {bannerData ? (
-        <Image
-          style={styles(theme).bannerContainer}
-          source={{ uri: bannerData?.image }}
-        />
-      ) : (
-        <View style={styles(theme).bannerContainer} />
-      )}
-      {categoryList.length > 1 && (
-        <View style={{ marginBottom: getScaleSize(40), marginTop: getScaleSize(20) }}>
-          <FlatList
-            data={categoryList}
-            horizontal
-            showsHorizontalScrollIndicator={false}
+      <View style={{ flex: 1, overflow: 'hidden' }}>
+        <Animated.View style={[{ position: 'absolute', top: 0, left: 0, right: 0, zIndex: 1000, backgroundColor: '#fff' }, animatedHeaderStyle]}>
+          <>
+            {bannerData ? (
+              <TouchableOpacity
+                activeOpacity={0.8}
+                onPress={() => {
+                  props.navigation.navigate(SCREENS.CreateRequest.identifier)
+                }}>
+                <Image
+                  style={styles(theme).bannerContainer}
+                  resizeMode='cover'
+                  source={{ uri: bannerData?.url }}
+                />
+              </TouchableOpacity>
+            ) : (
+              <View style={styles(theme).bannerContainer} />
+            )}
+            {categoryList.length > 1 && (
+              <View style={{ paddingBottom: getScaleSize(20), paddingTop: getScaleSize(20), backgroundColor: '#fff' }}>
+                <FlatList
+                  data={categoryList}
+                  horizontal
+                  showsHorizontalScrollIndicator={false}
+                  keyExtractor={(item: any, index: number) => index.toString()}
+                  ListHeaderComponent={() => {
+                    return <View style={{ width: getScaleSize(22) }} />;
+                  }}
+                  ListFooterComponent={() => {
+                    return <View style={{ width: getScaleSize(16) }} />;
+                  }}
+                  renderItem={({ item, index }) => {
+                    return (
+                      <TouchableOpacity
+                        style={[
+                          styles(theme).itemContainer,
+                          {
+                            marginLeft: index === 0 ? 0 : 8,
+                            backgroundColor:
+                              selectedCategory?.id === item?.id
+                                ? theme.primary
+                                : theme.white,
+                          },
+                        ]}
+                        activeOpacity={1}
+                        onPress={() => {
+                          setSearchText('');
+                          setSelectedCategory(item);
+                        }}>
+                        <Image
+                          resizeMode='cover'
+                          style={styles(theme).categoryImage}
+                          source={{ uri: item?.category_logo }}
+                        />
+                        <Text
+                          style={{
+                            marginLeft: getScaleSize(14),
+                            alignSelf: 'center',
+                          }}
+                          size={getScaleSize(16)}
+                          font={FONTS.Lato.Regular}
+                          color={
+                            selectedCategory?.id === item?.id
+                              ? theme.white
+                              : theme._999999
+                          }>
+                          {item?.category_name}
+                        </Text>
+                      </TouchableOpacity>
+                    );
+                  }}
+                />
+              </View>
+            )}
+          </>
+        </Animated.View>
+        {subCategoryList &&subCategoryList.length > 0 && filteredSubCategories.length > 0 && loading === false ?
+          <Animated.FlatList
+            data={filteredSubCategories}
+            numColumns={2}
+            contentContainerStyle={{}}
             keyExtractor={(item: any, index: number) => index.toString()}
+            showsVerticalScrollIndicator={false}
+            columnWrapperStyle={{ paddingLeft: getScaleSize(8) }}
+            onScroll={scrollHandler}
+            scrollEventThrottle={16}
             ListHeaderComponent={() => {
-              return <View style={{ width: getScaleSize(22) }} />;
+              return <View style={{ height: categoryList.length > 1 ? getScaleSize(300) : getScaleSize(210) }} />;
             }}
             ListFooterComponent={() => {
-              return <View style={{ width: getScaleSize(16) }} />;
+              return <View style={{ height: getScaleSize(50) }} />;
             }}
             renderItem={({ item, index }) => {
+              const type = patterns[index % 4];
               return (
-                <TouchableOpacity
-                  style={[
-                    styles(theme).itemContainer,
-                    {
-                      marginLeft: index === 0 ? 0 : 8,
-                      backgroundColor:
-                        selectedCategory?.id === item?.id
-                          ? theme.primary
-                          : theme.white,
-                    },
-                  ]}
-                  activeOpacity={1}
+                <Pressable
                   onPress={() => {
-                    setSearchText('');
-                    setSelectedCategory(item);
-                  }}>
-                  <Image
-                    style={styles(theme).categoryImage}
-                    source={{ uri: item?.category_logo }}
-                  />
+                    props.navigation.navigate(SCREENS.CreateRequest.identifier, {
+                      category: selectedCategory ? selectedCategory : service,
+                      subCategory: item
+                    })
+                  }}
+                  style={[
+                    styles(theme).cardContainer,
+                    {
+                      height: type === 'small' ? getScaleSize(188) : getScaleSize(233),
+                      marginTop: type === 'large' && index % 2 == 0 ? getScaleSize(-25) : getScaleSize(20),
+                    }
+                  ]}>
+                  {item?.image === null ?
+                    <View style={[styles(theme).imageView, {
+                      backgroundColor: 'gray'
+                    }]}></View> :
+                    <Image
+                      style={styles(theme).imageView}
+                      resizeMode='cover'
+                      source={{ uri: item?.image }}
+                    />
+                  }
                   <Text
                     style={{
-                      marginLeft: getScaleSize(14),
-                      alignSelf: 'center',
+                      marginVertical: getScaleSize(14),
+                      marginHorizontal: getScaleSize(14),
                     }}
                     size={getScaleSize(16)}
-                    font={FONTS.Lato.Regular}
-                    color={
-                      selectedCategory?.id === item?.id
-                        ? theme.white
-                        : theme._999999
-                    }>
-                    {item?.category_name}
+                    font={FONTS.Lato.Bold}
+                    color={theme.primary}>
+                    {item?.subcategory_name}
                   </Text>
-                </TouchableOpacity>
-              );
+                </Pressable>
+              )
             }}
           />
-        </View>
-      )}
-      <FlatList
-        data={filteredSubCategories}
-        numColumns={2}
-        contentContainerStyle={{ marginTop: getScaleSize(-20) }}
-        keyExtractor={(item: any, index: number) => index.toString()}
-        showsVerticalScrollIndicator={false}
-        columnWrapperStyle={{ paddingLeft: getScaleSize(8) }}
-        ListFooterComponent={() => {
-          return <View style={{ height: getScaleSize(50) }} />;
-        }}
-        renderItem={({ item, index }) => {
-          const type = patterns[index % 4];
-          return (
-            <View
-              style={[
-                styles(theme).cardContainer,
-                {
-                  height: type === 'small' ? getScaleSize(188) : getScaleSize(233),
-                  marginTop: type === 'large' && index % 2 == 0 ? getScaleSize(-25) : getScaleSize(20),
-                }
-              ]}>
-              {item?.image === null ?
-                <View style={[styles(theme).imageView, {
-                  backgroundColor: 'gray'
-                }]}></View> :
-                <Image
-                  style={styles(theme).imageView}
-                  resizeMode='cover'
-                  source={{ uri: item?.image }}
-                />
-              }
-              <Text
-                style={{
-                  marginVertical: getScaleSize(14),
-                  marginHorizontal: getScaleSize(14),
-                }}
-                size={getScaleSize(16)}
-                font={FONTS.Lato.Bold}
-                color={theme.primary}>
-                {item?.subcategory_name}
-              </Text>
-            </View>
-          )
-        }}
-      />
-    </View>
+          :
+          <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+            <Text
+              size={getScaleSize(16)}
+              font={FONTS.Lato.Bold}
+              color={theme.primary}>
+              {'No data found'}
+            </Text>
+          </View>
+        }
+      </View>
+      {loading && <ProgressView />}
+    </View >
   );
 }
 

@@ -1,53 +1,94 @@
-import React, {useContext} from 'react';
+import React, { useContext, useEffect, useRef, useState } from 'react';
 import {
   View,
   StatusBar,
   StyleSheet,
+  Dimensions,
+  NativeScrollEvent,
+  NativeSyntheticEvent,
+  Alert,
   ScrollView,
+  FlatList,
   TouchableOpacity,
   Image,
   Platform,
 } from 'react-native';
 
 //ASSETS
-import {FONTS, IMAGES} from '../../assets';
+import { FONTS, IMAGES } from '../../assets';
 
 //CONTEXT
-import {ThemeContext, ThemeContextType} from '../../context';
+import { ThemeContext, ThemeContextType } from '../../context';
 
 //CONSTANT
-import {getScaleSize, useString} from '../../constant';
+import { arrayIcons, getScaleSize, SHOW_TOAST, useString } from '../../constant';
 
 //COMPONENT
-import {Button, Header, Text} from '../../components';
+import {
+  AcceptBottomPopup,
+  Button,
+  Header,
+  PaymentBottomPopup,
+  ProgressView,
+  RejectBottomPopup,
+  RequestItem,
+  SearchComponent,
+  Text,
+} from '../../components';
 
 //PACKAGES
-import {useFocusEffect} from '@react-navigation/native';
-import {SCREENS} from '..';
+import { CommonActions, useFocusEffect } from '@react-navigation/native';
+import { SCREENS } from '..';
+import { API } from '../../api';
+import moment from 'moment';
 
 export default function ServiceConfirmed(props: any) {
   const STRING = useString();
-  const {theme} = useContext<any>(ThemeContext);
+  const { theme } = useContext<any>(ThemeContext);
 
-  useFocusEffect(
-    React.useCallback(() => {
-      if (Platform.OS === 'android') {
-        StatusBar.setBackgroundColor(theme.white);
-        StatusBar.setBarStyle('dark-content');
+  const item = props?.route?.params?.item ?? {};
+  const serviceId = props?.route?.params?.serviceId ?? '';
+
+  const [isLoading, setLoading] = useState(false);
+  const [paymentDetails, setPaymentDetails] = useState<any>({});
+
+  useEffect(() => {
+    getServiceAmount()
+  }, []);
+
+  async function getServiceAmount() {
+    try {
+      const params = {
+        service_id: serviceId ? serviceId : item?.service_id,
       }
-    }, []),
-  );
+      setLoading(true);
+      const result = await API.Instance.post(API.API_ROUTES.getServicePaymentDetails, params);
+      if (result.status) {
+        console.log('servicePaymentDetails==>', result?.data?.data)
+        setPaymentDetails(result?.data?.data ?? {});
+      } else {
+        SHOW_TOAST(result?.data?.message ?? '', 'error')
+      }
+    } catch (error: any) {
+      SHOW_TOAST(error?.message ?? '', 'error');
+    } finally {
+      setLoading(false);
+    }
+  }
 
   return (
     <View style={styles(theme).container}>
-      <StatusBar
-        barStyle="dark-content"
-        backgroundColor={theme.white}
-        translucent={false}
-      />
       <Header
         onBack={() => {
-          props.navigation.goBack();
+          props?.navigation?.dispatch(
+            CommonActions.reset({
+              index: 0,
+              routes: [{ name: SCREENS.BottomBar.identifier,
+                params: { isValidationService: true },
+               }
+              ],
+            }),
+          );
         }}
         screenName={STRING.ServiceConfirmed}
       />
@@ -56,7 +97,7 @@ export default function ServiceConfirmed(props: any) {
         showsVerticalScrollIndicator={false}>
         <Image style={styles(theme).doneIcon} source={IMAGES.confirmed_icon} />
         <Text
-          style={{marginTop: getScaleSize(24)}}
+          style={{ marginTop: getScaleSize(24) }}
           size={getScaleSize(19)}
           align="center"
           font={FONTS.Lato.Medium}
@@ -69,7 +110,7 @@ export default function ServiceConfirmed(props: any) {
             size={getScaleSize(16)}
             font={FONTS.Lato.Bold}
             color={theme.primary}>
-            {'Furniture Assembly'}
+            {paymentDetails?.subcategory_name ?? ''}
           </Text>
           <View style={styles(theme).informationView}>
             <View style={styles(theme).horizontalView}>
@@ -86,7 +127,7 @@ export default function ServiceConfirmed(props: any) {
                   size={getScaleSize(12)}
                   font={FONTS.Lato.Medium}
                   color={theme.primary}>
-                  {'16 Aug, 2025'}
+                  {paymentDetails?.chosen_datetime ? moment(paymentDetails?.chosen_datetime).format('DD MMM, YYYY') : '-'}
                 </Text>
               </View>
               <View style={styles(theme).itemView}>
@@ -102,20 +143,25 @@ export default function ServiceConfirmed(props: any) {
                   size={getScaleSize(12)}
                   font={FONTS.Lato.Medium}
                   color={theme.primary}>
-                  {'10:00 am'}
+                  {paymentDetails?.chosen_datetime ? moment(paymentDetails?.chosen_datetime).format('hh:mm A') : '-'}
                 </Text>
               </View>
             </View>
             <View
               style={[
                 styles(theme).horizontalView,
-                {marginTop: getScaleSize(12)},
+                { marginTop: getScaleSize(12) },
               ]}>
               <View style={styles(theme).itemView}>
+                {paymentDetails?.category_name ?
                 <Image
-                  style={styles(theme).informationIcon}
-                  source={IMAGES.service}
-                />
+                    style={[styles(theme).informationIcon, { tintColor: theme._1A3D51 }]}
+                    source={arrayIcons[paymentDetails?.category_name?.toLowerCase() as keyof typeof arrayIcons] ?? arrayIcons['diy'] as any}
+                    resizeMode='cover'
+                  />
+                  :
+                  <View style={styles(theme).informationIcon} />
+                }
                 <Text
                   style={{
                     marginHorizontal: getScaleSize(8),
@@ -124,7 +170,7 @@ export default function ServiceConfirmed(props: any) {
                   size={getScaleSize(12)}
                   font={FONTS.Lato.Medium}
                   color={theme.primary}>
-                  {'DIY Services'}
+                  {paymentDetails?.category_name ?? ''}
                 </Text>
               </View>
               <View style={styles(theme).itemView}>
@@ -138,9 +184,10 @@ export default function ServiceConfirmed(props: any) {
                     alignSelf: 'center',
                   }}
                   size={getScaleSize(12)}
+                  numberOfLines={4}
                   font={FONTS.Lato.Medium}
                   color={theme.primary}>
-                  {'Paris, 75001'}
+                  {paymentDetails?.elder_address ?? '-'}
                 </Text>
               </View>
             </View>
@@ -155,7 +202,7 @@ export default function ServiceConfirmed(props: any) {
           </Text>
           <View style={styles(theme).newhorizontalView}>
             <Text
-              style={{flex: 1.0}}
+              style={{ flex: 1.0 }}
               size={getScaleSize(14)}
               font={FONTS.Lato.SemiBold}
               color={'#595959'}>
@@ -165,12 +212,12 @@ export default function ServiceConfirmed(props: any) {
               size={getScaleSize(14)}
               font={FONTS.Lato.SemiBold}
               color={'#595959'}>
-              {'€499'}
+              {`€${paymentDetails?.finalize_quote_amount ?? 0}`}
             </Text>
           </View>
           <View style={styles(theme).newhorizontalView}>
             <Text
-              style={{flex: 1.0}}
+              style={{ flex: 1.0 }}
               size={getScaleSize(14)}
               font={FONTS.Lato.SemiBold}
               color={'#595959'}>
@@ -180,12 +227,12 @@ export default function ServiceConfirmed(props: any) {
               size={getScaleSize(14)}
               font={FONTS.Lato.SemiBold}
               color={'#595959'}>
-              {'€4'}
+              {`€${paymentDetails?.platform_fees ?? 0}`}
             </Text>
           </View>
           <View style={styles(theme).newhorizontalView}>
             <Text
-              style={{flex: 1.0}}
+              style={{ flex: 1.0 }}
               size={getScaleSize(14)}
               font={FONTS.Lato.SemiBold}
               color={'#595959'}>
@@ -195,13 +242,13 @@ export default function ServiceConfirmed(props: any) {
               size={getScaleSize(14)}
               font={FONTS.Lato.SemiBold}
               color={'#595959'}>
-              {'€12'}
+              {`€${paymentDetails?.tax ?? 0}`}
             </Text>
           </View>
           <View style={styles(theme).dotView} />
           <View style={styles(theme).newhorizontalView}>
             <Text
-              style={{flex: 1.0}}
+              style={{ flex: 1.0 }}
               size={getScaleSize(20)}
               font={FONTS.Lato.SemiBold}
               color={'#0F232F'}>
@@ -211,7 +258,7 @@ export default function ServiceConfirmed(props: any) {
               size={getScaleSize(20)}
               font={FONTS.Lato.SemiBold}
               color={theme.primary}>
-              {'€560.9'}
+              {`€${paymentDetails?.total_renegotiated ?? 0}`}
             </Text>
           </View>
         </View>
@@ -223,56 +270,58 @@ export default function ServiceConfirmed(props: any) {
             color={theme.primary}>
             {STRING.Aboutprofessional}
           </Text>
-
           <View
             style={[
               styles(theme).horizontalView,
-              {marginTop: getScaleSize(16)},
+              { marginTop: getScaleSize(16) },
             ]}>
-            <Image
-              style={styles(theme).profilePicView}
-              source={IMAGES.user_placeholder}
-            />
-            <View style={{flex: 1.0}}>
+            {paymentDetails?.provider_profile_url ?
+              <Image
+                style={styles(theme).profilePicView}
+                source={{ uri: paymentDetails?.provider_profile_url }}
+              />
+              :
+              <Image
+                style={styles(theme).profilePicView}
+                source={IMAGES.user_placeholder}
+              />
+            }
+            <View style={{ flex: 1.0 }}>
               <View style={styles(theme).flexRow}>
                 <Text
-                  style={{alignSelf: 'center', marginLeft: getScaleSize(16)}}
+                  style={{ alignSelf: 'center', marginLeft: getScaleSize(16) }}
                   size={getScaleSize(20)}
                   font={FONTS.Lato.SemiBold}
                   color={'#0F232F'}>
-                  {'Bessie Cooper'}
+                  {paymentDetails?.provider_name ?? '-'}
                 </Text>
-                <Image
-                  style={{
-                    height: getScaleSize(25),
-                    width: getScaleSize(25),
-                    marginLeft: getScaleSize(6),
-                  }}
-                  source={IMAGES.verify}
-                />
+                {paymentDetails?.provider_is_verified &&
+                  <Image
+                    style={{
+                      height: getScaleSize(25),
+                      width: getScaleSize(25),
+                      marginLeft: getScaleSize(6),
+                    }}
+                    source={IMAGES.verify}
+                  />
+                }
               </View>
-              <View
-                style={[
-                  styles(theme).flexRow,
-                  {marginLeft: getScaleSize(16), marginTop: getScaleSize(6)},
-                ]}>
-                <Image
-                  source={IMAGES.ic_phone}
-                  style={styles(theme).phoneIcon}
-                />
+              <View style={[styles(theme).flexRow, { marginLeft: getScaleSize(16), marginTop: getScaleSize(6) }]}>
+                <Image source={IMAGES.ic_phone} style={styles(theme).phoneIcon} />
                 <Text
                   style={{}}
                   size={getScaleSize(12)}
                   font={FONTS.Lato.Medium}
                   color={'#0F232F'}>
-                  {'+91751111111'}
+                  {paymentDetails?.provider_phone ?? '-'}
                 </Text>
               </View>
+
             </View>
-            <View style={{flex: 1.0}} />
+            <View style={{ flex: 1.0 }} />
             <TouchableOpacity
               activeOpacity={1}
-              style={[styles(theme).newButton, {marginLeft: getScaleSize(6)}]}
+              style={[styles(theme).newButton, { marginLeft: getScaleSize(6) }]}
               onPress={() => {
                 props.navigation.navigate(SCREENS.OtherUserProfile.identifier);
               }}>
@@ -285,27 +334,24 @@ export default function ServiceConfirmed(props: any) {
             </TouchableOpacity>
           </View>
         </View>
-        <View style={{height: getScaleSize(32)}}></View>
+        <View style={{ height: getScaleSize(32) }}></View>
       </ScrollView>
       <Button
         title={STRING.Trackservice}
-        style={{
-          marginHorizontal: getScaleSize(22),
-          marginBottom: getScaleSize(16),
-        }}
+        style={{ marginHorizontal: getScaleSize(22), marginBottom: getScaleSize(16) }}
         onPress={() => {
-          props.navigation.navigate(SCREENS.Otp.identifier, {
-            isFromSignup: true,
-          });
+          props.navigation.navigate(SCREENS.CompletedTaskDetails.identifier,
+            { serviceId: serviceId ? serviceId : item?.service_id });
         }}
       />
+      {isLoading && <ProgressView />}
     </View>
   );
 }
 
 const styles = (theme: ThemeContextType['theme']) =>
   StyleSheet.create({
-    container: {flex: 1, backgroundColor: theme.white},
+    container: { flex: 1, backgroundColor: theme.white },
     scrolledContainer: {
       marginTop: getScaleSize(19),
       marginHorizontal: getScaleSize(24),
@@ -377,5 +423,5 @@ const styles = (theme: ThemeContextType['theme']) =>
       height: getScaleSize(20),
       width: getScaleSize(20),
       marginRight: getScaleSize(6),
-    },
+    }
   });

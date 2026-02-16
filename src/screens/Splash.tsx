@@ -34,22 +34,11 @@ export default function Splash(props: any) {
   async function checkUserDetails() {
     const userDetails = await Storage.get(Storage.USER_DETAILS);
     const userData = JSON.parse(userDetails ?? '{}');
+
     if (userData && userData?.user_data?.role) {
       setUser(userData);
       setUserType(userData?.user_data?.role);
-      const profileData = await getProfileData();
-
-      if (profileData) {
-        console.log('Profile data', profileData);
-      }
-      setTimeout(() => {
-        props?.navigation?.dispatch(
-          CommonActions.reset({
-            index: 0,
-            routes: [{name: SCREENS.BottomBar.identifier}],
-          }),
-        );
-      }, 1000);
+      getProfileData();
     } else {
       setTimeout(() => {
         props?.navigation?.dispatch(
@@ -58,6 +47,9 @@ export default function Splash(props: any) {
             routes: [{name: SCREENS.Login.identifier}],
           }),
         );
+        setUser('');
+        setUserType('');
+        setProfile('');
       }, 2000);
     }
   }
@@ -65,17 +57,41 @@ export default function Splash(props: any) {
   async function getProfileData() {
     try {
       const result = await API.Instance.get(API.API_ROUTES.getUserDetails);
-      const userDetail = result?.data?.data?.user;
-
-      if (userDetail) {
-        setProfile(userDetail);
-        return userDetail;
+      if (result.status) {
+        setProfile(result?.data?.data);
+        props.navigation.dispatch(
+          CommonActions.reset({
+            index: 0,
+            routes: [
+              {
+                name: SCREENS.BottomBar.identifier,
+              },
+            ],
+          }),
+        );
+      } else {
+        props.navigation.dispatch(
+          CommonActions.reset({
+            index: 0,
+            routes: [
+              {
+                name: SCREENS.Login.identifier,
+              },
+            ],
+          }),
+        );
       }
-
-      return null;
     } catch (error: any) {
-      SHOW_TOAST(error?.message ?? '', 'error');
-      return null;
+      props.navigation.dispatch(
+        CommonActions.reset({
+          index: 0,
+          routes: [
+            {
+              name: SCREENS.Login.identifier,
+            },
+          ],
+        }),
+      );
     }
   }
 
@@ -84,7 +100,7 @@ export default function Splash(props: any) {
       <SafeAreaView />
       <View style={styles(theme).statusBar}>
         <StatusBar
-          translucent={false}
+          translucent={true}
           backgroundColor={theme.primary}
           barStyle={'light-content'}
         />

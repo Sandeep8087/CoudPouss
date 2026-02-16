@@ -22,8 +22,8 @@ export default function CreatePassword(props: any) {
     const { theme } = useContext<any>(ThemeContext);
 
     const email = props?.route?.params?.email || '';
-    const isPhoneNumber = props?.route?.params?.isPhoneNumber || false;
-    const countryCode = props?.route?.params?.countryCode || '+91';
+    // const isPhoneNumber = props?.route?.params?.isPhoneNumber || false;
+    // const countryCode = props?.route?.params?.countryCode || '+91';
 
     const [password, setPassword] = useState('');
     const [passwordError, setPasswordError] = useState('');
@@ -45,21 +45,21 @@ export default function CreatePassword(props: any) {
         } else {
             setPasswordError('');
             setConfirmPasswordError('');
-            let params = {}
-            if (isPhoneNumber) {
-                params = {
-                    mobile: email,
-                    phone_country_code: countryCode,
-                    password: password,
-                    confirm_password: confirmPassword,
-                }
-            } else {
-                params = {
+            // let params = {}
+            // if (isPhoneNumber) {
+            //     params = {
+            //         mobile: email,
+            //         phone_country_code: countryCode,
+            //         password: password,
+            //         confirm_password: confirmPassword,
+            //     }
+            // } else {
+              const  params = {
                     email: email,
                     password: password,
                     confirm_password: confirmPassword,
                 }
-            }
+            // }
             try {
                 setLoading(true);
                 const result = await API.Instance.post(API.API_ROUTES.createPassword, params);
@@ -69,8 +69,8 @@ export default function CreatePassword(props: any) {
                     SHOW_TOAST(result?.data?.message ?? '', 'success')
                     props.navigation.navigate(SCREENS.AddPersonalDetails.identifier, {
                         email: email,
-                        isPhoneNumber: isPhoneNumber,
-                        countryCode: countryCode,
+                        // isPhoneNumber: isPhoneNumber,
+                        // countryCode: countryCode,
                     });
                 } else {
                     SHOW_TOAST(result?.data?.message ?? '', 'error')

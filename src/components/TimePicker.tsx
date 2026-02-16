@@ -1,16 +1,23 @@
-import React, { useContext, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import { View, StyleSheet, TouchableOpacity, Alert, Image } from 'react-native';
 import { ThemeContext, ThemeContextType } from '../context';
-import { getScaleSize } from '../constant';
+import { getScaleSize, SHOW_TOAST } from '../constant';
 import { FONTS, IMAGES } from '../assets';
 import Text from './Text';
 import moment from 'moment';
 
 const TimePicker = (props: any) => {
-  const { onTimeChange } = props;
+  const { onTimeChange, selectedDate } = props;
   const { theme } = useContext<any>(ThemeContext);
 
-  const currentHour24 = moment().hour();
+  useEffect(() => {
+    onTimeChange &&
+      onTimeChange(selectedHour, selectedMinute, isAM);
+  }, []);
+
+  const defaultTime = moment().add(2, 'hours').add(1, 'minute');
+
+  const currentHour24 = defaultTime.hour();
   const currentHour12 = currentHour24 % 12 === 0 ? 12 : currentHour24 % 12;
   const isCurrentAM = currentHour24 < 12;
 
@@ -18,18 +25,74 @@ const TimePicker = (props: any) => {
   const [selectedMinute, setSelectedMinute] = useState(moment().minute());
   const [isAM, setIsAM] = useState(isCurrentAM);
 
-  console.log('selectedHour', selectedHour, selectedMinute, isAM)
+
+  // const isFutureDateTime = (
+  //   selectedDate: string | Date,
+  //   hour: number,
+  //   minute: number,
+  //   am: boolean
+  // ): boolean => {
+  //   // Convert to 24-hour format
+  //   let hour24 = hour % 12;
+  //   if (!am) hour24 += 12;
+
+  //   const selectedDateTime = moment(selectedDate).hour(hour24).minute(minute).second(0).millisecond(0);
+
+  //   const now = moment();
+
+  //   return selectedDateTime.isAfter(now);
+  // };
+
+  // const updateParent = (hour: number, minute: number, am: boolean) => {
+  //   if (isFutureDateTime(selectedDate, hour, minute, am)) {
+  //     onTimeChange && onTimeChange(hour, minute, am);
+  //     return true;
+  //   }
+  //   else {
+  //     SHOW_TOAST('Please select a future time', 'error');
+  //     return false;
+  //   }
+  // };
+
+  const isFutureDateTime = (
+    selectedDate: string | Date,
+    hour: number,
+    minute: number,
+    am: boolean
+  ): boolean => {
+    // convert to 24h format
+    let hour24 = hour % 12;
+    if (!am) hour24 += 12;
+
+    const selectedDateTime = moment(selectedDate)
+      .hour(hour24)
+      .minute(minute)
+      .second(0)
+      .millisecond(0);
+
+    // current time + 2 hours
+    const minAllowedTime = moment().add(2, 'hours');
+
+    return selectedDateTime.isSameOrAfter(minAllowedTime);
+  };
 
   const updateParent = (hour: number, minute: number, am: boolean) => {
-    onTimeChange && onTimeChange(hour, minute, am);
+    if (isFutureDateTime(selectedDate, hour, minute, am)) {
+      onTimeChange && onTimeChange(hour, minute, am);
+      return true;
+    } else {
+      SHOW_TOAST('Please select a time at least 2 hours from now', 'error');
+      return false;
+    }
   };
+
 
   // Handle hour increment
   const incrementHour = () => {
     setSelectedHour(prev => {
       const newHour = prev === 12 ? 1 : prev + 1;
-      updateParent(newHour, selectedMinute, isAM);
-      return newHour;
+      const isValid = updateParent(newHour, selectedMinute, isAM);
+      return isValid ? newHour : prev;
     });
   };
 
@@ -37,8 +100,8 @@ const TimePicker = (props: any) => {
   const decrementHour = () => {
     setSelectedHour(prev => {
       const newHour = prev === 1 ? 12 : prev - 1;
-      updateParent(newHour, selectedMinute, isAM);
-      return newHour;
+      const isValid = updateParent(newHour, selectedMinute, isAM);
+      return isValid ? newHour : prev;
     });
   };
 
@@ -46,8 +109,8 @@ const TimePicker = (props: any) => {
   const incrementMinute = () => {
     setSelectedMinute(prev => {
       const newMinute = prev === 59 ? 0 : prev + 1;
-      updateParent(selectedHour, newMinute, isAM);
-      return newMinute;
+      const isValid = updateParent(selectedHour, newMinute, isAM);
+      return isValid ? newMinute : prev;
     });
   };
 
@@ -55,8 +118,8 @@ const TimePicker = (props: any) => {
   const decrementMinute = () => {
     setSelectedMinute(prev => {
       const newMinute = prev === 0 ? 59 : prev - 1;
-      updateParent(selectedHour, newMinute, isAM);
-      return newMinute;
+      const isValid = updateParent(selectedHour, newMinute, isAM);
+      return isValid ? newMinute : prev;
     });
   };
 
@@ -64,7 +127,8 @@ const TimePicker = (props: any) => {
   const toggleAmPm = () => {
     setIsAM(prev => {
       const newAm = !prev;
-      updateParent(selectedHour, selectedMinute, newAm);
+      const isValid = updateParent(selectedHour, selectedMinute, newAm);
+      return isValid ? newAm : prev;
       return newAm;
     });
   };
@@ -157,100 +221,6 @@ const TimePicker = (props: any) => {
           {'PM'}
         </Text>
       </View>
-      {/* <View style={styles.timeSelector}>        
-        <View style={styles.timeSection}>
-          <TouchableOpacity 
-            style={styles.arrowButton} 
-            onPress={incrementHour}
-          >
-            <Text style={styles.arrowText}>▲</Text>
-          </TouchableOpacity>
-          
-          <View style={styles.timeDisplay}>
-            <Text style={styles.timeNumber}>
-              {selectedHour}
-            </Text>
-          </View>
-          
-          <TouchableOpacity 
-            style={styles.arrowButton} 
-            onPress={decrementHour}
-          >
-            <Text style={styles.arrowText}>▼</Text>
-          </TouchableOpacity>
-          
-          <Text style={styles.timeLabel}>HOURS</Text>
-        </View>
-
-        <Text style={styles.separator}>:</Text>
-
-        <View style={styles.timeSection}>
-          <TouchableOpacity 
-            style={styles.arrowButton} 
-            onPress={incrementMinute}
-          >
-            <Text style={styles.arrowText}>▲</Text>
-          </TouchableOpacity>
-          
-          <View style={styles.timeDisplay}>
-            <Text style={styles.timeNumber}>
-              {selectedMinute.toString().padStart(2, '0')}
-            </Text>
-          </View>
-          
-          <TouchableOpacity 
-            style={styles.arrowButton} 
-            onPress={decrementMinute}
-          >
-            <Text style={styles.arrowText}>▼</Text>
-          </TouchableOpacity>
-          
-          <Text style={styles.timeLabel}>MINUTES</Text>
-        </View>
-
-        <View style={styles.ampmSection}>
-          <TouchableOpacity 
-            style={styles.arrowButton} 
-            onPress={toggleAmPm}
-          >
-            <Text style={styles.arrowText}>▲</Text>
-          </TouchableOpacity>
-          
-          <View style={styles.ampmDisplay}>
-            <Text style={[
-              styles.ampmText,
-              isAM && styles.activeAmPm
-            ]}>
-              AM
-            </Text>
-            <Text style={[
-              styles.ampmText,
-              !isAM && styles.activeAmPm
-            ]}>
-              PM
-            </Text>
-          </View>
-          
-          <TouchableOpacity 
-            style={styles.arrowButton} 
-            onPress={toggleAmPm}
-          >
-            <Text style={styles.arrowText}>▼</Text>
-          </TouchableOpacity>
-          
-          <Text style={styles.timeLabel}>AM/PM</Text>
-        </View>
-      </View> */}
-
-      {/* <View style={styles.selectedTimeContainer}>
-        <Text style={styles.selectedTimeText}>
-          {selectedHour}:{selectedMinute.toString().padStart(2, '0')} {isAM ? 'AM' : 'PM'}
-        </Text>
-      </View> */}
-
-      {/* <TouchableOpacity style={styles.confirmButton} onPress={confirmTime}>
-        <Text style={styles.confirmButtonText}>CONFIRM TIME</Text>
-      </TouchableOpacity> */}
     </View>
   );
 };

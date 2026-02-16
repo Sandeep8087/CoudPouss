@@ -1,4 +1,4 @@
-import React, {useContext, useRef, useState} from 'react';
+import React, { useContext, useEffect, useRef, useState } from 'react';
 import {
   View,
   StatusBar,
@@ -14,14 +14,17 @@ import {
   Platform,
 } from 'react-native';
 
+//API
+import { API } from '../../api';
+
 //ASSETS
-import {FONTS, IMAGES} from '../../assets';
+import { FONTS, IMAGES } from '../../assets';
 
 //CONTEXT
-import {ThemeContext, ThemeContextType} from '../../context';
+import { AuthContext, ThemeContext, ThemeContextType } from '../../context';
 
 //CONSTANT
-import {getScaleSize, useString} from '../../constant';
+import { arrayIcons, getScaleSize, SHOW_TOAST, useString } from '../../constant';
 
 //COMPONENT
 import {
@@ -29,6 +32,7 @@ import {
   Button,
   Header,
   PaymentBottomPopup,
+  ProgressView,
   RejectBottomPopup,
   RequestItem,
   SearchComponent,
@@ -37,66 +41,49 @@ import {
 } from '../../components';
 
 //PACKAGES
-import {useFocusEffect} from '@react-navigation/native';
-import {SCREENS} from '..';
+import { useFocusEffect } from '@react-navigation/native'; import moment from 'moment';
+
+//SCREENS
+import { SCREENS } from '..';
 
 export default function ServicePreview(props: any) {
+
   const STRING = useString();
-  const {theme} = useContext<any>(ThemeContext);
+
+  const { theme } = useContext<any>(ThemeContext);
+
+  const { profile } = useContext(AuthContext)
+
+  const serviceData = props?.route?.params?.serviceData
+  const isFromHome = props?.route?.params?.isFromHome ?? false;
 
   const [isStatus, setIsStatus] = useState(false);
   const [visibleTaskDetails, setVisibleTaskDetails] = useState(false);
+  const [isLoading, setLoading] = useState(false);
+  const [serviceDetails, setServiceDetails] = useState<any>("")
 
-  const statusData = [
-    {
-      id: 1,
-      title: 'Service request placed',
-      date: "Fri, 20 Jan' 2025 - 3:15pm",
-      completed: true,
-    },
-    {
-      id: 2,
-      title: 'Quote Received',
-      date: "Fri, 20 Jan' 2025 - 3:15pm",
-      completed: true,
-    },
-    {
-      id: 3,
-      title: 'Quote Approved',
-      date: "Fri, 20 Jan' 2025 - 3:15pm",
-      completed: true,
-    },
-    {
-      id: 4,
-      title: 'Payment Processed',
-      date: "Fri, 20 Jan' 2025 - 3:15pm",
-      completed: true,
-    },
-    {
-      id: 5,
-      title: 'Service Confirmed with expert',
-      date: "Wed, 18 Jan' 2025 - 7:07pm",
-      completed: true,
-    },
-    {
-      id: 6,
-      title: 'Expert out for service',
-      date: "Scheduled on Fri, 20 Jan' 2025 - 3:15pm",
-      completed: false,
-    },
-    {
-      id: 7,
-      title: 'Service Started',
-      date: "Scheduled on Fri, 20 Jan' 2025 - 3:15pm",
-      completed: false,
-    },
-    {
-      id: 8,
-      title: 'Service Completed',
-      date: "Scheduled on Fri, 20 Jan' 2025 - 3:15pm",
-      completed: false,
-    },
-  ];
+  useEffect(() => {
+    getServicesDetails()
+  }, [])
+
+  async function getServicesDetails() {
+    try {
+      setLoading(true)
+      const result = await API.Instance.get(API.API_ROUTES.getProfessionalServiceDetails + `/${serviceData?.service_id}`);
+      setLoading(false)
+
+      if (result?.status) {
+        setServiceDetails(result?.data)
+      }
+      else {
+        SHOW_TOAST(result?.data?.message, 'error')
+      }
+    }
+    catch (error: any) {
+      setLoading(false);
+      SHOW_TOAST(error?.message ?? '', 'error');
+    }
+  }
 
   useFocusEffect(
     React.useCallback(() => {
@@ -109,11 +96,6 @@ export default function ServicePreview(props: any) {
 
   return (
     <View style={styles(theme).container}>
-      <StatusBar
-        barStyle="dark-content"
-        backgroundColor={theme.white}
-        translucent={false}
-      />
       <Header
         onBack={() => {
           props.navigation.goBack();
@@ -124,10 +106,18 @@ export default function ServicePreview(props: any) {
         style={styles(theme).scrolledContainer}
         showsVerticalScrollIndicator={false}>
         <View style={styles(theme).imageContainer}>
-          <Image
-            style={styles(theme).imageView}
-            source={{uri: 'https://picsum.photos/id/1/200/300'}}
-          />
+          {serviceDetails?.subcategory_info?.sub_category_img_url === null ?
+            <View style={[styles(theme).imageView, {
+              backgroundColor: 'gray'
+            }]}>
+            </View>
+            :
+            <Image
+              style={styles(theme).imageView}
+              resizeMode='cover'
+              source={{ uri: serviceDetails?.subcategory_info?.sub_category_img_url }}
+            />
+          }
           <Text
             style={{
               marginVertical: getScaleSize(12),
@@ -136,7 +126,7 @@ export default function ServicePreview(props: any) {
             size={getScaleSize(24)}
             font={FONTS.Lato.Bold}
             color={theme.primary}>
-            {'Furniture Assembly'}
+            {serviceDetails?.subcategory_info?.sub_category_name ?? ''}
           </Text>
           <View style={styles(theme).informationView}>
             <View style={styles(theme).horizontalView}>
@@ -153,7 +143,7 @@ export default function ServicePreview(props: any) {
                   size={getScaleSize(12)}
                   font={FONTS.Lato.Medium}
                   color={theme.primary}>
-                  {'16 Aug, 2025'}
+                  {moment(serviceDetails?.date).format('DD MMM, YYYY')}
                 </Text>
               </View>
               <View style={styles(theme).itemView}>
@@ -169,20 +159,25 @@ export default function ServicePreview(props: any) {
                   size={getScaleSize(12)}
                   font={FONTS.Lato.Medium}
                   color={theme.primary}>
-                  {'10:00 am'}
+                  {moment(serviceDetails?.time, "HH:mm").format("hh:mm A")}
                 </Text>
               </View>
             </View>
             <View
               style={[
                 styles(theme).horizontalView,
-                {marginTop: getScaleSize(12)},
+                { marginTop: getScaleSize(12) },
               ]}>
               <View style={styles(theme).itemView}>
-                <Image
-                  style={styles(theme).informationIcon}
-                  source={IMAGES.service}
-                />
+                {serviceDetails?.category_info?.category_name ?
+                  <Image
+                    style={[styles(theme).informationIcon, { tintColor: theme._1A3D51 }]}
+                    source={arrayIcons[serviceDetails?.category_info?.category_name?.toLowerCase() as keyof typeof arrayIcons] ?? arrayIcons['diy'] as any}
+                    resizeMode='cover'
+                  />
+                  :
+                  <View style={[styles(theme).informationIcon]} />
+                }
                 <Text
                   style={{
                     marginHorizontal: getScaleSize(8),
@@ -191,7 +186,7 @@ export default function ServicePreview(props: any) {
                   size={getScaleSize(12)}
                   font={FONTS.Lato.Medium}
                   color={theme.primary}>
-                  {'DIY Services'}
+                  {`${serviceDetails?.category_info?.category_name ?? 'No'} Service`}
                 </Text>
               </View>
               <View style={styles(theme).itemView}>
@@ -206,8 +201,9 @@ export default function ServicePreview(props: any) {
                   }}
                   size={getScaleSize(12)}
                   font={FONTS.Lato.Medium}
+                  numberOfLines={4}
                   color={theme.primary}>
-                  {'Paris, 75001'}
+                  {serviceDetails?.about_client?.address ?? '-'}
                 </Text>
               </View>
             </View>
@@ -216,7 +212,7 @@ export default function ServicePreview(props: any) {
         <View style={styles(theme).profileContainer}>
           <View style={styles(theme).horizontalView}>
             <Text
-              style={{flex: 1.0}}
+              style={{ flex: 1.0 }}
               size={getScaleSize(18)}
               font={FONTS.Lato.SemiBold}
               color={theme._323232}>
@@ -226,32 +222,112 @@ export default function ServicePreview(props: any) {
           <View
             style={[
               styles(theme).horizontalView,
-              {marginTop: getScaleSize(16)},
+              { marginTop: getScaleSize(16) },
             ]}>
-            <Image
-              style={styles(theme).profilePicView}
-              source={IMAGES.user_placeholder}
-            />
+            {serviceDetails?.about_client?.profile_photo ?
+              <Image
+                style={styles(theme).profilePicView}
+                resizeMode='cover'
+                source={{ uri: serviceDetails?.about_client?.profile_photo }}
+              />
+              :
+              <Image
+                style={styles(theme).profilePicView}
+                source={IMAGES.user_placeholder}
+              />
+            }
             <Text
-              style={{alignSelf: 'center', marginLeft: getScaleSize(16)}}
+              style={{ alignSelf: 'center', marginLeft: getScaleSize(16) }}
               size={getScaleSize(20)}
               font={FONTS.Lato.SemiBold}
               color={'#0F232F'}>
-              {'Bessie Cooper'}
+              {serviceDetails?.about_client?.name}
             </Text>
-            <Image
-              style={{
-                height: getScaleSize(25),
-                width: getScaleSize(25),
-                alignSelf: 'center',
-                marginLeft: getScaleSize(6),
-              }}
-              source={IMAGES.verify}
-            />
           </View>
         </View>
+        {profile?.user?.service_provider_type === 'non_professional' &&
+          <View style={styles(theme).profileContainer}>
+            <View>
+              <Text
+                style={{ flex: 1.0 }}
+                size={getScaleSize(18)}
+                font={FONTS.Lato.Medium}
+                color={theme._555555}>
+                {STRING.exchange_product}
+              </Text>
+              <Text
+                style={styles(theme).exchangeProductView}
+                size={getScaleSize(27)}
+                font={FONTS.Lato.ExtraBold}
+                color={theme._0F232F}>
+                {serviceDetails?.barter_details?.product_name}
+              </Text>
+            </View>
+          </View>
+        }
+        {profile?.user?.service_provider_type === 'non_professional' &&
+          <View style={styles(theme).profileContainer}>
+            <View>
+              <Text
+                style={{ flex: 1.0 }}
+                size={getScaleSize(18)}
+                font={FONTS.Lato.Medium}
+                color={theme._555555}>
+                {STRING.quantity}
+              </Text>
+              <Text
+                style={styles(theme).exchangeProductView}
+                size={getScaleSize(27)}
+                font={FONTS.Lato.ExtraBold}
+                color={theme._0F232F}>
+                {serviceDetails?.barter_details?.quantity}
+              </Text>
+            </View>
+          </View>
+        }
+        {profile?.user?.service_provider_type === 'non_professional' &&
+          <View style={styles(theme).profileContainer}>
+            <View>
+              <Text
+                style={{ flex: 1.0 }}
+                size={getScaleSize(18)}
+                font={FONTS.Lato.Medium}
+                color={theme._555555}>
+                {STRING.product_images}
+              </Text>
+              <FlatList
+                data={serviceDetails?.barter_details?.product_photos}
+                horizontal
+                showsHorizontalScrollIndicator={false}
+                renderItem={({ item, index }) => {
+                  return (
+                    <>
+                      {item ?
+                        <TouchableOpacity onPress={() => {
+                          props.navigation.navigate(SCREENS.WebViewScreen.identifier, {
+                            url: item,
+                          })
+                        }}>
+                          <Image
+                            style={styles(theme).photosView}
+                            resizeMode='cover'
+                            source={{ uri: item }}
+                          />
+                        </TouchableOpacity>
+
+                        :
+                        <View style={[styles(theme).photosView, {
+                          backgroundColor: 'gray'
+                        }]}></View>}
+                    </>
+                  );
+                }}
+              />
+            </View>
+          </View>
+        }
         <Text
-          style={{marginTop: getScaleSize(24)}}
+          style={{ marginTop: getScaleSize(24) }}
           size={getScaleSize(18)}
           font={FONTS.Lato.SemiBold}
           color={theme._323232}>
@@ -262,28 +338,35 @@ export default function ServicePreview(props: any) {
             size={getScaleSize(18)}
             font={FONTS.Lato.Regular}
             color={theme._555555}>
-            {
-              'Transform your space with our expert furniture assembly services. Our skilled team will handle everything from unpacking to setup, ensuring your new pieces are perfectly assembled and ready for use. We specialize in a wide range of furniture types, including flat-pack items, complex modular systems, and custom installations. Enjoy a hassle-free experience as we take care of the details, allowing you to focus on enjoying your newly furnished area. Schedule your assembly today and let us help you create the perfect environment!'
-            }
+            {serviceDetails?.service_description}
           </Text>
         </View>
         <Text
-          style={{marginTop: getScaleSize(24)}}
+          style={{ marginTop: getScaleSize(24) }}
           size={getScaleSize(18)}
           font={FONTS.Lato.SemiBold}
           color={theme._323232}>
           {STRING.Jobphotos}
         </Text>
         <FlatList
-          data={['']}
+          data={serviceDetails?.job_photos}
           horizontal
           showsHorizontalScrollIndicator={false}
-          renderItem={(item: any, index: number) => {
+          contentContainerStyle={{ gap: getScaleSize(16), marginBottom: getScaleSize(24) }}
+          renderItem={({ item, index }) => {
             return (
-              <Image
-                style={[styles(theme).photosView]}
-                source={{uri: 'https://picsum.photos/id/1/200/300'}}
-              />
+              <TouchableOpacity onPress={() => {
+                props.navigation.navigate(SCREENS.WebViewScreen.identifier, {
+                  url: item,
+                })
+              }}>
+                <Image
+                  style={styles(theme).photosView}
+                  resizeMode='cover'
+                  source={{ uri: item }}
+                /> 
+              </TouchableOpacity>
+
             );
           }}
         />
@@ -291,28 +374,31 @@ export default function ServicePreview(props: any) {
       <View
         style={[
           styles(theme).horizontalView,
-          {marginTop: getScaleSize(24), marginHorizontal: getScaleSize(22), marginBottom:getScaleSize(16)},
+          { marginTop: getScaleSize(24), marginHorizontal: getScaleSize(22), marginBottom: getScaleSize(16) },
         ]}>
-        <View style={{flex: 1.0}}>
+        <View style={{ flex: 1.0 }}>
           <Text
             size={getScaleSize(14)}
             font={FONTS.Lato.Medium}
-            color={'#424242'}>
+            color={theme._2C6587}>
             {STRING.EstimatedCost}
           </Text>
           <Text
-            style={{marginTop: getScaleSize(2)}}
+            style={{ marginTop: getScaleSize(2) }}
             size={getScaleSize(27)}
             font={FONTS.Lato.ExtraBold}
             color={theme._2C6587}>
-            {'€499'}
+            {`€${serviceDetails?.estimated_cost === null ? "" : serviceDetails?.estimated_cost}`}
           </Text>
         </View>
         <TouchableOpacity
           style={styles(theme).quateContainer}
           activeOpacity={1}
           onPress={() => {
-            props.navigation.navigate(SCREENS.AddQuote.identifier)
+            props.navigation.navigate(SCREENS.AddQuote.identifier, {
+              item: serviceDetails,
+              isFromHome: isFromHome,
+            })
           }}>
           <Text
             size={getScaleSize(16)}
@@ -322,13 +408,14 @@ export default function ServicePreview(props: any) {
           </Text>
         </TouchableOpacity>
       </View>
-    </View>
+      {isLoading && <ProgressView />}
+    </View >
   );
 }
 
 const styles = (theme: ThemeContextType['theme']) =>
   StyleSheet.create({
-    container: {flex: 1, backgroundColor: theme.white},
+    container: { flex: 1, backgroundColor: theme.white },
     scrolledContainer: {
       marginTop: getScaleSize(19),
       marginHorizontal: getScaleSize(24),
@@ -433,10 +520,11 @@ const styles = (theme: ThemeContextType['theme']) =>
     },
     photosView: {
       height: getScaleSize(144),
-      width: getScaleSize(180),
+      width: (Dimensions.get('window').width - getScaleSize(66)) / 2,
       borderRadius: 8,
       resizeMode: 'cover',
       marginTop: getScaleSize(18),
+      backgroundColor: theme._EAF0F3,
     },
     buttonContainer: {
       flexDirection: 'row',
@@ -501,4 +589,8 @@ const styles = (theme: ThemeContextType['theme']) =>
       borderRadius: getScaleSize(12),
       backgroundColor: theme._214C65,
     },
+    exchangeProductView: {
+      flex: 1.0,
+      marginTop: getScaleSize(15)
+    }
   });

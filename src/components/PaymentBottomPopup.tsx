@@ -1,4 +1,4 @@
-import React, {useContext, useRef, useState} from 'react';
+import React, { useContext, useRef, useState } from 'react';
 import {
   View,
   StyleSheet,
@@ -9,22 +9,22 @@ import {
   Animated,
   Easing,
 } from 'react-native';
-import {ThemeContext, ThemeContextType} from '../context';
-import {getScaleSize, useString} from '../constant';
-import {FONTS, IMAGES} from '../assets';
+import { ThemeContext, ThemeContextType } from '../context';
+import { getScaleSize, useString } from '../constant';
+import { FONTS, IMAGES } from '../assets';
 import Text from './Text';
-import {constant} from 'lodash';
+import { constant } from 'lodash';
 import RBSheet from 'react-native-raw-bottom-sheet';
 
 const PaymentBottomPopup = (props: any) => {
   const STRING = useString();
-  const {theme} = useContext<any>(ThemeContext);
+  const { theme } = useContext<any>(ThemeContext);
 
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const slideAnim = useRef(new Animated.Value(50)).current;
   const scaleAnim = useRef(new Animated.Value(0.8)).current;
 
-  const [selectedCategory, setSelectedCategory] = useState(1);
+  const { serviceAmount } = props;
 
   const startOpenAnimations = () => {
     fadeAnim.setValue(0);
@@ -78,7 +78,7 @@ const PaymentBottomPopup = (props: any) => {
   };
 
   return (
-    <View style={{backgroundColor: 'rgba(0,0,0,0.3)'}}>
+    <View style={{ backgroundColor: 'rgba(0,0,0,0.3)' }}>
       <RBSheet
         ref={props.onRef}
         closeOnDragDown={true}
@@ -100,7 +100,7 @@ const PaymentBottomPopup = (props: any) => {
             size={getScaleSize(22)}
             font={FONTS.Lato.Bold}
             color={theme.primary}
-            style={{alignSelf: 'center', marginTop: getScaleSize(16)}}>
+            style={{ alignSelf: 'center', marginTop: getScaleSize(16) }}>
             {STRING.Proceedtopayment}
           </Text>
           <Text
@@ -124,68 +124,68 @@ const PaymentBottomPopup = (props: any) => {
             </Text>
             <View style={styles(theme).horizontalView}>
               <Text
-                style={{flex:1.0}}
+                style={{ flex: 1.0 }}
                 size={getScaleSize(14)}
                 font={FONTS.Lato.SemiBold}
                 color={'#595959'}>
                 {STRING.FinalizedQuoteAmount}
               </Text>
-               <Text                
+              <Text
                 size={getScaleSize(14)}
                 font={FONTS.Lato.SemiBold}
                 color={'#595959'}>
-                {'€499'}
+                {`€${serviceAmount?.finalize_quote_amount ?? 0}`}
               </Text>
             </View>
             <View style={styles(theme).horizontalView}>
               <Text
-                style={{flex:1.0}}
+                style={{ flex: 1.0 }}
                 size={getScaleSize(14)}
                 font={FONTS.Lato.SemiBold}
                 color={'#595959'}>
                 {STRING.PlatformFee}
               </Text>
-               <Text
-                
+              <Text
+
                 size={getScaleSize(14)}
                 font={FONTS.Lato.SemiBold}
                 color={'#595959'}>
-                {'€4'}
+                {`€${serviceAmount?.platform_fees ?? 0}`}
               </Text>
             </View>
             <View style={styles(theme).horizontalView}>
               <Text
-                style={{flex:1.0}}
+                style={{ flex: 1.0 }}
                 size={getScaleSize(14)}
                 font={FONTS.Lato.SemiBold}
                 color={'#595959'}>
                 {STRING.Taxes}
               </Text>
-               <Text                
+              <Text
                 size={getScaleSize(14)}
                 font={FONTS.Lato.SemiBold}
                 color={'#595959'}>
-                {'€12'}
+                {`€${serviceAmount?.tax ?? 0}`}
               </Text>
             </View>
-            <View style={styles(theme).dotView}/>
+            <View style={styles(theme).dotView} />
             <View style={styles(theme).horizontalView}>
               <Text
-                style={{flex:1.0}}
+                style={{ flex: 1.0 }}
                 size={getScaleSize(20)}
                 font={FONTS.Lato.SemiBold}
                 color={'#0F232F'}>
                 {STRING.Total}
               </Text>
-               <Text                
+              <Text
                 size={getScaleSize(20)}
                 font={FONTS.Lato.SemiBold}
                 color={theme.primary}>
-                {'€560.9'}
+                {`€${serviceAmount?.total_renegotiated ?? 0}`}
               </Text>
             </View>
           </View>
-            {/* <View style={{flex:1.0}}/> */}
+          {/* <View style={{flex:1.0}}/> */}
           <View style={styles(theme).buttonContainer}>
             <TouchableOpacity
               style={styles(theme).backButtonContainer}
@@ -197,8 +197,8 @@ const PaymentBottomPopup = (props: any) => {
                 size={getScaleSize(19)}
                 font={FONTS.Lato.Bold}
                 color={theme.primary}
-                style={{alignSelf: 'center'}}>
-                {STRING.No}
+                style={{ alignSelf: 'center' }}>
+                {STRING.cancel}
               </Text>
             </TouchableOpacity>
             <TouchableOpacity
@@ -211,7 +211,7 @@ const PaymentBottomPopup = (props: any) => {
                 size={getScaleSize(19)}
                 font={FONTS.Lato.Bold}
                 color={theme.white}
-                style={{alignSelf: 'center'}}>
+                style={{ alignSelf: 'center' }}>
                 {STRING.proceed_to_pay}
               </Text>
             </TouchableOpacity>
@@ -289,12 +289,12 @@ const styles = (theme: ThemeContextType['theme']) =>
       flexDirection: 'row',
       marginTop: getScaleSize(8),
     },
-    dotView:{      
+    dotView: {
       // flex:1.0,
-      borderStyle:'dashed',
-      borderColor:theme.primary,      
-      borderWidth:1,
-      marginTop:getScaleSize(8)
+      borderStyle: 'dashed',
+      borderColor: theme.primary,
+      borderWidth: 1,
+      marginTop: getScaleSize(8)
     }
   });
 

@@ -24,13 +24,27 @@ export type ChatThread = {
   updatedAt?: FirebaseFirestoreTypes.Timestamp | null;
 };
 
+export type NegotiationOffer = {
+  amount: number;
+  addedBy: 'elderly_user' | 'service_provider';
+  createdAt?: FirebaseFirestoreTypes.Timestamp | null;
+};
+
 export type ChatMessage = {
   id: string;
-  text: string;
   senderId: string;
   receiverId: string;
   createdAt?: FirebaseFirestoreTypes.Timestamp | null;
-  type: 'text';
+  type: 'text' | 'negotiation';
+  text?: string;
+  serviceId?: string;
+  serviceName?: string;
+  originalAmount?: number;
+  initialQuote?: number;
+  offers?: NegotiationOffer[];
+  status?: 'pending' | 'accepted';
+  acceptedAmount?: number | null;
+  lastUpdatedBy?: string;
 };
 
 const USERS_COLLECTION = 'users';
@@ -41,18 +55,26 @@ export const buildThreadId = (first: string, second: string) =>
   [first, second].sort().join('__');
 
 export async function upsertUserProfile(user: FirestoreUser) {
+  console.log('=== upsertUserProfile Called ===');
+  console.log('Received user object:', JSON.stringify(user, null, 2));
+  console.log('user_id:', user?.user_id);
+
   if (!user?.user_id) {
+    console.log('❌ ERROR: user_id is missing or undefined!');
+    console.log('User object keys:', Object.keys(user || {}));
     return;
   }
 
-  const userRef = firestore().collection(USERS_COLLECTION).doc(user.user_id);
-  const snapshot = await userRef.get();
-  const timestamp = firestore.FieldValue.serverTimestamp();
+  try {
+    console.log('✅ user_id exists:', user.user_id);
+    const userRef = firestore().collection(USERS_COLLECTION).doc(user.user_id);
+    const snapshot = await userRef.get();
+    const timestamp = firestore.FieldValue.serverTimestamp();
 
-  const exists = snapshot.exists();
+    const exists = snapshot.exists();
+    console.log('Document exists:', exists);
 
-  await userRef.set(
-    {
+    const dataToSave = {
       user_id: user.user_id,
       name: user.name ?? '',
       email: user.email ?? '',
@@ -62,9 +84,33 @@ export async function upsertUserProfile(user: FirestoreUser) {
       avatarUrl: user.avatarUrl ?? '',
       updatedAt: timestamp,
       createdAt: exists ? snapshot.data()?.createdAt ?? timestamp : timestamp,
-    },
-    {merge: true},
-  );
+    };
+
+    console.log('Data to save:', JSON.stringify(dataToSave, null, 2));
+
+    await userRef.set(dataToSave, {merge: true});
+    console.log('✅ User successfully saved to Firebase:', user.user_id);
+  } catch (error) {
+    console.log('❌ Error saving user to Firebase:', error);
+    throw error;
+  }
+}
+
+export async function testFirebaseConnection() {
+  try {
+    console.log('=== Testing Firebase Connection ===');
+    const testRef = firestore().collection('test').doc('connection_test');
+    await testRef.set({
+      timestamp: firestore.FieldValue.serverTimestamp(),
+      test: true,
+      message: 'Firebase connection test',
+    });
+    console.log('✅ Firebase connection successful!');
+    return true;
+  } catch (error) {
+    console.log('❌ Firebase connection failed!', error);
+    return false;
+  }
 }
 
 export async function ensureThreadDocument(
@@ -206,4 +252,117 @@ export async function sendTextMessage(payload: {
     },
     {merge: true},
   );
+}
+
+export async function createNegotiationMessage(payload: {
+  threadId: string;
+  senderId: string;
+  receiverId: string;
+  serviceId: string;
+  serviceName?: string;
+  originalAmount: number;
+  initialQuote: number;
+  firstOfferAmount: number;
+  addedBy: 'elderly_user' | 'service_provider';
+}) {
+  const timestamp = firestore.FieldValue.serverTimestamp();
+  const messageRef = firestore()
+    .collection(THREADS_COLLECTION)
+    .doc(payload.threadId)
+    .collection(MESSAGES_SUBCOLLECTION)
+    .doc();
+
+  const docData: ChatMessage = {
+    id: messageRef.id,
+    senderId: payload.senderId,
+    receiverId: payload.receiverId,
+    type: 'negotiation',
+    serviceId: payload.serviceId,
+    serviceName: payload.serviceName,
+    originalAmount: payload.originalAmount,
+    initialQuote: payload.initialQuote,
+    offers: [
+      {
+        amount: payload.firstOfferAmount,
+        addedBy: payload.addedBy,
+        createdAt: timestamp as any,
+      },
+    ],
+    status: 'pending',
+    acceptedAmount: null,
+    lastUpdatedBy: payload.addedBy,
+    createdAt: timestamp as any,
+  };
+
+  await messageRef.set(docData);
+
+  await firestore().collection(THREADS_COLLECTION).doc(payload.threadId).set(
+    {
+      lastMessage: 'Negotiation started',
+      lastMessageSenderId: payload.senderId,
+      updatedAt: timestamp,
+    },
+    {merge: true},
+  );
+
+  return messageRef.id;
+}
+
+export async function appendNegotiationOffer(payload: {
+  threadId: string;
+  messageId: string;
+  amount: number;
+  addedBy: 'elderly_user' | 'service_provider';
+}) {
+  const msgRef = firestore()
+    .collection(THREADS_COLLECTION)
+    .doc(payload.threadId)
+    .collection(MESSAGES_SUBCOLLECTION)
+    .doc(payload.messageId);
+
+  await firestore().runTransaction(async tx => {
+    const snap = await tx.get(msgRef);
+    if (!snap.exists) {
+      throw new Error('Negotiation message not found');
+    }
+    const data = snap.data() as ChatMessage;
+    const offers = Array.isArray(data.offers) ? data.offers.slice() : [];
+    offers.push({
+      amount: payload.amount,
+      addedBy: payload.addedBy,
+      createdAt: firestore.FieldValue.serverTimestamp() as any,
+    });
+    tx.update(msgRef, {
+      offers,
+      lastUpdatedBy: payload.addedBy,
+      updatedAt: firestore.FieldValue.serverTimestamp(),
+    } as any);
+  });
+}
+
+export async function acceptNegotiation(payload: {
+  threadId: string;
+  messageId: string;
+}) {
+  const msgRef = firestore()
+    .collection(THREADS_COLLECTION)
+    .doc(payload.threadId)
+    .collection(MESSAGES_SUBCOLLECTION)
+    .doc(payload.messageId);
+
+  await firestore().runTransaction(async tx => {
+    const snap = await tx.get(msgRef);
+    if (!snap.exists) {
+      throw new Error('Negotiation message not found');
+    }
+    const data = snap.data() as ChatMessage;
+    const offers = Array.isArray(data.offers) ? data.offers : [];
+    const latest = offers.length > 0 ? offers[offers.length - 1] : null;
+    const acceptedAmount = latest ? latest.amount : null;
+    tx.update(msgRef, {
+      status: 'accepted',
+      acceptedAmount,
+      updatedAt: firestore.FieldValue.serverTimestamp(),
+    });
+  });
 }

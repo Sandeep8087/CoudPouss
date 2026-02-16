@@ -1,13 +1,10 @@
-import React, {useContext, useEffect, useMemo, useState} from 'react';
+import React, {useContext, useEffect, useState, useMemo} from 'react';
 import {
   View,
-  StatusBar,
   StyleSheet,
   TouchableOpacity,
   Image,
-  Platform,
-  ActivityIndicator,
-  FlatList,
+  ScrollView,
 } from 'react-native';
 
 //ASSETS
@@ -20,33 +17,26 @@ import {ThemeContext, ThemeContextType, AuthContext} from '../../context';
 import {getScaleSize, useString} from '../../constant';
 
 //COMPONENT
-import {SearchComponent, Text} from '../../components';
+import {Header, SearchComponent, Text} from '../../components';
 
-//PACKAGES
-import {useFocusEffect} from '@react-navigation/native';
-import {SCREENS} from '..';
+//SERVICES
 import {ChatThread, subscribeToThreads} from '../../services/chat';
 import {FirebaseFirestoreTypes} from '@react-native-firebase/firestore';
+
+import {SCREENS} from '..';
 
 export default function Chat(props: any) {
   const STRING = useString();
   const {theme} = useContext<any>(ThemeContext);
-  const {user} = useContext<any>(AuthContext);
-  const [isLoading, setIsLoading] = useState(true);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [threads, setThreads] = useState<ChatThread[]>([]);
+  const {profile} = useContext<any>(AuthContext);
 
-  useFocusEffect(
-    React.useCallback(() => {
-      if (Platform.OS === 'android') {
-        StatusBar.setBackgroundColor(theme.white);
-        StatusBar.setBarStyle('dark-content');
-      }
-    }, [theme.white]),
-  );
+  const [threads, setThreads] = useState<ChatThread[]>([]);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [_isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
-    if (!user?.user_id) {
+    const userId = profile?.user?.id;
+    if (!userId) {
       setThreads([]);
       setIsLoading(false);
       return;
@@ -54,7 +44,7 @@ export default function Chat(props: any) {
 
     setIsLoading(true);
     const unsubscribe = subscribeToThreads(
-      user.user_id,
+      userId,
       results => {
         setThreads(results);
         setIsLoading(false);
@@ -66,22 +56,24 @@ export default function Chat(props: any) {
     );
 
     return unsubscribe;
-  }, [user?.user_id]);
+  }, [profile?.user?.id]);
 
   const filteredThreads = useMemo(() => {
+    const userId = profile?.user?.id;
     const query = searchQuery.trim().toLowerCase();
     if (!query) {
       return threads;
     }
 
     return threads.filter(thread => {
-      const peer = getPeerMeta(thread, user?.user_id);
+      const peer = getPeerMeta(thread, userId);
       return peer.name.toLowerCase().includes(query);
     });
-  }, [threads, searchQuery, user?.user_id]);
+  }, [threads, searchQuery, profile?.user?.id]);
 
   const renderThread = ({item}: {item: ChatThread}) => {
-    const peer = getPeerMeta(item, user?.user_id);
+    const userId = profile?.user?.id;
+    const peer = getPeerMeta(item, userId);
     return (
       <TouchableOpacity
         style={styles(theme).itemContainer}
@@ -132,47 +124,58 @@ export default function Chat(props: any) {
 
   return (
     <View style={styles(theme).container}>
-      <StatusBar
-        barStyle="dark-content"
-        backgroundColor={theme.white}
-        translucent={false}
-      />
-      <Text
-        size={getScaleSize(24)}
-        font={FONTS.Lato.Bold}
-        color={theme.primary}
-        style={{
-          marginTop: getScaleSize(8),
-          marginHorizontal: getScaleSize(22),
-        }}>
-        {STRING.Chat}
-      </Text>
-      <View style={styles(theme).scrolledContainer}>
-        <SearchComponent value={searchQuery} onChangeText={setSearchQuery} />
-        {isLoading ? (
-          <View style={styles(theme).loaderContainer}>
-            <ActivityIndicator size="small" color={theme.primary} />
-          </View>
-        ) : filteredThreads.length ? (
-          <FlatList
-            data={filteredThreads}
-            keyExtractor={item => item.id}
-            renderItem={renderThread}
-            contentContainerStyle={{paddingBottom: getScaleSize(24)}}
-            showsVerticalScrollIndicator={false}
-          />
-        ) : (
-          <View style={styles(theme).emptyState}>
-            <Text
-              size={getScaleSize(16)}
-              font={FONTS.Lato.Medium}
-              color={theme._ACADAD}
-              align="center">
-              {STRING.no_conversations_found}
-            </Text>
-          </View>
-        )}
+      <Header type="profile" screenName={STRING.Chat} />
+      <View style={styles(theme).searchContainer}>
+        <SearchComponent
+          value={searchQuery}
+          onChangeText={setSearchQuery}
+          onPressMicrophone={() => {}}
+        />
       </View>
+      <ScrollView
+        style={styles(theme).scrolledContainer}
+        showsVerticalScrollIndicator={false}>
+        {filteredThreads.length > 0
+          ? filteredThreads.map(item => renderThread({item}))
+          : ['', '', '', '', ''].map((_: any, index: number) => {
+              return (
+                <TouchableOpacity
+                  key={index}
+                  style={styles(theme).itemContainer}
+                  activeOpacity={1}
+                  onPress={() => {
+                    props.navigation.navigate(SCREENS.ChatDetails.identifier);
+                  }}>
+                  <Image
+                    style={styles(theme).userImage}
+                    source={IMAGES.user_placeholder}
+                  />
+                  <View style={styles(theme).threadContent}>
+                    <Text
+                      size={getScaleSize(16)}
+                      font={FONTS.Lato.Medium}
+                      color={theme._2B2B2B}>
+                      {'Emily Johnson'}
+                    </Text>
+                    <Text
+                      size={getScaleSize(12)}
+                      font={FONTS.Lato.Regular}
+                      color={theme._ACADAD}>
+                      {'I really appreciated your feedback on the project;'}
+                    </Text>
+                  </View>
+                  <View style={styles(theme).messageContainer}>
+                    <Text
+                      size={getScaleSize(12)}
+                      font={FONTS.Lato.Medium}
+                      color={theme.white}>
+                      {'1'}
+                    </Text>
+                  </View>
+                </TouchableOpacity>
+              );
+            })}
+      </ScrollView>
     </View>
   );
 }
@@ -224,8 +227,11 @@ const styles = (theme: ThemeContextType['theme']) =>
     container: {flex: 1, backgroundColor: theme.white},
     scrolledContainer: {
       marginHorizontal: getScaleSize(22),
-      marginTop: getScaleSize(24),
       flex: 1.0,
+    },
+    searchContainer: {
+      marginHorizontal: getScaleSize(22),
+      marginVertical: getScaleSize(24),
     },
     userImage: {
       height: getScaleSize(60),
@@ -233,7 +239,7 @@ const styles = (theme: ThemeContextType['theme']) =>
       borderRadius: getScaleSize(30),
     },
     itemContainer: {
-      marginTop: getScaleSize(24),
+      marginBottom: getScaleSize(24),
       flexDirection: 'row',
     },
     threadContent: {
@@ -242,17 +248,17 @@ const styles = (theme: ThemeContextType['theme']) =>
       flex: 1.0,
     },
     threadMeta: {
-      alignItems: 'flex-end',
+      alignSelf: 'center',
+      marginRight: getScaleSize(8),
     },
-    loaderContainer: {
-      flex: 1,
+    messageContainer: {
+      height: getScaleSize(24),
+      width: getScaleSize(24),
+      borderRadius: getScaleSize(12),
+      alignSelf: 'center',
+      backgroundColor: theme._F0B52C,
       justifyContent: 'center',
       alignItems: 'center',
-    },
-    emptyState: {
-      flex: 1,
-      justifyContent: 'center',
-      alignItems: 'center',
-      paddingHorizontal: getScaleSize(24),
+      marginRight: getScaleSize(2),
     },
   });

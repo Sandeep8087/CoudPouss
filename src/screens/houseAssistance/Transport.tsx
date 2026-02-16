@@ -23,13 +23,12 @@ import {FONTS, IMAGES} from '../../assets';
 import {ThemeContext, ThemeContextType} from '../../context';
 
 //CONSTANT
-import {CATEGORY_DATA, getScaleSize, useString} from '../../constant';
+import {getScaleSize, useString} from '../../constant';
 
 //COMPONENT
 import {
   AssistanceItems,
   CalendarComponent,
-  CategoryDropdown,
   Header,
   Input,
   ProgressSlider,
@@ -41,8 +40,6 @@ import {
 
 //PACKAGES
 import {useFocusEffect} from '@react-navigation/native';
-import {SCREENS} from '..';
-import {ASSITANCEDATA} from '../../constant/utils';
 
 const {width} = Dimensions.get('window');
 const cellSize = (width - 30) / 7;
@@ -77,11 +74,6 @@ export default function Transport(props: any) {
 
   return (
     <View style={styles(theme).container}>
-      <StatusBar
-        barStyle="dark-content"
-        backgroundColor={theme.white}
-        translucent={false}
-      />
       {/* <SafeAreaView /> */}
       <Header
         onBack={() => {

@@ -1,4 +1,4 @@
-import { Dimensions, FlatList, Image, ScrollView, SectionList, StyleSheet, TouchableOpacity, View } from 'react-native';
+import { Dimensions, FlatList, Image, Linking, ScrollView, SectionList, StyleSheet, TouchableOpacity, View } from 'react-native';
 import React, { useContext, useEffect, useRef, useState } from 'react';
 
 //CONTEXT
@@ -6,14 +6,15 @@ import { AuthContext, ThemeContext, ThemeContextType } from '../../context';
 
 //CONSTANT & ASSETS
 import { FONTS, IMAGES } from '../../assets';
-import { getScaleSize, useString, SHOW_TOAST, CATEGORY_DATA, SERVICES_DATA } from '../../constant';
+import { getScaleSize, useString, SHOW_TOAST, arrayIcons, openStripeCheckout } from '../../constant';
 
 //SCREENS
 import { SCREENS } from '..';
 
 //COMPONENTS
-import { Header, Input, Text, Button, CategoryDropdown, ServiceItem } from '../../components';
+import { Header, Input, Text, Button, ServiceItem } from '../../components';
 import { API } from '../../api';
+import { CommonActions } from '@react-navigation/native';
 
 
 export default function ReviewServices(props: any) {
@@ -21,9 +22,79 @@ export default function ReviewServices(props: any) {
     const STRING = useString();
 
     const { theme } = useContext<any>(ThemeContext);
-    const { selectedServices, setSelectedServices, myPlan } = useContext<any>(AuthContext);
+    const { selectedServices, setSelectedServices, myPlan, profile } = useContext<any>(AuthContext);
 
     const [isLoading, setLoading] = useState(false);
+
+    useEffect(() => {
+        const parseParams = (url: string) => {
+            const queryString = url.split('?')[1] || '';
+            const params: Record<string, string> = {};
+
+            queryString.split('&').forEach(item => {
+                if (!item) return;
+                const [key, value] = item.split('=');
+                params[key] = decodeURIComponent(value || '');
+            });
+
+            return params;
+        };
+
+        Linking.getInitialURL().then((url: any) => {
+            if (!url) return;
+
+            if (url.includes('categories-added')) {
+                const params = parseParams(url);
+                const type = params.type;
+                if (type == 'add') {
+                    props.navigation.navigate(SCREENS.AccountCreatedSuccessfully.identifier);
+                }
+            }
+
+            if (url.includes('categories-cancelled')) {
+                const params = parseParams(url);
+                const error = params.error || 'Payment cancelled';
+                const type = params.type;
+
+                if (type == 'add') {
+                    SHOW_TOAST(error ?? 'Payment cancelled', 'error');
+                }
+            }
+        });
+
+        const handleUrl = ({ url }: { url: string }) => {
+            console.log('Deep link:', url);
+            // ✅ PAYMENT SUCCESS
+            if (url.startsWith('coudpouss://categories-added')) {
+                const params = parseParams(url);
+                const type = params.type;
+
+                if (type == 'add') {
+                    props.navigation.navigate(SCREENS.AccountCreatedSuccessfully.identifier);
+                } else {
+
+                }
+                return;
+            }
+            // ❌ PAYMENT CANCEL
+            if (url.startsWith('coudpouss://categories-cancelled')) {
+                const params = parseParams(url);
+                const error = params.error || 'Payment cancelled';
+                const type = params.type;
+
+                if (type == 'add') {
+                    SHOW_TOAST(error ?? 'Payment cancelled', 'error');
+                }
+                return;
+            }
+        };
+
+        Linking.addEventListener('url', handleUrl);
+
+        return () => {
+            Linking.removeAllListeners('url')
+        };
+    }, []);
 
     const onDeleteService = (service: any) => {
         const updated = selectedServices
@@ -36,23 +107,26 @@ export default function ReviewServices(props: any) {
         setSelectedServices(updated);
     };
 
-    console.log('selectedServices==>', selectedServices)
-
-    async function onSelectedCategories() {
-        const categoryIds = selectedServices.map((item: any) => item.category?.id);
+    async function onSelectedCategoriesProfessional() {
+        const output = selectedServices.map((item: any) => ({
+            category_id: item.category.id,
+            sub_category_ids: item.service.map((e: any) => e.id),
+        }));
         const params = {
-            category_ids: categoryIds
+            services: output
         }
         try {
             setLoading(true);
-            const result = await API.Instance.post(API.API_ROUTES.onSelectedCategories, params);
-            console.log('result', result.status, result)
+            const result = await API.Instance.post(API.API_ROUTES.onSendCategoryIds + `?action=add`, params);
             if (result.status) {
-                console.log('result?.data?.data?', result?.data?.data)
-                onSelectedServices()
+                setSelectedServices([]);
+                if (myPlan === 'professional') {
+                    props.navigation.navigate(SCREENS.AddBankDetails.identifier);
+                } else {
+                    props.navigation.navigate(SCREENS.AccountCreatedSuccessfully.identifier);
+                }
             } else {
                 SHOW_TOAST(result?.data?.message, 'error')
-                console.log('ERR', result?.data?.message)
             }
         } catch (error: any) {
             SHOW_TOAST(error?.message ?? '', 'error');
@@ -62,31 +136,22 @@ export default function ReviewServices(props: any) {
         }
     }
 
-    async function onSelectedServices() {
-        const serviceIds: any = [];
-        selectedServices.forEach((item: any) => {
-            item.service?.forEach((e: any) => {
-                serviceIds.push(e.id);
-            });
-        });
+    async function onSelectedCategoriesNonProfessional() {
+        const output = selectedServices.map((item: any) => ({
+            category_id: item.category.id,
+            sub_category_ids: item.service.map((e: any) => e.id),
+        }));
         const params = {
-            sub_category_ids: serviceIds
+            categories_subcategory_ids: output
         }
         try {
             setLoading(true);
-            const result = await API.Instance.post(API.API_ROUTES.onSelectedServices, params);
-            console.log('result', result.status, result)
+            const result = await API.Instance.post(API.API_ROUTES.onSelectedCategoriesNonProfessional + `?platform=app&action=add`, params);
             if (result.status) {
-                console.log('result?.data?.data?', result?.data?.data)
-                setSelectedServices([]);
-                if (myPlan === 'professional') {
-                    props.navigation.navigate(SCREENS.AddBankDetails.identifier);
-                } else {
-                    props.navigation.navigate(SCREENS.AccountCreatedSuccessfully.identifier);
-                }
+                const STRIPE_URL = result?.data?.data?.checkout_url ?? '';
+                openStripeCheckout(STRIPE_URL);
             } else {
                 SHOW_TOAST(result?.data?.message, 'error')
-                console.log('ERR', result?.data?.message)
             }
         } catch (error: any) {
             SHOW_TOAST(error?.message ?? '', 'error');
@@ -123,11 +188,14 @@ export default function ReviewServices(props: any) {
                             return (
                                 <View key={index} style={styles(theme).itemContainer}>
                                     <View style={styles(theme).sectionHeaderContainer}>
-                                        <Image source={section.icon} style={styles(theme).sectionHeaderIcon} />
+                                        <Image
+                                            source={arrayIcons[section?.category?.category_name?.toLowerCase() as keyof typeof arrayIcons] ?? arrayIcons['diy'] as any}
+                                            style={[styles(theme).sectionHeaderIcon, { tintColor: theme._2C6587 }]}
+                                            resizeMode='cover' />
                                         <Text size={getScaleSize(16)}
                                             font={FONTS.Lato.SemiBold}
                                             color={theme._2C6587}>
-                                            {section?.category?.name ?? ''}
+                                            {section?.category?.category_name ?? ''}
                                         </Text>
                                     </View>
                                     {(section?.service ?? []).map((item: any, index: number) => {
@@ -167,7 +235,11 @@ export default function ReviewServices(props: any) {
                     title={STRING.next}
                     style={{ flex: 1.0 }}
                     onPress={() => {
-                        onSelectedCategories();
+                        if (profile?.user?.service_provider_type === 'professional') {
+                            onSelectedCategoriesProfessional();
+                        } else {
+                            onSelectedCategoriesNonProfessional();
+                        }
                     }}
                 />
             </View>

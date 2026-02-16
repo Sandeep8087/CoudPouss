@@ -1,5 +1,12 @@
 import React, {ReactElement, useContext, useEffect, useRef} from 'react';
-import {LogBox, Platform, StatusBar, StyleSheet, View} from 'react-native';
+import {
+  Linking,
+  LogBox,
+  Platform,
+  StatusBar,
+  StyleSheet,
+  View,
+} from 'react-native';
 
 //CONTEXT
 import {ThemeProvider, AuthProvider, ThemeContext} from './src/context';
@@ -22,8 +29,7 @@ import Toast, {
   ErrorToast,
   InfoToast,
 } from 'react-native-toast-message';
-import PushNotification from 'react-native-push-notification';
-import messaging from '@react-native-firebase/messaging';
+import {SafeAreaView} from 'react-native-safe-area-context';
 
 LogBox.ignoreAllLogs(true);
 
@@ -31,7 +37,7 @@ const toastConfig = {
   success: (props: any) => (
     <BaseToast
       {...props}
-      style={{backgroundColor: '#FFFFFF', borderLeftColor: '#FF5959'}}
+      style={{backgroundColor: '#FFFFFF', borderLeftColor: '#2E7D32'}}
       contentContainerStyle={{paddingHorizontal: 15}}
       text1NumberOfLines={3}
       text1Style={{
@@ -83,11 +89,6 @@ function App(): any {
 
     return (
       <View style={styles.container}>
-        <StatusBar
-          barStyle={
-            currentTheme === ThemeName.Light ? 'dark-content' : 'light-content'
-          }
-        />
         <NavigationContainer>
           <Navigator
             screenOptions={{

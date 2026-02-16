@@ -2,9 +2,11 @@ import UIKit
 import React
 import React_RCTAppDelegate
 import ReactAppDependencyProvider
+import GoogleMaps
+import Firebase
 
 @main
-class AppDelegate: UIResponder, UIApplicationDelegate {
+class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterDelegate {
   var window: UIWindow?
 
   var reactNativeDelegate: ReactNativeDelegate?
@@ -18,11 +20,20 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     let factory = RCTReactNativeFactory(delegate: delegate)
     delegate.dependencyProvider = RCTAppDependencyProvider()
 
+    GMSServices.provideAPIKey("AIzaSyA0izPHXGkAk0BtOqAiwNOv1mKbZSdM0xM")
+
     reactNativeDelegate = delegate
     reactNativeFactory = factory
 
     window = UIWindow(frame: UIScreen.main.bounds)
+    
+    if FirebaseApp.app() == nil {
+         FirebaseApp.configure()
+       }
 
+    let center = UNUserNotificationCenter.current()
+    center.delegate = self
+    
     factory.startReactNative(
       withModuleName: "coudPouss",
       in: window,
@@ -31,6 +42,12 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 
     return true
   }
+}
+
+func userNotificationCenter(_ center: UNUserNotificationCenter,
+                            willPresent notification: UNNotification,
+                            withCompletionHandler completionHandler: @escaping (UNNotificationPresentationOptions) -> Void) {
+  completionHandler([.banner, .sound, .badge])
 }
 
 class ReactNativeDelegate: RCTDefaultReactNativeFactoryDelegate {

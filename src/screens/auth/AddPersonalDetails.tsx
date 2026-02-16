@@ -6,45 +6,112 @@ import {
   StyleSheet,
   View,
 } from 'react-native';
-import React, { useContext, useEffect, useState } from 'react';
+import React, {useContext, useEffect, useState} from 'react';
 
 //CONTEXT
-import { AuthContext, ThemeContext, ThemeContextType } from '../../context';
+import {AuthContext, ThemeContext, ThemeContextType} from '../../context';
 
 //CONSTANT & ASSETS
-import { FONTS, IMAGES } from '../../assets';
-import { getScaleSize, SHOW_TOAST, useString } from '../../constant';
+import {FONTS, IMAGES} from '../../assets';
+import {getScaleSize, SHOW_TOAST, Storage, useString} from '../../constant';
 
 //SCREENS
-import { SCREENS } from '..';
+import {SCREENS} from '..';
 
 //COMPONENTS
-import { Header, Input, Text, Button } from '../../components';
-import { CommonActions } from '@react-navigation/native';
-import { API } from '../../api';
-import { upsertUserProfile } from '../../services/chat';
-import { Storage } from '../../constant';
+import {
+  Header,
+  Input,
+  Text,
+  Button,
+  SelectCountrySheet,
+} from '../../components';
+import {CommonActions} from '@react-navigation/native';
+import {API} from '../../api';
+import {launchImageLibrary} from 'react-native-image-picker';
 
 export default function AddPersonalDetails(props: any) {
   const STRING = useString();
 
-  const { theme } = useContext<any>(ThemeContext);
-  const { userType, setUser, setUserType } = useContext<any>(AuthContext);
+  const {theme} = useContext<any>(ThemeContext);
+  const {userType, setUser, setUserType, setProfile} =
+    useContext<any>(AuthContext);
+
   const isEmail = props?.route?.params?.email || '';
+  // const isPhoneNumber = props?.route?.params?.isPhoneNumber || false;
+  // const isCountryCode = props?.route?.params?.countryCode || '+91';
 
   const [name, setName] = useState('');
   const [nameError, setNameError] = useState('');
   const [mobileNo, setMobileNo] = useState('');
   const [mobileNoError, setMobileNoError] = useState('');
-  const [email, setEmail] = useState('');
+  const [email, setEmail] = useState(isEmail ? isEmail : '');
   const [emailError, setEmailError] = useState('');
   const [address, setAddress] = useState('');
   const [addressError, setAddressError] = useState('');
   const [isLoading, setLoading] = useState(false);
+  const [visibleCountry, setVisibleCountry] = useState(false);
+  const [countryCode, setCountryCode] = useState('+91');
+  const [profileImage, setProfileImage] = useState<any>(null);
+  const [countryFlag, setCountryFlag] = useState('🇮🇳');
 
-  useEffect(() => {
-    setEmail(isEmail);
-  }, [isEmail]);
+  // useEffect(() => {
+  //   if (isPhoneNumber) {
+  //     setMobileNo(isEmail);
+  //     setCountryCode(isCountryCode);
+  //   } else {
+  //     setEmail(isEmail);
+  //   }
+  // }, [isEmail]);
+
+  const pickImage = async () => {
+    launchImageLibrary({mediaType: 'photo'}, response => {
+      if (!response.didCancel && !response.errorCode && response.assets) {
+        const asset: any = response.assets[0];
+        setProfileImage(asset);
+        uploadProfileImage(asset);
+      } else {
+        console.log('response', response);
+      }
+    });
+  };
+
+  async function uploadProfileImage(asset: any) {
+    try {
+      const formData = new FormData();
+      formData.append('email', isEmail);
+      formData.append('file', {
+        uri: asset?.uri,
+        name: asset?.fileName || 'profile_image.jpg',
+        type: asset?.type || 'image/jpeg',
+      });
+      setLoading(true);
+      const result = await API.Instance.post(
+        API.API_ROUTES.uploadProfileImage,
+        formData,
+        {
+          headers: {
+            'Content-Type': 'multipart/form-data',
+          },
+        },
+      );
+      setLoading(false);
+      if (result.status) {
+        SHOW_TOAST(result?.data?.message ?? '', 'success');
+      } else {
+        SHOW_TOAST(result?.data?.message ?? '', 'error');
+        setProfileImage(null);
+      }
+      console.log('error==>', result?.data?.message);
+    } catch (error: any) {
+      setProfileImage(null);
+      setLoading(false);
+      SHOW_TOAST(error?.message ?? '', 'error');
+      console.log(error?.message);
+    } finally {
+      setLoading(false);
+    }
+  }
 
   async function onSignup() {
     if (!name) {
@@ -60,83 +127,58 @@ export default function AddPersonalDetails(props: any) {
       setMobileNoError('');
       setEmailError('');
       setAddressError('');
-     
+
       const params = {
         mobile: mobileNo,
         name: name,
         email: email,
         address: address,
-        role: userType
+        role: userType,
       };
       try {
         setLoading(true);
-        const result = await API.Instance.post(API.API_ROUTES.addPersonalDetails, params);
-        setLoading(false);
-        console.log('result', result.status, result)
+        const result = await API.Instance.post(
+          API.API_ROUTES.addPersonalDetails,
+          params,
+        );
         if (result.status) {
-          SHOW_TOAST(result?.data?.message ?? '', 'success')
-          
-          // If API returns user data, store it and sync to Firestore
-          const responseData = result?.data?.data;
-          if (responseData?.user_data || responseData?.user_id) {
-            const userData = responseData?.user_data || {
-              user_id: responseData?.user_id,
-              name: name,
-              email: email,
-              mobile: mobileNo,
-              role: userType,
-              address: address,
-            };
-
-            // Store user session
-            const authPayload = {
-              token: responseData?.access_token,
-              refreshToken: responseData?.refresh_token,
-              tokenType: responseData?.token_type || 'bearer',
-              accessTokenExpire: responseData?.access_token_expire,
-              refreshTokenExpire: responseData?.refresh_token_expire,
-              user: userData,
-            };
-
-            await Storage.save(Storage.USER_DETAILS, JSON.stringify(authPayload));
-
-            const fullUserData = {
-              ...userData,
-              token: responseData?.access_token,
-              refreshToken: responseData?.refresh_token,
-              tokenType: responseData?.token_type || 'bearer',
-            };
-
-            setUser(fullUserData);
-            setUserType(userType);
-
-            // Sync user to Firestore
-            try {
-              await upsertUserProfile({
-                user_id: userData?.user_id,
-                name: userData?.name || name,
-                email: userData?.email || email,
-                mobile: userData?.mobile || mobileNo,
-                role: userData?.role || userType,
-                address: userData?.address || address,
-              });
-            } catch (firestoreError) {
-              console.log('Failed to sync user with Firestore after signup', firestoreError);
-            }
-          }
-          
-          onNext();
+          SHOW_TOAST(result?.data?.message ?? '', 'success');
+          Storage.save(
+            Storage.USER_DETAILS,
+            JSON.stringify(result?.data?.data),
+          );
+          setUser(result?.data?.data);
+          setUserType(result?.data?.data?.user_data?.role);
+          getProfileData();
         } else {
-          SHOW_TOAST(result?.data?.message ?? '', 'error')
-          console.log('error==>', result?.data?.message)
+          SHOW_TOAST(result?.data?.message ?? '', 'error');
+          console.log('error==>', result?.data?.message);
         }
       } catch (error: any) {
-        setLoading(false);
         SHOW_TOAST(error?.message ?? '', 'error');
-        console.log(error?.message)
+        console.log(error?.message);
       } finally {
         setLoading(false);
       }
+    }
+  }
+
+  async function getProfileData() {
+    try {
+      setLoading(true);
+      const result = await API.Instance.get(API.API_ROUTES.getUserDetails);
+      if (result.status) {
+        setProfile(result?.data?.data);
+        onNext();
+      } else {
+        SHOW_TOAST(result?.data?.message, 'error');
+        console.log('ERR', result?.data?.message);
+      }
+    } catch (error: any) {
+      SHOW_TOAST(error?.message ?? '', 'error');
+      return null;
+    } finally {
+      setLoading(false);
     }
   }
 
@@ -147,7 +189,7 @@ export default function AddPersonalDetails(props: any) {
       props.navigation.dispatch(
         CommonActions.reset({
           index: 0,
-          routes: [{ name: SCREENS.BottomBar.identifier }],
+          routes: [{name: SCREENS.BottomBar.identifier}],
         }),
       );
     }
@@ -164,27 +206,47 @@ export default function AddPersonalDetails(props: any) {
       <ScrollView showsVerticalScrollIndicator={false}>
         <View style={styles(theme).mainContainer}>
           <View style={styles(theme).imageContainer}>
-            <View style={styles(theme).image}>
+            {profileImage ? (
+              <Image
+                source={{uri: profileImage?.uri}}
+                style={styles(theme).image}
+              />
+            ) : (
+              <View style={styles(theme).image}>
+                <Text
+                  size={getScaleSize(24)}
+                  font={FONTS.Lato.Regular}
+                  color={theme._262B43E5}>
+                  {STRING.bc}
+                </Text>
+              </View>
+            )}
+            {/* <View style={styles(theme).image}>
               <Text
                 size={getScaleSize(24)}
                 font={FONTS.Lato.Regular}
                 color={theme._262B43E5}>
                 {STRING.bc}
               </Text>
-            </View>
-            <Text
-              size={getScaleSize(16)}
-              font={FONTS.Lato.SemiBold}
-              color={theme._2C6587}
-              align="center">
-              {STRING.upload_profile_picture}
-            </Text>
+            </View> */}
+            <TouchableOpacity
+              onPress={() => {
+                pickImage();
+              }}>
+              <Text
+                size={getScaleSize(16)}
+                font={FONTS.Lato.SemiBold}
+                color={theme._2C6587}
+                align="center">
+                {STRING.upload_profile_picture}
+              </Text>
+            </TouchableOpacity>
           </View>
           <Text
             size={getScaleSize(18)}
             font={FONTS.Lato.SemiBold}
             color={theme._565656}
-            style={{ marginBottom: getScaleSize(16) }}>
+            style={{marginBottom: getScaleSize(16)}}>
             {STRING.enter_profile_details}
           </Text>
           <Input
@@ -192,8 +254,9 @@ export default function AddPersonalDetails(props: any) {
             placeholderTextColor={theme._939393}
             inputTitle={STRING.name}
             inputColor={true}
-            continerStyle={{ marginBottom: getScaleSize(16) }}
+            continerStyle={{marginBottom: getScaleSize(16)}}
             value={name}
+            maxLength={30}
             onChangeText={text => {
               setName(text);
               setNameError('');
@@ -205,21 +268,28 @@ export default function AddPersonalDetails(props: any) {
             placeholderTextColor={theme._939393}
             inputTitle={STRING.mobile_no}
             inputColor={true}
-            continerStyle={{ marginBottom: getScaleSize(16) }}
+            continerStyle={{marginBottom: getScaleSize(16)}}
             value={mobileNo}
+            // editable={!isPhoneNumber}
             onChangeText={text => {
               setMobileNo(text);
               setMobileNoError('');
             }}
             isError={mobileNoError}
+            countryCode={countryCode}
+            countryFlag={countryFlag}
+            onPressCountryCode={() => {
+              setVisibleCountry(true);
+            }}
           />
           <Input
             placeholder={STRING.enter_email}
             placeholderTextColor={theme._939393}
             inputTitle={STRING.email}
             inputColor={true}
-            continerStyle={{ marginBottom: getScaleSize(16) }}
+            continerStyle={{marginBottom: getScaleSize(16)}}
             value={email}
+            editable={isEmail ? false : true}
             onChangeText={text => {
               setEmail(text);
               setEmailError('');
@@ -231,7 +301,7 @@ export default function AddPersonalDetails(props: any) {
             placeholderTextColor={theme._939393}
             inputTitle={STRING.address}
             inputColor={true}
-            continerStyle={{ marginBottom: getScaleSize(16) }}
+            continerStyle={{marginBottom: getScaleSize(16)}}
             value={address}
             onChangeText={text => {
               setAddress(text);
@@ -249,6 +319,19 @@ export default function AddPersonalDetails(props: any) {
         }}
         onPress={() => {
           onSignup();
+        }}
+      />
+      <SelectCountrySheet
+        height={getScaleSize(500)}
+        isVisible={visibleCountry}
+        onPress={(e: any) => {
+          console.log('e', e);
+          setCountryCode(e.dial_code);
+          setCountryFlag(e.flag);
+          setVisibleCountry(false);
+        }}
+        onClose={() => {
+          setVisibleCountry(false);
         }}
       />
     </View>

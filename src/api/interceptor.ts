@@ -8,6 +8,7 @@ import { API_BASE_URL, DISABLE_API_LOGS } from "./apiRoutes";
 import NetInfo from '@react-native-community/netinfo';
 import { Alert } from "react-native";
 import { EventRegister } from "react-native-event-listeners";
+import { isTokenExpire, refreshAccessToken } from "./token";
 
 let hasShownNoInternetAlert = false;
 
@@ -46,22 +47,28 @@ Instance.interceptors.request.use(
         }
         if (!DISABLE_API_LOGS) {
             console.log(`Config Header ${JSON.stringify(config?.headers)}`)
-            console.log(`Config Base URL ${JSON.stringify(config?.baseURL)} ${JSON.stringify(config?.url)}`)
+            console.log(`Config Base URL ${config?.method} ${JSON.stringify(config?.baseURL)} ${JSON.stringify(config?.url)}`)
             console.log(`Config Data ${JSON.stringify(config?.data)}`)
         }
 
         if (!config.headers.Authorization) {
             const userData: any = await Storage.get(Storage.USER_DETAILS)
-            console.log('userData==>', userData)
-
             const result = JSON.parse(userData)
-            console.log('result==>', result)
             const accessToken = result?.access_token
-            // const accessToken = ''
-
             if (accessToken) {
-                // const latestToken = accessToken.reduce((a: any, b: any) => b.updatedAt > a.updatedAt ? b : a);
-                config.headers.Authorization = "Bearer " + `${accessToken}`
+                const isExpired = isTokenExpire(accessToken)
+                if (isExpired) {
+                    const newAccessToken = await refreshAccessToken(result?.refresh_token)
+                    if (newAccessToken) {
+                        config.headers.Authorization = "Bearer " + `${newAccessToken}`
+                    }
+                    else {
+                        EventRegister.emit('onInvalidToken')
+                    }
+                }
+                else {
+                    config.headers.Authorization = "Bearer " + `${accessToken}`
+                }
             }
         }
         return config;

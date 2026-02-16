@@ -21,6 +21,7 @@ export default function YearsOfExperience(props: any) {
     const STRING = useString();
     const { setSelectedServices } = useContext<any>(AuthContext);
     const { theme } = useContext<any>(ThemeContext);
+    
     const [yearsOfExperience, setYearsOfExperience] = useState('');
     const [isLoading, setLoading] = useState(false);
 
@@ -34,16 +35,13 @@ export default function YearsOfExperience(props: any) {
                 years_of_experience: yearsOfExperience,
             }
             setLoading(true);
-            const result = await API.Instance.patch(API.API_ROUTES.getPlanDetails, params);
+            const result = await API.Instance.patch(API.API_ROUTES.addYearsOfExperience, params);
             setLoading(false);
-            console.log('result', result.status, result)
             if (result.status) {
-                console.log('yearsOfExperience==', result?.data?.data)
                 setSelectedServices([]);
                 props.navigation.navigate(SCREENS.AddServices.identifier);
             } else {
                 SHOW_TOAST(result?.data?.message ?? '', 'error')
-                console.log('error==>', result?.data?.message)
             }
         } catch (error: any) {
             setLoading(false);

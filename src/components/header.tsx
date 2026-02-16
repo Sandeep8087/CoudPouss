@@ -35,7 +35,7 @@ const Header = (props: HeaderProps) => {
                 <View style={styles(theme).statusBar}>
                     <StatusBar
                         translucent={true}
-                        backgroundColor={'transparent'}
+                        backgroundColor={theme.white}
                         barStyle={'dark-content'} />
                 </View>
                 <View style={[styles(theme).container, { zIndex: 99999 }]}>
@@ -51,9 +51,9 @@ const Header = (props: HeaderProps) => {
                         }
                         {props.rightIcon &&
                             <TouchableOpacity style={styles(theme).flexRow} onPress={props.onPress}>
-                                <Image 
-                                source={props.rightIcon.icon} 
-                                style={[styles(theme).rightIcon,{tintColor: userType === 'service_provider' ? theme._F0B52C : theme._D32F2F}]} />
+                                <Image
+                                    source={props.rightIcon.icon}
+                                    style={[styles(theme).rightIcon, { tintColor: userType === 'service_provider' ? theme._F0B52C : theme._D32F2F }]} />
                                 <Text
                                     size={getScaleSize(16)}
                                     font={FONTS.Lato.SemiBold}
@@ -73,7 +73,7 @@ const Header = (props: HeaderProps) => {
                 <View style={styles(theme).statusBar}>
                     <StatusBar
                         translucent={true}
-                        backgroundColor={'transparent'}
+                        backgroundColor={theme.white}
                         barStyle={'dark-content'} />
                 </View>
                 <View style={[styles(theme).container, { zIndex: 99999 }]}>
@@ -146,7 +146,7 @@ const styles = (theme: ThemeContextType['theme']) => StyleSheet.create({
         flexDirection: 'row',
         alignItems: 'center'
     },
-    icon:{
+    icon: {
         width: getScaleSize(32),
         height: getScaleSize(32),
     }

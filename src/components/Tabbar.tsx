@@ -1,40 +1,115 @@
-import React, { useContext, useEffect } from 'react';
-import {
-  Alert,
-  Image,
-  ImageBackground,
-  ImageSourcePropType,
-  Platform,
-  SafeAreaView,
-  StyleSheet,
-  TouchableOpacity,
-  View,
-} from 'react-native';
+import React, {useContext, useEffect} from 'react';
+import {Image, Linking, StyleSheet, TouchableOpacity, View} from 'react-native';
 
 // CONSTANT & ASSETS
-import { getScaleSize, useString, Storage } from '../constant';
-import { IMAGES } from '../assets/images';
-import { FONTS } from '../assets';
-import { AuthContext, ThemeContext, ThemeContextType } from '../context';
+import {getScaleSize, useString, Storage} from '../constant';
+import {IMAGES} from '../assets/images';
+import {FONTS} from '../assets';
+import {AuthContext, ThemeContext, ThemeContextType} from '../context';
 import Text from './Text';
-import { head } from 'lodash';
-import { EventRegister } from 'react-native-event-listeners';
-import { CommonActions } from '@react-navigation/native';
-import { SCREENS } from '../screens';
+import {head} from 'lodash';
+import {EventRegister} from 'react-native-event-listeners';
+import {CommonActions} from '@react-navigation/native';
+import {SCREENS} from '../screens';
+import {SafeAreaView} from 'react-native-safe-area-context';
 
 function Tabbar(props: any) {
-  const { theme } = useContext<any>(ThemeContext);
+  const {theme} = useContext<any>(ThemeContext);
 
-  const { userType, setUser, setUserType } = useContext<any>(AuthContext);
+  const {userType, setUser, setUserType} = useContext<any>(AuthContext);
+
+  useEffect(() => {
+    const parseParams = (url: string) => {
+      const queryString = url.split('?')[1] || '';
+      const params: Record<string, string> = {};
+
+      queryString.split('&').forEach(item => {
+        if (!item) return;
+        const [key, value] = item.split('=');
+        params[key] = decodeURIComponent(value || '');
+      });
+
+      return params;
+    };
+
+    Linking.getInitialURL().then((url: any) => {
+      if (!url) return;
+
+      if (url.includes('payment-success')) {
+        const params = parseParams(url);
+
+        const serviceId = params.service_id;
+        const type = params.type;
+        if (type == 'services_payment') {
+          Alert.alert('Payment successful');
+          props.navigation.navigate(SCREENS.ServiceConfirmed.identifier, {
+            serviceId: serviceId,
+          });
+        }
+      }
+
+      if (url.includes('payment-cancel')) {
+        const params = parseParams(url);
+        const error = params.error || 'Payment cancelled';
+        const type = params.type;
+
+        if (type == 'services_payment') {
+          EventRegister.emit('onPaymentCancel', {
+            message: error,
+          });
+        }
+      }
+    });
+
+    const handleUrl = ({url}: {url: string}) => {
+      console.log('Deep link:', url);
+      // ✅ PAYMENT SUCCESS
+      if (url.startsWith('coudpouss://payment-success')) {
+        const params = parseParams(url);
+
+        const serviceId = params.service_id;
+        const type = params.type;
+
+        if (type == 'services_payment') {
+          setTimeout(() => {
+            props.navigation.navigate(SCREENS.ServiceConfirmed.identifier, {
+              serviceId: serviceId,
+            });
+          }, 2000);
+        } else {
+        }
+        return;
+      }
+      // ❌ PAYMENT CANCEL
+      if (url.startsWith('coudpouss://payment-cancel')) {
+        const params = parseParams(url);
+        const error = params.error || 'Payment cancelled';
+        const type = params.type;
+
+        if (type == 'services_payment') {
+          EventRegister.emit('onPaymentCancel', {
+            message: error,
+          });
+        }
+        return;
+      }
+    };
+
+    Linking.addEventListener('url', handleUrl);
+
+    return () => {
+      Linking.removeAllListeners('url');
+    };
+  }, []);
 
   useEffect(() => {
     EventRegister.addEventListener('onInvalidToken', () => {
-      onLogout()
+      onLogout();
     });
     return () => {
-      EventRegister.removeEventListener('onInvalidToken')
-    }
-  }, [])
+      EventRegister.removeEventListener('onInvalidToken');
+    };
+  }, []);
 
   function onLogout() {
     Storage.clear();
@@ -43,11 +118,10 @@ function Tabbar(props: any) {
     props.navigation.dispatch(
       CommonActions.reset({
         index: 0,
-        routes: [{ name: SCREENS.Login.identifier }],
+        routes: [{name: SCREENS.Login.identifier}],
       }),
     );
   }
-
 
   let images: any = [];
   let names: any = [];
@@ -83,8 +157,6 @@ function Tabbar(props: any) {
     }
   }
 
-
-
   return (
     <View style={styles(theme).mainView}>
       <View style={styles(theme).tabContainer}>
@@ -101,15 +173,15 @@ function Tabbar(props: any) {
           );
         })}
       </View>
-      <SafeAreaView />
+      <SafeAreaView edges={['bottom']} />
     </View>
   );
 }
 
 const Item = (props: any) => {
-  const { theme } = useContext<any>(ThemeContext);
+  const {theme} = useContext<any>(ThemeContext);
 
-  const { userType } = useContext<any>(AuthContext);
+  const {userType} = useContext<any>(AuthContext);
 
   let images: any = [];
   let names: any = [];
@@ -144,7 +216,7 @@ const Item = (props: any) => {
         <View>
           {/*  */}
           {props?.selected ? (
-            <View style={{ alignSelf: 'center' }}>
+            <View style={{alignSelf: 'center'}}>
               <Image
                 style={
                   props.selected
@@ -156,7 +228,7 @@ const Item = (props: any) => {
                 source={images[props.index]}
               />
               <Text
-                style={{ marginTop: getScaleSize(8) }}
+                style={{marginTop: getScaleSize(8)}}
                 size={getScaleSize(14)}
                 font={FONTS.Lato.Bold}
                 color={theme.primary}
@@ -165,7 +237,7 @@ const Item = (props: any) => {
               </Text>
             </View>
           ) : (
-            <View style={{ alignSelf: 'center' }}>
+            <View style={{alignSelf: 'center'}}>
               <Image
                 style={
                   props.selected
@@ -176,7 +248,7 @@ const Item = (props: any) => {
                 source={images[props.index]}
               />
               <Text
-                style={{ marginTop: getScaleSize(8) }}
+                style={{marginTop: getScaleSize(8)}}
                 size={getScaleSize(12)}
                 font={FONTS.Lato.Medium}
                 color={'#E6E6E6'}
@@ -192,10 +264,12 @@ const Item = (props: any) => {
     if (props?.index == 2) {
       return (
         <TouchableOpacity
-          onPress={() => { props.onPress(SCREENS.CreateRequest.identifier) }}
-          style={{ alignSelf: 'center', marginTop: getScaleSize(-80) }}>
+          onPress={() => {
+            props.onPress(SCREENS.CreateRequest.identifier);
+          }}
+          style={{alignSelf: 'center', marginTop: getScaleSize(-80)}}>
           <Image
-            style={{ height: getScaleSize(98), width: getScaleSize(98) }}
+            style={{height: getScaleSize(98), width: getScaleSize(98)}}
             resizeMode="contain"
             source={IMAGES.plus}
           />
@@ -209,7 +283,7 @@ const Item = (props: any) => {
           <View>
             {/*  */}
             {props?.selected ? (
-              <View style={{ alignSelf: 'center' }}>
+              <View style={{alignSelf: 'center'}}>
                 <Image
                   style={
                     props.selected
@@ -221,7 +295,7 @@ const Item = (props: any) => {
                   source={images[props.index]}
                 />
                 <Text
-                  style={{ marginTop: getScaleSize(8) }}
+                  style={{marginTop: getScaleSize(8)}}
                   size={getScaleSize(14)}
                   font={FONTS.Lato.Bold}
                   color={theme.primary}
@@ -230,7 +304,7 @@ const Item = (props: any) => {
                 </Text>
               </View>
             ) : (
-              <View style={{ alignSelf: 'center' }}>
+              <View style={{alignSelf: 'center'}}>
                 <Image
                   style={
                     props.selected
@@ -241,7 +315,7 @@ const Item = (props: any) => {
                   source={images[props.index]}
                 />
                 <Text
-                  style={{ marginTop: getScaleSize(8) }}
+                  style={{marginTop: getScaleSize(8)}}
                   size={getScaleSize(12)}
                   font={FONTS.Lato.Medium}
                   color={'#E6E6E6'}

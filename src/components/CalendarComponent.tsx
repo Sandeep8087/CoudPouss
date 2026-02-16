@@ -17,8 +17,6 @@ const CalendarComponent = (props: any) => {
   const { selectedDate, onDateChange } = props;
   const [currentDate, setCurrentDate] = useState(new Date());
 
-  console.log('selectedDate', currentDate)
-
   const STRING = useString();
   const { theme } = useContext<any>(ThemeContext);
 

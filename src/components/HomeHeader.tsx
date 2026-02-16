@@ -2,6 +2,7 @@ import {
   FlexAlignType,
   Image,
   ImageBackground,
+  Pressable,
   SafeAreaView,
   StatusBar,
   StyleSheet,
@@ -22,13 +23,14 @@ import { FONTS, IMAGES } from '../assets';
 //COMPONENTS
 import Text from './Text';
 import { flatMap, head } from 'lodash';
+import { SCREENS } from '../screens';
 
 const HEADER_HEIGHT = 260;
 
 const HomeHeader = (props: any) => {
   const STRING = useString();
   const { theme } = useContext(ThemeContext);
-  const { user } = useContext<any>(AuthContext);
+  const { user, profile } = useContext<any>(AuthContext);
 
   return (
     <View style={styles(theme).container}>
@@ -40,7 +42,7 @@ const HomeHeader = (props: any) => {
             size={getScaleSize(16)}
             font={FONTS.Lato.Medium}
             color={theme.white}>
-            {`Hello! ${user?.user_data?.name}\n`}
+            {`Hello! ${(profile?.user?.first_name ?? "") + " " + (profile?.user?.last_name ?? "")}\n`}
 
           </Text>
           <Text
@@ -68,23 +70,32 @@ const HomeHeader = (props: any) => {
           ]}
           activeOpacity={1}
           onPress={() => { props?.onPressUserProfile() }}>
-
-          <Image
-            style={styles(theme).placeholderImage}
-            source={IMAGES.user_placeholder}
-          />
+          {profile?.user?.profile_photo_url ?
+            <Image
+              style={styles(theme).placeholderImage}
+              source={{ uri: profile?.user?.profile_photo_url }}
+            />
+            :
+            <Image
+              style={styles(theme).placeholderImage}
+              source={IMAGES.user_placeholder}
+            />
+          }
         </TouchableOpacity>
       </View>
       <View style={styles(theme).searchView}>
         <View style={styles(theme).searchBox}>
           <Image style={styles(theme).searchImage} source={IMAGES.search} />
-          <View style={{ flex: 1.0 }}>
+          <Pressable
+            onPress={props?.onSearchPress}
+            style={{ flex: 1.0 }}>
             <TextInput
               style={styles(theme).searchInput}
               placeholderTextColor={'#939393'}
               placeholder={STRING.Search}
+              editable={false}
             />
-          </View>
+          </Pressable>
         </View>
         <TouchableOpacity style={styles(theme).microPhoneContainer}>
           <Image
@@ -103,7 +114,7 @@ const HomeHeader = (props: any) => {
               size={getScaleSize(48)}
               font={FONTS.Lato.Bold}
               color={theme.white}>
-              {'10 '}
+              {props?.professionalConnectedCount ?? '0'}{' '}
             </Text>
             <Text
               size={getScaleSize(20)}
@@ -118,7 +129,7 @@ const HomeHeader = (props: any) => {
             font={FONTS.Lato.Regular}
             color={theme.white}>
             {
-              'Lorem ipsum a pharetra mattis dilt\npulvinar tortor amet vulputate.'
+              'Verified professionals ready to\nhelp you today'
             }
           </Text>
         </View>
@@ -132,7 +143,7 @@ const styles = (theme: ThemeContextType['theme']) =>
     container: {
       flex: 1.0,
       backgroundColor: theme.primary,
-      paddingTop: StatusBar.currentHeight ? StatusBar.currentHeight + getScaleSize(10) : getScaleSize(20),
+      paddingTop: StatusBar.currentHeight,
       // paddingHorizontal: getScaleSize(20),
       borderBottomLeftRadius: getScaleSize(60),
       borderBottomRightRadius: getScaleSize(60),

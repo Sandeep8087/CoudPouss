@@ -23,24 +23,34 @@ import Text from './Text';
 function FavouritesItem(props: any) {
   const STRING = useString();
   const { theme } = useContext(ThemeContext);
-  const { itemContainer } = props;
+  const { itemContainer, item, onPressItem } = props;
 
   return (
-    <View style={[styles(theme).container, itemContainer]}>
-      <Image style={styles(theme).userImage} source={IMAGES.user_placeholder} />
-      <Image style={styles(theme).likeImage} source={IMAGES.like} />
+    <TouchableOpacity
+    onPress={() => {
+      onPressItem(item);
+    }}
+     style={[styles(theme).container, itemContainer]}>
+      <Image style={styles(theme).userImage} source={{ uri: item?.provider?.profile_picture_url }} />
+      <TouchableOpacity
+        style={styles(theme).likeImageContainer}
+        onPress={() => {
+          props.onPressFavorite(item);
+        }}>
+        <Image style={styles(theme).likeImage} source={IMAGES.like} />
+      </TouchableOpacity>
       <Text
         size={getScaleSize(18)}
         font={FONTS.Lato.SemiBold}
         color={theme._323232}>
-        {'Wade Warren'}
+        {item?.provider?.full_name ?? '-'}
       </Text>
       <View style={{ flexDirection: 'row' }}>
         <Text
           size={getScaleSize(17)}
           font={FONTS.Lato.Medium}
           color={theme._6D6D6D}>
-          {'4.2'}
+          {item?.average_rating ?? '0.0'}
         </Text>
         <Image style={styles(theme).starImage} source={IMAGES.star} />
         <View style={{ flex: 1.0 }} />
@@ -49,10 +59,10 @@ function FavouritesItem(props: any) {
           style={{ alignSelf: 'center' }}
           font={FONTS.Lato.Regular}
           color={theme._999999}>
-          {'(499 Reviews)'}
+          {`(${item?.total_reviews ?? '0'} Reviews)`}
         </Text>
       </View>
-    </View>
+    </TouchableOpacity>
   );
 }
 
@@ -71,13 +81,19 @@ const styles = (theme: ThemeContextType['theme']) =>
       width: getScaleSize(92),
       borderRadius: getScaleSize(46),
       alignSelf: 'center',
+      backgroundColor: theme._D5D5D5,
+    },
+    likeImageContainer: {
+      paddingHorizontal: getScaleSize(16),
+      paddingVertical: getScaleSize(14),
+      position: 'absolute',
+      right: getScaleSize(0),
+      top: getScaleSize(0),
     },
     likeImage: {
-      position: 'absolute',
       height: getScaleSize(20),
       width: getScaleSize(20),
-      right: getScaleSize(14),
-      top: getScaleSize(16),
+      
     },
     starImage: {
       height: getScaleSize(16),
