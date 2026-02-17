@@ -24,7 +24,7 @@ import Animated, {
 } from 'react-native-reanimated';
 import { AuthContext, ThemeContext, ThemeContextType } from '../../context';
 import { FONTS, IMAGES } from '../../assets';
-import { getScaleSize, SHOW_TOAST, useString } from '../../constant';
+import { getScaleSize, SHOW_TOAST, TABBAR_HEIGHT, useString } from '../../constant';
 import {
   Text,
   HomeHeader,
@@ -147,40 +147,40 @@ export default function Home(props: any) {
         backgroundColor={theme.primary}
         barStyle={'light-content'} />
       {/* HEADER */}
+      <HomeHeader
+        professionalConnectedCount={professionalConnectedCount}
+        onSearchPress={() => {
+          props.navigation.navigate(SCREENS.Search.identifier);
+        }}
+        onPressNotification={() => {
+          props.navigation.navigate(SCREENS.Notification.identifier);
+        }}
+        onPressUserProfile={() => {
+          props.navigation.dispatch(
+            CommonActions.reset({
+              index: 0,
+              routes: [
+                {
+                  name: SCREENS.BottomBar.identifier,
+                  params: { isProfile: true },
+                },
+              ],
+            }),
+          );
+        }}
+      />
       <ScrollView
         showsVerticalScrollIndicator={false}
         scrollEnabled={true}
-        style={{}}>
-        <View>
-          <HomeHeader
-            professionalConnectedCount={professionalConnectedCount}
-            onSearchPress={() => {
-              props.navigation.navigate(SCREENS.Search.identifier);
-            }}
-            onPressNotification={() => {
-              props.navigation.navigate(SCREENS.Notification.identifier);
-            }}
-            onPressUserProfile={() => {
-              props.navigation.dispatch(
-                CommonActions.reset({
-                  index: 0,
-                  routes: [
-                    {
-                      name: SCREENS.BottomBar.identifier,
-                      params: { isProfile: true },
-                    },
-                  ],
-                }),
-              );
-            }}
-          />
-        </View>
+        contentContainerStyle={{
+          paddingBottom: TABBAR_HEIGHT + getScaleSize(20),
+        }}>
         <Text
           size={getScaleSize(20)}
           font={FONTS.Lato.SemiBold}
           style={{
             marginTop: getScaleSize(31),
-            
+
             marginHorizontal: getScaleSize(22),
           }}
           color={theme._323232}>
@@ -421,7 +421,7 @@ export default function Home(props: any) {
             </Text>
           </View>
         )}
-        <View style={{ height: getScaleSize(50) }} />
+        <View style={{ height: TABBAR_HEIGHT }} />
       </ScrollView>
       {isLoading && <ProgressView />}
     </View>

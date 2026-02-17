@@ -91,7 +91,9 @@ export default function Search(props: any) {
                 }}
             />
             <View style={styles(theme).notificationContainer}>
-                <View style={{ marginHorizontal: getScaleSize(24) }}>
+                <View style={{
+                    marginHorizontal: getScaleSize(24), marginBottom: getScaleSize(15)
+                }}>
                     <SearchComponent
                         value={searchText}
                         onChangeText={(text: any) => {
@@ -140,7 +142,7 @@ export default function Search(props: any) {
                                     font={FONTS.Lato.Regular}
                                     color={theme._565656}
                                 >
-                                   {STRING.no_results_found}
+                                    {STRING.no_results_found}
                                 </Text>
                             </View>
                         ) : null

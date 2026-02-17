@@ -48,7 +48,7 @@ export default function Assistance(props: any) {
   const { theme } = useContext<any>(ThemeContext);
 
   const [selectedCategory, setSelectedCategory] = useState<any>(null);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [categoryList, setCategoryList] = useState([]);
   const [subCategoryList, setSubCategoryList] = useState([]);
   const [bannerData, setBannerData] = useState<any>(null);
@@ -87,6 +87,7 @@ export default function Assistance(props: any) {
     try {
       setLoading(true);
       const result = await API.Instance.get(API.API_ROUTES.getHomeData + `?service_name=${service?.name}`);
+      setLoading(false)
       if (result.status) {
         setCategoryList(result?.data?.data?.categories ?? []);
         if (result?.data?.data?.categories?.[0]?.id) {
@@ -107,6 +108,7 @@ export default function Assistance(props: any) {
     try {
       setLoading(true);
       const result = await API.Instance.get(API.API_ROUTES.getHomeData + `/${id}`);
+      setLoading(false)
       if (result.status) {
         console.log('subcategoryList==', JSON.stringify(result?.data?.data))
         setBannerData(result?.data?.data?.Banner ?? null);
