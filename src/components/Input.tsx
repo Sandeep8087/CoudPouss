@@ -39,6 +39,7 @@ interface InputProps {
   quantityIcon?: any;
   onPressQuantityRemove?: () => void;
   onPressQuantityAdd?: () => void;
+  containerStyle?: StyleProp<ViewStyle>;
 }
 
 function Input(props: InputProps & TextInputProps) {
@@ -119,6 +120,7 @@ function Input(props: InputProps & TextInputProps) {
               borderColor: isError ? theme._EF5350 : theme._D5D5D5,
               flex: 1.0,
             },
+            props.containerStyle,
           ]}>
           {searchBox && (
             <View>
@@ -134,8 +136,8 @@ function Input(props: InputProps & TextInputProps) {
             style={[styles(theme).input, inputContainer]}
             placeholderTextColor={
               placeholderTextColor
-                  ? placeholderTextColor
-                  : theme._939393
+                ? placeholderTextColor
+                : theme._939393
             }
             multiline={props?.multiline ?? false}
             numberOfLines={props?.numberOfLines ?? 1}

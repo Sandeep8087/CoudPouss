@@ -424,7 +424,7 @@ export const useString = () => {
     open_settings: "Open Settings",
     please_enter_valid_email: 'Please enter valid email',
     email_must_be_six_to_hundred_char_allow: "Email must be between 6 and 100 characters.",
-    please_enter_four_digit_pin_sent_on_email: "Please enter the 4 Digit PIN sent to your Email or Phone Number.",
+    please_enter_four_digit_pin_sent_on_email: "Please enter the 4 Digit PIN sent to your Email",
     forgotPassword: 'Forgot Password',
     email_required: 'Email is required',
     password_required: 'Password is required',
@@ -440,7 +440,11 @@ export const useString = () => {
     address_special_char_error: "Invalid address format",
     address_only_numbers_error: "Address cannot be only numbers",
     address_html_error: "HTML content not allowed",
-    address_sql_error: "Invalid address input"
+    address_sql_error: "Invalid address input",
+    no_results_found: "No results found",
+    prefered_language: "Preferred Language",
+    french: 'French',
+    english: 'English'
 
   };
 };

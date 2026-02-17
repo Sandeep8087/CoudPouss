@@ -6,6 +6,8 @@ import {
   StyleSheet,
   TouchableOpacity,
   View,
+  KeyboardAvoidingView,
+  Platform
 } from 'react-native';
 import React, { useContext, useEffect, useState } from 'react';
 
@@ -30,6 +32,7 @@ import {
 import { CommonActions } from '@react-navigation/native';
 import { API } from '../../api';
 import { launchImageLibrary } from 'react-native-image-picker';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 export default function AddPersonalDetails(props: any) {
   const STRING = useString();
@@ -143,49 +146,44 @@ export default function AddPersonalDetails(props: any) {
     setEmailError('');
     setAddressError('');
 
-    const nameRegex = /^[A-Za-z.\- ]+$/;
+    // REGEX
     const emojiRegex =
       /([\u2700-\u27BF]|[\uE000-\uF8FF]|[\uD83C-\uDBFF\uDC00-\uDFFF]+)/;
-    const mobileRegex = /^[0-9]{10}$/;
+
+    const nameValidRegex = /^[A-Za-z.\- ]+$/;
     const onlySpecialChars = /^[^A-Za-z0-9]+$/;
     const onlyNumbers = /^[0-9]+$/;
-    const htmlInjection = /<[^>]*>/;
-    const sqlInjection = /('|--|\b(OR|AND)\b)/i;
+    const mobileRegex = /^[0-9]{10}$/;
 
-    //NAME VALIDATION
+    // NAME VALIDATION 
     if (!cleanName) {
       setNameError(STRING.name_required);
       hasError = true;
-    }
-    else if (emojiRegex.test(cleanName)) {
-      setNameError(STRING.emoji_not_allowed);
-      hasError = true;
-    }
-    else if (cleanName.length < 2 || cleanName.length > 50) {
+    } else if (cleanName.length < 2 || cleanName.length > 50) {
       setNameError(STRING.name_min_max_error);
       hasError = true;
-    }
-    else if (!/^[A-Za-z.\- ]+$/.test(cleanName)) {
+    } else if (emojiRegex.test(cleanName)) {
+      setNameError(STRING.emoji_not_allowed);
+      hasError = true;
+    } else if (!nameValidRegex.test(cleanName)) {
       setNameError(STRING.name_invalid_characters);
       hasError = true;
     }
 
-    // MOBILE VALIDATION
-    else if (!cleanMobile) {
+    // MOBILE VALIDATION 
+    if (!cleanMobile) {
       setMobileNoError(STRING.mobile_number_required);
       hasError = true;
-    }
-    else if (!mobileRegex.test(cleanMobile)) {
+    } else if (!mobileRegex.test(cleanMobile)) {
       setMobileNoError(STRING.mobile_must_be_10_digits);
       hasError = true;
     }
 
     // EMAIL VALIDATION 
-    else if (!cleanEmail) {
+    if (!cleanEmail) {
       setEmailError(STRING.email_required);
       hasError = true;
-    }
-    else if (
+    } else if (
       cleanEmail.length < 6 ||
       cleanEmail.length > 100 ||
       !REGEX.email.test(cleanEmail)
@@ -194,38 +192,27 @@ export default function AddPersonalDetails(props: any) {
       hasError = true;
     }
 
-    //ADDRESS VALIDATION 
-    else if (!cleanAddress) {
+    // ADDRESS VALIDATION 
+    if (!cleanAddress) {
       setAddressError(STRING.address_required);
       hasError = true;
-    }
-    else if (cleanAddress.length < 2 || cleanAddress.length > 250) {
+    } else if (cleanAddress.length < 2 || cleanAddress.length > 250) {
       setAddressError(STRING.address_min_max_error);
       hasError = true;
-    }
-    else if (emojiRegex.test(cleanAddress)) {
+    } else if (emojiRegex.test(cleanAddress)) {
       setAddressError(STRING.emoji_not_allowed);
       hasError = true;
-    }
-    else if (onlySpecialChars.test(cleanAddress)) {
+    } else if (onlyNumbers.test(cleanAddress)) {
+      setAddressError(STRING.address_only_numbers_error);
+      hasError = true;
+    } else if (onlySpecialChars.test(cleanAddress)) {
       setAddressError(STRING.address_special_char_error);
       hasError = true;
     }
-    else if (onlyNumbers.test(cleanAddress)) {
-      setAddressError(STRING.address_only_numbers_error);
-      hasError = true;
-    }
-    else if (htmlInjection.test(cleanAddress)) {
-      setAddressError(STRING.address_html_error);
-      hasError = true;
-    }
-    else if (sqlInjection.test(cleanAddress)) {
-      setAddressError(STRING.address_sql_error);
-      hasError = true;
-    }
 
-    if (hasError) return;
-
+    if (hasError) {
+      return
+    }
     else {
       const params = {
         mobile: cleanMobile,
@@ -296,146 +283,154 @@ export default function AddPersonalDetails(props: any) {
   }
 
   return (
-    <View style={styles(theme).container}>
-      <Header
-        onBack={() => {
-          props.navigation.goBack();
-        }}
-        screenName={STRING.add_personal_details}
-      />
-      <ScrollView showsVerticalScrollIndicator={false}>
-        <View style={styles(theme).mainContainer}>
-          <View style={styles(theme).imageContainer}>
-            {profileImage ? (
-              <Image
-                source={{ uri: profileImage?.uri }}
-                style={styles(theme).image}
-              />
-            ) : name.trim() ? (
-              <View style={styles(theme).image}>
+    <KeyboardAvoidingView
+      style={{ flex: 1 }}
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 20}
+    >
+      <View style={styles(theme).container}>
+        <Header
+          onBack={() => {
+            props.navigation.goBack();
+          }}
+          screenName={STRING.add_personal_details}
+        />
+        <ScrollView showsVerticalScrollIndicator={false}>
+          <View style={styles(theme).mainContainer}>
+            <View style={styles(theme).imageContainer}>
+              {profileImage ? (
+                <Image
+                  source={{ uri: profileImage?.uri }}
+                  style={styles(theme).image}
+                />
+              ) : name.trim() ? (
+                <View style={styles(theme).image}>
+                  <Text
+                    size={getScaleSize(24)}
+                    font={FONTS.Lato.Regular}
+                    color={theme._262B43E5}>
+                    {getInitialName(name)}
+                  </Text>
+                </View>
+              ) : (
+                <Image
+                  source={IMAGES.user_placeholder}
+                  style={styles(theme).image}
+                  resizeMode="cover"
+                />
+              )}
+              <TouchableOpacity
+                onPress={() => {
+                  pickImage();
+                }}>
                 <Text
-                  size={getScaleSize(24)}
-                  font={FONTS.Lato.Regular}
-                  color={theme._262B43E5}>
-                  {getInitialName(name)}
+                  size={getScaleSize(16)}
+                  font={FONTS.Lato.SemiBold}
+                  color={theme._2C6587}
+                  align="center">
+                  {STRING.upload_profile_picture}
                 </Text>
-              </View>
-            ) : (
-              <Image
-                source={IMAGES.user_placeholder}
-                style={styles(theme).image}
-                resizeMode="cover"
-              />
-            )}
-            <TouchableOpacity
-              onPress={() => {
-                pickImage();
-              }}>
-              <Text
-                size={getScaleSize(16)}
-                font={FONTS.Lato.SemiBold}
-                color={theme._2C6587}
-                align="center">
-                {STRING.upload_profile_picture}
-              </Text>
-            </TouchableOpacity>
+              </TouchableOpacity>
+            </View>
+            <Text
+              size={getScaleSize(18)}
+              font={FONTS.Lato.SemiBold}
+              color={theme._565656}
+              style={{ marginBottom: getScaleSize(16) }}>
+              {STRING.enter_profile_details}
+            </Text>
+            <Input
+              placeholder={STRING.enter_name}
+              placeholderTextColor={theme._939393}
+              inputTitle={STRING.name}
+              inputColor={true}
+              continerStyle={{ marginBottom: getScaleSize(16) }}
+              value={name}
+              maxLength={30}
+              onChangeText={text => {
+                setName(text);
+                setNameError('');
+              }}
+              isError={nameError}
+            />
+            <Input
+              placeholder={STRING.enter_mobile_no}
+              placeholderTextColor={theme._939393}
+              inputTitle={STRING.mobile_no}
+              inputColor={true}
+              continerStyle={{ marginBottom: getScaleSize(16) }}
+              value={mobileNo}
+              // editable={!isPhoneNumber}
+              onChangeText={text => {
+                const digitsOnly = text.replace(/[^0-9]/g, '');
+                setMobileNo(digitsOnly);
+                setMobileNoError('');
+              }}
+              keyboardType="number-pad"
+              maxLength={10}
+              isError={mobileNoError}
+              countryCode={countryCode}
+              countryFlag={countryFlag}
+              onPressCountryCode={() => {
+                setVisibleCountry(true);
+              }}
+            />
+            <Input
+              placeholder={STRING.enter_email}
+              placeholderTextColor={theme._939393}
+              inputTitle={STRING.email}
+              inputColor={true}
+              style={{ opacity: 0.5 }}
+              continerStyle={{ marginBottom: getScaleSize(16) }}
+              value={email}
+              editable={isEmail ? false : true}
+              onChangeText={text => {
+                setEmail(text);
+                setEmailError('');
+              }}
+              isError={emailError}
+            />
+            <Input
+              placeholder={STRING.enter_address}
+              placeholderTextColor={theme._939393}
+              inputTitle={STRING.address}
+              inputColor={true}
+              continerStyle={{ marginBottom: getScaleSize(16) }}
+              value={address}
+              onChangeText={text => {
+                setAddress(text);
+                setAddressError('');
+              }}
+              isError={addressError}
+            />
           </View>
-          <Text
-            size={getScaleSize(18)}
-            font={FONTS.Lato.SemiBold}
-            color={theme._565656}
-            style={{ marginBottom: getScaleSize(16) }}>
-            {STRING.enter_profile_details}
-          </Text>
-          <Input
-            placeholder={STRING.enter_name}
-            placeholderTextColor={theme._939393}
-            inputTitle={STRING.name}
-            inputColor={true}
-            continerStyle={{ marginBottom: getScaleSize(16) }}
-            value={name}
-            maxLength={30}
-            onChangeText={text => {
-              setName(text);
-              setNameError('');
-            }}
-            isError={nameError}
-          />
-          <Input
-            placeholder={STRING.enter_mobile_no}
-            placeholderTextColor={theme._939393}
-            inputTitle={STRING.mobile_no}
-            inputColor={true}
-            continerStyle={{ marginBottom: getScaleSize(16) }}
-            value={mobileNo}
-            // editable={!isPhoneNumber}
-            onChangeText={text => {
-              const digitsOnly = text.replace(/[^0-9]/g, '');
-              setMobileNo(digitsOnly);
-              setMobileNoError('');
-            }}
-            keyboardType="number-pad"
-            maxLength={10}
-            isError={mobileNoError}
-            countryCode={countryCode}
-            countryFlag={countryFlag}
-            onPressCountryCode={() => {
-              setVisibleCountry(true);
-            }}
-          />
-          <Input
-            placeholder={STRING.enter_email}
-            placeholderTextColor={theme._939393}
-            inputTitle={STRING.email}
-            inputColor={true}
-            continerStyle={{ marginBottom: getScaleSize(16) }}
-            value={email}
-            editable={isEmail ? false : true}
-            onChangeText={text => {
-              setEmail(text);
-              setEmailError('');
-            }}
-            isError={emailError}
-          />
-          <Input
-            placeholder={STRING.enter_address}
-            placeholderTextColor={theme._939393}
-            inputTitle={STRING.address}
-            inputColor={true}
-            continerStyle={{ marginBottom: getScaleSize(16) }}
-            value={address}
-            onChangeText={text => {
-              setAddress(text);
-              setAddressError('');
-            }}
-            isError={addressError}
-          />
-        </View>
-      </ScrollView>
-      <Button
-        title={STRING.next}
-        style={{
-          marginVertical: getScaleSize(24),
-          marginHorizontal: getScaleSize(24),
-        }}
-        onPress={() => {
-          onSignup();
-        }}
-      />
-      <SelectCountrySheet
-        height={getScaleSize(500)}
-        isVisible={visibleCountry}
-        onPress={(e: any) => {
-          console.log('e', e)
-          setCountryCode(e.dial_code);
-          setCountryFlag(e.flag);
-          setVisibleCountry(false);
-        }}
-        onClose={() => {
-          setVisibleCountry(false);
-        }}
-      />
-    </View>
+        </ScrollView>
+        <Button
+          title={STRING.next}
+          style={{
+            marginVertical: getScaleSize(24),
+            marginHorizontal: getScaleSize(24),
+          }}
+          onPress={() => {
+            onSignup();
+          }}
+        />
+        <SelectCountrySheet
+          height={getScaleSize(500)}
+          isVisible={visibleCountry}
+          onPress={(e: any) => {
+            console.log('e', e)
+            setCountryCode(e.dial_code);
+            setCountryFlag(e.flag);
+            setVisibleCountry(false);
+          }}
+          onClose={() => {
+            setVisibleCountry(false);
+          }}
+        />
+      </View>
+      <SafeAreaView />
+    </KeyboardAvoidingView>
   );
 }
 

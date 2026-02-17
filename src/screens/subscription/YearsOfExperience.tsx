@@ -57,11 +57,15 @@ export default function YearsOfExperience(props: any) {
     }
 
     const validateExperienceInput = (text: string) => {
-        // Remove spaces
-        let value = text.trim();
+        if (!text) return '';
 
-        // Allow only digits and dot
-        value = value.replace(/[^0-9.]/g, '');
+        // Allow digits + dot only
+        let value = text.replace(/[^0-9.]/g, '');
+
+        // Prevent dot as first character
+        if (value.startsWith('.')) {
+            value = value.slice(1);
+        }
 
         // Prevent multiple dots
         const parts = value.split('.');
@@ -69,9 +73,22 @@ export default function YearsOfExperience(props: any) {
             value = parts[0] + '.' + parts[1];
         }
 
-        // Allow only 2 decimal places
-        if (parts[1]?.length > 2) {
-            value = parts[0] + '.' + parts[1].slice(0, 2);
+        let [integerPart = '', decimalPart] = value.split('.');
+
+        // Remove leading zeros (but keep single 0)
+        integerPart = integerPart.replace(/^0+(?=\d)/, '');
+
+        // Limit decimal to 2 digits
+        if (decimalPart !== undefined) {
+            decimalPart = decimalPart.slice(0, 2);
+            value = `${integerPart}.${decimalPart}`;
+        } else {
+            value = integerPart;
+        }
+
+        // Allow trailing dot while typing (e.g., "1.")
+        if (text.endsWith('.') && !value.includes('.')) {
+            value = integerPart + '.';
         }
 
         // Max value 99
@@ -108,7 +125,7 @@ export default function YearsOfExperience(props: any) {
                         placeholder={STRING.experience}
                         inputTitle={STRING.years_of_experience}
                         inputColor={true}
-                        keyboardType="numeric"
+                        keyboardType="decimal-pad"
                         value={yearsOfExperience}
                         onChangeText={(text) => {
                             const cleanedValue = validateExperienceInput(text);

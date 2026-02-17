@@ -32,6 +32,13 @@ const HomeHeader = (props: any) => {
   const { theme } = useContext(ThemeContext);
   const { user, profile } = useContext<any>(AuthContext);
 
+  const getInitials = (firstName?: string, lastName?: string) => {
+    const f = firstName?.trim()?.[0] || '';
+    const l = lastName?.trim()?.[0] || '';
+
+    return (f + l).toUpperCase();
+  };
+
   return (
     <View style={styles(theme).container}>
       <View style={styles(theme).headerView}>
@@ -70,30 +77,30 @@ const HomeHeader = (props: any) => {
           ]}
           activeOpacity={1}
           onPress={() => { props?.onPressUserProfile() }}>
-          {profile?.user?.profile_photo_url ?
+          {profile?.user?.profile_photo_url ? (
             <Image
               style={styles(theme).placeholderImage}
               source={{ uri: profile?.user?.profile_photo_url }}
             />
-            :
-          <>
-            {profile?.user?.first_name && profile?.user?.last_name ? (
-              <View style={styles(theme).EmptyProfileContainer}>
-                <Text size={getScaleSize(12)}
-                  font={FONTS.Lato.Medium}
-                  align="center"
-                  color={theme._262B43E5}>
-                  {(profile?.user?.first_name?.charAt(0) ?? '').toUpperCase() +
-                    (profile?.user?.last_name?.charAt(0) ?? '').toUpperCase()}
-                </Text>
-              </View>
-            ) : (
-              <Image
-                style={styles(theme).placeholderImage}
-                source={IMAGES.user_placeholder}
-              />
-            )}
-          </>
+          ) :
+            <>
+              {profile?.user?.first_name && profile?.user?.last_name ? (
+                <View style={styles(theme).EmptyProfileContainer}>
+                  <Text size={getScaleSize(12)}
+                    font={FONTS.Lato.Medium}
+                    align="center"
+                    color={theme._262B43E5}>
+                    {(profile?.user?.first_name?.charAt(0) ?? '').toUpperCase() +
+                      (profile?.user?.last_name?.charAt(0) ?? '').toUpperCase()}
+                  </Text>
+                </View>
+              ) : (
+                <Image
+                  style={styles(theme).placeholderImage}
+                  source={IMAGES.user_placeholder}
+                />
+              )}
+            </>
           }
         </TouchableOpacity>
       </View>
@@ -250,7 +257,7 @@ const styles = (theme: ThemeContextType['theme']) =>
       alignSelf: 'center',
       alignItems: 'center',
       justifyContent: 'center',
-  },
+    },
     bottomText: {
       flexDirection: 'row',
       marginLeft: getScaleSize(16),

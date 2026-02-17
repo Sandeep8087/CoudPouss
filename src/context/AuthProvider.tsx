@@ -27,6 +27,7 @@ export function AuthProvider(props: Readonly<AuthProviderProps>): any {
       const result = await API.Instance.get(API.API_ROUTES.getUserDetails);
       if (result.status) {
         const userDetail = result?.data?.data;
+        console.log('PRO',JSON.stringify(userDetail))
         setProfile(userDetail);
         return userDetail;
       }

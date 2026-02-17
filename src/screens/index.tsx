@@ -25,7 +25,7 @@ import RequestDetails from './request/RequestDetails';
 import OtherUserProfile from './profile/OtherUserProfile';
 import ServiceConfirmed from './request/ServiceConfirmed';
 import Notification from './notification/Notification';
-import CompletedTaskDetails from './task/CompletedTaskDetails';  
+import CompletedTaskDetails from './task/CompletedTaskDetails';
 import WriteReview from './review/WriteReview';
 import TaskStatus from './task/TaskStatus';
 import Assistance from './houseAssistance/Assistance';
@@ -65,6 +65,7 @@ import Search from './home/Search';
 import WebViewScreen from './WebViewScreen';
 import MapView from './task/MapView';
 import TransactionsElder from './profile/TransactionsElder';
+import Language from './profile/language';
 
 export const SCREENS = {
   Splash: {
@@ -160,7 +161,7 @@ export const SCREENS = {
     identifier: 'Transactions',
     component: Transactions,
   },
-  TransactionsElder:{
+  TransactionsElder: {
     identifier: 'TransactionsElder',
     component: TransactionsElder,
   },
@@ -295,6 +296,10 @@ export const SCREENS = {
   MapView: {
     identifier: 'MapView',
     component: MapView,
+  },
+  Language: {
+    identifier: 'Language',
+    component: Language,
   },
 };
 

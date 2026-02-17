@@ -433,12 +433,19 @@ export default function EditProfile(props: any) {
                         placeholderTextColor={theme._939393}
                         inputTitle={STRING.e_mail_id}
                         inputColor={true}
-                        continerStyle={{ marginBottom: getScaleSize(20) }}
                         value={email}
                         editable={false}
                         onChangeText={text => {
                             setEmail(text);
                             setEmailError('');
+                        }}
+                        inputContainer={{
+                            backgroundColor: theme._F0EFF0,
+                            opacity: 0.7,
+                        }}
+                        containerStyle={{
+                            paddingHorizontal: 0,
+                            marginBottom: getScaleSize(20)
                         }}
                         isError={emailError}
                     />

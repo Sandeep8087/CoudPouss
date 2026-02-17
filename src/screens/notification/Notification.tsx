@@ -51,6 +51,7 @@ export default function Notification(props: any) {
   const [notification, setNotification] = useState<any[]>([]);
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
+  const [error, setError] = useState<any>(null)
   const PAGE_SIZE = 10;
 
   useFocusEffect(
@@ -76,6 +77,7 @@ export default function Notification(props: any) {
         if (newData?.length < PAGE_SIZE) {
           setHasMore(false);
           setNotification((prev: any[]) => [...prev, ...newData]);
+          setError(newData?.length === 0 ? 'No Data Found' : '')
         }
         else {
           setNotification((prev: any[]) => [...prev, ...newData]);

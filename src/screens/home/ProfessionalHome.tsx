@@ -147,10 +147,12 @@ export default function ProfessionalHome(props: any) {
         console.log('result==>', result?.data?.data);
         setServiceList(result.data.data ?? []);
       } else {
+        setLoading(false)
         SHOW_TOAST(result?.data?.detail, 'error');
         console.log('error==>', result?.data?.detail)
       }
     } catch (error: any) {
+      setLoading(false)
       SHOW_TOAST(error?.message ?? '', 'error');
       console.log('error==>', error?.message)
     } finally {

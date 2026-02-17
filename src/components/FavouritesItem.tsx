@@ -27,11 +27,14 @@ function FavouritesItem(props: any) {
 
   return (
     <TouchableOpacity
-    onPress={() => {
-      onPressItem(item);
-    }}
-     style={[styles(theme).container, itemContainer]}>
-      <Image style={styles(theme).userImage} source={{ uri: item?.provider?.profile_picture_url }} />
+      onPress={() => {
+        onPressItem(item);
+      }}
+      style={[styles(theme).container, itemContainer]}>
+      {item?.provider?.profile_picture_url ?
+        <Image style={styles(theme).userImage} source={{ uri: item?.provider?.profile_picture_url }} />
+        :
+        <Image style={styles(theme).userImage} source={IMAGES.user_placeholder} />}
       <TouchableOpacity
         style={styles(theme).likeImageContainer}
         onPress={() => {
@@ -42,6 +45,7 @@ function FavouritesItem(props: any) {
       <Text
         size={getScaleSize(18)}
         font={FONTS.Lato.SemiBold}
+        numberOfLines={1}
         color={theme._323232}>
         {item?.provider?.full_name ?? '-'}
       </Text>
@@ -93,7 +97,7 @@ const styles = (theme: ThemeContextType['theme']) =>
     likeImage: {
       height: getScaleSize(20),
       width: getScaleSize(20),
-      
+
     },
     starImage: {
       height: getScaleSize(16),

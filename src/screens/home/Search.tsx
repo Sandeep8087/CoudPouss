@@ -101,7 +101,10 @@ export default function Search(props: any) {
                 </View>
                 <FlatList
                     data={searchData?.services ?? []}
-                    contentContainerStyle={{ paddingBottom: getScaleSize(50) }}
+                    contentContainerStyle={{
+                        paddingBottom: getScaleSize(50),
+                        flexGrow: 1,
+                    }}
                     showsVerticalScrollIndicator={false}
                     keyExtractor={(item: any, index: number) => index.toString()}
                     renderItem={({ item, index }) => (
@@ -115,6 +118,19 @@ export default function Search(props: any) {
                             }}
                             item={item} />
                     )}
+                    ListEmptyComponent={() =>
+                        !isLoading && searchDebouncedText ? (
+                            <View style={styles(theme).emptyContainer}>
+                                <Text
+                                    size={getScaleSize(16)}
+                                    font={FONTS.Lato.Regular}
+                                    color={theme._565656}
+                                >
+                                   {STRING.no_results_found}
+                                </Text>
+                            </View>
+                        ) : null
+                    }
                 />
             </View>
             {isLoading && <ProgressView />}
@@ -159,5 +175,10 @@ const styles = (theme: ThemeContextType['theme']) =>
             backgroundColor: theme.primary,
             marginRight: getScaleSize(8),
             paddingHorizontal: getScaleSize(10),
+        },
+        emptyContainer: {
+            flex: 1,
+            justifyContent: 'center',
+            alignItems: 'center',
         },
     });
