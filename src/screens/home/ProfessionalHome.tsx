@@ -63,7 +63,7 @@ export default function ProfessionalHome(props: any) {
 
   const skipSubscription = props?.route?.params?.skipSubscription;
 
-  console.log('skipSubscription',skipSubscription)
+  console.log('skipSubscription', skipSubscription)
 
   const STRING = useString();
 
@@ -215,15 +215,28 @@ export default function ProfessionalHome(props: any) {
               style={styles(theme).profilePic}
               source={{ uri: profile?.user?.profile_photo_url }}
             />
-          ) : (
-            <Image
-              style={styles(theme).profilePic}
-              source={IMAGES.user_placeholder}
-            />
-          )}
+          ) : <>
+            {profile?.user?.first_name && profile?.user?.last_name ? (
+              <View style={styles(theme).EmptyProfileContainer}>
+                <Text size={getScaleSize(12)}
+                  font={FONTS.Lato.Medium}
+                  align="center"
+                  color={theme._262B43E5}>
+                  {(profile?.user?.first_name?.charAt(0) ?? '').toUpperCase() +
+                    (profile?.user?.last_name?.charAt(0) ?? '').toUpperCase()}
+                </Text>
+              </View>
+            ) : (
+              <Image
+                style={styles(theme).profilePic}
+                source={IMAGES.user_placeholder}
+              />
+            )}
+          </>
+          }
         </TouchableOpacity>
       </View>
-       {/* <View style={styles(theme).searchView}>
+      {/* <View style={styles(theme).searchView}>
         <SearchComponent
           value={searchText}
           onChangeText={setSearchText}
@@ -482,6 +495,15 @@ const styles = (theme: ThemeContextType['theme']) =>
       width: getScaleSize(34),
       borderRadius: getScaleSize(17),
       alignSelf: 'center',
+    },
+    EmptyProfileContainer: {
+      width: getScaleSize(34),
+      height: getScaleSize(34),
+      backgroundColor: theme._F0EFF0,
+      borderRadius: getScaleSize(34),
+      alignSelf: 'center',
+      alignItems: 'center',
+      justifyContent: 'center',
     },
     searchView: {
       marginTop: getScaleSize(23),

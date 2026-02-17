@@ -76,10 +76,24 @@ const HomeHeader = (props: any) => {
               source={{ uri: profile?.user?.profile_photo_url }}
             />
             :
-            <Image
-              style={styles(theme).placeholderImage}
-              source={IMAGES.user_placeholder}
-            />
+          <>
+            {profile?.user?.first_name && profile?.user?.last_name ? (
+              <View style={styles(theme).EmptyProfileContainer}>
+                <Text size={getScaleSize(12)}
+                  font={FONTS.Lato.Medium}
+                  align="center"
+                  color={theme._262B43E5}>
+                  {(profile?.user?.first_name?.charAt(0) ?? '').toUpperCase() +
+                    (profile?.user?.last_name?.charAt(0) ?? '').toUpperCase()}
+                </Text>
+              </View>
+            ) : (
+              <Image
+                style={styles(theme).placeholderImage}
+                source={IMAGES.user_placeholder}
+              />
+            )}
+          </>
           }
         </TouchableOpacity>
       </View>
@@ -228,6 +242,15 @@ const styles = (theme: ThemeContextType['theme']) =>
       borderRadius: getScaleSize(17),
       alignSelf: 'center'
     },
+    EmptyProfileContainer: {
+      width: getScaleSize(34),
+      height: getScaleSize(34),
+      backgroundColor: theme._F0EFF0,
+      borderRadius: getScaleSize(34),
+      alignSelf: 'center',
+      alignItems: 'center',
+      justifyContent: 'center',
+  },
     bottomText: {
       flexDirection: 'row',
       marginLeft: getScaleSize(16),

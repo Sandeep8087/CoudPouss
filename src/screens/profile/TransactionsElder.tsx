@@ -71,17 +71,20 @@ export default function TransactionsElder(props: any) {
             const endDate = customEndDate ?? requestData.endDate;
             const selectedStatus = customStatus ?? requestData.selectedStatus;
 
-            console.log('selectedStatus==>', selectedStatus);
-
-            const result: any = await API.Instance.get(
-                API.API_ROUTES.fetchTransactions +
-                `?section=transactions` +
-                `&start_date=${startDate ? moment(startDate).format('YYYY-MM-DD') : ''}` +
-                `&end_date=${endDate ? moment(endDate).format('YYYY-MM-DD') : ''}` +
-                `&status=${selectedStatus?.value ?? ''}` +
-                `&page=${page}` +
-                `&limit=${PAGE_SIZE}`
-            );
+            let url = API.API_ROUTES.fetchTransactions;
+            url += `?section=transactions`;
+            if (selectedStatus?.value) {
+                url += `&status=${selectedStatus?.value ?? ''}`;
+            }
+            if (startDate) {
+                url += `&start_date=${startDate ? moment(startDate).format('YYYY-MM-DD') : ''}`;
+            }
+            if (endDate) {
+                url += `&end_date=${endDate ? moment(endDate).format('YYYY-MM-DD') : ''}`;
+            }
+            url += `&page=${page}`;
+            url += `&limit=${PAGE_SIZE}`;
+            const result: any = await API.Instance.get(url);
 
             if (result?.status) {
                 const apiMonths = result?.data?.data?.months ?? [];
@@ -173,21 +176,16 @@ export default function TransactionsElder(props: any) {
     const onDateApply = (start: any, end: any) => {
         setOpen(false);
 
+        const isCleared = start === null && end === null;
+
         setRequestData((prev: any) => ({
             ...prev,
-            startDate: start,
-            endDate: end,
+            startDate: isCleared ? null : start,
+            endDate: isCleared ? null : end,
             page: 1,
             hasMore: true,
             transactions: [],
         }));
-
-        fetchTransactions({
-            reset: true,
-            customStartDate: start,
-            customEndDate: end,
-            customPage: 1,
-        });
     };
 
     return (
@@ -282,7 +280,7 @@ export default function TransactionsElder(props: any) {
                                 </Text>
                             </View>
                             <Text size={24} font={FONTS.Lato.Bold} color={theme._2C6587}>
-                                {section.title.total}
+                                {parseFloat(section.title.total).toFixed(2)}
                             </Text>
                         </View>
                     )

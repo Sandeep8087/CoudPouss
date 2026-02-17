@@ -47,8 +47,6 @@ export default function Notification(props: any) {
 
   const { userType } = useContext<any>(AuthContext);
 
-  const list = ['accept', 'service_started', 'task_status', 'task_details'];
-
   const [isLoading, setLoading] = useState(false);
   const [notification, setNotification] = useState<any[]>([]);
   const [page, setPage] = useState(1);
@@ -100,6 +98,163 @@ export default function Notification(props: any) {
     }
   }
 
+  function renderItem() {
+    if (notification?.length > 0) {
+      return (
+        <FlatList
+          data={notification}
+          keyExtractor={(item: any, index: number) => index.toString()}
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={{ paddingBottom: getScaleSize(50) }}
+          onEndReached={loadMore}
+          onEndReachedThreshold={0.1}
+          ListFooterComponent={
+            isLoading ? <ActivityIndicator size="large" color={theme.primary} style={{ margin: 20 }} /> : null
+          }
+          renderItem={({ item, index }) => {
+            return (
+              <View style={styles(theme).notificationContainer}>
+                <View style={{ flexDirection: 'row' }}>
+                  <Image
+                    style={styles(theme).profilePic}
+                    source={IMAGES.user_placeholder}
+                  />
+                  <View style={{ flex: 1.0 }}>
+                    {/* <Text
+                    style={{ marginLeft: getScaleSize(16) }}
+                    size={getScaleSize(18)}
+                    font={FONTS.Lato.Bold}
+                    color={theme._424242}>
+                    {item?.title ?? ''}
+                  </Text> */}
+                    <Text
+                      style={{ marginLeft: getScaleSize(16) }}
+                      size={getScaleSize(16)}
+                      font={FONTS.Lato.Medium}
+                      color={'#595959'}>
+                      {item?.body ?? ''}
+                    </Text>
+                    <View
+                      style={{
+                        flexDirection: 'row',
+                        marginLeft: getScaleSize(16),
+                        marginTop: getScaleSize(4),
+                      }}>
+                      <Text
+                        style={{ flex: 1.0 }}
+                        size={getScaleSize(12)}
+                        font={FONTS.Lato.Regular}
+                        color={'#818285'}>
+                        {moment(item?.sent_at).format('ddd, DD MMM YYYY - hh:mm A') ?? ''}
+                      </Text>
+                      <Text
+                        size={getScaleSize(12)}
+                        font={FONTS.Lato.Regular}
+                        color={'#818285'}>
+                        {moment(item?.sent_at).fromNow() ?? ''}
+                      </Text>
+                    </View>
+                  </View>
+                </View>
+                {item?.item === 'accept' && (
+                  <View style={styles(theme).buttonContainer}>
+                    <TouchableOpacity
+                      style={styles(theme).nextButtonContainer}
+                      activeOpacity={1}
+                      onPress={() => { }}>
+                      <Text
+                        size={getScaleSize(14)}
+                        font={FONTS.Lato.Medium}
+                        color={theme.white}
+                        style={{ alignSelf: 'center' }}>
+                        {STRING.Accept}
+                      </Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                      style={styles(theme).backButtonContainer}
+                      activeOpacity={1}
+                      onPress={() => { }}>
+                      <Text
+                        size={getScaleSize(14)}
+                        font={FONTS.Lato.Medium}
+                        color={'#ACADAD'}
+                        style={{ alignSelf: 'center' }}>
+                        {'Decline'}
+                      </Text>
+                    </TouchableOpacity>
+                  </View>
+                )}
+                {item?.item === 'task_status' && (
+                  <View style={styles(theme).buttonContainer}>
+                    <TouchableOpacity
+                      style={styles(theme).nextButtonContainer}
+                      activeOpacity={1}
+                      onPress={() => {
+                        if (userType === 'service_provider') {
+                          props.navigation.navigate(SCREENS.ProfessionalTaskStatus.identifier);
+                        } else {
+                          props.navigation.navigate(
+                            SCREENS.TaskStatus.identifier,
+                          );
+                        }
+                      }}>
+                      <Text
+                        size={getScaleSize(14)}
+                        font={FONTS.Lato.Medium}
+                        color={theme.white}
+                        style={{ alignSelf: 'center' }}>
+                        {'Check Task Status'}
+                      </Text>
+                    </TouchableOpacity>
+                  </View>
+                )}
+                {item?.data?.event === 'SERVICE_RENEGOTIATION_ACCEPTED'
+                  || item?.data?.event === 'SERVICE_COMPLETED'
+                  || item?.data?.event === 'QUOTE_ACCEPTED'
+                  && (
+                    <View style={styles(theme).buttonContainer}>
+                      <TouchableOpacity
+                        style={styles(theme).nextButtonContainer}
+                        activeOpacity={1}
+                        onPress={() => {
+
+                        }}>
+                        <Text
+                          size={getScaleSize(14)}
+                          font={FONTS.Lato.Medium}
+                          color={theme.white}
+                          style={{ alignSelf: 'center' }}>
+                          {'Task Details'}
+                        </Text>
+                      </TouchableOpacity>
+                    </View>
+                  )}
+              </View>
+            );
+          }}
+        />
+      )
+    }else if(isLoading){
+      return (
+        <View style={styles(theme).emptyContainer}>
+          <ActivityIndicator size="large" color={theme.primary} style={{ margin: 20 }} />
+        </View>
+      )
+    } else {
+      return (
+        <View style={styles(theme).emptyContainer}>
+          <Text
+            size={getScaleSize(16)}
+            font={FONTS.Lato.Medium}
+            align="center"
+            color={theme._939393}>
+            {STRING.no_data_found}
+          </Text>
+        </View>
+      )
+    }
+  }
+
   return (
     <View style={styles(theme).container}>
       <Header
@@ -108,138 +263,7 @@ export default function Notification(props: any) {
         }}
         screenName={'Notifications'}
       />
-      <FlatList
-        data={notification}
-        keyExtractor={(item: any, index: number) => index.toString()}
-        showsVerticalScrollIndicator={false}
-        contentContainerStyle={{ paddingBottom: getScaleSize(50) }}
-        onEndReached={loadMore}
-        onEndReachedThreshold={0.1}
-        ListFooterComponent={
-          isLoading ? <ActivityIndicator size="large" color={theme.primary} style={{ margin: 20 }} /> : null
-        }
-        renderItem={({ item, index }) => {
-          return (
-            <View style={styles(theme).notificationContainer}>
-              <View style={{ flexDirection: 'row' }}>
-                <Image
-                  style={styles(theme).profilePic}
-                  source={IMAGES.user_placeholder}
-                />
-                <View style={{ flex: 1.0 }}>
-                  {/* <Text
-                    style={{ marginLeft: getScaleSize(16) }}
-                    size={getScaleSize(18)}
-                    font={FONTS.Lato.Bold}
-                    color={theme._424242}>
-                    {item?.title ?? ''}
-                  </Text> */}
-                  <Text
-                    style={{ marginLeft: getScaleSize(16) }}
-                    size={getScaleSize(16)}
-                    font={FONTS.Lato.Medium}
-                    color={'#595959'}>
-                    {item?.body ?? ''}
-                  </Text>
-                  <View
-                    style={{
-                      flexDirection: 'row',
-                      marginLeft: getScaleSize(16),
-                      marginTop: getScaleSize(4),
-                    }}>
-                    <Text
-                      style={{ flex: 1.0 }}
-                      size={getScaleSize(12)}
-                      font={FONTS.Lato.Regular}
-                      color={'#818285'}>
-                      {moment(item?.sent_at).format('ddd, DD MMM YYYY - hh:mm A') ?? ''}
-                    </Text>
-                    <Text
-                      size={getScaleSize(12)}
-                      font={FONTS.Lato.Regular}
-                      color={'#818285'}>
-                      {moment(item?.sent_at).fromNow() ?? ''}
-                    </Text>
-                  </View>
-                </View>
-              </View>
-              {item?.item === 'accept' && (
-                <View style={styles(theme).buttonContainer}>
-                  <TouchableOpacity
-                    style={styles(theme).nextButtonContainer}
-                    activeOpacity={1}
-                    onPress={() => { }}>
-                    <Text
-                      size={getScaleSize(14)}
-                      font={FONTS.Lato.Medium}
-                      color={theme.white}
-                      style={{ alignSelf: 'center' }}>
-                      {STRING.Accept}
-                    </Text>
-                  </TouchableOpacity>
-                  <TouchableOpacity
-                    style={styles(theme).backButtonContainer}
-                    activeOpacity={1}
-                    onPress={() => { }}>
-                    <Text
-                      size={getScaleSize(14)}
-                      font={FONTS.Lato.Medium}
-                      color={'#ACADAD'}
-                      style={{ alignSelf: 'center' }}>
-                      {'Decline'}
-                    </Text>
-                  </TouchableOpacity>
-                </View>
-              )}
-              {item?.item === 'task_status' && (
-                <View style={styles(theme).buttonContainer}>
-                  <TouchableOpacity
-                    style={styles(theme).nextButtonContainer}
-                    activeOpacity={1}
-                    onPress={() => {
-                      if (userType === 'service_provider') {
-                        props.navigation.navigate(SCREENS.ProfessionalTaskStatus.identifier);
-                      } else {
-                        props.navigation.navigate(
-                          SCREENS.TaskStatus.identifier,
-                        );
-                      }
-                    }}>
-                    <Text
-                      size={getScaleSize(14)}
-                      font={FONTS.Lato.Medium}
-                      color={theme.white}
-                      style={{ alignSelf: 'center' }}>
-                      {'Check Task Status'}
-                    </Text>
-                  </TouchableOpacity>
-                </View>
-              )}
-              {item?.data?.event === 'SERVICE_RENEGOTIATION_ACCEPTED'
-                || item?.data?.event === 'SERVICE_COMPLETED'
-                || item?.data?.event === 'QUOTE_ACCEPTED'
-                && (
-                  <View style={styles(theme).buttonContainer}>
-                    <TouchableOpacity
-                      style={styles(theme).nextButtonContainer}
-                      activeOpacity={1}
-                      onPress={() => {
-
-                      }}>
-                      <Text
-                        size={getScaleSize(14)}
-                        font={FONTS.Lato.Medium}
-                        color={theme.white}
-                        style={{ alignSelf: 'center' }}>
-                        {'Task Details'}
-                      </Text>
-                    </TouchableOpacity>
-                  </View>
-                )}
-            </View>
-          );
-        }}
-      />
+      {renderItem()}
     </View>
   );
 }
@@ -283,4 +307,9 @@ const styles = (theme: ThemeContextType['theme']) =>
       marginRight: getScaleSize(8),
       paddingHorizontal: getScaleSize(10),
     },
+    emptyContainer: {
+      flex: 1.0,
+      justifyContent: 'center',
+      alignItems: 'center',
+    }
   });

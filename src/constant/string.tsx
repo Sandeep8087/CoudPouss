@@ -339,7 +339,7 @@ export const useString = () => {
     are_you_sure_you_want_to_delete_your_account:
       'Are you sure you want to\ndelete your account?',
     delete_account_message:
-      'This action cannot be reversed once your account is deleted. All of your data will be permanently erased. If you proceed, there will be no refunds issued.',
+      'This action cannot be reversed once your account is deleted.\nAll of your data will be permanently erased. If you proceed, there will be\nno refunds issued.',
     recent_works_reviews: 'Recent works reviews',
     read_more: 'Read More',
     show_less: 'Show Less',

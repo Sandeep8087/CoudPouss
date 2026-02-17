@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useState } from 'react';
+import React, { useContext, useEffect, useRef, useState } from 'react';
 import {
     View,
     StyleSheet,
@@ -26,18 +26,24 @@ import {
     Text,
     Button,
     SelectCountrySheet,
+    BottomSheet,
 } from '../../components';
 
 //PACKAGES
 import { launchImageLibrary } from 'react-native-image-picker';
 import { API } from '../../api';
+import { SCREENS } from '..';
+import { CommonActions } from '@react-navigation/native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export default function EditProfile(props: any) {
 
     const STRING = useString();
     const { theme } = useContext<any>(ThemeContext);
-    const { profile, fetchProfile } = useContext(AuthContext)
+    const { profile, fetchProfile, setUser, setUserType } = useContext(AuthContext)
     const inputHeight = Platform.OS == 'ios' ? getScaleSize(56) : getScaleSize(56)
+
+    const bottomSheetRef = useRef<any>(null);
 
     const [isLoading, setLoading] = useState(false);
     const [bio, setBio] = useState('')
@@ -189,9 +195,6 @@ export default function EditProfile(props: any) {
             setLoading(true);
             const result = await API.Instance.patch(API.API_ROUTES.editProfile, params);
             setLoading(false);
-
-            console.log('EDIT PROFILE RES', JSON.stringify(result))
-
             if (result?.status) {
                 SHOW_TOAST(STRING.profile_updated_successfully, 'success')
                 props.navigation.goBack();
@@ -333,12 +336,43 @@ export default function EditProfile(props: any) {
         return "";
     };
 
+    async function onDeleteProfile() {
+        try {
+            setLoading(true);
+            const result: any = await API.Instance.delete(API.API_ROUTES.deleteProfile);
+            setLoading(false);
+            if (result?.status) {
+                setUser(null);
+                setUserType(null);
+                await AsyncStorage.clear()
+                setTimeout(() => {
+                    setLoading(false)
+
+                    props.navigation.dispatch(CommonActions.reset({
+                        index: 0,
+                        routes: [{
+                            name: SCREENS.Login.identifier
+                        }]
+                    }))
+                }, 500);
+            }
+            else {
+                SHOW_TOAST(result?.data?.message, 'error')
+                console.log('ERR', result?.data?.message)
+            }
+        } catch (error: any) {
+            SHOW_TOAST(error?.message ?? '', 'error');
+        }
+    }
+
     return (
         <View style={styles(theme).container}>
             <Header
                 onBack={() => {
                     props.navigation.goBack();
                 }}
+                rightIcon={{ icon: IMAGES.ic_delete_profile, title: STRING.delete_profile }}
+                onPress={() => { bottomSheetRef.current.open() }}
                 screenName={STRING.edit_profile}
             />
             <ScrollView
@@ -589,6 +623,17 @@ export default function EditProfile(props: any) {
                 style={styles(theme).updateButton}
                 onPress={() => {
                     onEditUserProfile()
+                }}
+            />
+            <BottomSheet
+                bottomSheetRef={bottomSheetRef}
+                height={getScaleSize(350)}
+                isInfo={true}
+                title={STRING.are_you_sure_you_want_to_delete_your_account}
+                description={STRING.delete_account_message}
+                buttonTitle={STRING.delete_profile}
+                onPressButton={() => {
+                    onDeleteProfile()
                 }}
             />
             <SelectCountrySheet

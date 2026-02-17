@@ -39,7 +39,7 @@ export default function TransactionItem(props: any) {
             </View>
             <View style={styles(theme).transactionStatusContainer}>
                 <Text size={getScaleSize(16)} font={FONTS.Lato.SemiBold} color={theme._787878}>
-                    {item?.amount ? `€${item?.amount}` : '€0'}
+                    {item?.amount ? `€${parseFloat(item?.amount).toFixed(2)}` : '€0'}
                 </Text>
                 <Text
                     size={getScaleSize(16)}

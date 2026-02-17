@@ -71,14 +71,20 @@ export default function Transactions(props: any) {
             const endDate = customEndDate ?? requestData.endDate;
             const selectedStatus = customStatus ?? requestData.selectedStatus;
 
-            const result: any = await API.Instance.get(
-                API.API_ROUTES.getProviderTransactions +
-                `?start_date=${startDate ? moment(startDate).format('YYYY-MM-DD') : ''}` +
-                `&end_date=${endDate ? moment(endDate).format('YYYY-MM-DD') : ''}` +
-                `&status=${selectedStatus?.value ?? ''}` +
-                `&page=${page}` +
-                `&limit=${PAGE_SIZE}`
-            );
+            let url = API.API_ROUTES.getProviderTransactions;
+            url += `?section=transactions`;
+            if (selectedStatus?.value) {
+                url += `&status=${selectedStatus?.value ?? ''}`;
+            }
+            if (startDate) {
+                url += `&start_date=${startDate ? moment(startDate).format('YYYY-MM-DD') : ''}`;
+            }
+            if (endDate) {
+                url += `&end_date=${endDate ? moment(endDate).format('YYYY-MM-DD') : ''}`;
+            }
+            url += `&page=${page}`;
+            url += `&limit=${PAGE_SIZE}`;
+            const result: any = await API.Instance.get(url);
 
             if (result?.status) {
                 const apiMonths = result?.data?.data?.months ?? [];

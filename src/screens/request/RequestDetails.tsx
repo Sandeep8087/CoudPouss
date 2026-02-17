@@ -222,9 +222,12 @@ export default function RequestDetails(props: any) {
         params,
       );
       if (result.status) {
-        const STRIPE_URL = result?.data?.data?.checkout_url ?? '';
-        paymentRef.current.close();
-        openStripeCheckout(STRIPE_URL);
+        // const STRIPE_URL = result?.data?.data?.checkout_url ?? '';
+        // paymentRef.current.close();
+        // openStripeCheckout(STRIPE_URL);
+        props.navigation.navigate(SCREENS.ServiceConfirmed.identifier, {
+          serviceId: serviceDetails?.service_id,
+        });
       } else {
         SHOW_TOAST(result?.data?.message ?? '', 'error');
       }

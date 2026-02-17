@@ -38,6 +38,8 @@ export default function Request(props: any) {
   const STRING = useString();
   const { theme } = useContext<any>(ThemeContext);
 
+  const flatListRef = useRef<FlatList>(null);
+
   const [requestData, setRequestData] = useState<any>({
     selectedFilter: { id: '1', title: 'All', filter: 'all' },
     allRequests: [],
@@ -233,6 +235,7 @@ export default function Request(props: any) {
       </View>
       <View style={{ marginVertical: getScaleSize(18) }}>
         <FlatList
+          ref={flatListRef}
           data={data}
           keyExtractor={item => item.id}
           ListHeaderComponent={() => {
@@ -263,6 +266,11 @@ export default function Request(props: any) {
                   allRequests: [],
                   isLoading: true,
                 }));
+                flatListRef.current?.scrollToIndex({
+                  index,
+                  animated: true,
+                  viewPosition: 0.5, // 👈 centers item
+                });
               }}>
               <Text
                 size={getScaleSize(16)}

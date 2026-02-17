@@ -83,9 +83,10 @@ export default function ServiceConfirmed(props: any) {
           props?.navigation?.dispatch(
             CommonActions.reset({
               index: 0,
-              routes: [{ name: SCREENS.BottomBar.identifier,
+              routes: [{
+                name: SCREENS.BottomBar.identifier,
                 params: { isValidationService: true },
-               }
+              }
               ],
             }),
           );
@@ -154,7 +155,7 @@ export default function ServiceConfirmed(props: any) {
               ]}>
               <View style={styles(theme).itemView}>
                 {paymentDetails?.category_name ?
-                <Image
+                  <Image
                     style={[styles(theme).informationIcon, { tintColor: theme._1A3D51 }]}
                     source={arrayIcons[paymentDetails?.category_name?.toLowerCase() as keyof typeof arrayIcons] ?? arrayIcons['diy'] as any}
                     resizeMode='cover'
@@ -187,7 +188,7 @@ export default function ServiceConfirmed(props: any) {
                   numberOfLines={4}
                   font={FONTS.Lato.Medium}
                   color={theme.primary}>
-                  {paymentDetails?.elder_address ?? '-'}
+                  {paymentDetails?.service_address ?? '-'}
                 </Text>
               </View>
             </View>
@@ -286,11 +287,12 @@ export default function ServiceConfirmed(props: any) {
                 source={IMAGES.user_placeholder}
               />
             }
-            <View style={{ flex: 1.0 }}>
-              <View style={styles(theme).flexRow}>
+            <View style={{ flex: 1.0,  }}>
+              <View style={[styles(theme).flexRow, { flex: 1.0, maxWidth: '85%' }]}>
                 <Text
-                  style={{ alignSelf: 'center', marginLeft: getScaleSize(16) }}
-                  size={getScaleSize(20)}
+                  style={{ alignSelf: 'center', }}
+                  size={getScaleSize(18)}
+                  numberOfLines={1}
                   font={FONTS.Lato.SemiBold}
                   color={'#0F232F'}>
                   {paymentDetails?.provider_name ?? '-'}
@@ -298,32 +300,32 @@ export default function ServiceConfirmed(props: any) {
                 {paymentDetails?.provider_is_verified &&
                   <Image
                     style={{
-                      height: getScaleSize(25),
-                      width: getScaleSize(25),
-                      marginLeft: getScaleSize(6),
+                      height: getScaleSize(20),
+                      width: getScaleSize(20),
+                      marginLeft: getScaleSize(4),
                     }}
                     source={IMAGES.verify}
                   />
                 }
               </View>
-              <View style={[styles(theme).flexRow, { marginLeft: getScaleSize(16), marginTop: getScaleSize(6) }]}>
+              <View style={[styles(theme).flexRow, { marginTop: getScaleSize(4) }]}>
                 <Image source={IMAGES.ic_phone} style={styles(theme).phoneIcon} />
                 <Text
                   style={{}}
                   size={getScaleSize(12)}
                   font={FONTS.Lato.Medium}
-                  color={'#0F232F'}>
+                  color={theme._595959}>
                   {paymentDetails?.provider_phone ?? '-'}
                 </Text>
               </View>
-
             </View>
-            <View style={{ flex: 1.0 }} />
             <TouchableOpacity
               activeOpacity={1}
               style={[styles(theme).newButton, { marginLeft: getScaleSize(6) }]}
               onPress={() => {
-                props.navigation.navigate(SCREENS.OtherUserProfile.identifier);
+                props.navigation.navigate(SCREENS.OtherUserProfile.identifier, {
+                  item: paymentDetails?.provider_id,
+                });
               }}>
               <Text
                 size={getScaleSize(14)}
@@ -405,15 +407,17 @@ const styles = (theme: ThemeContextType['theme']) =>
       height: getScaleSize(56),
       width: getScaleSize(56),
       borderRadius: getScaleSize(28),
+      marginRight: getScaleSize(12)
     },
     newButton: {
       // flex: 1.0,
       backgroundColor: theme.primary,
       borderRadius: 8,
-      height: getScaleSize(38),
+      paddingVertical: getScaleSize(10),
+      // height: getScaleSize(38),
       justifyContent: 'center',
       alignItems: 'center',
-      paddingHorizontal: getScaleSize(24),
+      paddingHorizontal: getScaleSize(14),
     },
     flexRow: {
       flexDirection: 'row',
