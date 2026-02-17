@@ -265,10 +265,17 @@ export default function OtherUserProfile(props: any) {
               showsHorizontalScrollIndicator={false}
               renderItem={({ item, index }) => {
                 return (
-                  <Image
-                    style={[styles(theme).photosView]}
-                    source={{ uri: item }}
-                  />
+                  <TouchableOpacity onPress={() => {
+                    props.navigation.navigate(SCREENS.WebViewScreen.identifier, {
+                      url: item,
+                    })
+                  }}>
+                    <Image
+                      style={[styles(theme).photosView]}
+                      resizeMode='cover'
+                      source={{ uri: item }}
+                    />
+                  </TouchableOpacity>
                 );
               }}
             />

@@ -36,7 +36,7 @@ export default function MyProfile(props: any) {
 
     const { theme } = useContext<any>(ThemeContext);
 
-    const { profile, fetchProfile } = useContext(AuthContext)
+    const { profile, fetchProfile, setUser, setUserType } = useContext(AuthContext)
 
     const bottomSheetRef = useRef<any>(null);
     const inputHeight = Platform.OS == 'ios' ? getScaleSize(56) : getScaleSize(56)
@@ -266,13 +266,15 @@ export default function MyProfile(props: any) {
 
         try {
             setLoading(true);
-            const result: any = await API.Instance.get(API.API_ROUTES.deleteProfile);
+            const result: any = await API.Instance.delete(API.API_ROUTES.deleteProfile);
             setLoading(false);
 
             console.log('DELETE PROFILE RES', JSON.stringify(result))
 
             if (result?.status) {
                 await AsyncStorage.clear()
+                setUser(null);
+                setUserType(null);
                 setTimeout(() => {
                     setLoading(false)
                     props.navigation.dispatch(CommonActions.reset({

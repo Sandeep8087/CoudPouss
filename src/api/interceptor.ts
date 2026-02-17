@@ -26,25 +26,25 @@ Instance.interceptors.request.use(
     async (config) => {
         const netState = await NetInfo.fetch();
 
-        if (!netState.isConnected) {
-            // ✅ Show Alert Only Once
-            if (!hasShownNoInternetAlert) {
-                // hasShownNoInternetAlert = true;
-                Alert.alert('No Internet', 'Please check your internet connection.');
-            }
+        // if (!netState.isConnected) {
+        //     // ✅ Show Alert Only Once
+        //     if (!hasShownNoInternetAlert) {
+        //         // hasShownNoInternetAlert = true;
+        //         // Alert.alert('No Internet', 'Please check your internet connection.');
+        //     }
 
-            return Promise.reject({
-                message: 'No internet connection',
-                code: 503,
-                status: false,
-                data: null
-            });
-        } else {
-            // 🔄 Reset once internet is back
-            if (hasShownNoInternetAlert) {
-                hasShownNoInternetAlert = false;
-            }
-        }
+        //     return Promise.reject({
+        //         message: 'No internet connection',
+        //         code: 503,
+        //         status: false,
+        //         data: null
+        //     });
+        // } else {
+        //     // 🔄 Reset once internet is back
+        //     if (hasShownNoInternetAlert) {
+        //         hasShownNoInternetAlert = false;
+        //     }
+        // }
         if (!DISABLE_API_LOGS) {
             console.log(`Config Header ${JSON.stringify(config?.headers)}`)
             console.log(`Config Base URL ${config?.method} ${JSON.stringify(config?.baseURL)} ${JSON.stringify(config?.url)}`)

@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useState } from 'react';
+import React, { useContext, useEffect, useRef, useState } from 'react';
 import {
   View,
   StyleSheet,
@@ -57,6 +57,7 @@ export default function Assistance(props: any) {
 
   const scrollY = useSharedValue(0);
   const maxScrollOffset = getScaleSize(220);
+  const flatListRef = useRef<FlatList>(null);
 
   useEffect(() => {
     getCategoryData();
@@ -187,6 +188,7 @@ export default function Assistance(props: any) {
             {categoryList.length > 1 && (
               <View style={{ paddingBottom: getScaleSize(20), paddingTop: getScaleSize(20), backgroundColor: '#fff' }}>
                 <FlatList
+                  ref={flatListRef}
                   data={categoryList}
                   horizontal
                   showsHorizontalScrollIndicator={false}
@@ -214,6 +216,11 @@ export default function Assistance(props: any) {
                         onPress={() => {
                           setSearchText('');
                           setSelectedCategory(item);
+                          flatListRef.current?.scrollToIndex({
+                            index,
+                            animated: true,
+                            viewPosition: 0.5, // 👈 centers item
+                          });
                         }}>
                         <Image
                           resizeMode='cover'

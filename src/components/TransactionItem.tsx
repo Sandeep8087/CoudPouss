@@ -10,6 +10,18 @@ export default function TransactionItem(props: any) {
     const { theme } = useContext<any>(ThemeContext);
     const STRING = useString();
     const { item, itemContainer, key } = props;
+
+    function getStatus(status: any) {
+        if (status === 'SUCCESS') {
+            return theme._00B500;
+        } else if (status === 'FAILED') {
+            return theme._D32F2F;
+        } else if (status === 'PENDING') {
+            return theme._FFBB4E;
+        } else {
+            return theme._FFBB4E;
+        }
+    }
     return (
         <View key={key} style={[styles(theme).transactionItem, itemContainer]}>
             {item?.user?.profile_photo_url ? (
@@ -27,12 +39,12 @@ export default function TransactionItem(props: any) {
             </View>
             <View style={styles(theme).transactionStatusContainer}>
                 <Text size={getScaleSize(16)} font={FONTS.Lato.SemiBold} color={theme._787878}>
-                    {item?.amount ? `€${item?.amount}` : '€0'}
+                    {item?.amount ? `€${parseFloat(item?.amount).toFixed(2)}` : '€0'}
                 </Text>
-                <Text 
-                size={getScaleSize(16)} 
-                font={FONTS.Lato.SemiBold}
-                 color={theme._4CAF50}>
+                <Text
+                    size={getScaleSize(16)}
+                    font={FONTS.Lato.SemiBold}
+                    color={getStatus(item?.status)}>
                     {item?.status ?? ''}
                 </Text>
             </View>

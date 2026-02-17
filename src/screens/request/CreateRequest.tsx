@@ -90,8 +90,10 @@ export default function CreateRequest(props: any) {
   const [firstProductImageURL, setFirstProductImageURL] = useState<any>(null);
   const [secondProductImageURL, setSecondProductImageURL] = useState<any>(null);
   const [address, setAddress] = useState('');
-  const [addressError, setAddressError] = useState('');
-  const [descriptionError, setDescriptionError] = useState('');
+  const [addressError, setAddressError] = useState('')
+  const [descriptionError, setDescriptionError] = useState('')
+  const [firstImageError, setFirstImageError] = useState('')
+ 
 
   useEffect(() => {
     getAllCategories();
@@ -209,23 +211,25 @@ export default function CreateRequest(props: any) {
       const formData = new FormData();
 
       const isVideo = asset?.type?.startsWith('video');
-
+      console.log('isVideo', isVideo, asset)
       formData.append('file', {
-        uri: isVideo ? asset.thumbnailUri : asset.uri,
+        uri: isVideo ? asset.uri : asset.uri,
         name: isVideo
-          ? `video_thumb_${Date.now()}.jpg`
+          ? `video_thumb_${Date.now()}.mp4`
           : asset?.fileName || 'profile_image.jpg',
-        type: isVideo ? 'image/jpeg' : asset?.type || 'image/jpeg',
+        type: isVideo ? asset?.type : asset?.type || 'image/jpeg',
       });
       setLoading(true);
       const result = await API.Instance.post(API.API_ROUTES.uploadServiceRequestImage, formData, {
         headers: { 'Content-Type': 'multipart/form-data' }
       });
       if (result.status) {
-        if (type === 'first') setFirstImageURL(result?.data);
-        else if (type === 'second') setSecondImageURL(result?.data);
-        else if (type === 'firstProduct') setFirstProductImageURL(result?.data);
-        else if (type === 'secondProduct') setSecondProductImageURL(result?.data);
+        const file = result?.data?.files?.[0];
+        if (!file) return;
+        if (type === 'first') setFirstImageURL(file);
+        else if (type === 'second') setSecondImageURL(file);
+        else if (type === 'firstProduct') setFirstProductImageURL(file);
+        else if (type === 'secondProduct') setSecondProductImageURL(file);
       } else {
         SHOW_TOAST(result?.data?.message ?? '', 'error');
         if (type === 'first') setFirstImage(null);
@@ -267,7 +271,12 @@ export default function CreateRequest(props: any) {
         setSelectedProgress(4);
       }
     } else if (selectedProgress === 4) {
-      if (!address) {
+      if (!address && !firstImageURL && !description) {
+        setAddressError('Please enter an address');
+        setFirstImageError('Please upload a photo');
+        setDescriptionError('Please enter a description');
+        return;
+      } else if (!address) {
         setAddressError('Please enter an address');
         return;
       } else if (!firstImageURL) {
@@ -854,28 +863,22 @@ export default function CreateRequest(props: any) {
             color={theme._424242}>
             {STRING.EnterServicedescription}
           </Text>
-          <View style={styles(theme).inputContainer}>
+          <View style={[styles(theme).inputContainer, { borderColor: descriptionError ? theme._EF5350 : theme._D5D5D5, }]}>
             <TextInput
               style={styles(theme).textInput}
               value={description}
               onChangeText={(text: any) => {
-                // remove emojis
                 const noEmoji = text.replace(
                   /[\p{Extended_Pictographic}]/gu,
                   ''
                 );
-
-                // block HTML/script tags
                 const noHtml = noEmoji.replace(/<[^>]*>/g, '');
-
-                // max 500 chars
                 const trimmedToMax = noHtml.slice(0, 500);
-
                 setDescription(trimmedToMax);
                 setDescriptionError('');
               }}
               placeholder={STRING.Enterdescriptionhere}
-              placeholderTextColor="#999"
+              placeholderTextColor={theme._999999}
               multiline={true}
               numberOfLines={8}
               textAlignVertical="top"
@@ -900,10 +903,11 @@ export default function CreateRequest(props: any) {
           </Text>
           <View style={styles(theme).imageUploadContent}>
             <TouchableOpacity
-              style={[styles(theme).uploadButton, { marginRight: getScaleSize(9) }]}
+              style={[styles(theme).uploadButton, { marginRight: getScaleSize(9), borderColor: firstImageError ? theme._EF5350 : theme._818285, }]}
               activeOpacity={1}
               onPress={() => {
                 pickImage('first');
+                setFirstImageError('');
               }}>
               {firstImage ? (
                 <Image
@@ -928,9 +932,10 @@ export default function CreateRequest(props: any) {
               )}
             </TouchableOpacity>
             <TouchableOpacity
-              style={[styles(theme).uploadButton, { marginLeft: getScaleSize(9) }]}
+              style={[styles(theme).uploadButton, { marginLeft: getScaleSize(9), borderColor: firstImageError ? theme._EF5350 : theme._818285, }]}
               activeOpacity={1}
               onPress={() => {
+                setFirstImageError('');
                 pickImage('second');
               }}>
               {secondImage ? (
@@ -1000,8 +1005,11 @@ export default function CreateRequest(props: any) {
             inputColor={true}
             continerStyle={{ marginBottom: getScaleSize(22) }}
             value={productName}
-            onChangeText={text => {
-              setProductName(text.trim());
+            maxLength={50}
+            onChangeText={(text: any) => {
+              const filteredText = text.replace(/[^a-zA-Z0-9\-&.\(\)\s]/g, '')
+              setProductName(filteredText);
+              setProductNameError('');
             }}
             isError={productNameError}
           />
@@ -1010,8 +1018,8 @@ export default function CreateRequest(props: any) {
             placeholderTextColor={theme._939393}
             inputTitle={STRING.quantity}
             inputColor={true}
-            quantityIcon={true}
             keyboardType="number-pad"
+            quantityIcon={true}
             maxLength={7}
             continerStyle={{ marginBottom: getScaleSize(22) }}
             value={quantity.toString()}
@@ -1040,7 +1048,7 @@ export default function CreateRequest(props: any) {
           </Text>
           <View style={styles(theme).imageUploadContent}>
             <TouchableOpacity
-              style={[styles(theme).uploadButton, { marginRight: getScaleSize(9) }]}
+              style={[styles(theme).uploadButton, { marginRight: getScaleSize(9), borderColor: theme._818285, }]}
               activeOpacity={1}
               onPress={() => {
                 pickImage('firstProduct');
@@ -1068,7 +1076,7 @@ export default function CreateRequest(props: any) {
               )}
             </TouchableOpacity>
             <TouchableOpacity
-              style={[styles(theme).uploadButton, { marginLeft: getScaleSize(9) }]}
+              style={[styles(theme).uploadButton, { marginLeft: getScaleSize(9), borderColor: theme._818285, }]}
               activeOpacity={1}
               onPress={() => {
                 pickImage('secondProduct');
@@ -1406,7 +1414,7 @@ const styles = (theme: ThemeContextType['theme']) =>
     },
     inputContainer: {
       borderWidth: 1,
-      borderColor: theme._D5D5D5,
+
       borderRadius: getScaleSize(12),
       marginTop: getScaleSize(12),
     },
@@ -1445,7 +1453,7 @@ const styles = (theme: ThemeContextType['theme']) =>
       paddingVertical: getScaleSize(8),
       paddingHorizontal: getScaleSize(12),
       borderRadius: getScaleSize(18),
-      backgroundColor: '#FBFBFB',
+      backgroundColor: theme._FBFBFB,
       flexDirection: 'row',
     },
     nextImage: {
@@ -1454,7 +1462,7 @@ const styles = (theme: ThemeContextType['theme']) =>
     },
     categoryView: {
       height: getScaleSize(228),
-      backgroundColor: '#EAF0F3',
+      backgroundColor: theme._EAF0F3,
       borderRadius: getScaleSize(20),
       marginTop: getScaleSize(18),
     },
@@ -1472,7 +1480,7 @@ const styles = (theme: ThemeContextType['theme']) =>
       paddingVertical: getScaleSize(21),
       flexDirection: 'row',
       borderRadius: getScaleSize(16),
-      backgroundColor: '#FBFBFB',
+      backgroundColor: theme._FBFBFB,
       marginTop: getScaleSize(18),
     },
     itemView: {
@@ -1483,7 +1491,7 @@ const styles = (theme: ThemeContextType['theme']) =>
     },
     deviderView: {
       height: getScaleSize(1),
-      backgroundColor: '#D6D6D6',
+      backgroundColor: theme._D6D6D6,
       marginVertical: getScaleSize(18),
     },
     serviceDescriptionView: {
@@ -1520,7 +1528,7 @@ const styles = (theme: ThemeContextType['theme']) =>
     },
     deviderVerticalView: {
       height: '100%',
-      backgroundColor: '#D6D6D6',
+      backgroundColor: theme._D6D6D6,
       width: getScaleSize(1),
     },
   });
