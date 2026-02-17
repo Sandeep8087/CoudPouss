@@ -1,7 +1,8 @@
 import {IMAGES} from '../assets';
 import InAppBrowser from 'react-native-inappbrowser-reborn';
-import {Linking} from 'react-native';
+import {Dimensions, Linking} from 'react-native';
 import {PermissionsAndroid, Platform} from 'react-native';
+import { getScaleSize } from './scaleSize';
 
 export const formatDecimalInput = (
   text: string,
@@ -82,7 +83,6 @@ export const arrayIcons = {
   gardening: IMAGES.gardening,
 };
 
-
 export async function requestLocationPermission() {
   if (Platform.OS === 'ios') return true;
 
@@ -103,3 +103,7 @@ export async function requestLocationPermission() {
     return false;
   }
 }
+
+const SCREEN_WIDTH = Dimensions.get('window').width;
+const TABBAR_RATIO = getScaleSize(103) / getScaleSize(403);
+export const TABBAR_HEIGHT = SCREEN_WIDTH * TABBAR_RATIO;

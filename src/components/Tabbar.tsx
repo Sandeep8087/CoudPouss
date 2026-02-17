@@ -1,22 +1,24 @@
-import React, {useContext, useEffect} from 'react';
-import {Alert, Image, Linking, StyleSheet, TouchableOpacity, View} from 'react-native';
+import React, { useContext, useEffect } from 'react';
+import { Alert, Dimensions, Image, ImageBackground, Linking, StyleSheet, TouchableOpacity, View } from 'react-native';
 
 // CONSTANT & ASSETS
-import {getScaleSize, useString, Storage} from '../constant';
-import {IMAGES} from '../assets/images';
-import {FONTS} from '../assets';
-import {AuthContext, ThemeContext, ThemeContextType} from '../context';
+import { getScaleSize, useString, Storage, TABBAR_HEIGHT } from '../constant';
+import { IMAGES } from '../assets/images';
+import { FONTS } from '../assets';
+import { AuthContext, ThemeContext, ThemeContextType } from '../context';
 import Text from './Text';
-import {head} from 'lodash';
-import {EventRegister} from 'react-native-event-listeners';
-import {CommonActions} from '@react-navigation/native';
-import {SCREENS} from '../screens';
-import {SafeAreaView} from 'react-native-safe-area-context';
+import { head } from 'lodash';
+import { EventRegister } from 'react-native-event-listeners';
+import { CommonActions } from '@react-navigation/native';
+import { SCREENS } from '../screens';
+import { SafeAreaView } from 'react-native-safe-area-context';
+
+const SCREEN_WIDTH = Dimensions.get('window').width;
 
 function Tabbar(props: any) {
-  const {theme} = useContext<any>(ThemeContext);
+  const { theme } = useContext<any>(ThemeContext);
 
-  const {userType, setUser, setUserType} = useContext<any>(AuthContext);
+  const { userType, setUser, setUserType } = useContext<any>(AuthContext);
 
   useEffect(() => {
     const parseParams = (url: string) => {
@@ -60,7 +62,7 @@ function Tabbar(props: any) {
       }
     });
 
-    const handleUrl = ({url}: {url: string}) => {
+    const handleUrl = ({ url }: { url: string }) => {
       console.log('Deep link:', url);
       // ✅ PAYMENT SUCCESS
       if (url.startsWith('coudpouss://payment-success')) {
@@ -117,7 +119,7 @@ function Tabbar(props: any) {
     props.navigation.dispatch(
       CommonActions.reset({
         index: 0,
-        routes: [{name: SCREENS.Login.identifier}],
+        routes: [{ name: SCREENS.Login.identifier }],
       }),
     );
   }
@@ -157,7 +159,9 @@ function Tabbar(props: any) {
   }
 
   return (
-    <View style={styles(theme).mainView}>
+    <ImageBackground style={styles(theme).mainView}
+      resizeMode='contain'
+      source={IMAGES.ic_tab_bar}>
       <View style={styles(theme).tabContainer}>
         {props.state.routes.map((route: any, index: number) => {
           return (
@@ -173,14 +177,14 @@ function Tabbar(props: any) {
         })}
       </View>
       <SafeAreaView edges={['bottom']} />
-    </View>
+    </ImageBackground>
   );
 }
 
 const Item = (props: any) => {
-  const {theme} = useContext<any>(ThemeContext);
+  const { theme } = useContext<any>(ThemeContext);
 
-  const {userType} = useContext<any>(AuthContext);
+  const { userType } = useContext<any>(AuthContext);
 
   let images: any = [];
   let names: any = [];
@@ -215,7 +219,7 @@ const Item = (props: any) => {
         <View>
           {/*  */}
           {props?.selected ? (
-            <View style={{alignSelf: 'center'}}>
+            <View style={{ alignSelf: 'center' }}>
               <Image
                 style={
                   props.selected
@@ -227,7 +231,7 @@ const Item = (props: any) => {
                 source={images[props.index]}
               />
               <Text
-                style={{marginTop: getScaleSize(8)}}
+                style={{ marginTop: getScaleSize(8) }}
                 size={getScaleSize(14)}
                 font={FONTS.Lato.Bold}
                 color={theme.primary}
@@ -236,7 +240,7 @@ const Item = (props: any) => {
               </Text>
             </View>
           ) : (
-            <View style={{alignSelf: 'center'}}>
+            <View style={{ alignSelf: 'center' }}>
               <Image
                 style={
                   props.selected
@@ -247,7 +251,7 @@ const Item = (props: any) => {
                 source={images[props.index]}
               />
               <Text
-                style={{marginTop: getScaleSize(8)}}
+                style={{ marginTop: getScaleSize(8) }}
                 size={getScaleSize(12)}
                 font={FONTS.Lato.Medium}
                 color={'#E6E6E6'}
@@ -266,9 +270,9 @@ const Item = (props: any) => {
           onPress={() => {
             props.onPress(SCREENS.CreateRequest.identifier);
           }}
-          style={{alignSelf: 'center', marginTop: getScaleSize(-80)}}>
+          style={{ alignSelf: 'center', marginTop: getScaleSize(-80) }}>
           <Image
-            style={{height: getScaleSize(98), width: getScaleSize(98)}}
+            style={{ height: getScaleSize(98), width: getScaleSize(98) }}
             resizeMode="contain"
             source={IMAGES.plus}
           />
@@ -282,7 +286,7 @@ const Item = (props: any) => {
           <View>
             {/*  */}
             {props?.selected ? (
-              <View style={{alignSelf: 'center'}}>
+              <View style={{ alignSelf: 'center' }}>
                 <Image
                   style={
                     props.selected
@@ -294,7 +298,7 @@ const Item = (props: any) => {
                   source={images[props.index]}
                 />
                 <Text
-                  style={{marginTop: getScaleSize(8)}}
+                  style={{ marginTop: getScaleSize(8) }}
                   size={getScaleSize(14)}
                   font={FONTS.Lato.Bold}
                   color={theme.primary}
@@ -303,7 +307,7 @@ const Item = (props: any) => {
                 </Text>
               </View>
             ) : (
-              <View style={{alignSelf: 'center'}}>
+              <View style={{ alignSelf: 'center' }}>
                 <Image
                   style={
                     props.selected
@@ -314,7 +318,7 @@ const Item = (props: any) => {
                   source={images[props.index]}
                 />
                 <Text
-                  style={{marginTop: getScaleSize(8)}}
+                  style={{ marginTop: getScaleSize(8) }}
                   size={getScaleSize(12)}
                   font={FONTS.Lato.Medium}
                   color={'#E6E6E6'}
@@ -333,14 +337,18 @@ const Item = (props: any) => {
 const styles = (theme: ThemeContextType['theme']) =>
   StyleSheet.create({
     mainView: {
-      backgroundColor: theme.white,
-      borderTopLeftRadius: getScaleSize(20),
-      borderTopRightRadius: getScaleSize(20),
-      elevation: 2,
+      width: SCREEN_WIDTH,
+      height: TABBAR_HEIGHT,
+      alignSelf: 'center',
+      position: 'absolute',
+      bottom: 0,
+      left: 0,
+      right: 0,
     },
     tabContainer: {
       flexDirection: 'row',
-      height: getScaleSize(96),
+      height: TABBAR_HEIGHT,
+      alignItems: 'center',
     },
     itemContainer: {
       flex: 1.0,

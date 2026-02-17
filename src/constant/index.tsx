@@ -6,6 +6,7 @@ import {
   openStripeCheckout,
   arrayIcons,
   requestLocationPermission,
+  TABBAR_HEIGHT
 } from './utils';
 import {Storage} from './storage';
 import {REGEX} from './regex';
@@ -21,4 +22,5 @@ export {
   formatDecimalInput,
   openStripeCheckout,
   requestLocationPermission,
+  TABBAR_HEIGHT
 };

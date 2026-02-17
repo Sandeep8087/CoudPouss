@@ -38,6 +38,9 @@ function RequestItem(props: any) {
     } else if (status === 'cancelled') {
       return 'Cancelled';
     }
+    else if (status === 'expired') {
+      return 'Expired'
+    }
   }
 
   return (

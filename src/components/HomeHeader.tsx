@@ -44,13 +44,10 @@ const HomeHeader = (props: any) => {
       <View style={styles(theme).headerView}>
         <View style={{ flex: 1.0, marginRight: getScaleSize(16) }}>
           <Text
-            style={{ flex: 1.0 }}
-            numberOfLines={1}
             size={getScaleSize(16)}
             font={FONTS.Lato.Medium}
             color={theme.white}>
-            {`Hello! ${(profile?.user?.first_name ?? "") + " " + (profile?.user?.last_name ?? "")}\n`}
-
+            {`Hello! ${(profile?.user?.first_name ?? "") + " " + (profile?.user?.last_name ?? " ")}`}
           </Text>
           <Text
             size={getScaleSize(24)}
@@ -162,7 +159,7 @@ const HomeHeader = (props: any) => {
 const styles = (theme: ThemeContextType['theme']) =>
   StyleSheet.create({
     container: {
-      flex: 1.0,
+      // flex: 1.0,
       backgroundColor: theme.primary,
       paddingTop: StatusBar.currentHeight,
       // paddingHorizontal: getScaleSize(20),
@@ -171,7 +168,7 @@ const styles = (theme: ThemeContextType['theme']) =>
       overflow: 'hidden',
     },
     headerView: {
-      flex: 1.0,
+      // flex: 1.0,
       flexDirection: 'row',
       marginHorizontal: getScaleSize(21),
     },

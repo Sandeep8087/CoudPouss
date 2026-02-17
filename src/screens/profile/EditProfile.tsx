@@ -5,7 +5,6 @@ import {
     ScrollView,
     TouchableOpacity,
     Image,
-    SafeAreaView,
     Dimensions,
     Platform,
 } from 'react-native';
@@ -32,6 +31,7 @@ import {
 //PACKAGES
 import { launchImageLibrary } from 'react-native-image-picker';
 import { API } from '../../api';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { SCREENS } from '..';
 import { CommonActions } from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -266,27 +266,35 @@ export default function EditProfile(props: any) {
         return value;
     };
 
-    const validateTextInputs = (text: string) => {
-        // Allow alphabets, numbers, spaces and selected special chars
-        let value = text.replace(/[^a-zA-Z0-9\s.,'\-_@]/g, '');
+    const sanitizeOptionalText = (text: string) => {
+        if (!text) return '';
 
-        // Remove emojis & unsupported unicode
-        value = value.replace(
-            /([\u2700-\u27BF]|[\uE000-\uF8FF]|\uD83C[\uDC00-\uDFFF]|\uD83D[\uDC00-\uDFFF]|\uD83E[\uDC00-\uDFFF])/g,
+        // Remove emojis & extended unicode (strict emoji block)
+        let value = text.replace(
+            /([\u{1F600}-\u{1F6FF}]|[\u{1F300}-\u{1F5FF}]|[\u{1F700}-\u{1F77F}]|[\u{2600}-\u{26FF}])/gu,
             ''
         );
 
-        // Limit to 300 chars
-        return value.slice(0, 300);
+        // Allow only: alphabets, numbers, space, . , ' - _ @
+        value = value.replace(/[^a-zA-Z0-9\s.,'@_-]/g, '');
+
+        // HARD limit to 300 chars
+        if (value.length > 300) {
+            value = value.slice(0, 300);
+        }
+
+        return value;
     };
 
     const validateOptionalText = (value: string) => {
         const trimmed = value.trim();
 
+        // Optional field
         if (!trimmed) return '';
 
+        // Must contain at least one letter or number
         if (!/[a-zA-Z0-9]/.test(trimmed)) {
-            return 'Invalid input';
+            return 'Enter valid text';
         }
 
         if (trimmed.length < 5) {
@@ -303,15 +311,52 @@ export default function EditProfile(props: any) {
     const validateName = (value: string) => {
         const trimmed = value.trim();
 
-        if (!trimmed) return "Name is required";
+        // 1. Required
+        if (!trimmed) return 'Name is required';
 
-        if (!/^[A-Za-z]/.test(trimmed))
-            return "Name cannot start with special character";
+        // 2. Length check
+        if (trimmed.length < 2)
+            return 'Minimum 2 characters required';
 
-        if (!/^[A-Za-z\s]+$/.test(trimmed))
-            return "Only letters allowed";
+        if (trimmed.length > 50)
+            return 'Maximum 50 characters allowed';
 
-        return "";
+        // 3. Allowed characters only
+        const nameRegex = /^[A-Za-z.\-\s]+$/;
+
+        if (!nameRegex.test(trimmed))
+            return 'Only alphabets, space, dot (.), hyphen (-) allowed';
+
+        // 5. No leading/trailing spaces
+        if (value !== trimmed)
+            return 'No leading or trailing spaces allowed';
+
+        return '';
+    };
+
+    const sanitizeNameInput = (text: string) => {
+        if (!text) return '';
+
+        let value = text;
+
+        // Remove emojis & extended unicode
+        value = value.replace(
+            /([\u{1F600}-\u{1F6FF}]|[\u{1F300}-\u{1F5FF}]|[\u{2600}-\u{26FF}])/gu,
+            ''
+        );
+
+        // Allow only alphabets + space + dot + hyphen
+        value = value.replace(/[^A-Za-z.\-\s]/g, '');
+
+        // Prevent multiple spaces
+        value = value.replace(/\s{2,}/g, ' ');
+
+        // Hard limit to 50 chars
+        if (value.length > 50) {
+            value = value.slice(0, 50);
+        }
+
+        return value;
     };
 
     const validateMobile = (value: string) => {
@@ -422,9 +467,9 @@ export default function EditProfile(props: any) {
                         maxLength={50}
                         continerStyle={{ marginBottom: getScaleSize(20) }}
                         onChangeText={text => {
-                            if (text.length === 1 && !/[A-Za-z]/.test(text)) return;
-                            setName(text);
-                            setNameError('');
+                            const clean = sanitizeNameInput(text);
+                            setName(clean);
+                            setNameError(validateName(clean));
                         }}
                         isError={nameError}
                     />
@@ -524,10 +569,11 @@ export default function EditProfile(props: any) {
                         numberOfLines={8}
                         continerStyle={{ marginBottom: getScaleSize(20) }}
                         onChangeText={text => {
-                            const clean = validateTextInputs(text);
+                            const clean = sanitizeOptionalText(text);
                             setBio(clean);
                             setBioError(validateOptionalText(clean));
                         }}
+                        maxLength={300}
                         isError={bioError}
                     />
                     <Input
@@ -539,10 +585,11 @@ export default function EditProfile(props: any) {
                         numberOfLines={8}
                         continerStyle={{ marginBottom: getScaleSize(20) }}
                         onChangeText={text => {
-                            const clean = validateTextInputs(text);
+                            const clean = sanitizeOptionalText(text);
                             setExperienceSpecialities(clean);
                             setExperienceSpecialitiesError(validateOptionalText(clean));
                         }}
+                        maxLength={300}
                         isError={experienceSpecialitiesError}
                     />
                     <Input
@@ -554,10 +601,11 @@ export default function EditProfile(props: any) {
                         numberOfLines={8}
                         continerStyle={{ marginBottom: getScaleSize(20) }}
                         onChangeText={text => {
-                            const clean = validateTextInputs(text);
+                            const clean = sanitizeOptionalText(text);
                             setAchievements(clean);
                             setAchievementsError(validateOptionalText(clean));
                         }}
+                        maxLength={300}
                         isError={achievementsError}
                     />
                     <Text

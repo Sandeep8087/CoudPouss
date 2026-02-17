@@ -13,7 +13,7 @@ import { AuthContext, ThemeContext, ThemeContextType } from '../../context';
 
 //CONSTANT & ASSETS
 import { FONTS, IMAGES } from '../../assets';
-import { getScaleSize, Storage, useString } from '../../constant';
+import { getScaleSize, Storage, TABBAR_HEIGHT, useString } from '../../constant';
 
 //COMPONENTS
 import { Text, HomeHeader, SearchComponent, Header, Button, BottomSheet, ProgressView } from '../../components';
@@ -83,7 +83,10 @@ export default function Profile(props: any) {
         }}
         screenName={STRING.my_account}
       />
-      <ScrollView showsVerticalScrollIndicator={false}>
+      <ScrollView showsVerticalScrollIndicator={false}
+        contentContainerStyle={{
+          paddingBottom: TABBAR_HEIGHT + getScaleSize(20),
+        }}>
         <View style={styles(theme).mainContainer}>
           {profile?.user?.profile_photo_url ? (
             <Image source={{ uri: profile?.user?.profile_photo_url }} resizeMode='cover' style={styles(theme).profileContainer} />

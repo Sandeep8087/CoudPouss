@@ -126,5 +126,6 @@ export const IMAGES = {
   ic_warning: require('./ic_warning.png'),
   ic_language: require('./ic_language.png'),
   ic_circle_blue: require('./ic_circle_blue.png'),
-  ic_unselect_blue: require('./ic_unselect_blue.png')
+  ic_unselect_blue: require('./ic_unselect_blue.png'),
+  ic_tab_bar: require('./ic_tab_bar.png')
 };

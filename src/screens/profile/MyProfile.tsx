@@ -116,10 +116,60 @@ export default function MyProfile(props: any) {
 
     const isOnlyWhitespace = (value: string) => !value || !value.trim();
 
-    const validateAddress = (value: string) => {
+    // Detect emoji (Unicode emoji ranges)
+    const containsEmoji = (str: any) => {
+        return /[\p{Extended_Pictographic}]/u.test(str);
+    };
+
+    // Detect HTML/script tags
+    const containsHTML = (str: any) => /<[^>]*>/g.test(str);
+
+    // Find first invalid character
+    const findInvalidChar = (value: any, regex: any) => {
+        for (let char of value) {
+            if (!regex.test(char)) {
+                return char;
+            }
+        }
+        return null;
+    };
+
+    // NAME VALIDATION 
+    const validateName = (value: any) => {
         const trimmed = value.trim();
 
-        // 1. Only whitespace check
+        // 1. Only whitespace
+        if (!trimmed) {
+            return "Name cannot be empty or only spaces";
+        }
+
+        // 2. Length
+        if (trimmed.length < 2 || trimmed.length > 50) {
+            return "Name must be between 2 and 50 characters";
+        }
+
+        // 3. Emoji check
+        if (containsEmoji(trimmed)) {
+            return "Name cannot contain emojis";
+        }
+
+        // 4. Allow only letters + space
+        const validNameChar = /^[A-Za-z\s]$/;
+        const invalidChar = findInvalidChar(trimmed, validNameChar);
+
+        if (invalidChar) {
+            return `Invalid character in name: "${invalidChar}"`;
+        }
+
+        return "";
+    };
+
+    // ADDRESS VALIDATION 
+
+    const validateAddress = (value: any) => {
+        const trimmed = value.trim();
+
+        // 1. Only whitespace
         if (!trimmed) {
             return "Address cannot be empty or only spaces";
         }
@@ -129,33 +179,31 @@ export default function MyProfile(props: any) {
             return "Address must be between 2 and 250 characters";
         }
 
-        // 3. Invalid characters check
-        // Allows letters, numbers, spaces, comma, dot, dash
-        const validRegex = /^[a-zA-Z0-9\s,.\-#/]+$/;
+        // 3. Emoji check
+        if (containsEmoji(trimmed)) {
+            return "Address cannot contain emojis";
+        }
 
-        if (!validRegex.test(trimmed)) {
+        // 4. HTML/script check
+        if (containsHTML(trimmed)) {
+            return "HTML or script tags are not allowed";
+        }
+
+        // 5. Must contain at least one letter
+        if (!/[A-Za-z]/.test(trimmed)) {
+            return "Address must contain at least one letter";
+        }
+
+        // 6. Allowed characters only
+        const allowedRegex = /^[A-Za-z0-9\s,.\-/#:+()]+$/;
+
+        if (!allowedRegex.test(trimmed)) {
             return "Address contains invalid characters";
         }
 
-        return ""; // valid
-    };
-
-    const validateName = (value: string) => {
-        const trimmed = value.trim();
-
-        if (!trimmed)
-            return "Name cannot be empty";
-
-        // first char cannot be special
-        if (!/^[A-Za-z]/.test(trimmed))
-            return "Name cannot start with special character";
-
-        // allow only letters & spaces
-        if (!/^[A-Za-z\s]+$/.test(trimmed))
-            return "Name contains invalid characters";
-
         return "";
     };
+
 
     async function onEditUserProfile() {
 
@@ -356,9 +404,13 @@ export default function MyProfile(props: any) {
                         }}
                         continerStyle={{ marginBottom: getScaleSize(20) }}
                         onChangeText={text => {
-                            const addressText = text.replace(/[<>]/g, '');
+                            // remove HTML brackets immediately
+                            let cleaned = text.replace(/[<>]/g, '');
 
-                            setAddress(addressText);
+                            // block emoji live
+                            if (containsEmoji(cleaned)) return;
+
+                            setAddress(cleaned);
                             setAddressError('');
                         }}
                         isError={addressError}
