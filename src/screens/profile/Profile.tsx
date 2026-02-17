@@ -37,6 +37,7 @@ export default function Profile(props: any) {
     { id: 2, title: STRING.transactions, icon: IMAGES.ic_transactions, onPress: SCREENS.TransactionsElder.identifier },
     { id: 3, title: STRING.ratings_reviews, icon: IMAGES.ic_ratings_reviews, onPress: SCREENS.RatingsReviews.identifier },
     { id: 4, title: STRING.notifications, icon: IMAGES.ic_notifications, onPress: SCREENS.Notifications.identifier },
+    { id: 5, title: STRING.prefered_language, icon: IMAGES.ic_language, onPress: SCREENS.Language.identifier }
   ]
 
   const profieItemsProfessional = [
@@ -46,6 +47,8 @@ export default function Profile(props: any) {
     { id: 4, title: STRING.manage_subscription, icon: IMAGES.ic_manage_subscription, onPress: SCREENS.ManageSubscription.identifier },
     { id: 5, title: STRING.ratings_reviews, icon: IMAGES.ic_ratings_reviews, onPress: SCREENS.RatingsReviews.identifier },
     { id: 6, title: STRING.notifications, icon: IMAGES.ic_notifications, onPress: SCREENS.Notifications.identifier },
+    { id: 7, title: STRING.prefered_language, icon: IMAGES.ic_language, onPress: SCREENS.Language.identifier }
+
   ]
 
   function getProfileItems() {
@@ -167,7 +170,6 @@ export default function Profile(props: any) {
         }}
       />
       {isLoading && <ProgressView />}
-      ˝
     </View>
   );
 }

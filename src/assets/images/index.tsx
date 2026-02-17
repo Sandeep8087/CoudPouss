@@ -109,7 +109,7 @@ export const IMAGES = {
 
   homecare: require('./homecare.png'),
   it: require('./it.png'),
-  pets: require('./pets.png'), 
+  pets: require('./pets.png'),
   childcare: require('./child_care.png'),
   housekeeping: require('./housekeeping.png'),
   moving: require('./moving.png'),
@@ -124,4 +124,7 @@ export const IMAGES = {
   renegotiationIcon: require('./renegotiationIcon.png'),
   ic_succes: require('./ic_succes.png'),
   ic_warning: require('./ic_warning.png'),
+  ic_language: require('./ic_language.png'),
+  ic_circle_blue: require('./ic_circle_blue.png'),
+  ic_unselect_blue: require('./ic_unselect_blue.png')
 };

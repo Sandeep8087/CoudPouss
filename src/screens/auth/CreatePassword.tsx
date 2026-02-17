@@ -36,7 +36,14 @@ export default function CreatePassword(props: any) {
     async function onSignup() {
         if (!password) {
             setPasswordError(STRING.password_required);
-        }else if (!REGEX.password.test(password)) {
+        }
+        else if (/\s/.test(password)) {
+            setPasswordError('Whitespace is not allowed');
+        }
+        else if (password.length > 12) {
+            setPasswordError('Maximum 12 characters allowed');
+        }
+        else if (!REGEX.password.test(password)) {
             setPasswordError(STRING.password_validation_message);
         } else if (!confirmPassword) {
             setConfirmPasswordError(STRING.confirm_password_required);
@@ -54,11 +61,11 @@ export default function CreatePassword(props: any) {
             //         confirm_password: confirmPassword,
             //     }
             // } else {
-              const  params = {
-                    email: email,
-                    password: password,
-                    confirm_password: confirmPassword,
-                }
+            const params = {
+                email: email,
+                password: password,
+                confirm_password: confirmPassword,
+            }
             // }
             try {
                 setLoading(true);
@@ -115,7 +122,13 @@ export default function CreatePassword(props: any) {
                             setShow(!show);
                         }}
                         onChangeText={text => {
-                            setPassword(text);
+                            // Remove all whitespace
+                            const cleaned = text.replace(/\s/g, '');
+
+                            // Limit to 12 characters
+                            const trimmed = cleaned.slice(0, 12);
+
+                            setPassword(trimmed);
                             setPasswordError('');
                         }}
                         isError={passwordError}
@@ -133,7 +146,10 @@ export default function CreatePassword(props: any) {
                             setConfirmShow(!confirmShow);
                         }}
                         onChangeText={text => {
-                            setConfirmPassword(text);
+                            const cleaned = text.replace(/\s/g, '');
+                            const trimmed = cleaned.slice(0, 12);
+
+                            setConfirmPassword(trimmed);
                             setConfirmPasswordError('');
                         }}
                         isError={confirmPasswordError}

@@ -39,8 +39,8 @@ export default function Login(props: any) {
   const { setUser, setUserType, setProfile } = useContext<any>(AuthContext);
   const { theme } = useContext<any>(ThemeContext);
 
-  const [email, setEmail] = useState('Professionaltest41@yopmail.com');
-  const [password, setPassword] = useState('Test@123');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [show, setShow] = useState(true);
   const [passwordError, setPasswordError] = useState('');
   const [emailError, setEmailError] = useState('');

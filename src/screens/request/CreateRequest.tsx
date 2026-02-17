@@ -83,14 +83,15 @@ export default function CreateRequest(props: any) {
   const [selectedTime, setSelectedTime] = useState(new Date());
   const [productName, setProductName] = useState('')
   const [productNameError, setProductNameError] = useState('')
-  const [quantity, setQuantity] = useState(0)
+  const [quantity, setQuantity] = useState('')
   const [quantityError, setQuantityError] = useState('')
   const [firstProductImage, setFirstProductImage] = useState<any>(null);
   const [secondProductImage, setSecondProductImage] = useState<any>(null);
   const [firstProductImageURL, setFirstProductImageURL] = useState<any>(null);
   const [secondProductImageURL, setSecondProductImageURL] = useState<any>(null);
   const [address, setAddress] = useState('');
-  const [addressError, setAddressError] = useState('')
+  const [addressError, setAddressError] = useState('');
+  const [descriptionError, setDescriptionError] = useState('');
 
   useEffect(() => {
     getAllCategories();
@@ -272,8 +273,7 @@ export default function CreateRequest(props: any) {
       } else if (!firstImageURL) {
         SHOW_TOAST('Please upload a photo', 'error');
         return;
-      } else if (!description) {
-        SHOW_TOAST('Please enter a description', 'error');
+      } else if (!validateDescription()) {
         return;
       } else {
         setSelectedProgress(5);
@@ -324,8 +324,7 @@ export default function CreateRequest(props: any) {
       if (!firstImageURL) {
         SHOW_TOAST('Please upload a photo', 'error');
         return;
-      } else if (!description) {
-        SHOW_TOAST('Please enter a description', 'error');
+      } else if (!validateDescription()) {
         return;
       } else {
         setSelectedProgress(5);
@@ -344,10 +343,12 @@ export default function CreateRequest(props: any) {
       if (!productName) {
         setProductNameError('Please enter a product name');
         return;
-      } else if (!quantity) {
-        setQuantityError('Please enter a quantity');
+      }
+      else if (!quantity.trim()) {
+        setQuantityError('Quantity is required.');
         return;
-      } else if (!firstProductImageURL) {
+      }
+      else if (!firstProductImageURL) {
         SHOW_TOAST('Please upload a photo', 'error');
         return;
       } else {
@@ -455,7 +456,7 @@ export default function CreateRequest(props: any) {
           longitude: 72.6369,
           barter_product: {
             product_name: productName,
-            quantity: quantity,
+            quantity: Number(quantity),
             barter_photo_files: productImageUrls
           }
         }
@@ -484,6 +485,46 @@ export default function CreateRequest(props: any) {
       setLoading(false);
     }
   }
+
+  const validateDescription = () => {
+    const clean = description.trim();
+
+    if (!clean) {
+      setDescriptionError('Description cannot be empty');
+      return false;
+    }
+
+    if (clean.length < 10) {
+      setDescriptionError('Minimum 10 characters required');
+      return false;
+    }
+
+    if (clean.length > 500) {
+      setDescriptionError('Maximum 500 characters allowed');
+      return false;
+    }
+
+    // first character cannot be special char
+    if (/^[^a-zA-Z0-9]/.test(clean)) {
+      setDescriptionError(
+        'Description cannot start with special character'
+      );
+      return false;
+    }
+
+    // only special characters check
+    if (/^[^a-zA-Z0-9]+$/.test(clean)) {
+      setDescriptionError(
+        'Description cannot contain only special characters'
+      );
+      return false;
+    }
+
+    // save trimmed value back
+    setDescription(clean);
+
+    return true;
+  };
 
   function renderProfessional() {
     if (selectedProgress === 1) {
@@ -818,8 +859,20 @@ export default function CreateRequest(props: any) {
               style={styles(theme).textInput}
               value={description}
               onChangeText={(text: any) => {
-                if (text.startsWith(' ')) return;
-                setDescription(text);
+                // remove emojis
+                const noEmoji = text.replace(
+                  /[\p{Extended_Pictographic}]/gu,
+                  ''
+                );
+
+                // block HTML/script tags
+                const noHtml = noEmoji.replace(/<[^>]*>/g, '');
+
+                // max 500 chars
+                const trimmedToMax = noHtml.slice(0, 500);
+
+                setDescription(trimmedToMax);
+                setDescriptionError('');
               }}
               placeholder={STRING.Enterdescriptionhere}
               placeholderTextColor="#999"
@@ -829,6 +882,15 @@ export default function CreateRequest(props: any) {
               returnKeyType="default"
             />
           </View>
+          {descriptionError ? (
+            <Text
+              size={getScaleSize(14)}
+              font={FONTS.Lato.Regular}
+              color="red"
+              style={{ marginTop: getScaleSize(6) }}>
+              {descriptionError}
+            </Text>
+          ) : null}
           <Text
             style={{ marginTop: getScaleSize(20) }}
             size={getScaleSize(17)}
@@ -944,23 +1006,29 @@ export default function CreateRequest(props: any) {
             isError={productNameError}
           />
           <Input
-            placeholder={STRING.enter_name}
+            placeholder={"Enter Quantity"}
             placeholderTextColor={theme._939393}
             inputTitle={STRING.quantity}
             inputColor={true}
             quantityIcon={true}
+            keyboardType="number-pad"
+            maxLength={7}
             continerStyle={{ marginBottom: getScaleSize(22) }}
             value={quantity.toString()}
-            onChangeText={(text: any) => {
-              const cleaned = text.replace(/[^0-9]/g, '');
-              setQuantity(cleaned === '' ? 0 : Number(cleaned));
+            onChangeText={(text: string) => {
+              const cleaned = text.replace(/[^0-9]/g, '').slice(0, 7);
+              setQuantity(cleaned);
+              setQuantityError('');
             }}
             isError={quantityError}
             onPressQuantityRemove={() => {
-              setQuantity(prev => (prev > 0 ? prev - 1 : 0));
+              if (quantity.length === 0) return;
+              const newQty = Math.max(Number(quantity) - 1, 0).toString();
+              setQuantity(newQty === '0' ? '' : newQty);
             }}
             onPressQuantityAdd={() => {
-              setQuantity(prev => prev + 1);
+              const newQty = (Number(quantity || 0) + 1).toString();
+              if (newQty.length <= 7) setQuantity(newQty);
             }}
           />
           <Text

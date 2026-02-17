@@ -63,7 +63,7 @@ export default function ProfessionalHome(props: any) {
 
   const skipSubscription = props?.route?.params?.skipSubscription;
 
-  console.log('skipSubscription',skipSubscription)
+  console.log('skipSubscription', skipSubscription)
 
   const STRING = useString();
 
@@ -147,10 +147,12 @@ export default function ProfessionalHome(props: any) {
         console.log('result==>', result?.data?.data);
         setServiceList(result.data.data ?? []);
       } else {
+        setLoading(false)
         SHOW_TOAST(result?.data?.detail, 'error');
         console.log('error==>', result?.data?.detail)
       }
     } catch (error: any) {
+      setLoading(false)
       SHOW_TOAST(error?.message ?? '', 'error');
       console.log('error==>', error?.message)
     } finally {
@@ -223,7 +225,7 @@ export default function ProfessionalHome(props: any) {
           )}
         </TouchableOpacity>
       </View>
-       {/* <View style={styles(theme).searchView}>
+      {/* <View style={styles(theme).searchView}>
         <SearchComponent
           value={searchText}
           onChangeText={setSearchText}

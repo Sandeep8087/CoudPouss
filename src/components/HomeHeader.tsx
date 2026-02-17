@@ -32,6 +32,13 @@ const HomeHeader = (props: any) => {
   const { theme } = useContext(ThemeContext);
   const { user, profile } = useContext<any>(AuthContext);
 
+  const getInitials = (firstName?: string, lastName?: string) => {
+    const f = firstName?.trim()?.[0] || '';
+    const l = lastName?.trim()?.[0] || '';
+
+    return (f + l).toUpperCase();
+  };
+
   return (
     <View style={styles(theme).container}>
       <View style={styles(theme).headerView}>
@@ -70,17 +77,32 @@ const HomeHeader = (props: any) => {
           ]}
           activeOpacity={1}
           onPress={() => { props?.onPressUserProfile() }}>
-          {profile?.user?.profile_photo_url ?
+          {profile?.user?.profile_photo_url ? (
             <Image
               style={styles(theme).placeholderImage}
               source={{ uri: profile?.user?.profile_photo_url }}
             />
-            :
-            <Image
-              style={styles(theme).placeholderImage}
-              source={IMAGES.user_placeholder}
-            />
-          }
+          ) : (
+            <View
+              style={[
+                styles(theme).placeholderImage,
+                {
+                  backgroundColor: theme.white,
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                },
+              ]}>
+              <Text
+                font={FONTS.Lato.Bold}
+                size={getScaleSize(14)}
+                color={theme.primary}>
+                {getInitials(
+                  profile?.user?.first_name,
+                  profile?.user?.last_name
+                )}
+              </Text>
+            </View>
+          )}
         </TouchableOpacity>
       </View>
       <View style={styles(theme).searchView}>

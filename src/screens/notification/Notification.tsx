@@ -53,6 +53,7 @@ export default function Notification(props: any) {
   const [notification, setNotification] = useState<any[]>([]);
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
+  const [error, setError] = useState<any>(null)
   const PAGE_SIZE = 10;
 
   useFocusEffect(
@@ -78,6 +79,7 @@ export default function Notification(props: any) {
         if (newData?.length < PAGE_SIZE) {
           setHasMore(false);
           setNotification((prev: any[]) => [...prev, ...newData]);
+          setError(newData?.length === 0 ? 'No Data Found' : '')
         }
         else {
           setNotification((prev: any[]) => [...prev, ...newData]);
@@ -239,6 +241,19 @@ export default function Notification(props: any) {
             </View>
           );
         }}
+        ListEmptyComponent={() =>
+          !isLoading ? (
+            <View style={styles(theme).emptyContainer}>
+              <Text
+                size={getScaleSize(16)}
+                font={FONTS.Lato.Regular}
+                color={theme._565656}
+              >
+                {error}
+              </Text>
+            </View>
+          ) : null
+        }
       />
     </View>
   );
@@ -282,5 +297,10 @@ const styles = (theme: ThemeContextType['theme']) =>
       backgroundColor: theme.primary,
       marginRight: getScaleSize(8),
       paddingHorizontal: getScaleSize(10),
+    },
+    emptyContainer: {
+      flex: 1,
+      justifyContent: 'center',
+      alignItems: 'center',
     },
   });
