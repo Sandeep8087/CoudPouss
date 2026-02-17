@@ -165,6 +165,10 @@ export default function Profile(props: any) {
         isInfo={true}
         title={STRING.are_you_sure_you_want_to_logout}
         buttonTitle={STRING.logout}
+        secondButtonTitle={STRING.cancel}
+        onPressSecondButton={() => {
+          bottomSheetRef.current.close();
+        }}
         onPressButton={() => {
           logout()
         }}

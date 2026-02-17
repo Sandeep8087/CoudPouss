@@ -444,8 +444,9 @@ export const useString = () => {
     no_results_found: "No results found",
     prefered_language: "Preferred Language",
     french: 'French',
-    english: 'English'
-
+    english: 'English',
+    onboarding_process: "Onboarding Process",
+    you_have_not_completed_your_onboarding: "You have not completed your onboarding",
   };
 };
 

@@ -30,6 +30,7 @@ import { AuthContext, ThemeContext, ThemeContextType } from '../../context';
 //CONSTANT
 import {
   getScaleSize,
+  openStripeCheckout,
   requestLocationPermission,
   SHOW_TOAST,
   useString,
@@ -290,167 +291,180 @@ export default function ProfessionalHome(props: any) {
             </View>
           </ImageBackground>
           {profile?.has_purchased ? (
-            <View>
-              <View
-                style={[
-                  styles(theme).directionView,
-                  { marginBottom: getScaleSize(24) },
-                ]}>
-                <Text
-                  size={getScaleSize(20)}
-                  font={FONTS.Lato.SemiBold}
-                  color={theme._323232}
-                  style={{
-                    marginTop: getScaleSize(28),
-                  }}>
-                  {STRING.ExploreServiceRequests}
-                </Text>
-                <View style={{ flex: 1 }}></View>
-                {serviceList?.open_services?.length > 0 && (
-                  <TouchableOpacity
-                    onPress={() => {
-                      props.navigation.navigate(
-                        SCREENS.ExploreServiceRequest.identifier,
-                      );
-                    }}>
+            <>
+              {profile?.onboarding_status === true ? (
+                <View>
+                  <View
+                    style={[
+                      styles(theme).directionView,
+                      { marginBottom: getScaleSize(24) },
+                    ]}>
                     <Text
-                      size={getScaleSize(14)}
-                      font={FONTS.Lato.Medium}
-                      align="center"
-                      color={theme._2C6587}
+                      size={getScaleSize(20)}
+                      font={FONTS.Lato.SemiBold}
+                      color={theme._323232}
                       style={{
                         marginTop: getScaleSize(28),
                       }}>
-                      {STRING.ViewAll}
+                      {STRING.ExploreServiceRequests}
                     </Text>
-                  </TouchableOpacity>
-                )}
-              </View>
-              {(serviceList?.open_services?.length > 0
-                ? serviceList?.open_services
-                : []
-              )?.map((item: any, index: number) => (
-                <ServiceRequest
-                  key={index}
-                  data={item}
-                  onPress={() => {
-                    props.navigation.navigate(SCREENS.ServicePreview.identifier, {
-                      serviceData: item,
-                      isFromHome: true,
-                    });
-                  }}
-                  onPressAccept={() => {
-                    props.navigation.navigate(SCREENS.AddQuote.identifier, {
-                      isItem: item,
-                      isFromHome: true,
-                    });
+                    <View style={{ flex: 1 }}></View>
+                    {serviceList?.open_services?.length > 0 && (
+                      <TouchableOpacity
+                        onPress={() => {
+                          props.navigation.navigate(
+                            SCREENS.ExploreServiceRequest.identifier,
+                          );
+                        }}>
+                        <Text
+                          size={getScaleSize(14)}
+                          font={FONTS.Lato.Medium}
+                          align="center"
+                          color={theme._2C6587}
+                          style={{
+                            marginTop: getScaleSize(28),
+                          }}>
+                          {STRING.ViewAll}
+                        </Text>
+                      </TouchableOpacity>
+                    )}
+                  </View>
+                  {(serviceList?.open_services?.length > 0
+                    ? serviceList?.open_services
+                    : []
+                  )?.map((item: any, index: number) => (
+                    <ServiceRequest
+                      key={index}
+                      data={item}
+                      onPress={() => {
+                        props.navigation.navigate(SCREENS.ServicePreview.identifier, {
+                          serviceData: item,
+                          isFromHome: true,
+                        });
+                      }}
+                      onPressAccept={() => {
+                        props.navigation.navigate(SCREENS.AddQuote.identifier, {
+                          isItem: item,
+                          isFromHome: true,
+                        });
+                      }}
+                    />
+                  ))}
+
+                  <View style={styles(theme).horizontalContainer}>
+                    <Text
+                      size={getScaleSize(20)}
+                      font={FONTS.Lato.SemiBold}
+                      color={theme._323232}
+                      style={{
+                        flex: 1.0,
+                      }}>
+                      {STRING.RecentTasks}
+                    </Text>
+                    {serviceList?.recent_tasks?.data?.length > 0 && (
+                      <TouchableOpacity
+                        style={{ paddingVertical: getScaleSize(8) }}
+                        onPress={() => {
+                          props.navigation.dispatch(
+                            CommonActions.reset({
+                              index: 0,
+                              routes: [
+                                {
+                                  name: SCREENS.BottomBar.identifier,
+                                  params: { isTask: true },
+                                },
+                              ],
+                            }),
+                          );
+                        }}>
+                        <Text
+                          size={getScaleSize(14)}
+                          font={FONTS.Lato.Medium}
+                          color={theme._2C6587}>
+                          {STRING.ViewAll}
+                        </Text>
+                      </TouchableOpacity>
+                    )}
+                  </View>
+                  {serviceList?.recent_tasks?.data?.length > 0 ? (
+                    <>
+                      {(serviceList?.recent_tasks?.data?.length > 0
+                        ? serviceList?.recent_tasks?.data
+                        : []
+                      )?.map((item: any, index: number) => {
+                        return (
+                          <TaskItem
+                            key={index}
+                            item={item}
+                            onPressItem={() => {
+                              // if (item?.task_status === 'pending') {
+                              //   props.navigation.navigate(
+                              //     SCREENS.OpenRequestDetails.identifier,
+                              //     {
+                              //       item: item,
+                              //     },
+                              //   );
+                              // } else if (item?.task_status === 'accepted') {
+                              //   props.navigation.navigate(
+                              //     SCREENS.CompletedTaskDetails.identifier,
+                              //     {
+                              //       item: item,
+                              //     },
+                              //   );
+                              // }
+                              props.navigation.navigate(
+                                SCREENS.ProfessionalTaskDetails.identifier,
+                                {
+                                  item: item,
+                                },
+                              );
+                            }}
+                            onPressStatus={() => {
+                              props.navigation.navigate(
+                                SCREENS.TaskStatus.identifier,
+                                {
+                                  item: item,
+                                },
+                              );
+                            }}
+                            onPressChat={() => {
+                              props.navigation.navigate(
+                                SCREENS.ChatDetails.identifier,
+                              );
+                            }}
+                          />
+                        );
+                      })}
+                    </>
+                  ) : (
+                    <View style={styles(theme).emptyView}>
+                      <Image style={styles(theme).emptyImage} source={IMAGES.empty} />
+                      <Text
+                        size={getScaleSize(16)}
+                        font={FONTS.Lato.Regular}
+                        align="center"
+                        color={theme._939393}
+                        style={{
+                          marginTop: getScaleSize(20),
+                        }}>
+                        {
+                          STRING.you_have_not_accepted_any_request_please_accept_a_request
+                        }
+                      </Text>
+                    </View>
+                  )}
+                </View>
+              ) : (
+                <EmptyView
+                  title={STRING.you_have_not_completed_your_onboarding}
+                  style={styles(theme).emptyContainer}
+                  buttonTitle={STRING.onboarding_process}
+                  onPressButton={() => {
+                    openStripeCheckout(profile?.onboarding_redirect_url ?? '')
                   }}
                 />
-              ))}
-
-              <View style={styles(theme).horizontalContainer}>
-                <Text
-                  size={getScaleSize(20)}
-                  font={FONTS.Lato.SemiBold}
-                  color={theme._323232}
-                  style={{
-                    flex: 1.0,
-                  }}>
-                  {STRING.RecentTasks}
-                </Text>
-                {serviceList?.recent_tasks?.data?.length > 0 && (
-                  <TouchableOpacity
-                    style={{ paddingVertical: getScaleSize(8) }}
-                    onPress={() => {
-                      props.navigation.dispatch(
-                        CommonActions.reset({
-                          index: 0,
-                          routes: [
-                            {
-                              name: SCREENS.BottomBar.identifier,
-                              params: { isTask: true },
-                            },
-                          ],
-                        }),
-                      );
-                    }}>
-                    <Text
-                      size={getScaleSize(14)}
-                      font={FONTS.Lato.Medium}
-                      color={theme._2C6587}>
-                      {STRING.ViewAll}
-                    </Text>
-                  </TouchableOpacity>
-                )}
-              </View>
-              {serviceList?.recent_tasks?.data?.length > 0 ? (
-                <>
-                  {(serviceList?.recent_tasks?.data?.length > 0
-                    ? serviceList?.recent_tasks?.data
-                    : []
-                  )?.map((item: any, index: number) => {
-                    return (
-                      <TaskItem
-                        key={index}
-                        item={item}
-                        onPressItem={() => {
-                          // if (item?.task_status === 'pending') {
-                          //   props.navigation.navigate(
-                          //     SCREENS.OpenRequestDetails.identifier,
-                          //     {
-                          //       item: item,
-                          //     },
-                          //   );
-                          // } else if (item?.task_status === 'accepted') {
-                          //   props.navigation.navigate(
-                          //     SCREENS.CompletedTaskDetails.identifier,
-                          //     {
-                          //       item: item,
-                          //     },
-                          //   );
-                          // }
-                          props.navigation.navigate(
-                            SCREENS.ProfessionalTaskDetails.identifier,
-                            {
-                              item: item,
-                            },
-                          );
-                        }}
-                        onPressStatus={() => {
-                          props.navigation.navigate(
-                            SCREENS.TaskStatus.identifier,
-                            {
-                              item: item,
-                            },
-                          );
-                        }}
-                        onPressChat={() => {
-                          props.navigation.navigate(
-                            SCREENS.ChatDetails.identifier,
-                          );
-                        }}
-                      />
-                    );
-                  })}
-                </>
-              ) : (
-                <View style={styles(theme).emptyView}>
-                  <Image style={styles(theme).emptyImage} source={IMAGES.empty} />
-                  <Text
-                    size={getScaleSize(16)}
-                    font={FONTS.Lato.Regular}
-                    align="center"
-                    color={theme._939393}
-                    style={{
-                      marginTop: getScaleSize(20),
-                    }}>
-                    {
-                      STRING.you_have_not_accepted_any_request_please_accept_a_request
-                    }
-                  </Text>
-                </View>
               )}
-            </View>
+            </>
           ) : (
             <EmptyView
               title={STRING.you_have_not_subscribed_to_any_plan}

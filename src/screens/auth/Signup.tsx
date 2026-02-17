@@ -69,9 +69,9 @@ export default function Signup(props: any) {
             // }
             try {
                 setLoading(true);
-                const result = await API.Instance.post(API.API_ROUTES.signup, params);
+                const result: any = await API.Instance.post(API.API_ROUTES.signup, params);
                 setLoading(false);
-                console.log('result', result.status, result)
+                console.log('result', result?.code, result)
                 if (result.status) {
                     SHOW_TOAST(result?.data?.message ?? '', 'success')
                     props.navigation.navigate(SCREENS.Otp.identifier, {
@@ -81,8 +81,23 @@ export default function Signup(props: any) {
                         // countryCode: countryCode,
                     });
                 } else {
-                    SHOW_TOAST(result?.data?.message ?? '', 'error')
-                    console.log('error==>', result?.data?.message)
+                    if (result?.code === 409) {
+                        if (result?.data?.message == 'OTP already sent. Redirect to Verify page.') {
+                            props.navigation.navigate(SCREENS.Otp.identifier, {
+                                isFromSignup: true,
+                                email: email,
+                            })
+                        } else if (result?.data?.message == 'OTP already verified. Redirect to Password page.') {
+                            props.navigation.navigate(SCREENS.CreatePassword.identifier, {
+                                email: email,
+                            })
+                        } else {
+                            SHOW_TOAST(result?.data?.message ?? '', 'error')
+                        }
+                    } else {
+                        SHOW_TOAST(result?.data?.message ?? '', 'error')
+                        console.log('error==>', result?.data?.message)
+                    }
                 }
             } catch (error: any) {
                 setLoading(false);
@@ -147,7 +162,7 @@ export default function Signup(props: any) {
                         keyboardType="email-address"
                         autoCapitalize="none"
                         onChangeText={text => {
-                             setEmail(text.replace(/\s/g, ''));
+                            setEmail(text.replace(/\s/g, ''));
                             setEmailError('');
                         }}
                         isError={emailError}
