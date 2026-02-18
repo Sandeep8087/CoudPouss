@@ -1,7 +1,6 @@
 import React, {useContext, useEffect, useState} from 'react';
 import {
   View,
-  StatusBar,
   StyleSheet,
   FlatList,
   TouchableOpacity,
@@ -29,7 +28,6 @@ import {useIsFocused} from '@react-navigation/native';
 export default function Task(props: any) {
   const STRING = useString();
   const {theme} = useContext<any>(ThemeContext);
-
   const PAGE_SIZE = 5;
 
   const [quateList, setQuateList] = useState<any>({
@@ -114,6 +112,32 @@ export default function Task(props: any) {
     }
   };
 
+  async function getServiceDetails(serviceRequestId: string) {
+    try {
+      const result = await API.Instance.get(
+        API.API_ROUTES.getTsakDetails + `/quotes/${serviceRequestId}`,
+      );
+      if (result.status) {
+        props.navigation.navigate(SCREENS.ChatDetails.identifier, {
+          conversationId: result?.data?.data?.elderly_user?.id ?? '',
+          peerUser: {
+            user_id: result?.data?.data?.elderly_user?.id ?? '',
+            name: result?.data?.data?.elderly_user?.full_name ?? '',
+            email: result?.data?.data?.elderly_user?.email ?? '',
+            avatarUrl:
+              result?.data?.data?.elderly_user?.profile_photo_url ?? '',
+          },
+        });
+      } else {
+        SHOW_TOAST(result?.data?.message ?? '', 'error');
+      }
+    } catch (error: any) {
+      SHOW_TOAST(error?.message ?? '', 'error');
+      console.log(error?.message);
+    } finally {
+    }
+  }
+
   function renderFlatList() {
     if (quateList?.allQuateList?.length > 0) {
       return (
@@ -155,7 +179,7 @@ export default function Task(props: any) {
                   });
                 }}
                 onPressChat={() => {
-                  props.navigation.navigate(SCREENS.ChatDetails.identifier);
+                  getServiceDetails(item?.service_request_id);
                 }}
               />
             );

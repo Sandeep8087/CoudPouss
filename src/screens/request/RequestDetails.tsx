@@ -24,18 +24,15 @@ import {
 import {convertProviderToPeerUser} from '../../constant/chatUsers';
 
 //CONTEXT
-import {ThemeContext, ThemeContextType} from '../../context';
+import {AuthContext, ThemeContext, ThemeContextType} from '../../context';
 
 //COMPONENT
 import {
   AcceptBottomPopup,
   Header,
-  ModelWebView,
   PaymentBottomPopup,
   ProgressView,
   RejectBottomPopup,
-  RequestItem,
-  SearchComponent,
   Text,
 } from '../../components';
 
@@ -49,6 +46,11 @@ import {API} from '../../api';
 import moment from 'moment';
 import {EventRegister} from 'react-native-event-listeners';
 import {CommonActions} from '@react-navigation/native';
+import {
+  getPrividerbyId,
+  listenToThreads,
+  userMessage,
+} from '../../services/chat';
 
 export default function RequestDetails(props: any) {
   const STRING = useString();
@@ -64,19 +66,20 @@ export default function RequestDetails(props: any) {
   const [selectedCategory, setSelectedCategory] = useState(0);
   const [reason, setReason] = useState('');
   const [serviceAmount, setServiceAmount] = useState<any>({});
-  const [paymentDetails, setPaymentDetails] = useState<any>({});
-  const [visibleModelWebView, setVisibleModelWebView] =
-    useState<boolean>(false);
+  // const [paymentDetails, setPaymentDetails] = useState<any>({});
+  // const [visibleModelWebView, setVisibleModelWebView] =
+  //   useState<boolean>(false);
   const [showOfferModal, setShowOfferModal] = useState(false);
   const [newQuoteAmount, setNewQuoteAmount] = useState('');
   const [newQuoteAmountError, setNewQuoteAmountError] = useState('');
-
+  const {profile} = useContext<any>(AuthContext);
   useEffect(() => {
     if (item) {
       getServiceDetails();
     }
   }, []);
 
+  console.log('profile==>', profile.user);
   useEffect(() => {
     EventRegister.addEventListener('onPaymentCancel', (data: any) => {
       SHOW_TOAST(data?.message ?? '', 'error');
@@ -246,6 +249,18 @@ export default function RequestDetails(props: any) {
     } finally {
       setLoading(false);
     }
+  }
+
+  function generateUniqueFirestoreId() {
+    // Alphanumeric characters
+    const chars =
+      'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+    let autoId = '';
+    for (let i = 0; i < 20; i++) {
+      autoId += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
+
+    return autoId;
   }
 
   return (
@@ -481,17 +496,16 @@ export default function RequestDetails(props: any) {
             <TouchableOpacity
               activeOpacity={1}
               style={[styles(theme).newButton, {marginRight: getScaleSize(6)}]}
-              onPress={() => {
-                const peerUser = convertProviderToPeerUser(
-                  serviceDetails?.provider,
-                );
-                if (peerUser) {
-                  props.navigation.navigate(SCREENS.ChatDetails.identifier, {
-                    peerUser,
-                  });
-                } else {
-                  SHOW_TOAST('Provider information not found', 'error');
-                }
+              onPress={async () => {
+                props.navigation.navigate(SCREENS.ChatDetails.identifier, {
+                  conversationId: profile?.user?.id,
+                  peerUser: {
+                    user_id: serviceDetails?.provider?.id,
+                    name: serviceDetails?.provider?.full_name,
+                    email: serviceDetails?.provider?.email,
+                    avatarUrl: serviceDetails?.provider?.profile_photo_url,
+                  },
+                });
               }}>
               <Text
                 size={getScaleSize(14)}
@@ -726,30 +740,49 @@ export default function RequestDetails(props: any) {
               <TouchableOpacity
                 style={styles(theme).modalSubmitButton}
                 activeOpacity={0.8}
-                onPress={() => {
+                onPress={async () => {
                   if (!newQuoteAmount || newQuoteAmount.trim() === '') {
                     setNewQuoteAmountError('Please enter an offer amount');
                     return;
                   }
-                  setShowOfferModal(false);
-                  const peerUser = convertProviderToPeerUser(
-                    serviceDetails?.provider,
+
+                  const provider = await getPrividerbyId(
+                    serviceDetails?.provider?.id,
                   );
-                  if (peerUser) {
+                  if (provider?.data()?.data) {
                     props.navigation.navigate(SCREENS.ChatDetails.identifier, {
-                      peerUser,
-                      offerAmount: newQuoteAmount,
-                      pricingBreakdown: {
-                        serviceName: serviceDetails?.sub_category_name,
-                        originalValuation:
-                          serviceDetails?.total_renegotiated || '0',
-                        initialQuote: serviceDetails?.validation_amount,
-                        yourOffer: newQuoteAmount,
+                      conversationId: profile?.user?.id,
+                      peerUser: {
+                        user_id: serviceDetails?.provider?.id,
+                        name: serviceDetails?.provider?.full_name,
+                        email: serviceDetails?.provider?.email,
+                        avatarUrl: serviceDetails?.provider?.profile_photo_url,
                       },
                     });
                   } else {
-                    SHOW_TOAST('Provider information not found', 'error');
+                    userMessage(
+                      profile?.user?.id,
+                      profile?.user?.first_name,
+                      serviceDetails?.provider?.id,
+                      serviceDetails?.provider?.full_name,
+                      newQuoteAmount,
+                      profile?.user?.id,
+                      profile?.user?.profile_photo_url,
+                      serviceDetails?.provider?.profile_photo_url,
+                      'negotiation',
+                    );
+                    props.navigation.navigate(SCREENS.ChatDetails.identifier, {
+                      conversationId: profile?.user?.id,
+                      peerUser: {
+                        user_id: serviceDetails?.provider?.id,
+                        name: serviceDetails?.provider?.full_name,
+                        email: serviceDetails?.provider?.email,
+                        avatarUrl: serviceDetails?.provider?.profile_photo_url,
+                      },
+                    });
                   }
+
+                  setShowOfferModal(false);
                 }}>
                 <Text
                   size={getScaleSize(16)}

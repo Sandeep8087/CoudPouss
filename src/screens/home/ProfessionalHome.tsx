@@ -144,7 +144,9 @@ export default function ProfessionalHome(props: any) {
             font={FONTS.Lato.Medium}
             color={theme._6D6D6D}
             style={{}}>
-            {`Hello! ${profile?.user?.first_name + ' ' + profile?.user?.last_name}`}
+            {`Hello! ${
+              profile?.user?.first_name + ' ' + profile?.user?.last_name
+            }`}
           </Text>
           <Text
             size={getScaleSize(24)}
@@ -196,7 +198,7 @@ export default function ProfessionalHome(props: any) {
       </View>
       {/* <View style={{height: 400}}>
         {/* <SpeechToText /> */}
-      {/* </View> */} 
+      {/* </View> */}
       <ScrollView
         style={styles(theme).scrolledContainer}
         showsVerticalScrollIndicator={false}>
@@ -210,8 +212,7 @@ export default function ProfessionalHome(props: any) {
                 size={getScaleSize(40)}
                 font={FONTS.Lato.Bold}
                 color={theme.white}>
-                {serviceList?.stats?.verified_providers_today?.count ??
-                  '0'}{' '}
+                {serviceList?.stats?.verified_providers_today?.count ?? '0'}{' '}
               </Text>
               <Text
                 size={getScaleSize(16)}
@@ -365,9 +366,10 @@ export default function ProfessionalHome(props: any) {
                         );
                       }}
                       onPressChat={() => {
-                        props.navigation.navigate(
-                          SCREENS.ChatDetails.identifier,
-                        );
+                        console.log('professional home item==>', item);
+                        // props.navigation.navigate(
+                        //   SCREENS.ChatDetails.identifier,
+                        // );
                       }}
                     />
                   );

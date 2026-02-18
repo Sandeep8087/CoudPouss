@@ -5,6 +5,7 @@ import {
   TouchableOpacity,
   Image,
   ScrollView,
+  FlatList,
 } from 'react-native';
 
 //ASSETS
@@ -20,79 +21,156 @@ import {getScaleSize, useString} from '../../constant';
 import {Header, SearchComponent, Text} from '../../components';
 
 //SERVICES
-import {ChatThread, subscribeToThreads} from '../../services/chat';
+import {
+  ChatThread,
+  listenToThreads,
+  subscribeToThreads,
+} from '../../services/chat';
 import {FirebaseFirestoreTypes} from '@react-native-firebase/firestore';
 
 import {SCREENS} from '..';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export default function Chat(props: any) {
   const STRING = useString();
   const {theme} = useContext<any>(ThemeContext);
   const {profile} = useContext<any>(AuthContext);
 
-  const [threads, setThreads] = useState<ChatThread[]>([]);
+  // const [threads, setThreads] = useState<ChatThread[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [_isLoading, setIsLoading] = useState(false);
 
+  const [filteredDataSource, setFilteredDataSource] = useState<any[]>([]);
+  const [masterDataSource, setMasterDataSource] = useState<any[]>([]);
+
   useEffect(() => {
-    const userId = profile?.user?.id;
-    if (!userId) {
-      setThreads([]);
-      setIsLoading(false);
-      return;
-    }
-
-    setIsLoading(true);
-    const unsubscribe = subscribeToThreads(
-      userId,
-      results => {
-        setThreads(results);
-        setIsLoading(false);
-      },
-      error => {
-        console.log('Failed to subscribe to chats', error);
-        setIsLoading(false);
-      },
-    );
-
-    return unsubscribe;
+    return listenToThreads(profile?.user?.id).onSnapshot(querySnapshot => {
+      const formattedMessages = querySnapshot.docs.map(doc => {
+        return {
+          _id: doc.id,
+          message: '',
+          createdAt: new Date().getTime(),
+          ...doc.data(),
+        };
+      });
+      setFilteredDataSource(formattedMessages);
+      setMasterDataSource(formattedMessages);
+    });
   }, [profile?.user?.id]);
 
-  const filteredThreads = useMemo(() => {
-    const userId = profile?.user?.id;
-    const query = searchQuery.trim().toLowerCase();
-    if (!query) {
-      return threads;
-    }
+  console.log('filteredDataSource==>', filteredDataSource);
 
-    return threads.filter(thread => {
-      const peer = getPeerMeta(thread, userId);
-      return peer.name.toLowerCase().includes(query);
-    });
-  }, [threads, searchQuery, profile?.user?.id]);
+  // useEffect(() => {
+  //   const userId = profile?.user?.id;
+  //   if (!userId) {
+  //     setThreads([]);
+  //     setIsLoading(false);
+  //     return;
+  //   }
 
-  const renderThread = ({item}: {item: ChatThread}) => {
-    const userId = profile?.user?.id;
-    const peer = getPeerMeta(item, userId);
+  //   setIsLoading(true);
+  //   const unsubscribe = subscribeToThreads(
+  //     userId,
+  //     results => {
+  //       setThreads(results);
+  //       setIsLoading(false);
+  //     },
+  //     error => {
+  //       console.log('Failed to subscribe to chats', error);
+  //       setIsLoading(false);
+  //     },
+  //   );
+
+  //   return unsubscribe;
+  // }, [profile?.user?.id]);
+
+  // const filteredThreads = useMemo(() => {
+  //   const userId = profile?.user?.id;
+  //   const query = searchQuery.trim().toLowerCase();
+  //   if (!query) {
+  //     return threads;
+  //   }
+
+  //   return threads.filter(thread => {
+  //     const peer = getPeerMeta(thread, userId);
+  //     return peer.name.toLowerCase().includes(query);
+  //   });
+  // }, [threads, searchQuery, profile?.user?.id]);
+
+  // const renderThread = ({item}: {item: ChatThread}) => {
+  //   const userId = profile?.user?.id;
+  //   const peer = getPeerMeta(item, userId);
+  //   return (
+  //     <TouchableOpacity
+  //       style={styles(theme).itemContainer}
+  //       activeOpacity={0.85}
+  //       onPress={() => {
+  //         props.navigation.navigate(SCREENS.ChatDetails.identifier, {
+  //           threadId: item.id,
+  //           peerUser: {
+  //             user_id: peer.id,
+  //             name: peer.name,
+  //             email: peer.email,
+  //             avatarUrl: peer.avatarUrl,
+  //           },
+  //         });
+  //       }}>
+  //       <Image
+  //         style={styles(theme).userImage}
+  //         source={
+  //           peer.avatarUrl ? {uri: peer.avatarUrl} : IMAGES.user_placeholder
+  //         }
+  //       />
+  //       <View style={styles(theme).threadContent}>
+  //         <Text
+  //           size={getScaleSize(16)}
+  //           font={FONTS.Lato.Medium}
+  //           color={theme._2B2B2B}>
+  //           {peer.name || STRING.unknown_user}
+  //         </Text>
+  //         <Text
+  //           numberOfLines={1}
+  //           size={getScaleSize(12)}
+  //           font={FONTS.Lato.Regular}
+  //           color={theme._ACADAD}>
+  //           {item.lastMessage || STRING.no_messages_yet}
+  //         </Text>
+  //       </View>
+  //       <View style={styles(theme).threadMeta}>
+  //         <Text
+  //           size={getScaleSize(10)}
+  //           font={FONTS.Lato.Regular}
+  //           color={theme._ACADAD}>
+  //           {formatTimestamp(item.updatedAt)}
+  //         </Text>
+  //       </View>
+  //     </TouchableOpacity>
+  //   );
+  // };
+
+  const ItemView = ({item}: {item: any}) => {
     return (
       <TouchableOpacity
         style={styles(theme).itemContainer}
-        activeOpacity={0.85}
+        activeOpacity={1}
         onPress={() => {
+          console.log('item==>', item);
           props.navigation.navigate(SCREENS.ChatDetails.identifier, {
-            threadId: item.id,
+            conversationId: item._id,
             peerUser: {
-              user_id: peer.id,
-              name: peer.name,
-              email: peer.email,
-              avatarUrl: peer.avatarUrl,
+              user_id: item.user.recipientId ?? '',
+              name: item.user.name ?? '',
+              email: item.user.email ?? '',
+              avatarUrl: item.user.recipientPhoto ?? '',
             },
           });
         }}>
         <Image
           style={styles(theme).userImage}
           source={
-            peer.avatarUrl ? {uri: peer.avatarUrl} : IMAGES.user_placeholder
+            item.user.recipientPhoto
+              ? {uri: item.user.recipientPhoto}
+              : IMAGES.user_placeholder
           }
         />
         <View style={styles(theme).threadContent}>
@@ -100,22 +178,22 @@ export default function Chat(props: any) {
             size={getScaleSize(16)}
             font={FONTS.Lato.Medium}
             color={theme._2B2B2B}>
-            {peer.name || STRING.unknown_user}
+            {item.user.name}
           </Text>
+          <View style={{marginTop: getScaleSize(5)}} />
           <Text
-            numberOfLines={1}
             size={getScaleSize(12)}
             font={FONTS.Lato.Regular}
             color={theme._ACADAD}>
-            {item.lastMessage || STRING.no_messages_yet}
+            {item.message}
           </Text>
         </View>
-        <View style={styles(theme).threadMeta}>
+        <View style={styles(theme).messageContainer}>
           <Text
-            size={getScaleSize(10)}
-            font={FONTS.Lato.Regular}
-            color={theme._ACADAD}>
-            {formatTimestamp(item.updatedAt)}
+            size={getScaleSize(12)}
+            font={FONTS.Lato.Medium}
+            color={theme.white}>
+            {'1'}
           </Text>
         </View>
       </TouchableOpacity>
@@ -132,7 +210,13 @@ export default function Chat(props: any) {
           onPressMicrophone={() => {}}
         />
       </View>
-      <ScrollView
+      <FlatList
+        data={filteredDataSource}
+        keyExtractor={(item, index) => index.toString()}
+        renderItem={ItemView}
+      />
+
+      {/* <ScrollView
         style={styles(theme).scrolledContainer}
         showsVerticalScrollIndicator={false}>
         {filteredThreads.length > 0
@@ -175,7 +259,7 @@ export default function Chat(props: any) {
                 </TouchableOpacity>
               );
             })}
-      </ScrollView>
+      </ScrollView> */}
     </View>
   );
 }
@@ -241,6 +325,7 @@ const styles = (theme: ThemeContextType['theme']) =>
     itemContainer: {
       marginBottom: getScaleSize(24),
       flexDirection: 'row',
+      marginHorizontal: getScaleSize(20),
     },
     threadContent: {
       alignSelf: 'center',

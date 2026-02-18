@@ -6,32 +6,18 @@ import {AuthContext, ThemeContext, ThemeContextType} from '../../context';
 
 //CONSTANT & ASSETS
 import {FONTS, IMAGES} from '../../assets';
-import {
-  getScaleSize,
-  REGEX,
-  SHOW_TOAST,
-  Storage,
-  useString,
-} from '../../constant';
+import {getScaleSize, SHOW_TOAST, Storage, useString} from '../../constant';
 
 //COMPONENTS
-import {
-  Header,
-  Input,
-  Text,
-  Button,
-  SelectCountrySheet,
-  ProgressView,
-} from '../../components';
+import {Header, Input, Text, Button, ProgressView} from '../../components';
 
 //SCREENS
 import {SCREENS} from '..';
 
 //PACKAGES
 import {CommonActions} from '@react-navigation/native';
-import {launchImageLibrary} from 'react-native-image-picker';
 import {API} from '../../api';
-import {upsertUserProfile, testFirebaseConnection} from '../../services/chat';
+import {createNewThread} from '../../services/chat';
 
 export default function Login(props: any) {
   const STRING = useString();
@@ -126,26 +112,36 @@ export default function Login(props: any) {
         // Save user to Firebase for chat functionality
         try {
           console.log('🧪 Testing Firebase connection first...');
-          const isConnected = await testFirebaseConnection();
-          if (!isConnected) {
-            console.log('⚠️ Firebase connection failed, but continuing...');
-          }
+          // const isConnected = await testFirebaseConnection();
+          // if (!isConnected) {
+          //   console.log('⚠️ Firebase connection failed, but continuing...');
+          // }
 
           // Map profile data fields correctly - use actual field names from API
-          console.log('=== Extracting Firebase Data ===');
-          const firebaseUserData = {
-            user_id: userProfileData?.id,
-            name: userProfileData?.first_name || '',
-            email: userProfileData?.email || '',
-            mobile: userProfileData?.phone_number || '',
-            role: userProfileData?.role || '',
-            address:
-              userProfileData?.elder_address || userProfileData?.address || '',
-            avatarUrl: userProfileData?.profile_photo_url || '',
-          };
-          console.log('=== Firebase Data to Send ===');
-          console.log(JSON.stringify(firebaseUserData, null, 2));
-          await upsertUserProfile(firebaseUserData);
+          // console.log('=== Extracting Firebase Data ===');
+          // const firebaseUserData = {
+          //   user_id: userProfileData?.id,
+          //   name: userProfileData?.first_name || '',
+          //   email: userProfileData?.email || '',
+          //   mobile: userProfileData?.phone_number || '',
+          //   role: userProfileData?.role || '',
+          //   address:
+          //     userProfileData?.elder_address || userProfileData?.address || '',
+          //   avatarUrl: userProfileData?.profile_photo_url || '',
+          // };
+          // console.log('=== Firebase Data to Send ===');
+          // console.log(JSON.stringify(firebaseUserData, null, 2));
+          createNewThread(
+            userProfileData.id,
+            userProfileData?.first_name,
+            userProfileData?.email,
+            userProfileData?.phone_number,
+            userProfileData?.role || '',
+            userProfileData?.elder_address || userProfileData?.address || '',
+            userProfileData?.profile_photo_url || '',
+          )
+            .then(() => {})
+            .finally(() => {});
           console.log('✅ User saved to Firebase successfully');
         } catch (firebaseError: any) {
           console.log('❌ Failed to save user to Firebase:', firebaseError);
