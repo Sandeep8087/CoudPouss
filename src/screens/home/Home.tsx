@@ -169,11 +169,9 @@ export default function Home(props: any) {
       />
       <ScrollView
         showsVerticalScrollIndicator={false}
-        scrollEnabled={true}
-        contentContainerStyle={{
-          paddingBottom: TABBAR_HEIGHT + getScaleSize(20),
-        }}>
+        scrollEnabled={true}>
         <View style={{
+          marginTop: 0 - getScaleSize(70),
           backgroundColor: theme.primary,
           paddingTop: StatusBar.currentHeight,
           borderBottomLeftRadius: getScaleSize(60),

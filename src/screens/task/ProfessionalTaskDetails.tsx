@@ -584,7 +584,7 @@ export default function ProfessionalTaskDetails(props: any) {
                 size={getScaleSize(14)}
                 font={FONTS.Lato.SemiBold}
                 color={'#595959'}>
-                {'€499'}
+                {`€${taskDetails?.quote?.amount ?? 0}`}
               </Text>
             </View>
             <View style={styles(theme).newHorizontalView}>
@@ -599,7 +599,7 @@ export default function ProfessionalTaskDetails(props: any) {
                 size={getScaleSize(14)}
                 font={FONTS.Lato.SemiBold}
                 color={'#595959'}>
-                {'€4'}
+                {`€${taskDetails?.quote?.platform_fee ?? 0}`}
               </Text>
             </View>
             <View style={styles(theme).newHorizontalView}>
@@ -614,7 +614,7 @@ export default function ProfessionalTaskDetails(props: any) {
                 size={getScaleSize(14)}
                 font={FONTS.Lato.SemiBold}
                 color={'#595959'}>
-                {'€12'}
+                {`€${taskDetails?.quote?.tax ?? 0}`}
               </Text>
             </View>
             <View style={styles(theme).dotView} />
@@ -630,7 +630,7 @@ export default function ProfessionalTaskDetails(props: any) {
                 size={getScaleSize(20)}
                 font={FONTS.Lato.SemiBold}
                 color={theme.primary}>
-                {'€560.9'}
+                {`€${taskDetails?.quote?.total ?? 0}`}
               </Text>
             </View>
           </View>

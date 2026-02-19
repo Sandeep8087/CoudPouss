@@ -22,7 +22,7 @@ import { FONTS, IMAGES } from '../../assets';
 import { AuthContext, ThemeContext, ThemeContextType } from '../../context';
 
 //CONSTANT
-import { getScaleSize, SHOW_TOAST, useString } from '../../constant';
+import { getScaleSize, openStripeCheckout, SHOW_TOAST, useString } from '../../constant';
 
 //COMPONENT
 import {
@@ -56,9 +56,11 @@ export default function Notification(props: any) {
   const [hasMore, setHasMore] = useState(true);
   const [error, setError] = useState<any>(null)
   const [selectedItem, setSelectedItem] = useState<any>(null);
+  const [selectedRenegotiationItem, setSelectedRenegotiationItem] = useState<any>(null);
   const PAGE_SIZE = 10;
 
   const mapViewRef = useRef<any>(null);
+  const renegotiationViewRef = useRef<any>(null);
 
   useEffect(() => {
     if (selectedItem) {
@@ -66,6 +68,13 @@ export default function Notification(props: any) {
       mapViewRef.current?.open();
     }
   }, [selectedItem]);
+
+  useEffect(() => {
+    if (selectedRenegotiationItem) {
+      console.log('selectedRenegotiationItem==>', selectedRenegotiationItem);
+      renegotiationViewRef.current?.open();
+    }
+  }, [selectedRenegotiationItem]);
 
   useFocusEffect(
     React.useCallback(() => {
@@ -152,6 +161,63 @@ export default function Notification(props: any) {
       SHOW_TOAST(error?.message ?? '', 'error');
       mapViewRef.current?.close();
       setSelectedItem(null);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  async function onRenegotiationAccept() {
+    try {
+      setLoading(true);
+      const params = {
+        service_id: selectedRenegotiationItem?.service_id,
+        renegotiation_id: selectedRenegotiationItem?.renegotiation_id,
+      }
+      const result = await API.Instance.post(API.API_ROUTES.onRenegotiationAccept + `?platform=app`, params);
+      if (result.status) {
+        SHOW_TOAST(result?.data?.message ?? '', 'success');
+        const STRIPE_URL = result?.data?.data?.checkout_url ?? '';
+        openStripeCheckout(STRIPE_URL);
+        setTimeout(() => {
+          renegotiationViewRef.current?.close();
+          setSelectedRenegotiationItem(null);
+        }, 2000);
+        console.log('result==>', result?.data?.data);
+      } else {
+        SHOW_TOAST(result?.data?.message ?? '', 'error');
+        renegotiationViewRef.current?.close();
+        setSelectedRenegotiationItem(null);
+      }
+    } catch (error: any) {
+      SHOW_TOAST(error?.message ?? '', 'error');
+      renegotiationViewRef.current?.close();
+      setSelectedRenegotiationItem(null);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  async function onRenegotiationDecline() {
+    try {
+      setLoading(true);
+      const params = {
+        service_id: selectedRenegotiationItem?.service_id,
+        renegotiation_id: selectedRenegotiationItem?.renegotiation_id,
+      }
+      const result = await API.Instance.post(API.API_ROUTES.onRenegotiationDecline + `?platform=app`, params);
+      if (result.status) {
+        SHOW_TOAST(result?.data?.message ?? '', 'success');
+        renegotiationViewRef.current?.close();
+        setSelectedRenegotiationItem(null);
+      } else {
+        SHOW_TOAST(result?.data?.message ?? '', 'error');
+        renegotiationViewRef.current?.close();
+        setSelectedRenegotiationItem(null);
+      }
+    } catch (error: any) {
+      SHOW_TOAST(error?.message ?? '', 'error');
+      renegotiationViewRef.current?.close();
+      setSelectedRenegotiationItem(null);
     } finally {
       setLoading(false);
     }
@@ -247,25 +313,36 @@ export default function Notification(props: any) {
               return (
                 <View style={styles(theme).notificationContainer}>
                   <View style={{ flexDirection: 'row' }}>
-                    {item?.data?.sender_profile_photo_url
-                      ? <Image
-                        style={styles(theme).profilePic}
-                        source={{ uri: item?.data?.sender_profile_photo_url }}
+                    {item?.data?.event === 'RENEGOTIATION_REQUEST' ? (
+                      <Image
+                        style={styles(theme).codeIcon}
+                        source={IMAGES.ic_reNegotiation}
                       />
-                      : <Image
-                        style={styles(theme).profilePic}
-                        source={IMAGES.user_placeholder}
-                      />
+                    ) : (
+                      <>
+                        {item?.data?.sender_profile_photo_url
+                          ? <Image
+                            style={styles(theme).profilePic}
+                            source={{ uri: item?.data?.sender_profile_photo_url }}
+                          />
+                          : <Image
+                            style={styles(theme).profilePic}
+                            source={IMAGES.user_placeholder}
+                          />
 
-                    }
+                        }
+                      </>
+                    )}
                     <View style={{ flex: 1.0 }}>
-                      {/* <Text
-                    style={{ marginLeft: getScaleSize(16) }}
-                    size={getScaleSize(18)}
-                    font={FONTS.Lato.Bold}
-                    color={theme._424242}>
-                    {item?.title ?? ''}
-                  </Text> */}
+                      {item?.data?.event === 'RENEGOTIATION_REQUEST' && (
+                        <Text
+                          style={{ marginLeft: getScaleSize(16) }}
+                          size={getScaleSize(18)}
+                          font={FONTS.Lato.Bold}
+                          color={theme._424242}>
+                          {item?.title ?? ''}
+                        </Text>
+                      )}
                       <Text
                         style={{ marginLeft: getScaleSize(16) }}
                         size={getScaleSize(16)}
@@ -295,6 +372,42 @@ export default function Notification(props: any) {
                       </View>
                     </View>
                   </View>
+                  {userType === 'elderly_user' && (
+                    <>
+                      {item?.data?.event === 'RENEGOTIATION_REQUEST' && (
+                        <View style={styles(theme).buttonContainer}>
+                          <TouchableOpacity
+                            style={styles(theme).nextButtonContainer}
+                            activeOpacity={1}
+                            onPress={() => {
+                              setSelectedRenegotiationItem(item?.data);
+                            }}>
+                            <Text
+                              size={getScaleSize(14)}
+                              font={FONTS.Lato.Medium}
+                              color={theme.white}
+                              style={{ alignSelf: 'center' }}>
+                              {STRING.Accept}
+                            </Text>
+                          </TouchableOpacity>
+                          <TouchableOpacity
+                            style={styles(theme).backButtonContainer}
+                            activeOpacity={1}
+                            onPress={() => {
+                              setSelectedRenegotiationItem(item?.data ?? '');
+                            }}>
+                            <Text
+                              size={getScaleSize(14)}
+                              font={FONTS.Lato.Medium}
+                              color={'#ACADAD'}
+                              style={{ alignSelf: 'center' }}>
+                              {STRING.decline}
+                            </Text>
+                          </TouchableOpacity>
+                        </View>
+                      )}
+                    </>
+                  )}
                   {userType === 'elderly_user' && (
                     <>
                       {item?.title === 'Provider reached on location' && (
@@ -433,7 +546,29 @@ export default function Notification(props: any) {
           onConfirmStart()
         }}
       />
+      <BottomSheet
+        type='renegotiation_view'
+        icon={IMAGES.renegotiationIcon}
+        isNotCloseable={true}
+        bottomSheetRef={renegotiationViewRef}
+        height={getScaleSize(470)}
+        description={STRING.by_approving_the_updated_amount_will_be_placed_in_escrow}
+        title={STRING.new_budget_request}
+        subTitle={STRING.the_provider_has_reviewed_the_task_and_proposed_a_revised_budget_the_new_agreed_service_fee_is}
+        buttonTitle={STRING.confirm_pay}
+        secondButtonTitle={STRING.decline}
+        renegotiationAmount={selectedRenegotiationItem?.adjustment_amount ?? '0'}
+        onPressSecondButton={() => {
+          onRenegotiationDecline()
+        }}
+        onPressButton={() => {
+          onRenegotiationAccept()
+          // const STRIPE_URL = 'https://checkout.stripe.com/c/pay/cs_test_a1iW94fBqHKFW8a5uNFB39p0fQdVHXw6gBOQzOxBTZ6VDvzjlqI1Cs8Gm…'
+          // openStripeCheckout(STRIPE_URL);
+        }}
+      />
     </View>
+
   );
 }
 

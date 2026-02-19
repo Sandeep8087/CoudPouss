@@ -708,7 +708,7 @@ export default function EditProfile(props: any) {
                     setVisibleCountry(false);
                 }}
             />
-            <SafeAreaView />
+            {/* <SafeAreaView /> */}
         </View>
     );
 }

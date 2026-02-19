@@ -115,6 +115,32 @@ function Tabbar(props: any) {
         });
       }
 
+      if (url.startsWith('coudpouss://payment-success')) {
+        const params = parseParams(url);
+        const type = params.type
+        if (type == 'payment_type') {
+          setTimeout(() => {
+            props.navigation.navigate(SCREENS.Notification.identifier, {
+              isFromDeepLink: true,
+            });
+          }, 2000);
+        }
+        return;
+      }
+
+      if (url.startsWith('coudpouss://payment-cancel')) {
+        const params = parseParams(url);
+        const type = params.type
+        if (type == 'payment_type') {
+          setTimeout(() => {
+            props.navigation.navigate(SCREENS.Notification.identifier, {
+              isFromDeepLink: true,
+              isError: params.error,
+            });
+          }, 2000);
+        }
+      }
+
       if (url.startsWith('coudpouss://account-cancle')) {
         const params = parseParams(url);
         EventRegister.emit('onAccountCancel', {

@@ -72,7 +72,7 @@ export default function ProfessionalHome(props: any) {
 
   const { theme } = useContext<any>(ThemeContext);
 
-  const { profile, fetchProfile } = useContext(AuthContext);
+  const { profile, fetchProfile, userType } = useContext(AuthContext);
 
   console.log('profile==', profile);
 
@@ -248,7 +248,7 @@ export default function ProfessionalHome(props: any) {
           }}>
           <Image
             style={styles(theme).notifiationIcon}
-            source={IMAGES.notification_professional}
+            source={IMAGES.notification}
           />
         </TouchableOpacity>
         <TouchableOpacity
@@ -334,7 +334,7 @@ export default function ProfessionalHome(props: any) {
               </Text>
             </View>
           </ImageBackground>
-          {profile?.has_purchased === true ? (
+          {profile?.user?.service_provider_type === 'professional' && profile?.has_purchased === true ? (
             <>
               {profile?.onboarding_status === true ? (
                 <View>

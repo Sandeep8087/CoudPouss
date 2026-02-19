@@ -153,7 +153,11 @@ export default function CreateRequest(props: any) {
       console.log('result', result.status, result)
       if (result.status) {
         console.log('allCategories==', result?.data?.data)
-        setAllCategories(result?.data?.data);
+          const sortedData: any = [...(result?.data?.data || [])].sort(
+            (a: any, b: any) =>
+              a.category_name?.toLowerCase().localeCompare(b.category_name?.toLowerCase())
+          );
+        setAllCategories(sortedData);
       } else {
         SHOW_TOAST(result?.data?.message ?? '', 'error')
         console.log('error==>', result?.data?.message)

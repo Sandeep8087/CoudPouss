@@ -85,8 +85,7 @@ export default function Profile(props: any) {
         screenName={STRING.my_account}
       />
       <ScrollView showsVerticalScrollIndicator={false}
-        contentContainerStyle={{
-          paddingBottom: TABBAR_HEIGHT + getScaleSize(20),
+        contentContainerStyle={{ paddingBottom: getScaleSize(20)
         }}>
         <View style={styles(theme).mainContainer}>
           {profile?.user?.profile_photo_url ? (

@@ -290,11 +290,6 @@ export default function AddPersonalDetails(props: any) {
   }
 
   return (
-    <KeyboardAvoidingView
-      style={{ flex: 1 }}
-      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-      keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 20}
-    >
       <View style={styles(theme).container}>
         <Header
           onBack={() => {
@@ -302,7 +297,7 @@ export default function AddPersonalDetails(props: any) {
           }}
           screenName={STRING.add_personal_details}
         />
-        <ScrollView showsVerticalScrollIndicator={false}>
+        <ScrollView showsVerticalScrollIndicator={false} style={{ flex: 1 }}>
           <View style={styles(theme).mainContainer}>
             <View style={styles(theme).imageContainer}>
               {profileImage ? (
@@ -439,9 +434,8 @@ export default function AddPersonalDetails(props: any) {
             setVisibleCountry(false);
           }}
         />
+        {/* <SafeAreaView /> */}
       </View>
-      <SafeAreaView />
-    </KeyboardAvoidingView>
   );
 }
 
@@ -449,7 +443,7 @@ const styles = (theme: ThemeContextType['theme']) =>
   StyleSheet.create({
     container: {
       backgroundColor: theme.white,
-      justifyContent: 'center',
+      flex: 1.0,
     },
     mainContainer: {
       flex: 1.0,

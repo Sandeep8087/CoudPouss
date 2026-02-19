@@ -302,6 +302,7 @@ export default function RequestDetails(props: any) {
       const result = await API.Instance.post(API.API_ROUTES.onCancelService + `/${serviceId}`);
       if (result.status) {
         SHOW_TOAST(result?.data?.message ?? '', 'success')
+        setCancelServiceDetails(null);
         cancelScheduledServicePopupRef.current.close();
         props?.navigation.navigate(SCREENS.ServiceCancelled.identifier, {
           item: serviceDetails
@@ -370,7 +371,7 @@ export default function RequestDetails(props: any) {
         return null;
     }
   };
-console.log('serviceDetails',JSON.stringify(serviceDetails))
+  console.log('serviceDetails', JSON.stringify(serviceDetails))
   return (
     <View style={[styles(theme).container,
     { paddingBottom: Platform.OS === 'android' ? insets.bottom : 0 }
@@ -943,7 +944,7 @@ console.log('serviceDetails',JSON.stringify(serviceDetails))
                 size={getScaleSize(14)}
                 font={FONTS.Lato.SemiBold}
                 color={'#595959'}>
-                {`€${serviceDetails?.payment_breakdown?.total_amount ?? 0}`}
+                {`€${serviceDetails?.payment_breakdown?.finalize_quote_amount ?? 0}`}
               </Text>
             </View>
             <View style={styles(theme).newHorizontalView}>
@@ -1120,10 +1121,10 @@ console.log('serviceDetails',JSON.stringify(serviceDetails))
           setCancelServiceDetails(null);
         }}
         onCancel={(item: any) => {
+          console.log('item==>', item)
           if (item) {
             cancelService(item)
           }
-          setCancelServiceDetails(null);
         }}
       />
       <AcceptBottomPopup

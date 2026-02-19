@@ -76,7 +76,9 @@ const API_ROUTES = {
     getNotifications: "userService/notifications/get",
     getSubscriptionData: "subscription_and_payment/subscription/success-data",
     onConfirmStart: "service_confirmation/service_accept/elder/confirm_start",
-    onNotArrived: "service_confirmation/service_accept/elder/not_arrived"
+    onNotArrived: "service_confirmation/service_accept/elder/not_arrived",
+    onRenegotiationAccept: "service_confirmation/service_accept/renegotiation/accept",
+    onRenegotiationDecline: "service_confirmation/service_accept/renegotiation/decline"
 } 
 
 export { API_ROUTES, API_BASE_URL, DISABLE_API_LOGS }
