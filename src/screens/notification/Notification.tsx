@@ -80,7 +80,6 @@ export default function Notification(props: any) {
     getNotification();
   }, [page]);
 
-
   async function getNotification() {
     try {
       setLoading(true);
@@ -160,16 +159,17 @@ export default function Notification(props: any) {
 
   const elderDetailsRoutes = [
     'SERVICE_PROVIDER_ON_THE_WAY',
-    'SERVICE_REQUEST_MADE',
     'SEVICES PAYMENT DONE',
-    'SERVICE_REQUEST_MADE',
-    'SERVICE_COMPLETED'
+    'SERVICE_COMPLETED',
+    "SERVICE_REQUEST_MADE"
   ];
 
   const ProfessionalDetailsRoutes = [
     'SERVICE_RENEGOTIATION_ACCEPTED',
     'SERVICE_COMPLETED',
     'QUOTE_ACCEPTED',
+    'SERVICE_NEGOTIATED',
+    "SERVICE_MONEY_TRANSFERRED",
   ]
 
   function renderItem() {
@@ -226,7 +226,7 @@ export default function Notification(props: any) {
                       {STRING.SecurityCode}
                     </Text>
                     <View style={styles(theme).securityItemContainer}>
-                      {'123'.split('').map((item: any, index: number) => {
+                      {item?.data?.SECURITY_CODE?.split('').map((item: any, index: number) => {
                         return (
                           <Text
                             style={{ flex: 1.0 }}
@@ -364,7 +364,7 @@ export default function Notification(props: any) {
                             activeOpacity={1}
                             onPress={() => {
                               props.navigation.navigate(SCREENS.ProfessionalTaskDetails.identifier, {
-                                item: item?.data?.service_id,
+                                serviceId: item?.data?.service_id,
                               });
                             }}>
                             <Text

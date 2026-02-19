@@ -49,6 +49,7 @@ export default function ProfessionalTaskDetails(props: any) {
   const { theme } = useContext<any>(ThemeContext);
 
   const item = props?.route?.params?.item ?? {};
+  const serviceId = props?.route?.params?.serviceId ?? '';
 
   const [isStatus, setIsStatus] = useState(false);
   const [visibleTaskDetails, setVisibleTaskDetails] = useState(false);
@@ -76,7 +77,7 @@ export default function ProfessionalTaskDetails(props: any) {
     try {
       setLoading(true);
       const result = await API.Instance.get(
-        API.API_ROUTES.getTsakDetails + `/quotes/${item?.service_request_id}`,
+        API.API_ROUTES.getTsakDetails + `/quotes/${serviceId ? serviceId : item?.service_request_id}`,
       );
       if (result.status) {
         console.log('result==>', result?.data?.data);
