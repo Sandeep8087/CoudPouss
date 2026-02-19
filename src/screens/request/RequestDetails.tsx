@@ -7,7 +7,6 @@ import {
   FlatList,
   TouchableOpacity,
   Image,
-  Linking,
   Modal,
   TextInput,
 } from 'react-native';
@@ -21,7 +20,6 @@ import {
   SHOW_TOAST,
   useString,
 } from '../../constant';
-import {convertProviderToPeerUser} from '../../constant/chatUsers';
 
 //CONTEXT
 import {AuthContext, ThemeContext, ThemeContextType} from '../../context';
@@ -46,11 +44,7 @@ import {API} from '../../api';
 import moment from 'moment';
 import {EventRegister} from 'react-native-event-listeners';
 import {CommonActions} from '@react-navigation/native';
-import {
-  getPrividerbyId,
-  listenToThreads,
-  userMessage,
-} from '../../services/chat';
+import {getPrividerbyId, negotiationMessage} from '../../services/chat';
 
 export default function RequestDetails(props: any) {
   const STRING = useString();
@@ -79,7 +73,6 @@ export default function RequestDetails(props: any) {
     }
   }, []);
 
-  console.log('profile==>', profile.user);
   useEffect(() => {
     EventRegister.addEventListener('onPaymentCancel', (data: any) => {
       SHOW_TOAST(data?.message ?? '', 'error');
@@ -100,13 +93,10 @@ export default function RequestDetails(props: any) {
         params,
       );
       setLoading(false);
-      console.log('result', result.status, result);
       if (result.status) {
-        console.log('serviceDetails==', result?.data?.data);
         setServiceDetails(result?.data?.data ?? {});
       } else {
         SHOW_TOAST(result?.data?.message ?? '', 'error');
-        console.log('error==>', result?.data?.message);
       }
     } catch (error: any) {
       setLoading(false);
@@ -251,17 +241,17 @@ export default function RequestDetails(props: any) {
     }
   }
 
-  function generateUniqueFirestoreId() {
-    // Alphanumeric characters
-    const chars =
-      'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-    let autoId = '';
-    for (let i = 0; i < 20; i++) {
-      autoId += chars.charAt(Math.floor(Math.random() * chars.length));
-    }
+  // function generateUniqueFirestoreId() {
+  //   // Alphanumeric characters
+  //   const chars =
+  //     'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+  //   let autoId = '';
+  //   for (let i = 0; i < 20; i++) {
+  //     autoId += chars.charAt(Math.floor(Math.random() * chars.length));
+  //   }
 
-    return autoId;
-  }
+  //   return autoId;
+  // }
 
   return (
     <View style={styles(theme).container}>
@@ -561,7 +551,7 @@ export default function RequestDetails(props: any) {
             gap: getScaleSize(16),
             marginTop: getScaleSize(12),
           }}
-          renderItem={({item, index}) => {
+          renderItem={({item}) => {
             return (
               <TouchableOpacity
                 style={[styles(theme).uploadButton]}
@@ -601,7 +591,7 @@ export default function RequestDetails(props: any) {
             gap: getScaleSize(16),
             marginBottom: getScaleSize(24),
           }}
-          renderItem={({item, index}) => {
+          renderItem={({item}) => {
             return (
               <Image
                 style={[styles(theme).photosView]}
@@ -749,7 +739,7 @@ export default function RequestDetails(props: any) {
                   const provider = await getPrividerbyId(
                     serviceDetails?.provider?.id,
                   );
-                  if (provider?.data()?.data) {
+                  if (provider.size > 0) {
                     props.navigation.navigate(SCREENS.ChatDetails.identifier, {
                       conversationId: profile?.user?.id,
                       peerUser: {
@@ -760,16 +750,32 @@ export default function RequestDetails(props: any) {
                       },
                     });
                   } else {
-                    userMessage(
+                    negotiationMessage(
+                      serviceDetails?.sub_category_name,
                       profile?.user?.id,
-                      profile?.user?.first_name,
                       serviceDetails?.provider?.id,
-                      serviceDetails?.provider?.full_name,
+                      'Original Valuation',
+                      'elderly_user',
+                      serviceDetails?.total_renegotiated,
+                      profile?.user?.id,
+                    );
+                    negotiationMessage(
+                      serviceDetails?.sub_category_name,
+                      profile?.user?.id,
+                      serviceDetails?.provider?.id,
+                      'Initial Quote',
+                      'elderly_user',
+                      serviceDetails?.validation_amount,
+                      profile?.user?.id,
+                    );
+                    negotiationMessage(
+                      serviceDetails?.sub_category_name,
+                      profile?.user?.id,
+                      serviceDetails?.provider?.id,
+                      'Your Previous Offer',
+                      'elderly_user',
                       newQuoteAmount,
                       profile?.user?.id,
-                      profile?.user?.profile_photo_url,
-                      serviceDetails?.provider?.profile_photo_url,
-                      'negotiation',
                     );
                     props.navigation.navigate(SCREENS.ChatDetails.identifier, {
                       conversationId: profile?.user?.id,

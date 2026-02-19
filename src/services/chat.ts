@@ -403,70 +403,51 @@ export const createNewThread = (
 //    Single negotiation User Message
 // ========================= */
 
-// export const negotiationMessage = async (
-//   userId: string,
-//   userName: string,
-//   recipientId: string,
-//   recipientName: string,
-//   message: string,
-//   conversationId: string,
-//   userPhoto: string,
-//   recipientPhoto: string,
-// ): Promise<void> => {
-//   return firestore()
-//     .collection('Users')
-//     .doc(userId)
-//     .collection('NEGOTIATION_MESSAGES')
-//     .doc(conversationId)
-//     .set(
-//       {
-//         message,
-//         createdAt: new Date().getTime(),
-//         readCount: 'true',
-//         user: {
-//           userId: userId,
-//           name: recipientName,
-//           recipientId: recipientId,
-//           recipientPhoto: recipientPhoto,
-//           chatVisible: 'single',
-//         },
-//       },
-//       { merge: true },
-//     )
-//     .then(() => {
-//       return firestore()
-//         .collection('Users')
-//         .doc(recipientId)
-//         .collection('NEGOTIATION_MESSAGES')
-//         .doc(conversationId)
-//         .set(
-//           {
-//             message,
-//             createdAt: new Date().getTime(),
-//             readCount: 'false',
-//             user: {
-//               userId: userId,
-//               name: userName,
-//               recipientId: userId,
-//               recipientPhoto: userPhoto,
-//               chatVisible: 'single',
-//             },
-//           },
-//           { merge: true },
-//         );
-//     })
-//     .then(() => {
-//       return firestore()
-//         .collection('NEGOTIATION_MESSAGES')
-//         .doc(conversationId)
-//         .collection('MESSAGE_THREADS')
-//         .add({
-//           senderId: userId,
-//           text: message,
-//           createdAt: new Date().getTime(),
-//         });
-//     });
-// };
+export const negotiationMessage = async (
+  serviceName: string,
+  userId: string,
+  recipientId: string,
+  title: string,
+  type: string,
+  message: string,
+  conversationId: string,
+): Promise<void> => {
+  return firestore()
+    .collection('Users')
+    .doc(userId)
+    .collection('NEGOTIATION_MESSAGES')
+    .doc(conversationId)
+    .set(
+
+      { merge: true },
+    )
+    .then(() => {
+      return firestore()
+        .collection('Users')
+        .doc(recipientId)
+        .collection('NEGOTIATION_MESSAGES')
+        .doc(conversationId)
+        .set(
+
+          { merge: true },
+        );
+    })
+    .then(() => {
+      return firestore()
+        .collection('NEGOTIATION_MESSAGES')
+        .doc(conversationId)
+        .collection('MESSAGE_THREADS')
+        .add({
+          serviceName: serviceName,
+          title: title,
+          type: type,
+          senderId: userId,
+          receiverId: recipientId,
+          text: message,
+          createdAt: new Date().getTime(),
+        });
+    });
+};
 
 /* =========================
    Single User Message
@@ -553,13 +534,21 @@ export const listenToThreads = (UserID: string) => {
 export const getPrividerbyId = async (providerId: string) => {
   return await firestore()
     .collection('Users')
-    .doc(providerId)
+    .doc(providerId).collection('NEGOTIATION_MESSAGES')
     .get();
 };
 
 export const messagesListThread = (threadId: string) => {
   return firestore()
     .collection('MESSAGES')
+    .doc(threadId)
+    .collection('MESSAGE_THREADS')
+    .orderBy('createdAt', 'desc');
+};
+
+export const messagesNegotiationListThread = (threadId: string) => {
+  return firestore()
+    .collection('NEGOTIATION_MESSAGES')
     .doc(threadId)
     .collection('MESSAGE_THREADS')
     .orderBy('createdAt', 'desc');
