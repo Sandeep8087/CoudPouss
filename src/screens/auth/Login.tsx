@@ -131,7 +131,7 @@ export default function Login(props: any) {
   async function getProfileData() {
     try {
       setLoading(true);
-      const result = await API.Instance.get(API.API_ROUTES.getUserDetails);
+      const result = await API.Instance.get(API.API_ROUTES.getUserDetails + `?platform=app`);
       if (result.status) {
         console.log('profile result==>', JSON.stringify(result?.data?.data));
         setProfile(result?.data?.data);

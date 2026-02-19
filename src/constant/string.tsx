@@ -447,6 +447,12 @@ export const useString = () => {
     english: 'English',
     onboarding_process: "Onboarding Process",
     you_have_not_completed_your_onboarding: "You have not completed your onboarding",
+    task_details: 'Task Details',
+    please_keep_this_security_code_safe_it_will_be_required_to_confirm_completion_and_release_payment: "Please keep this security code safe — it will be required to confirm completion and release payment.",
+    decline: 'Decline',
+    please_confirm_that_the_expert_has_arrived_at_the_service_location_Do_you_acknowledge_their_arrival: "Please confirm that the expert has arrived at the service location. Do you acknowledge their arrival?",
+    not_arrived: "Not arrived",
+    yes_i_confirm: "Yes, I confirm",
   };
 };
 

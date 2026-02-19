@@ -37,7 +37,7 @@ const API_ROUTES = {
     getProfessionalAllServices: "quote_request/open-services",
     getProfessionalServiceDetails: "quote_request/service-info",
     sendQuoteRequest: "quote_request/quoterequest",
-    fileUploadProfessionalServices:"quote_request/upload-job-file",
+    fileUploadProfessionalServices: "quote_request/upload-job-file",
     uploadProviderJobFiles: "profile_module/upload-files",
     getProviderUserDetails: "service_confirmation/service_accept/provider_user",
     getQuateList: "quote_accept/service-provider/quotes",
@@ -73,7 +73,11 @@ const API_ROUTES = {
     onMarkAsCompleted: 'quote_accept/mark-service-completed',
     onValidateSecurityCode: 'quote_accept/validate-service-code',
     onNotification: "userService/devices-token/register-token",
-    getNotifications: "userService/notifications/get"
-}
+    getNotifications: "userService/notifications/get",
+    getSubscriptionData: "subscription_and_payment/subscription/success-data",
+    onConfirmStart: "service_confirmation/service_accept/elder/confirm_start",
+    onNotArrived: "service_confirmation/service_accept/elder/not_arrived"
+} 
+
 
 export { API_ROUTES, API_BASE_URL, DISABLE_API_LOGS }

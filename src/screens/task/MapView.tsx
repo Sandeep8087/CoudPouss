@@ -364,6 +364,7 @@ export default function MapViewScreen(props: any) {
             />
             <BottomSheet
                 type='map_view'
+                icon={IMAGES.pinIcon}
                 isNotCloseable={true}
                 bottomSheetRef={mapViewRef}
                 height={getScaleSize(530)}

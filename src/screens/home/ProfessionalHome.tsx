@@ -16,6 +16,7 @@ import {
   Linking,
   Platform,
   PermissionsAndroid,
+  AppState,
 } from 'react-native';
 
 //ASSETS
@@ -59,6 +60,7 @@ import {
 import { SCREENS } from '..';
 import Geolocation from 'react-native-geolocation-service';
 import { PERMISSIONS, request, RESULTS } from 'react-native-permissions';
+import { EventRegister } from 'react-native-event-listeners';
 
 export default function ProfessionalHome(props: any) {
 
@@ -70,7 +72,7 @@ export default function ProfessionalHome(props: any) {
 
   const { theme } = useContext<any>(ThemeContext);
 
-  const { profile } = useContext(AuthContext);
+  const { profile, fetchProfile } = useContext(AuthContext);
 
   console.log('profile==', profile);
 
@@ -80,8 +82,49 @@ export default function ProfessionalHome(props: any) {
 
   const isFocused = useIsFocused();
 
+  console.log('profileDATA==>', JSON.stringify(profile));
+
+
+  let currentState = AppState.currentState;
+
+  useEffect(() => {
+    const sub = AppState.addEventListener('change', nextState => {
+      if (currentState === 'active' && nextState === 'background') {
+        onUpdateProfile();
+      }
+
+      if (currentState === 'background' && nextState === 'active') {
+        onUpdateProfile();
+      }
+
+      currentState = nextState;
+    });
+
+    return () => sub.remove();
+  }, []);
+
+  useEffect(() => {
+    EventRegister.addEventListener('onAccountSuccess', (data: any) => {
+      onUpdateProfile();
+    });
+  }, []);
+
+  const onUpdateProfile = async () => {
+    setLoading(true);
+    await fetchProfile();
+    setLoading(false);
+  }
+
+  useEffect(() => {
+    console.log('onAccountCancel');
+    EventRegister.addEventListener('onAccountCancel', (data: any) => {
+      onUpdateProfile();
+    });
+  }, []);
+
   useEffect(() => {
     if (isFocused) {
+      onUpdateProfile();
       requestPermissions();
       getLocation()
     }
@@ -125,7 +168,6 @@ export default function ProfessionalHome(props: any) {
   const requestPermissions = async () => {
     if (Platform.OS === 'android') {
       await PermissionsAndroid.requestMultiple([
-        PermissionsAndroid.PERMISSIONS.CAMERA,
         PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION,
         PermissionsAndroid.PERMISSIONS.WRITE_EXTERNAL_STORAGE,
       ]);
@@ -141,7 +183,7 @@ export default function ProfessionalHome(props: any) {
       const limit = 2;
       setLoading(true);
       const result: any = await API.Instance.get(
-        `${API.API_ROUTES.getProfessionalAllServices}?provider_lat=${location?.latitude}&provider_lon=${location?.longitude}&page=${page}&limit=${limit}`,
+        `${API.API_ROUTES.getProfessionalAllServices}?provider_lat=${location?.latitude}&provider_lon=${location?.longitude}&page=${page}&limit=${limit}&platform=app`,
       );
       setLoading(false)
       if (result?.status) {
@@ -290,7 +332,7 @@ export default function ProfessionalHome(props: any) {
               </Text>
             </View>
           </ImageBackground>
-          {profile?.has_purchased ? (
+          {profile?.has_purchased === true ? (
             <>
               {profile?.onboarding_status === true ? (
                 <View>
@@ -470,12 +512,9 @@ export default function ProfessionalHome(props: any) {
               title={STRING.you_have_not_subscribed_to_any_plan}
               style={styles(theme).emptyContainer}
               onPressButton={() => {
-                props.navigation.navigate(
-                  SCREENS.ChooseYourSubscription.identifier,
-                  {
-                    isFromSubscriptionButton: true,
-                  },
-                );
+                props.navigation.navigate(SCREENS.ChooseYourSubscription.identifier, {
+                  isFromSubscriptionButton: true,
+                });
               }}
             />
           )}

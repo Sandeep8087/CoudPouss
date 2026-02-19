@@ -11,6 +11,8 @@ import {
   Modal,
   FlatList,
   ActivityIndicator,
+  PermissionsAndroid,
+  Platform,
 } from 'react-native';
 
 //API
@@ -37,6 +39,10 @@ import {
 //SCREENS
 import { SCREENS } from '..';
 
+//PACKAGES
+import Geolocation from 'react-native-geolocation-service';
+import { PERMISSIONS, request, RESULTS } from 'react-native-permissions';
+
 export default function ExploreServiceRequest(props: any) {
 
   const PAGE_SIZE = 10;
@@ -54,17 +60,72 @@ export default function ExploreServiceRequest(props: any) {
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
   const [searchText, setSearchText] = useState('');
+  const [location, setLocation] = useState<any>(null);
 
   useEffect(() => {
-    getAllServices()
+    requestPermissions()
+    getLocation()
+  }, [])
+
+  useEffect(() => {
+    if (location) {
+      getAllServices(location);
+    }
   }, [page])
 
-  async function getAllServices() {
+  const hasLocationPermission = async () => {
+    if (Platform.OS === 'ios') {
+      const status = await request(PERMISSIONS.IOS.CAMERA);
+      if (status === RESULTS.GRANTED) {
+        return true;
+      } else {
+        return false;
+      }
+    }
+    const granted = await PermissionsAndroid.request(
+      PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION,
+    );
+
+    return granted === PermissionsAndroid.RESULTS.GRANTED;
+  };
+
+  async function getLocation() {
+    const permission = await hasLocationPermission();
+    if (!permission) return;
+
+    Geolocation.getCurrentPosition(
+      position => {
+        const { latitude, longitude } = position.coords;
+        setLoading(false);
+        setLocation({ latitude, longitude });
+        getAllServices(location);
+      },
+      error => console.log('Error:', error),
+      {
+        enableHighAccuracy: false,
+        timeout: 20000,
+        maximumAge: 10000,
+      },
+    );
+  }
+
+  const requestPermissions = async () => {
+    if (Platform.OS === 'android') {
+      await PermissionsAndroid.requestMultiple([
+        PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION,
+        PermissionsAndroid.PERMISSIONS.WRITE_EXTERNAL_STORAGE,
+      ]);
+    } else {
+      await request(PERMISSIONS.IOS.CAMERA);
+    }
+  };
+
+  async function getAllServices(location: any) {
     if (!hasMore) return;
     try {
 
       setLoading(true)
-      const result: any = await API.Instance.get(API.API_ROUTES.getProfessionalAllServices + `?page=${page}&limit=${PAGE_SIZE}`)
+      const result: any = await API.Instance.get(API.API_ROUTES.getProfessionalAllServices + `?provider_lat=${location?.latitude}&provider_lon=${location?.longitude}&&page=${page}&limit=${PAGE_SIZE}&platform=app`)
       if (result?.status) {
         console.log('result==>', result?.data?.data);
         const newData = result?.data?.data?.open_services ?? []
@@ -91,7 +152,7 @@ export default function ExploreServiceRequest(props: any) {
   const loadMore = () => {
     if (!isLoading && hasMore) {
       setPage(page + 1);
-      getAllServices();
+      getAllServices(location);
     }
   };
 
@@ -185,7 +246,7 @@ export default function ExploreServiceRequest(props: any) {
         data={serviceList}
         showsVerticalScrollIndicator={false}
         keyExtractor={(item: any, index: number) => index.toString()}
-        contentContainerStyle={{marginHorizontal: getScaleSize(22), paddingBottom: getScaleSize(50) }}
+        contentContainerStyle={{ marginHorizontal: getScaleSize(22), paddingBottom: getScaleSize(50) }}
         onEndReached={loadMore}
         onEndReachedThreshold={0.1}
         ListFooterComponent={
@@ -267,7 +328,7 @@ const styles = (theme: ThemeContextType['theme']) =>
       alignItems: 'center',
       backgroundColor: theme.white,
       borderWidth: 1,
-      borderColor:  theme._BECFDA,
+      borderColor: theme._BECFDA,
       borderRadius: getScaleSize(12),
       paddingHorizontal: getScaleSize(12),
       // paddingVertical: getScaleSize(4),
@@ -278,7 +339,7 @@ const styles = (theme: ThemeContextType['theme']) =>
       width: getScaleSize(32),
       alignSelf: 'center' as FlexAlignType,
     },
-   
+
     searchInput: {
       fontFamily: FONTS.Lato.Regular,
       fontSize: getScaleSize(14),

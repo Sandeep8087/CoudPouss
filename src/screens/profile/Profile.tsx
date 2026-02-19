@@ -13,12 +13,13 @@ import { AuthContext, ThemeContext, ThemeContextType } from '../../context';
 
 //CONSTANT & ASSETS
 import { FONTS, IMAGES } from '../../assets';
-import { getScaleSize, Storage, TABBAR_HEIGHT, useString } from '../../constant';
+import { getScaleSize, openStripeCheckout, Storage, TABBAR_HEIGHT, useString } from '../../constant';
 
 //COMPONENTS
 import { Text, HomeHeader, SearchComponent, Header, Button, BottomSheet, ProgressView } from '../../components';
 import { SCREENS } from '..';
 import { CommonActions } from '@react-navigation/native';
+import { stubFalse } from 'lodash';
 
 
 export default function Profile(props: any) {
@@ -111,7 +112,7 @@ export default function Profile(props: any) {
           </Text>
           {userType === 'service_provider' && (
             <>
-              {profile?.provider_info?.is_docs_verified == false && (
+              {profile?.provider_info?.is_docs_verified == false || profile?.onboarding_status === false && (
                 <View style={styles(theme).checkStatusContainer}>
                   <Image source={IMAGES.ic_alart} style={styles(theme).alartIcon} />
                   <Text
@@ -121,19 +122,36 @@ export default function Profile(props: any) {
                     color={theme._214C65}>
                     {STRING.account_under_verification}
                   </Text>
-                  <TouchableOpacity
-                    onPress={() => {
-                      props.navigation.navigate(SCREENS.ApplicationStatus.identifier);
-                    }}
-                    style={styles(theme).checkStatusButton}>
-                    <Text
-                      size={getScaleSize(16)}
-                      font={FONTS.Lato.SemiBold}
-                      align="center"
-                      color={theme.white}>
-                      {STRING.check_status}
-                    </Text>
-                  </TouchableOpacity>
+                  {profile?.provider_info?.is_docs_verified === false && (
+                    <TouchableOpacity
+                      onPress={() => {
+                        props.navigation.navigate(SCREENS.ApplicationStatus.identifier);
+                      }}
+                      style={[styles(theme).checkStatusButton, { backgroundColor: theme._214C65 }]}>
+                      <Text
+                        size={getScaleSize(16)}
+                        font={FONTS.Lato.SemiBold}
+                        align="center"
+                        color={theme.white}>
+                        {STRING.check_status}
+                      </Text>
+                    </TouchableOpacity>
+                  )}
+                  {profile?.onboarding_status === false && (
+                    <TouchableOpacity
+                      onPress={() => {
+                        openStripeCheckout(profile?.onboarding_redirect_url ?? '')
+                      }}
+                      style={[styles(theme).checkStatusButton, { backgroundColor: theme._F0B52C }]}>
+                      <Text
+                        size={getScaleSize(16)}
+                        font={FONTS.Lato.SemiBold}
+                        align="center"
+                        color={theme.white}>
+                        {STRING.onboarding_process}
+                      </Text>
+                    </TouchableOpacity>
+                  )}
                 </View>
               )}
             </>
@@ -242,7 +260,7 @@ const styles = (theme: ThemeContextType['theme']) =>
       marginBottom: getScaleSize(12),
     },
     checkStatusButton: {
-      backgroundColor: theme._214C65,
+
       borderRadius: getScaleSize(12),
       alignItems: 'center',
       paddingVertical: getScaleSize(10),

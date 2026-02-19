@@ -23,6 +23,7 @@ interface BottomSheetProps {
     security_Code?: any;
     isNotCloseable?: boolean;
     image?: any;
+    icon?: any;
 }
 
 export default function BottomSheet(props: BottomSheetProps) {
@@ -36,7 +37,8 @@ export default function BottomSheet(props: BottomSheetProps) {
         secondButtonTitle, onPressSecondButton,
         type, security_Code,
         isNotCloseable,
-        image
+        image,
+        icon
     } = props;
     return (
         <RBSheet
@@ -166,7 +168,7 @@ export default function BottomSheet(props: BottomSheetProps) {
                 )}
                 {type === 'map_view' && (
                     <View style={styles(theme).mainContainer}>
-                        <Image source={IMAGES.pinIcon} style={[styles(theme).alartIcon, { marginBottom: getScaleSize(12) }]} />
+                        <Image source={icon} style={[styles(theme).alartIcon, { marginBottom: getScaleSize(12) }]} />
                         <Text
                             size={getScaleSize(22)}
                             font={FONTS.Lato.SemiBold}

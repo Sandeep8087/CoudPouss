@@ -101,8 +101,8 @@ const StatusItem = (props: any) => {
           color={theme._737373}
           style={{ marginTop: getScaleSize(4) }}>
           {
-            (item?.name === 'Payment received' && isProcessing ? 'Scheduled on ' + moment(taskStatusData?.is_otp_verifed?.time).format('ddd, DD MMM’ YYYY  -  h:mma') :
-              item?.time ? moment(item?.time).format('ddd, DD MMM’ YYYY  -  h:mma')
+            (item?.name === 'Payment received' && isProcessing ? 'Scheduled on ' + moment(taskStatusData?.is_otp_verifed?.time).format('ddd, DD MMM’ YYYY  -  HH:mm A') :
+              item?.time ? moment(item?.time).format('ddd, DD MMM’ YYYY  -  HH:mm A')
                 : '-')}
         </Text>
         {/* {props?.item?.securityCode && (

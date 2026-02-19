@@ -52,7 +52,7 @@ export default function Otp(props: any) {
         return () => clearInterval(interval);
     }, [isResendDisabled]);
 
-    
+
     async function onOtp() {
         if (isFromSignup) {
             onSignup()
@@ -81,7 +81,7 @@ export default function Otp(props: any) {
             // }
             try {
                 setLoading(true);
-                const result = await API.Instance.post(API.API_ROUTES.verifyResetPassword, params);
+                const result: any = await API.Instance.post(API.API_ROUTES.verifyResetPassword, params);
                 setLoading(false);
                 console.log('result', result.status, result)
                 if (result.status) {
@@ -125,7 +125,7 @@ export default function Otp(props: any) {
             // }
             try {
                 setLoading(true);
-                const result = await API.Instance.post(API.API_ROUTES.verifyOtp, params);
+                const result: any = await API.Instance.post(API.API_ROUTES.verifyOtp, params);
                 setLoading(false);
                 console.log('result', result.status, result)
                 if (result.status) {
@@ -136,8 +136,22 @@ export default function Otp(props: any) {
                         // countryCode: countryCode,
                     });
                 } else {
-                    SHOW_TOAST(result?.data?.message ?? '', 'error')
-                    console.log('error==>', result?.data?.message)
+                    if (result?.code === 409) {
+                        if (result?.data?.message == 'OTP already verified. Redirect to Password page.') {
+                            props.navigation.navigate(SCREENS.CreatePassword.identifier, {
+                                email: email,
+                            })
+                        } else if (result?.data?.message == 'Password already set. Redirect to Details page.') {
+                            props.navigation.navigate(SCREENS.AddPersonalDetails.identifier, {
+                                email: email,
+                            })
+                        } else {
+                            SHOW_TOAST(result?.data?.message ?? '', 'error')
+                        }
+                    } else {
+                        SHOW_TOAST(result?.data?.message ?? '', 'error')
+                        console.log('error==>', result?.data?.message)
+                    }
                 }
             } catch (error: any) {
                 setLoading(false);

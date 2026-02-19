@@ -91,7 +91,11 @@ export default function Signup(props: any) {
                             props.navigation.navigate(SCREENS.CreatePassword.identifier, {
                                 email: email,
                             })
-                        } else {
+                        }else if (result?.data?.message == 'Password already set. Redirect to Details page.') {
+                            props.navigation.navigate(SCREENS.AddPersonalDetails.identifier, {
+                                email: email,
+                            })
+                        }else {
                             SHOW_TOAST(result?.data?.message ?? '', 'error')
                         }
                     } else {

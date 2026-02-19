@@ -257,9 +257,7 @@ export default function AddQuote(props: any) {
       setDescriptionError('Please enter short description');
     } else if (photoIds.length === 0) {
       setDocError('Please upload at least one document');
-    } else if (!videoId) {
-      setVideoError('Please upload a video');
-    } else {
+    }  else {
       try {
         setLoading(true);
 
@@ -274,7 +272,7 @@ export default function AddQuote(props: any) {
             ...payload,
             provider_quote_amount: amount,
             offer_photoids: photoIds,
-            offer_videoids: [videoId],
+            offer_videoids: videoId ? [videoId] : [],
           };
         }
 
@@ -421,7 +419,7 @@ export default function AddQuote(props: any) {
                   numberOfLines={4}
                   font={FONTS.Lato.Medium}
                   color={theme.primary}>
-                  {isServiceDetails?.about_client?.address}
+                  {isServiceDetails?.service_address}
                 </Text>
               </View>
             </View>
@@ -461,7 +459,7 @@ export default function AddQuote(props: any) {
               color={'#0F232F'}>
               {isServiceDetails?.about_client?.name}
             </Text>
-            <Image
+            {/* <Image
               style={{
                 height: getScaleSize(25),
                 width: getScaleSize(25),
@@ -469,7 +467,7 @@ export default function AddQuote(props: any) {
                 marginLeft: getScaleSize(6),
               }}
               source={IMAGES.verify}
-            />
+            /> */}
           </View>
         </View>
         {profile?.user?.service_provider_type === 'professional' &&
@@ -605,8 +603,7 @@ export default function AddQuote(props: any) {
         title={STRING.SubmitQuote}
         disabled={
           (profile?.user?.service_provider_type === 'professional' && amount === '') ||
-          desctiption === '' ||
-          !videoId
+          desctiption === ''
         }
         style={{
           marginVertical: getScaleSize(24),

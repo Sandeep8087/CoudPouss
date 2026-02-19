@@ -253,7 +253,7 @@ export default function AddPersonalDetails(props: any) {
   async function getProfileData() {
     try {
       setLoading(true);
-      const result = await API.Instance.get(API.API_ROUTES.getUserDetails);
+      const result = await API.Instance.get(API.API_ROUTES.getUserDetails + `?platform=app`);
       if (result.status) {
         setProfile(result?.data?.data);
         onNext();

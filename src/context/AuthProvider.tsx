@@ -24,7 +24,7 @@ export function AuthProvider(props: Readonly<AuthProviderProps>): any {
 
   async function fetchProfile() {
     try {
-      const result = await API.Instance.get(API.API_ROUTES.getUserDetails);
+      const result = await API.Instance.get(API.API_ROUTES.getUserDetails + `?platform=app`);
       if (result.status) {
         const userDetail = result?.data?.data;
         console.log('PRO',JSON.stringify(userDetail))

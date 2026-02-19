@@ -55,6 +55,7 @@ export default function RequestDetails(props: any) {
   const STRING = useString();
   const { theme } = useContext<any>(ThemeContext);
   const item = props.route.params?.item ?? {};
+  const serviceId = props.route.params?.serviceId ?? '';
 
   const rejectRef = useRef<any>(null);
   const acceptRef = useRef<any>(null);
@@ -98,7 +99,7 @@ export default function RequestDetails(props: any) {
   async function getServiceDetails() {
     try {
       const params = {
-        service_id: item?.id,
+        service_id: serviceId ? serviceId : item?.id,
       };
       setLoading(true);
       const result = await API.Instance.post(
@@ -222,12 +223,12 @@ export default function RequestDetails(props: any) {
         params,
       );
       if (result.status) {
-        // const STRIPE_URL = result?.data?.data?.checkout_url ?? '';
-        // paymentRef.current.close();
-        // openStripeCheckout(STRIPE_URL);
-        props.navigation.navigate(SCREENS.ServiceConfirmed.identifier, {
-          serviceId: serviceDetails?.service_id,
-        });
+        const STRIPE_URL = result?.data?.data?.checkout_url ?? '';
+        paymentRef.current.close();
+        openStripeCheckout(STRIPE_URL);
+        // props.navigation.navigate(SCREENS.ServiceConfirmed.identifier, {
+        //   serviceId: serviceDetails?.service_id,
+        // });
       } else {
         SHOW_TOAST(result?.data?.message ?? '', 'error');
       }
