@@ -44,7 +44,11 @@ import {API} from '../../api';
 import moment from 'moment';
 import {EventRegister} from 'react-native-event-listeners';
 import {CommonActions} from '@react-navigation/native';
-import {getPrividerbyId, negotiationMessage} from '../../services/chat';
+import {
+  getPrividerbyId,
+  negotiationMessage,
+  userMessage,
+} from '../../services/chat';
 
 export default function RequestDetails(props: any) {
   const STRING = useString();
@@ -772,10 +776,21 @@ export default function RequestDetails(props: any) {
                       serviceDetails?.sub_category_name,
                       profile?.user?.id,
                       serviceDetails?.provider?.id,
-                      'Your Previous Offer',
+                      profile?.user?.first_name,
                       'elderly_user',
                       newQuoteAmount,
                       profile?.user?.id,
+                    );
+                    userMessage(
+                      profile?.user?.id,
+                      profile?.user?.first_name,
+                      serviceDetails?.provider?.id,
+                      serviceDetails?.provider?.full_name,
+                      'hi',
+                      profile?.user?.id,
+                      profile?.user?.profile_photo_url,
+                      serviceDetails?.provider?.profile_photo_url,
+                      'text',
                     );
                     props.navigation.navigate(SCREENS.ChatDetails.identifier, {
                       conversationId: profile?.user?.id,
