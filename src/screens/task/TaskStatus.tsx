@@ -39,10 +39,14 @@ import BottomBar from '../Bottombar';
 import Geolocation from 'react-native-geolocation-service';
 import { } from '../../constant';
 import { SCREENS } from '..';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 
 
 export default function TaskStatus(props: any) {
+
+  const insets = useSafeAreaInsets();
+
   const STRING = useString();
   const { theme } = useContext<any>(ThemeContext);
 
@@ -163,7 +167,7 @@ export default function TaskStatus(props: any) {
     const serviceCompleted = timeline.find(i => i.name === 'Service completed');
     const paymentReceived = timeline.find(i => i.name === 'Payment received');
 
-
+    console.log('serviceFlags.isOutForService ', serviceFlags.isOutForService)
     setServiceFlags({
       isOutForService: !!accepted && !outForService?.completed,
       isExpertConfirmed: !!outForService?.completed && !expertConfirmed?.completed,
@@ -334,7 +338,9 @@ export default function TaskStatus(props: any) {
   console.log('serviceFlags.isServiceFinalized==>', serviceFlags.isServiceFinalized, taskStatusData?.is_otp_verifed?.status == 'false');
 
   return (
-    <View style={styles(theme).container}>
+    <View style={[styles(theme).container,
+    { paddingBottom: Platform.OS === 'android' ? insets.bottom : 0 }
+    ]}>
       <Header
         onBack={() => {
           props.navigation.goBack();

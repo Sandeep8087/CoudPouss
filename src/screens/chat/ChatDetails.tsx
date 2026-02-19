@@ -1,4 +1,4 @@
-import React, {useContext, useEffect, useMemo, useState} from 'react';
+import React, { useContext, useEffect, useMemo, useState } from 'react';
 import {
   View,
   StatusBar,
@@ -17,19 +17,19 @@ import {
 } from 'react-native';
 
 //ASSETS
-import {FONTS, IMAGES} from '../../assets';
+import { FONTS, IMAGES } from '../../assets';
 
 //CONTEXT
-import {ThemeContext, ThemeContextType, AuthContext} from '../../context';
+import { ThemeContext, ThemeContextType, AuthContext } from '../../context';
 
 //CONSTANT
 import {getScaleSize, SHOW_TOAST, useString} from '../../constant';
 
 //COMPONENT
-import {Text} from '../../components';
+import { Text } from '../../components';
 
 //PACKAGES
-import {useFocusEffect} from '@react-navigation/native';
+import { useFocusEffect } from '@react-navigation/native';
 import {
   listenToThreads,
   messagesListThread,
@@ -39,11 +39,16 @@ import {
 } from '../../services/chat';
 import {FirebaseFirestoreTypes} from '@react-native-firebase/firestore';
 import {Screen} from 'react-native-screens';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 export default function ChatDetails(props: any) {
+
+  const insets = useSafeAreaInsets();
+
   const STRING = useString();
   const {theme} = useContext<any>(ThemeContext);
   const {profile} = useContext<any>(AuthContext);
+  const { user } = useContext<any>(AuthContext);
   const peerUser = props?.route?.params?.peerUser;
   const [message, setMessage] = useState('');
   const [messages, setMessages] = useState<any[]>([]);
@@ -208,7 +213,7 @@ export default function ChatDetails(props: any) {
           <Image
             style={styles(theme).userProfilePic}
             source={
-              peerUserAvatar ? {uri: peerUserAvatar} : IMAGES.user_placeholder
+              peerUserAvatar ? { uri: peerUserAvatar } : IMAGES.user_placeholder
             }
           />
         )}
@@ -236,7 +241,7 @@ export default function ChatDetails(props: any) {
             style={styles(theme).userProfilePic}
             source={
               currentUserAvatar
-                ? {uri: currentUserAvatar}
+                ? { uri: currentUserAvatar }
                 : IMAGES.user_placeholder
             }
           />
@@ -289,7 +294,12 @@ export default function ChatDetails(props: any) {
   return (
     <KeyboardAvoidingView
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-      style={styles(theme).container}>
+      style={[styles(theme).container,
+      {
+        paddingBottom: Platform.OS === 'android' ? insets.bottom : 0,
+        paddingTop: Platform.OS === 'android' ? insets.top : 0,
+      }
+      ]}>
       <StatusBar
         barStyle="dark-content"
         backgroundColor={theme.white}
@@ -307,7 +317,7 @@ export default function ChatDetails(props: any) {
         <Image
           style={styles(theme).userImage}
           source={
-            peerUserAvatar ? {uri: peerUserAvatar} : IMAGES.user_placeholder
+            peerUserAvatar ? { uri: peerUserAvatar } : IMAGES.user_placeholder
           }
         />
         <View style={styles(theme).headerDetails}>
@@ -580,12 +590,12 @@ const formatTimestamp = (
   const date = timestamp.toDate
     ? timestamp.toDate()
     : new Date(timestamp as any);
-  return date.toLocaleTimeString([], {hour: '2-digit', minute: '2-digit'});
+  return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 };
 
 const styles = (theme: ThemeContextType['theme']) =>
   StyleSheet.create({
-    container: {flex: 1, backgroundColor: theme.white},
+    container: { flex: 1, backgroundColor: theme.white },
     hearderContainer: {
       paddingVertical: getScaleSize(12),
       flexDirection: 'row',

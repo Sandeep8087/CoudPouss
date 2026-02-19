@@ -5,6 +5,7 @@ import {
     TouchableOpacity,
     View,
     SectionList,
+    Platform,
 } from 'react-native';
 import React, { useContext, useEffect, useState } from 'react';
 
@@ -24,10 +25,14 @@ import { API } from '../../api';
 // PACKAGES
 import Tooltip from 'react-native-walkthrough-tooltip';
 import moment from 'moment';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 const PAGE_SIZE = 10;
 
 export default function Transactions(props: any) {
+
+    const insets = useSafeAreaInsets();
+
     const { theme } = useContext<any>(ThemeContext);
     const STRING = useString();
 
@@ -194,7 +199,7 @@ export default function Transactions(props: any) {
     };
 
     return (
-        <View style={styles(theme).container}>
+        <View style={[styles(theme).container, { paddingBottom: Platform.OS === 'android' ? insets.bottom : 0 }]}>
             <Header
                 onBack={() => props.navigation.goBack()}
                 screenName={STRING.transactions}

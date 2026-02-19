@@ -89,6 +89,7 @@ export default function Assistance(props: any) {
       setLoading(true);
       const result = await API.Instance.get(API.API_ROUTES.getHomeData + `?service_name=${service?.name}`);
       setLoading(false)
+      console.log('CAT',JSON.stringify(result))
       if (result.status) {
         setCategoryList(result?.data?.data?.categories ?? []);
         if (result?.data?.data?.categories?.[0]?.id) {
@@ -145,7 +146,6 @@ export default function Assistance(props: any) {
       transform: [{ translateY }],
     };
   });
-
   return (
     <View style={styles(theme).container}>
       <Header

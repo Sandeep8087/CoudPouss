@@ -45,6 +45,7 @@ import { PERMISSIONS, request, RESULTS } from 'react-native-permissions';
 
 export default function ExploreServiceRequest(props: any) {
 
+
   const PAGE_SIZE = 10;
   const STRING = useString();
 
@@ -61,10 +62,15 @@ export default function ExploreServiceRequest(props: any) {
   const [hasMore, setHasMore] = useState(true);
   const [searchText, setSearchText] = useState('');
   const [location, setLocation] = useState<any>(null);
+  const [selectedCategory, setSelectedCategory] = useState('');
+  const [selectedLocation, setSelectedLocation] = useState('');
+  const [selectedFilterType, setSelectedFilterType] = useState<
+    'none' | 'category' | 'location'
+  >('none');
 
   useEffect(() => {
-    requestPermissions()
-    getLocation()
+    // requestPermissions()
+    // getLocation()
   }, [])
 
   useEffect(() => {
@@ -73,75 +79,74 @@ export default function ExploreServiceRequest(props: any) {
     }
   }, [page])
 
-  const hasLocationPermission = async () => {
-    if (Platform.OS === 'ios') {
-      const status = await request(PERMISSIONS.IOS.CAMERA);
-      if (status === RESULTS.GRANTED) {
-        return true;
-      } else {
-        return false;
-      }
+  useEffect(() => {
+    const delay = setTimeout(() => {
+      setPage(1);
+      setHasMore(true);
+      getAllServices(1, true);
+    }, 400);
+
+    return () => clearTimeout(delay);
+  }, [searchText, selectedCategory, selectedLocation]);
+
+  useEffect(() => {
+    if (page > 1) {
+      getAllServices(page);
     }
-    const granted = await PermissionsAndroid.request(
-      PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION,
-    );
+  }, [page]);
 
-    return granted === PermissionsAndroid.RESULTS.GRANTED;
-  };
+  async function getAllServices(currentPage = 1, reset = false) {
 
-  async function getLocation() {
-    const permission = await hasLocationPermission();
-    if (!permission) return;
+    if (!hasMore && !reset) return;
 
-    Geolocation.getCurrentPosition(
-      position => {
-        const { latitude, longitude } = position.coords;
-        setLoading(false);
-        setLocation({ latitude, longitude });
-        getAllServices(location);
-      },
-      error => console.log('Error:', error),
-      {
-        enableHighAccuracy: false,
-        timeout: 20000,
-        maximumAge: 10000,
-      },
-    );
-  }
-
-  const requestPermissions = async () => {
-    if (Platform.OS === 'android') {
-      await PermissionsAndroid.requestMultiple([
-        PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION,
-        PermissionsAndroid.PERMISSIONS.WRITE_EXTERNAL_STORAGE,
-      ]);
-    } else {
-      await request(PERMISSIONS.IOS.CAMERA);
-    }
-  };
-
-  async function getAllServices(location: any) {
-    if (!hasMore) return;
     try {
+      setLoading(true);
 
-      setLoading(true)
-      const result: any = await API.Instance.get(API.API_ROUTES.getProfessionalAllServices + `?provider_lat=${location?.latitude}&provider_lon=${location?.longitude}&&page=${page}&limit=${PAGE_SIZE}&platform=app`)
+      const trimmedText = searchText.trim();
+
+      let params: any = {
+        page: String(currentPage),
+        limit: String(PAGE_SIZE),
+      };
+
+      // Filter
+      if (selectedFilterType === "category" && trimmedText) {
+        params.category_name = trimmedText;
+      }
+      else if (selectedFilterType === "location" && trimmedText) {
+        params.location = trimmedText;
+      }
+      else if (trimmedText) {
+        params.search = trimmedText;
+      }
+
+      const queryParams = new URLSearchParams(params).toString();
+
+      console.log('PRMS',queryParams)
+
+      const url = `${API.API_ROUTES.getProfessionalAllServices}?${queryParams}`;
+
+      console.log("API URL =>", url);
+
+      const result: any = await API.Instance.get(url);
+
       if (result?.status) {
-        console.log('result==>', result?.data?.data);
-        const newData = result?.data?.data?.open_services ?? []
-        console.log('newData==>', newData);
-        if (newData.length < PAGE_SIZE) {
-          setHasMore(false);
-          setServiceList((prev: any) => [...prev, ...newData]);
+
+        const newData = result?.data?.data?.open_services ?? [];
+
+        if (reset) {
+          setServiceList(newData);
         } else {
-          setServiceList((prev: any) => [...prev, ...newData]);
+          setServiceList(prev => [...prev, ...newData]);
         }
+
+        setHasMore(newData.length === PAGE_SIZE);
+
+      } else {
+        SHOW_TOAST(result?.data?.message, 'error');
       }
-      else {
-        SHOW_TOAST(result?.data?.message, 'error')
-      }
-    }
-    catch (error: any) {
+
+    } catch (error: any) {
       if (error?.message === 'canceled') return;
       SHOW_TOAST(error?.message ?? '', 'error');
     } finally {
@@ -151,8 +156,7 @@ export default function ExploreServiceRequest(props: any) {
 
   const loadMore = () => {
     if (!isLoading && hasMore) {
-      setPage(page + 1);
-      getAllServices(location);
+      setPage(prev => prev + 1);
     }
   };
 
@@ -174,6 +178,11 @@ export default function ExploreServiceRequest(props: any) {
             value={searchText}
             onChangeText={(text) => {
               setSearchText(text)
+            }}
+            onSubmitEditing={() => {
+              setPage(1);
+              setHasMore(true);
+              getAllServices(1, true);
             }}
           />
           <Image
@@ -226,9 +235,16 @@ export default function ExploreServiceRequest(props: any) {
                     index === arr.length - 1 && { borderBottomWidth: 0 }
                   ]}
                   onPress={() => {
-                    setSelectedFilter(type);
+                    if (type === "Category") {
+                      setSelectedFilter("Category");
+                      setSelectedFilterType("category");
+                    } else {
+                      setSelectedFilter("Location");
+                      setSelectedFilterType("location");
+                    }
                     setFilterModal(false);
                   }}
+
                 >
                   <Text
                     size={getScaleSize(14)}

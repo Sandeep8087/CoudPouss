@@ -48,7 +48,7 @@ export default function MyProfileProfessional(props: any) {
   const [showMore, setShowMore] = useState(false);
   const [showMoreExperience, setShowMoreExperience] = useState(false);
 
-  console.log('profileDATA==>', profile)
+  console.log('profileDATA==>', JSON.stringify(profile))
 
   return (
     <View style={styles(theme).container}>
@@ -344,6 +344,7 @@ export default function MyProfileProfessional(props: any) {
                 <RatingsReviewsItem
                   key={index}
                   item={item}
+                  isFromProfessionalProfile={true}
                   itemContainer={{ marginTop: index === 0 ? getScaleSize(20) : getScaleSize(16) }}
                   onPressShowMore={() => {
                     setShowMore(!showMore);

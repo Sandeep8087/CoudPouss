@@ -134,26 +134,33 @@ export default function AddPersonalDetails(props: any) {
 
   async function onSignup() {
 
+    // REGEX (clean + strict)
+    const emojiRegex =
+      /([\u2700-\u27BF]|[\uE000-\uF8FF]|[\uD83C-\uDBFF\uDC00-\uDFFF]+)/;
+
+    const nameRegex = /^[A-Za-z.\- ]+$/;
+    const onlyNumbers = /^\d+$/;
+    const onlySpecialChars = /^[^A-Za-z0-9]+$/;
+    const mobileRegex = /^[0-9]{10}$/;
+
+    // Trim everything first
     const cleanName = name.trim();
     const cleanMobile = mobileNo.trim();
     const cleanAddress = address.trim();
     const cleanEmail = email.trim();
+
+    // Update state with trimmed values
+    setName(cleanName);
+    setMobileNo(cleanMobile);
+    setAddress(cleanAddress);
+    setEmail(cleanEmail);
 
     let hasError = false;
 
     setNameError('');
     setMobileNoError('');
     setEmailError('');
-    setAddressError('');
-
-    // REGEX
-    const emojiRegex =
-      /([\u2700-\u27BF]|[\uE000-\uF8FF]|[\uD83C-\uDBFF\uDC00-\uDFFF]+)/;
-
-    const nameValidRegex = /^[A-Za-z.\- ]+$/;
-    const onlySpecialChars = /^[^A-Za-z0-9]+$/;
-    const onlyNumbers = /^[0-9]+$/;
-    const mobileRegex = /^[0-9]{10}$/;
+    setAddressError('')
 
     // NAME VALIDATION 
     if (!cleanName) {
@@ -165,7 +172,7 @@ export default function AddPersonalDetails(props: any) {
     } else if (emojiRegex.test(cleanName)) {
       setNameError(STRING.emoji_not_allowed);
       hasError = true;
-    } else if (!nameValidRegex.test(cleanName)) {
+    } else if (!nameRegex.test(cleanName)) {
       setNameError(STRING.name_invalid_characters);
       hasError = true;
     }
@@ -346,9 +353,9 @@ export default function AddPersonalDetails(props: any) {
               inputColor={true}
               continerStyle={{ marginBottom: getScaleSize(16) }}
               value={name}
-              maxLength={30}
+              maxLength={50}
               onChangeText={text => {
-                setName(text);
+                setName(text.replace(/\s+/g, ' '));
                 setNameError('');
               }}
               isError={nameError}
@@ -380,7 +387,10 @@ export default function AddPersonalDetails(props: any) {
               placeholderTextColor={theme._939393}
               inputTitle={STRING.email}
               inputColor={true}
-              style={{ opacity: 0.5 }}
+              containerStyle={{
+                opacity: 0.5,
+                backgroundColor: theme._F0EFF0,
+              }}
               continerStyle={{ marginBottom: getScaleSize(16) }}
               value={email}
               editable={isEmail ? false : true}
@@ -397,8 +407,9 @@ export default function AddPersonalDetails(props: any) {
               inputColor={true}
               continerStyle={{ marginBottom: getScaleSize(16) }}
               value={address}
+              maxLength={250}
               onChangeText={text => {
-                setAddress(text);
+                setAddress(text.replace(/\s+/g, ' '));
                 setAddressError('');
               }}
               isError={addressError}
@@ -437,7 +448,6 @@ export default function AddPersonalDetails(props: any) {
 const styles = (theme: ThemeContextType['theme']) =>
   StyleSheet.create({
     container: {
-      flex: 1.0,
       backgroundColor: theme.white,
       justifyContent: 'center',
     },

@@ -1,4 +1,4 @@
-import { Dimensions, Image, ScrollView, StyleSheet, TouchableOpacity, View } from 'react-native';
+import { Dimensions, Image, Platform, ScrollView, StyleSheet, TouchableOpacity, View } from 'react-native';
 import React, { useContext, useEffect, useRef, useState } from 'react';
 
 //CONTEXT
@@ -15,9 +15,12 @@ import { SCREENS } from '..';
 import { Header, Input, Text, Button } from '../../components';
 import { API } from '../../api';
 import { CommonActions } from '@react-navigation/native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 
 export default function ChooseYourSubscription(props: any) {
+
+    const insets = useSafeAreaInsets();
 
     const STRING = useString();
 
@@ -56,7 +59,8 @@ export default function ChooseYourSubscription(props: any) {
 
 
     return (
-        <View style={styles(theme).container}>
+        <View style={[styles(theme).container,
+        { paddingBottom: Platform.OS === 'android' ? insets.bottom : 0 }]}>
             <Header
                 onBack={() => {
                     if (isFromSubscriptionButton) {

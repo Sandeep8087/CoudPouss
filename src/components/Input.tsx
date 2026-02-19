@@ -76,7 +76,7 @@ function Input(props: InputProps & TextInputProps) {
           {inputTitle}
         </Text>
       )}
-      <View style={[styles(theme).flexView, { flex: 1.0 }]}>
+      <View style={[styles(theme).flexView]}>
         {countryCode && (
           <Pressable
             onPress={onPressCountryCode}

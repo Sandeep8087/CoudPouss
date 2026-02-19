@@ -406,7 +406,7 @@ export const useString = () => {
     mark_as_completed: "Mark as Completed",
     renegotiate_message: "If you believe the task is more extensive than planned, you can request a price increase (max +20%)",
     current_payment_breakdown: "Current Payment Breakdown",
-    Platform_Fee_15: "Platform Fee (15%)",
+    Platform_Fee_15: "Platform Fee (10%)",
     enter_requested_adjustment: "Enter Requested Adjustment",
     Enter_Requested_Adjustment: "Enter Requested Adjustment",
     the_client_has_rejected_your_initial_request_please_resend_it_or_check_your_map_for_accurate_location_detection: "The client has rejected your initial request. Please resend it or check your map for accurate location detection.",

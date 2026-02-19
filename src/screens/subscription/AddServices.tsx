@@ -1,4 +1,4 @@
-import { Alert, Dimensions, FlatList, Image, Linking, ScrollView, StyleSheet, TouchableOpacity, View } from 'react-native';
+import { Alert, Dimensions, FlatList, Image, Linking, Platform, ScrollView, StyleSheet, TouchableOpacity, View } from 'react-native';
 import React, { useContext, useEffect, useRef, useState } from 'react';
 
 //CONTEXT
@@ -16,9 +16,12 @@ import { Header, Input, Text, Button, CategoryDropdown, ServiceItem, BottomSheet
 import { API } from '../../api';
 import { EventRegister } from 'react-native-event-listeners';
 import { CommonActions } from '@react-navigation/native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 
 export default function AddServices(props: any) {
+
+    const insets = useSafeAreaInsets();
 
     const STRING = useString();
 
@@ -328,7 +331,9 @@ export default function AddServices(props: any) {
     }
 
     return (
-        <View style={styles(theme).container}>
+        <View style={[styles(theme).container,
+        { paddingBottom: Platform.OS === 'android' ? insets.bottom : 0 }
+        ]}>
             <Header
                 onBack={() => {
                     props.navigation.goBack();

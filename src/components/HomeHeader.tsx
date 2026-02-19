@@ -4,6 +4,7 @@ import {
   ImageBackground,
   Pressable,
   SafeAreaView,
+  ScrollView,
   StatusBar,
   StyleSheet,
   TextInput,
@@ -122,36 +123,6 @@ const HomeHeader = (props: any) => {
           />
         </TouchableOpacity>
       </View>
-      <View style={styles(theme).bottomText}>
-        <View style={styles(theme).userImage}>
-          <Image style={styles(theme).workerImage} source={IMAGES.worker} />
-        </View>
-        <View style={styles(theme).textView}>
-          <View style={{ flexDirection: 'row' }}>
-            <Text
-              size={getScaleSize(48)}
-              font={FONTS.Lato.Bold}
-              color={theme.white}>
-              {props?.professionalConnectedCount ?? '0'}{' '}
-            </Text>
-            <Text
-              size={getScaleSize(20)}
-              font={FONTS.Lato.SemiBold}
-              color={theme.white}>
-              {'Professionals\nConnected Today'}
-            </Text>
-          </View>
-          <Text
-            style={{ marginTop: getScaleSize(8) }}
-            size={getScaleSize(12)}
-            font={FONTS.Lato.Regular}
-            color={theme.white}>
-            {
-              'Verified professionals ready to\nhelp you today'
-            }
-          </Text>
-        </View>
-      </View>
     </View>
   );
 };
@@ -159,13 +130,8 @@ const HomeHeader = (props: any) => {
 const styles = (theme: ThemeContextType['theme']) =>
   StyleSheet.create({
     container: {
-      // flex: 1.0,
       backgroundColor: theme.primary,
       paddingTop: StatusBar.currentHeight,
-      // paddingHorizontal: getScaleSize(20),
-      borderBottomLeftRadius: getScaleSize(60),
-      borderBottomRightRadius: getScaleSize(60),
-      overflow: 'hidden',
     },
     headerView: {
       // flex: 1.0,
@@ -175,6 +141,7 @@ const styles = (theme: ThemeContextType['theme']) =>
     searchView: {
       flexDirection: 'row',
       marginHorizontal: getScaleSize(21),
+      marginBottom: getScaleSize(10)
     },
     searchBox: {
       flexDirection: 'row',

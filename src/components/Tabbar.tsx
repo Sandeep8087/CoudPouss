@@ -12,10 +12,14 @@ import { EventRegister } from 'react-native-event-listeners';
 import { CommonActions } from '@react-navigation/native';
 import { SCREENS } from '../screens';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 const SCREEN_WIDTH = Dimensions.get('window').width;
 
 function Tabbar(props: any) {
+
+  const insets = useSafeAreaInsets();
+
   const { theme } = useContext<any>(ThemeContext);
 
   const { userType, setUser, setUserType, fetchProfile } = useContext<any>(AuthContext);
@@ -218,20 +222,49 @@ function Tabbar(props: any) {
 
   if (userType === 'service_provider') {
     return (
-      <View style={[styles(theme).mainContainer]}>
-        {renderView()}
-      </View>
+      <SafeAreaView style={{ backgroundColor: 'transparent' }}>
+        <View style={[styles(theme).mainContainer]}>
+          {renderView()}
+        </View>
+      </SafeAreaView>
     )
   }
   else {
     return (
-      <ImageBackground style={styles(theme).mainView}
-        resizeMode='cover'
-        source={IMAGES.ic_tab_bar}>
-        {renderView()}
-      </ImageBackground>
+      <SafeAreaView style={{ backgroundColor: 'transparent' }}>
+        <ImageBackground style={styles(theme).mainView}
+          resizeMode='cover'
+          source={IMAGES.ic_tab_bar}>
+          {renderView()}
+        </ImageBackground>
+      </SafeAreaView>
     )
   }
+  // return (
+  //   <SafeAreaView style={{ backgroundColor: 'transparent' }}>
+  //     <ImageBackground style={[
+  //       styles(theme).mainView,
+  //       { height: TABBAR_HEIGHT + insets.bottom }
+  //     ]}
+  //       resizeMode="stretch"
+  //       source={IMAGES.ic_tab_bar}>
+  //       <View style={styles(theme).tabContainer}>
+  //         {props.state.routes.map((route: any, index: number) => {
+  //           return (
+  //             <Item
+  //               key={index}
+  //               onPress={() => onPress(route.name)}
+  //               title={route.name}
+  //               index={index}
+  //               selected={props.state.index == index}
+  //               image={images[index]}
+  //             />
+  //           );
+  //         })}
+  //       </View>
+  //     </ImageBackground >
+  //   </SafeAreaView>
+  // );
 }
 
 const Item = (props: any) => {
@@ -323,7 +356,11 @@ const Item = (props: any) => {
           onPress={() => {
             props.onPress(SCREENS.CreateRequest.identifier);
           }}
-          style={{ alignSelf: 'center', marginTop: getScaleSize(-65) }}>
+          style={{
+            alignSelf: 'center',
+            transform: [{ translateY: -getScaleSize(30) }],
+            zIndex: 10,
+          }}>
           <Image
             style={{ height: getScaleSize(98), width: getScaleSize(98) }}
             resizeMode="contain"
@@ -371,7 +408,7 @@ const Item = (props: any) => {
                   source={images[props.index]}
                 />
                 <Text
-                  style={{ marginTop: getScaleSize(8) }}
+                  style={{ marginTop: getScaleSize(4) }}
                   size={getScaleSize(12)}
                   font={FONTS.Lato.Medium}
                   color={'#E6E6E6'}
@@ -397,8 +434,6 @@ const styles = (theme: ThemeContextType['theme']) =>
     },
     mainView: {
       width: SCREEN_WIDTH,
-      height: TABBAR_HEIGHT,
-      alignSelf: 'center',
       position: 'absolute',
       bottom: 0,
       left: 0,
@@ -413,21 +448,25 @@ const styles = (theme: ThemeContextType['theme']) =>
       flexDirection: 'row',
       height: TABBAR_HEIGHT + getScaleSize(20),
       alignItems: 'center',
+      paddingBottom: getScaleSize(6),
     },
     itemContainer: {
-      flex: 1.0,
-      justifyContent: 'center',
+      flex: 1,
+      justifyContent: 'flex-start',
       alignItems: 'center',
+      paddingTop: getScaleSize(10),
     },
     itemImageSelected: {
       height: getScaleSize(32),
       width: getScaleSize(32),
       alignSelf: 'center',
+      marginTop: getScaleSize(30)
     },
     itemImage: {
       height: getScaleSize(32),
       width: getScaleSize(32),
       alignSelf: 'center',
+      marginTop: getScaleSize(30)
     },
     tabText: {
       marginTop: getScaleSize(7),

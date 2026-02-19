@@ -60,6 +60,8 @@ export default function OtherUserProfile(props: any) {
       const params = {
         user_id: item?.id,
       }
+
+      console.log('item?.id,',item?.id,)
       setLoading(true);
       const result = await API.Instance.post(API.API_ROUTES.otherUserProfile, params);
       if (result.status) {
@@ -89,6 +91,8 @@ export default function OtherUserProfile(props: any) {
   };
 
   console.log('userProfile?.profile_photo_url', userProfile?.profile_photo_url)
+
+  const overallRating = Number(userProfile?.overall_ratings ?? 0);
 
   return (
     <View style={styles(theme).container}>
@@ -321,13 +325,17 @@ export default function OtherUserProfile(props: any) {
                 alignSelf: 'center',
               }}>
               <View style={styles(theme).rowView}>
-                {[...Array(5)].map((_, i) => (
-                  <Image
-                    key={i}
-                    source={IMAGES.star}
-                    style={styles(theme).ratingimage}
-                  />
-                ))}
+                {[...Array(5)].map((_, i) => {
+                  const filled = i < Math.round(overallRating);
+
+                  return (
+                    <Image
+                      key={i}
+                      source={filled ? IMAGES.star : IMAGES.ic_star_blank}
+                      style={styles(theme).ratingimage}
+                    />
+                  );
+                })}
               </View>
               <Text
                 size={getScaleSize(12)}

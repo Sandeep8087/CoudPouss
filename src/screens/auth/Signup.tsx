@@ -1,4 +1,4 @@
-import { Dimensions, Image, ScrollView, StyleSheet, TouchableOpacity, View } from 'react-native';
+import { Dimensions, Image, KeyboardAvoidingView, Platform, ScrollView, StyleSheet, TouchableOpacity, View } from 'react-native';
 import React, { useContext, useEffect, useState } from 'react';
 
 //CONTEXT
@@ -112,9 +112,13 @@ export default function Signup(props: any) {
     }
 
     return (
-        <View style={styles(theme).container}>
-            <Header />
-            <ScrollView showsVerticalScrollIndicator={false}>
+        <KeyboardAvoidingView
+            style={{ flex: 1 ,}}
+            behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+            keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 20}
+        >
+            <View style={styles(theme).container}>
+                <Header />
                 <View style={styles(theme).mainContainer}>
                     <Image source={IMAGES.ic_logo} style={styles(theme).logo} />
                     <Text
@@ -197,8 +201,7 @@ export default function Signup(props: any) {
                         </Text>
                     </Text>
                 </View>
-            </ScrollView>
-            {/* <SelectCountrySheet
+                {/* <SelectCountrySheet
                 height={getScaleSize(500)}
                 isVisible={visibleCountry}
                 onPress={(e: any) => {
@@ -210,7 +213,8 @@ export default function Signup(props: any) {
                     setVisibleCountry(false);
                 }}
             /> */}
-        </View>
+            </View>
+        </KeyboardAvoidingView>
     );
 }
 

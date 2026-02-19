@@ -79,5 +79,4 @@ const API_ROUTES = {
     onNotArrived: "service_confirmation/service_accept/elder/not_arrived"
 } 
 
-
 export { API_ROUTES, API_BASE_URL, DISABLE_API_LOGS }
