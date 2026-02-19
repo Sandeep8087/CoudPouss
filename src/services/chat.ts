@@ -1,209 +1,205 @@
-import firestore, {
-  FirebaseFirestoreTypes,
-} from '@react-native-firebase/firestore';
+import firestore from '@react-native-firebase/firestore';
 
-export type FirestoreUser = {
-  user_id: string;
-  name: string;
-  email?: string;
-  mobile?: string;
-  role?: string;
-  address?: string;
-  avatarUrl?: string;
-};
 
-export type ChatThread = {
-  id: string;
-  participantIds: string[];
-  participantsMeta?: Record<
-    string,
-    {name?: string; email?: string; avatarUrl?: string}
-  >;
-  lastMessage?: string;
-  lastMessageSenderId?: string;
-  updatedAt?: FirebaseFirestoreTypes.Timestamp | null;
-};
+/* =========================
+   Create User Thread
+========================= */
 
-export type ChatMessage = {
-  id: string;
-  text: string;
-  senderId: string;
-  receiverId: string;
-  createdAt?: FirebaseFirestoreTypes.Timestamp | null;
-  type: 'text';
-};
-
-const USERS_COLLECTION = 'users';
-const THREADS_COLLECTION = 'threads';
-const MESSAGES_SUBCOLLECTION = 'messages';
-
-export const buildThreadId = (first: string, second: string) =>
-  [first, second].sort().join('__');
-
-export async function upsertUserProfile(user: FirestoreUser) {
-  if (!user?.user_id) {
-    return;
-  }
-
-  const userRef = firestore().collection(USERS_COLLECTION).doc(user.user_id);
-  const snapshot = await userRef.get();
-  const timestamp = firestore.FieldValue.serverTimestamp();
-
-  const exists = snapshot.exists();
-
-  await userRef.set(
-    {
-      user_id: user.user_id,
-      name: user.name ?? '',
-      email: user.email ?? '',
-      mobile: user.mobile ?? '',
-      role: user.role ?? '',
-      address: user.address ?? '',
-      avatarUrl: user.avatarUrl ?? '',
-      updatedAt: timestamp,
-      createdAt: exists ? snapshot.data()?.createdAt ?? timestamp : timestamp,
-    },
-    {merge: true},
-  );
-}
-
-export async function ensureThreadDocument(
-  threadId: string,
-  participants: FirestoreUser[],
-) {
-  if (!threadId || participants.length < 2) {
-    return;
-  }
-
-  const doc = firestore().collection(THREADS_COLLECTION).doc(threadId);
-  const snapshot = await doc.get();
-  const timestamp = firestore.FieldValue.serverTimestamp();
-
-  const participantIds = participants.map(participant => participant.user_id);
-  const participantsMeta = participants.reduce(
-    (acc, participant) => ({
-      ...acc,
-      [participant.user_id]: {
-        name: participant.name ?? '',
-        email: participant.email ?? '',
-        avatarUrl: participant.avatarUrl ?? '',
-      },
-    }),
-    {},
-  );
-
-  if (snapshot.exists()) {
-    await doc.set(
-      {
-        participantIds,
-        participantsMeta,
-        updatedAt: timestamp,
-      },
-      {merge: true},
-    );
-    return;
-  }
-
-  await doc.set({
-    participantIds,
-    participantsMeta,
-    updatedAt: timestamp,
-    lastMessage: '',
-    lastMessageSenderId: '',
-  });
-}
-
-export function subscribeToThreads(
+export const createNewThread = (
   userId: string,
-  onNext: (threads: ChatThread[]) => void,
-  onError?: (error: Error) => void,
-) {
+  userName: string,
+  userEmail: string,
+  userMobile: string,
+  userRole: string,
+  userAddress: string,
+  userImage: string,
+): Promise<void> => {
   return firestore()
-    .collection(THREADS_COLLECTION)
-    .where('participantIds', 'array-contains', userId)
-    .onSnapshot(
-      snapshot => {
-        const threads: ChatThread[] = snapshot.docs
-          .map(document => {
-            const data = document.data() as ChatThread;
-            return {...data, id: document.id};
-          })
-          .sort((a, b) => {
-            const aTime =
-              a.updatedAt && 'toMillis' in a.updatedAt
-                ? (a.updatedAt as FirebaseFirestoreTypes.Timestamp).toMillis()
-                : 0;
-            const bTime =
-              b.updatedAt && 'toMillis' in b.updatedAt
-                ? (b.updatedAt as FirebaseFirestoreTypes.Timestamp).toMillis()
-                : 0;
-            return bTime - aTime;
-          });
-        onNext(threads);
-      },
-      error => {
-        onError?.(error);
-      },
-    );
-}
+    .collection('Users')
+    .doc(userId)
+    .set({
+      name: userName,
+      userId: userId,
+      email: userEmail,
+      mobile: userMobile,
+      role: userRole,
+      address: userAddress,
+      avatarUrl: userImage,
+      text: `${userName} created.`,
+      createdAt: new Date().getTime(),
+    });
+};
 
-export function subscribeToMessages(
-  threadId: string,
-  onNext: (messages: ChatMessage[]) => void,
-  onError?: (error: Error) => void,
-) {
-  return firestore()
-    .collection(THREADS_COLLECTION)
-    .doc(threadId)
-    .collection(MESSAGES_SUBCOLLECTION)
-    .orderBy('createdAt', 'asc')
-    .onSnapshot(
-      snapshot => {
-        const messages: ChatMessage[] = snapshot.docs.map(document => {
-          const data = document.data() as ChatMessage;
-          return {...data, id: document.id};
+// /* =========================
+//    Single negotiation User Message
+// ========================= */
+
+export const negotiationMessage = async (
+  serviceName: string,
+  userId: string,
+  recipientId: string,
+  title: string,
+  type: string,
+  message: string,
+  conversationId: string,
+): Promise<any> => {
+
+
+  return await firestore()
+    .collection('Users')
+    .doc(userId)
+    .collection('NEGOTIATION_MESSAGES')
+    .doc(conversationId)
+    .set(
+
+      { merge: true },
+    )
+    .then(() => {
+      return firestore()
+        .collection('Users')
+        .doc(recipientId)
+        .collection('NEGOTIATION_MESSAGES')
+        .doc(conversationId)
+        .set(
+
+          { merge: true },
+        );
+    })
+    .then(() => {
+      return firestore()
+        .collection('NEGOTIATION_MESSAGES')
+        .doc(conversationId)
+        .collection('MESSAGE_THREADS')
+        .add({
+          serviceName: serviceName,
+          title: title,
+          type: type,
+          senderId: userId,
+          receiverId: recipientId,
+          text: message,
+          createdAt: new Date().getTime(),
         });
-        onNext(messages);
+    });
+};
+
+/* =========================
+   Single User Message
+========================= */
+export const userMessage = async (
+  userId: string,
+  userName: string,
+  recipientId: string,
+  recipientName: string,
+  message: string,
+  conversationId: string,
+  userPhoto: string,
+  recipientPhoto: string,
+  type: string,
+): Promise<any> => {
+  return await firestore()
+    .collection('Users')
+    .doc(userId)
+    .collection('MESSAGES')
+    .doc(conversationId)
+    .set(
+      {
+        message,
+        createdAt: new Date().getTime(),
+        readCount: 'true',
+        user: {
+          userId: userId,
+          name: recipientName,
+          recipientId: recipientId,
+          recipientPhoto: recipientPhoto,
+          chatVisible: 'single',
+        },
       },
-      error => {
-        onError?.(error);
-      },
-    );
-}
+      { merge: true },
+    )
+    .then(() => {
+      return firestore()
+        .collection('Users')
+        .doc(recipientId)
+        .collection('MESSAGES')
+        .doc(conversationId)
+        .set(
+          {
+            message,
+            createdAt: new Date().getTime(),
+            readCount: 'false',
+            user: {
+              userId: userId,
+              name: userName,
+              recipientId: userId,
+              recipientPhoto: userPhoto,
+              chatVisible: 'single',
+            },
+          },
+          { merge: true },
+        );
+    })
+    .then(() => {
+      return firestore()
+        .collection('MESSAGES')
+        .doc(conversationId)
+        .collection('MESSAGE_THREADS')
+        .add({
+          senderId: userId,
+          text: message,
+          createdAt: new Date().getTime(),
+          type: type,
+        });
+    });
+};
 
-export async function sendTextMessage(payload: {
-  threadId: string;
-  text: string;
-  senderId: string;
-  receiverId: string;
-}) {
-  const text = payload.text.trim();
+/* =========================
+   Listeners
+========================= */
 
-  if (!text) {
-    return;
-  }
+export const listenToThreads = (UserID: string) => {
+  return firestore()
+    .collection('Users')
+    .doc(UserID)
+    .collection('MESSAGES')
+    .orderBy('createdAt', 'desc');
+};
 
-  const timestamp = firestore.FieldValue.serverTimestamp();
-  const messageRef = firestore()
-    .collection(THREADS_COLLECTION)
-    .doc(payload.threadId)
-    .collection(MESSAGES_SUBCOLLECTION)
-    .doc();
+export const getPrividerbyId = async (providerId: string) => {
+  return await firestore()
+    .collection('Users')
+    .doc(providerId).collection('NEGOTIATION_MESSAGES')
+    .get();
+};
 
-  await messageRef.set({
-    text,
-    senderId: payload.senderId,
-    receiverId: payload.receiverId,
-    type: 'text',
-    createdAt: timestamp,
-  });
+export const messagesListThread = (threadId: string) => {
+  return firestore()
+    .collection('MESSAGES')
+    .doc(threadId)
+    .collection('MESSAGE_THREADS')
+    .orderBy('createdAt', 'desc');
+};
 
-  await firestore().collection(THREADS_COLLECTION).doc(payload.threadId).set(
-    {
-      lastMessage: text,
-      lastMessageSenderId: payload.senderId,
-      updatedAt: timestamp,
-    },
-    {merge: true},
-  );
-}
+export const messagesNegotiationListThread = (threadId: string) => {
+  return firestore()
+    .collection('NEGOTIATION_MESSAGES')
+    .doc(threadId)
+    .collection('MESSAGE_THREADS')
+    .orderBy('createdAt', 'desc');
+};
+
+/* =========================
+   Remove Conversation
+========================= */
+
+export const removeDocument = (
+  userId: string,
+  conversationId: string,
+): Promise<void> => {
+  return firestore()
+    .collection('Users')
+    .doc(userId)
+    .collection('MESSAGES')
+    .doc(conversationId)
+    .delete();
+};
+

@@ -1,14 +1,14 @@
-import React, { useContext, useEffect, useRef } from 'react';
-import { Alert, Linking, PermissionsAndroid, Platform, View } from 'react-native';
+import React, {useContext, useEffect, useRef} from 'react';
+import {Alert, Linking, PermissionsAndroid, Platform, View} from 'react-native';
 
 //COMPONENTS
-import { Tabbar } from '../components';
+import {Tabbar} from '../components';
 
 //SCREENS
 import { SCREENS, TABS } from '.';
 
 //CONTEXT
-import { AuthContext } from '../context';
+import {AuthContext} from '../context';
 
 //PACKAGES
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
@@ -35,7 +35,8 @@ function BottomBar(props: any) {
   const isProfile = props?.route?.params?.isProfile ?? false;
   const isValidationService = props?.route?.params?.isValidationService ?? false;
   const isTask = props?.route?.params?.isTask ?? false;
-  const isProfessionalProfile = props?.route?.params?.isProfessionalProfile ?? false;
+  const isProfessionalProfile =
+    props?.route?.params?.isProfessionalProfile ?? false;
 
   function getInitialRouteName() {
     if (isProfile) {
@@ -51,7 +52,8 @@ function BottomBar(props: any) {
     console.log('isTask==>', isTask);
     if (isTask) {
       return TABS.Task.identifier;
-    } if (isProfessionalProfile) {
+    }
+    if (isProfessionalProfile) {
       return TABS.Profile.identifier;
     } else {
       return TABS.ProfessionalHome.identifier;
@@ -232,7 +234,7 @@ function BottomBar(props: any) {
           'Notification was declined.',
           'Go to your settings and enable notifications always.',
           [
-            { text: 'No', style: 'cancel' },
+            {text: 'No', style: 'cancel'},
             {
               text: 'Open Settings',
               onPress: () => {

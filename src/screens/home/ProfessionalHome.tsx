@@ -225,7 +225,9 @@ export default function ProfessionalHome(props: any) {
             font={FONTS.Lato.Medium}
             color={theme._6D6D6D}
             style={{}}>
-            {`Hello! ${profile?.user?.first_name + ' ' + profile?.user?.last_name}`}
+            {`Hello! ${
+              profile?.user?.first_name + ' ' + profile?.user?.last_name
+            }`}
           </Text>
           <Text
             size={getScaleSize(24)}
