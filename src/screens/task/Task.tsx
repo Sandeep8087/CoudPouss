@@ -7,6 +7,7 @@ import {
   TouchableOpacity,
   ActivityIndicator,
   Image,
+  Platform,
 } from 'react-native';
 
 //ASSETS
@@ -25,8 +26,12 @@ import { TaskItem, Text } from '../../components';
 import { SCREENS } from '..';
 import { API } from '../../api';
 import { useIsFocused } from '@react-navigation/native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 export default function Task(props: any) {
+
+  const insets = useSafeAreaInsets();
+
   const STRING = useString();
   const { theme } = useContext<any>(ThemeContext);
   const requestIdRef = useRef(0);
@@ -68,7 +73,7 @@ export default function Task(props: any) {
   async function getQuateList() {
     if (!quateList.hasMore) return;
 
-    const currentRequestId = ++requestIdRef.current; 
+    const currentRequestId = ++requestIdRef.current;
     const status =
       quateList.selectedIndex === 0
         ? 'send'
@@ -218,13 +223,14 @@ export default function Task(props: any) {
   }
 
   return (
-    <View style={styles(theme).container}>
+    <View style={[styles(theme).container,
+    { paddingTop: Platform.OS === 'android' ? insets.bottom : 0 }
+    ]}>
       <Text
         size={getScaleSize(24)}
         font={FONTS.Lato.Bold}
         color={theme.primary}
         style={{
-          marginTop: getScaleSize(14),
           marginHorizontal: getScaleSize(22),
         }}>
         {'Task Management'}

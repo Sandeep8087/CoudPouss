@@ -1,4 +1,4 @@
-import React, {useContext, useRef, useState} from 'react';
+import React, { useContext, useRef, useState } from 'react';
 import {
   View,
   StyleSheet,
@@ -9,17 +9,21 @@ import {
   TextInput,
   Platform,
 } from 'react-native';
-import {ThemeContext, ThemeContextType} from '../context';
-import {getScaleSize, useString} from '../constant';
-import {FONTS, IMAGES} from '../assets';
+import { ThemeContext, ThemeContextType } from '../context';
+import { getScaleSize, useString } from '../constant';
+import { FONTS, IMAGES } from '../assets';
 import Text from './Text';
-import {constant} from 'lodash';
+import { constant } from 'lodash';
 import RBSheet from 'react-native-raw-bottom-sheet';
 import Input from './Input';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 const RejectBottomPopup = (props: any) => {
+
+  const insets = useSafeAreaInsets();
+
   const STRING = useString();
-  const {theme} = useContext<any>(ThemeContext);
+  const { theme } = useContext<any>(ThemeContext);
 
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const slideAnim = useRef(new Animated.Value(50)).current;
@@ -79,7 +83,7 @@ const RejectBottomPopup = (props: any) => {
   };
 
   return (
-    <View style={{backgroundColor: 'rgba(0,0,0,0.3)'}}>
+    <View style={{ backgroundColor: 'rgba(0,0,0,0.3)' }}>
       <RBSheet
         ref={props.rejectRef}
         customModalProps={{
@@ -99,16 +103,18 @@ const RejectBottomPopup = (props: any) => {
         }}
         draggable={false}
         closeOnPressMask={true}>
-        <View style={styles(theme).content}>
+        <View style={[styles(theme).content,
+        { paddingBottom: Platform.OS === 'android' ? insets.bottom : 0 }
+        ]}>
           <Image style={styles(theme).icon} source={IMAGES.reject_icon} />
           <Text
             size={getScaleSize(22)}
             font={FONTS.Lato.Bold}
             color={theme.primary}
-            style={{alignSelf: 'center', marginTop: getScaleSize(16)}}>
+            style={{ alignSelf: 'center', marginTop: getScaleSize(16) }}>
             {STRING.RejectServicerequest}
           </Text>
-          <View style={{flex: 1.0}}>
+          <View style={{ flex: 1.0 }}>
             <TouchableOpacity
               style={styles(theme).radioButtonContainer}
               activeOpacity={1}
@@ -117,7 +123,7 @@ const RejectBottomPopup = (props: any) => {
                 setReason(STRING.Pricehigherthancompetitors);
               }}>
               <Text
-                style={{flex: 1.0}}
+                style={{ flex: 1.0 }}
                 size={getScaleSize(18)}
                 font={FONTS.Lato.Medium}
                 color={'#424242'}>
@@ -140,7 +146,7 @@ const RejectBottomPopup = (props: any) => {
                 setReason(STRING.Lateresponse);
               }}>
               <Text
-                style={{flex: 1.0}}
+                style={{ flex: 1.0 }}
                 size={getScaleSize(18)}
                 font={FONTS.Lato.Medium}
                 color={'#424242'}>
@@ -167,9 +173,9 @@ const RejectBottomPopup = (props: any) => {
                 }
 
               }}>
-              <View style={{flexDirection: 'row', alignItems: 'center'}}>
+              <View style={{ flexDirection: 'row', alignItems: 'center' }}>
                 <Text
-                  style={{flex: 1.0}}
+                  style={{ flex: 1.0 }}
                   size={getScaleSize(18)}
                   font={FONTS.Lato.Medium}
                   color={'#424242'}>
@@ -210,7 +216,7 @@ const RejectBottomPopup = (props: any) => {
                 size={getScaleSize(19)}
                 font={FONTS.Lato.Bold}
                 color={theme.primary}
-                style={{alignSelf: 'center'}}>
+                style={{ alignSelf: 'center' }}>
                 {STRING.Cancel}
               </Text>
             </TouchableOpacity>
@@ -222,7 +228,7 @@ const RejectBottomPopup = (props: any) => {
                 size={getScaleSize(19)}
                 font={FONTS.Lato.Bold}
                 color={theme.white}
-                style={{alignSelf: 'center'}}>
+                style={{ alignSelf: 'center' }}>
                 {STRING.Reject}
               </Text>
             </TouchableOpacity>

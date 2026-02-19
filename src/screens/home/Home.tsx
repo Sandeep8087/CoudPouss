@@ -137,8 +137,6 @@ export default function Home(props: any) {
     }
   }
 
-
-
   return (
     <View style={styles(theme).container}>
       <StatusBar
@@ -175,6 +173,44 @@ export default function Home(props: any) {
         contentContainerStyle={{
           paddingBottom: TABBAR_HEIGHT + getScaleSize(20),
         }}>
+        <View style={{
+          backgroundColor: theme.primary,
+          paddingTop: StatusBar.currentHeight,
+          borderBottomLeftRadius: getScaleSize(60),
+          borderBottomRightRadius: getScaleSize(60),
+          overflow: 'hidden',
+        }}>
+          <View style={styles(theme).bottomText}>
+            <View style={styles(theme).userImage}>
+              <Image style={styles(theme).workerImage} source={IMAGES.worker} />
+            </View>
+            <View style={styles(theme).textView}>
+              <View style={{ flexDirection: 'row' }}>
+                <Text
+                  size={getScaleSize(48)}
+                  font={FONTS.Lato.Bold}
+                  color={theme.white}>
+                  {props?.professionalConnectedCount ?? '0'}{' '}
+                </Text>
+                <Text
+                  size={getScaleSize(20)}
+                  font={FONTS.Lato.SemiBold}
+                  color={theme.white}>
+                  {'Professionals\nConnected Today'}
+                </Text>
+              </View>
+              <Text
+                style={{ marginTop: getScaleSize(8) }}
+                size={getScaleSize(12)}
+                font={FONTS.Lato.Regular}
+                color={theme.white}>
+                {
+                  'Verified professionals ready to\nhelp you today'
+                }
+              </Text>
+            </View>
+          </View>
+        </View>
         <Text
           size={getScaleSize(20)}
           font={FONTS.Lato.SemiBold}
@@ -470,5 +506,32 @@ const styles = (theme: ThemeContextType['theme']) =>
     },
     statusBar: {
       height: StatusBar.currentHeight
+    },
+    userImage: {
+      overflow: 'visible',
+      width: getScaleSize(240),
+      height: getScaleSize(225),
+      marginTop: getScaleSize(32),
+      backgroundColor: '#1E4A5D',
+      borderRadius: 112,
+      left: -56,
+      top: 26,
+    },
+    workerImage: {
+      height: getScaleSize(250),
+      width: getScaleSize(151),
+      position: 'absolute',
+      resizeMode: 'cover',
+      left: 50,
+      top: -45,
+    },
+    bottomText: {
+      flexDirection: 'row',
+      marginLeft: getScaleSize(16),
+    },
+    textView: {
+      justifyContent: 'center',
+      marginTop: getScaleSize(32),
+      marginLeft: getScaleSize(-40),
     },
   });

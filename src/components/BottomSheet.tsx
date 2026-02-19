@@ -1,4 +1,4 @@
-import { Image, StyleSheet, TouchableOpacity, View } from 'react-native'
+import { Dimensions, Image, Platform, StyleSheet, TouchableOpacity, View } from 'react-native'
 import React, { useContext } from 'react'
 import { ThemeContext, ThemeContextType } from '../context/ThemeProvider';
 import RBSheet from 'react-native-raw-bottom-sheet';
@@ -6,6 +6,7 @@ import { getScaleSize, useString } from '../constant';
 import { FONTS, IMAGES } from '../assets';
 import Text from './Text';
 import Button from './Button';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 interface BottomSheetProps {
     bottomSheetRef: any;
@@ -26,6 +27,9 @@ interface BottomSheetProps {
 }
 
 export default function BottomSheet(props: BottomSheetProps) {
+
+    const insets = useSafeAreaInsets();
+
     const { theme } = useContext<any>(ThemeContext);
     const STRING = useString();
     const { bottomSheetRef,
@@ -50,7 +54,7 @@ export default function BottomSheet(props: BottomSheetProps) {
                     backgroundColor: theme._77777733,
                 },
                 container: {
-                    height: height,
+                    height: Dimensions.get('window').height * 0.4,
                     borderTopLeftRadius: getScaleSize(24),
                     borderTopRightRadius: getScaleSize(24),
                     backgroundColor: theme.white,
@@ -58,7 +62,9 @@ export default function BottomSheet(props: BottomSheetProps) {
             }}
             draggable={false}
             closeOnPressMask={isNotCloseable ? false : true}>
-            <View style={styles(theme).container}>
+            <View style={[styles(theme).container,
+            { paddingBottom: Platform.OS === 'android' ? insets.bottom : 0 }
+            ]}>
                 {isStatus && (
                     <View style={styles(theme).statusContainer}>
                         <Image source={IMAGES.ic_file_sucess} style={[styles(theme).alartIcon, { marginBottom: getScaleSize(24) }]} />
@@ -244,7 +250,7 @@ export default function BottomSheet(props: BottomSheetProps) {
                     />
                 }
             </View>
-        </RBSheet>
+        </RBSheet >
     )
 }
 

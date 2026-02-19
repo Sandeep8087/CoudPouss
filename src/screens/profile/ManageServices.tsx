@@ -2,6 +2,7 @@ import {
     ActivityIndicator,
     FlatList,
     Image,
+    Platform,
     Pressable,
     ScrollView,
     StyleSheet,
@@ -30,8 +31,12 @@ import {
 import { SCREENS } from '..';
 import { API } from '../../api';
 import { CommonActions, useIsFocused } from '@react-navigation/native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 export default function ManageServices(props: any) {
+
+    const insets = useSafeAreaInsets();
+
     const isFromSelectServices: boolean = props?.route?.params?.isFromSelectServices ?? false;
     const { theme } = useContext<any>(ThemeContext);
     const STRING = useString();
@@ -128,7 +133,7 @@ export default function ManageServices(props: any) {
                             onRemove={() =>
                                 removeService(item.sub_category_id)
                             }
-                            onEdit={(item: any) => { 
+                            onEdit={(item: any) => {
                                 props.navigation.navigate(SCREENS.AddServices.identifier, {
                                     isFromManageServices: true,
                                     isEdit: true,
@@ -155,7 +160,7 @@ export default function ManageServices(props: any) {
     }
 
     return (
-        <View style={styles(theme).container}>
+        <View style={[styles(theme).container, { paddingBottom: Platform.OS === 'android' ? insets.bottom : 0 }]}>
             <Header
                 onBack={() => {
                     if (isFromSelectServices) {

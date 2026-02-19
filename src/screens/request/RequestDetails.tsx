@@ -8,6 +8,7 @@ import {
   TouchableOpacity,
   Image,
   Linking,
+  Platform,
 } from 'react-native';
 
 //ASSETS & CONSTANT
@@ -50,8 +51,12 @@ import moment from 'moment';
 import { EventRegister } from 'react-native-event-listeners';
 import { CommonActions } from '@react-navigation/native';
 import Video from 'react-native-video';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 export default function RequestDetails(props: any) {
+
+  const insets = useSafeAreaInsets();
+
   const STRING = useString();
   const { theme } = useContext<any>(ThemeContext);
   const item = props.route.params?.item ?? {};
@@ -287,7 +292,7 @@ export default function RequestDetails(props: any) {
         SHOW_TOAST(result?.data?.message ?? '', 'success')
         cancelScheduledServicePopupRef.current.close();
         props?.navigation.navigate(SCREENS.ServiceCancelled.identifier, {
-          item: result?.data?.data ?? null
+          item: serviceDetails
         });
       } else {
         SHOW_TOAST(result?.data?.message ?? '', 'error')
@@ -353,9 +358,11 @@ export default function RequestDetails(props: any) {
         return null;
     }
   };
-
+console.log('serviceDetails',JSON.stringify(serviceDetails))
   return (
-    <View style={styles(theme).container}>
+    <View style={[styles(theme).container,
+    { paddingBottom: Platform.OS === 'android' ? insets.bottom : 0 }
+    ]}>
       <Header
         onBack={() => {
           props.navigation.goBack();
@@ -510,7 +517,7 @@ export default function RequestDetails(props: any) {
               color={theme._323232}>
               {STRING.SecurityCode}
             </Text>
-            <FlatList
+            {/* <FlatList
               data={serviceDetails?.service_code?.split('')}
               horizontal
               showsHorizontalScrollIndicator={false}
@@ -531,7 +538,27 @@ export default function RequestDetails(props: any) {
                   </View>
                 );
               }}
-            />
+            /> */}
+            <View style={styles(theme).codeViewDirection}>
+              {serviceDetails?.service_code
+                ?.toString()
+                ?.split('')
+                ?.map((digit: string, index: number) => (
+                  <View
+                    key={index}
+                    style={[
+                      styles(theme).securityItemContainer,
+                      { marginLeft: index === 0 ? 0 : 3 },
+                    ]}>
+                    <Text
+                      size={getScaleSize(18)}
+                      font={FONTS.Lato.Medium}
+                      color={theme._323232}>
+                      {digit}
+                    </Text>
+                  </View>
+                ))}
+            </View>
             <Text
               style={{ flex: 1.0, marginTop: getScaleSize(12) }}
               size={getScaleSize(11)}
@@ -945,7 +972,7 @@ export default function RequestDetails(props: any) {
             </View>
           </View>
         )}
-        <View style={{ height: getScaleSize(100) }} />
+        <View style={{ height: getScaleSize(50) }} />
       </ScrollView>
       {status === 'pending' && (
         <View style={styles(theme).buttonContainer}>
@@ -1284,4 +1311,8 @@ const styles = (theme: ThemeContextType['theme']) =>
       borderWidth: 1,
       marginTop: getScaleSize(8),
     },
+    codeViewDirection: {
+      flexDirection: 'row',
+      marginTop: getScaleSize(16)
+    }
   });

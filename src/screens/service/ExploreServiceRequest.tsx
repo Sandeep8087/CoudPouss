@@ -39,6 +39,7 @@ import { SCREENS } from '..';
 
 export default function ExploreServiceRequest(props: any) {
 
+
   const PAGE_SIZE = 10;
   const STRING = useString();
 
@@ -54,33 +55,84 @@ export default function ExploreServiceRequest(props: any) {
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
   const [searchText, setSearchText] = useState('');
+  const [selectedCategory, setSelectedCategory] = useState('');
+  const [selectedLocation, setSelectedLocation] = useState('');
+  const [selectedFilterType, setSelectedFilterType] = useState<
+    'none' | 'category' | 'location'
+  >('none');
 
   useEffect(() => {
     getAllServices()
   }, [page])
 
-  async function getAllServices() {
-    if (!hasMore) return;
-    try {
+  useEffect(() => {
+    const delay = setTimeout(() => {
+      setPage(1);
+      setHasMore(true);
+      getAllServices(1, true);
+    }, 400);
 
-      setLoading(true)
-      const result: any = await API.Instance.get(API.API_ROUTES.getProfessionalAllServices + `?page=${page}&limit=${PAGE_SIZE}`)
-      if (result?.status) {
-        console.log('result==>', result?.data?.data);
-        const newData = result?.data?.data?.open_services ?? []
-        console.log('newData==>', newData);
-        if (newData.length < PAGE_SIZE) {
-          setHasMore(false);
-          setServiceList((prev: any) => [...prev, ...newData]);
-        } else {
-          setServiceList((prev: any) => [...prev, ...newData]);
-        }
-      }
-      else {
-        SHOW_TOAST(result?.data?.message, 'error')
-      }
+    return () => clearTimeout(delay);
+  }, [searchText, selectedCategory, selectedLocation]);
+
+  useEffect(() => {
+    if (page > 1) {
+      getAllServices(page);
     }
-    catch (error: any) {
+  }, [page]);
+
+  async function getAllServices(currentPage = 1, reset = false) {
+
+    if (!hasMore && !reset) return;
+
+    try {
+      setLoading(true);
+
+      const trimmedText = searchText.trim();
+
+      let params: any = {
+        page: String(currentPage),
+        limit: String(PAGE_SIZE),
+      };
+
+      // Filter
+      if (selectedFilterType === "category" && trimmedText) {
+        params.category_name = trimmedText;
+      }
+      else if (selectedFilterType === "location" && trimmedText) {
+        params.location = trimmedText;
+      }
+      else if (trimmedText) {
+        params.search = trimmedText;
+      }
+
+      const queryParams = new URLSearchParams(params).toString();
+
+      console.log('PRMS',queryParams)
+
+      const url = `${API.API_ROUTES.getProfessionalAllServices}?${queryParams}`;
+
+      console.log("API URL =>", url);
+
+      const result: any = await API.Instance.get(url);
+
+      if (result?.status) {
+
+        const newData = result?.data?.data?.open_services ?? [];
+
+        if (reset) {
+          setServiceList(newData);
+        } else {
+          setServiceList(prev => [...prev, ...newData]);
+        }
+
+        setHasMore(newData.length === PAGE_SIZE);
+
+      } else {
+        SHOW_TOAST(result?.data?.message, 'error');
+      }
+
+    } catch (error: any) {
       if (error?.message === 'canceled') return;
       SHOW_TOAST(error?.message ?? '', 'error');
     } finally {
@@ -90,8 +142,7 @@ export default function ExploreServiceRequest(props: any) {
 
   const loadMore = () => {
     if (!isLoading && hasMore) {
-      setPage(page + 1);
-      getAllServices();
+      setPage(prev => prev + 1);
     }
   };
 
@@ -113,6 +164,11 @@ export default function ExploreServiceRequest(props: any) {
             value={searchText}
             onChangeText={(text) => {
               setSearchText(text)
+            }}
+            onSubmitEditing={() => {
+              setPage(1);
+              setHasMore(true);
+              getAllServices(1, true);
             }}
           />
           <Image
@@ -165,9 +221,16 @@ export default function ExploreServiceRequest(props: any) {
                     index === arr.length - 1 && { borderBottomWidth: 0 }
                   ]}
                   onPress={() => {
-                    setSelectedFilter(type);
+                    if (type === "Category") {
+                      setSelectedFilter("Category");
+                      setSelectedFilterType("category");
+                    } else {
+                      setSelectedFilter("Location");
+                      setSelectedFilterType("location");
+                    }
                     setFilterModal(false);
                   }}
+
                 >
                   <Text
                     size={getScaleSize(14)}
@@ -185,7 +248,7 @@ export default function ExploreServiceRequest(props: any) {
         data={serviceList}
         showsVerticalScrollIndicator={false}
         keyExtractor={(item: any, index: number) => index.toString()}
-        contentContainerStyle={{marginHorizontal: getScaleSize(22), paddingBottom: getScaleSize(50) }}
+        contentContainerStyle={{ marginHorizontal: getScaleSize(22), paddingBottom: getScaleSize(50) }}
         onEndReached={loadMore}
         onEndReachedThreshold={0.1}
         ListFooterComponent={
@@ -267,7 +330,7 @@ const styles = (theme: ThemeContextType['theme']) =>
       alignItems: 'center',
       backgroundColor: theme.white,
       borderWidth: 1,
-      borderColor:  theme._BECFDA,
+      borderColor: theme._BECFDA,
       borderRadius: getScaleSize(12),
       paddingHorizontal: getScaleSize(12),
       // paddingVertical: getScaleSize(4),
@@ -278,7 +341,7 @@ const styles = (theme: ThemeContextType['theme']) =>
       width: getScaleSize(32),
       alignSelf: 'center' as FlexAlignType,
     },
-   
+
     searchInput: {
       fontFamily: FONTS.Lato.Regular,
       fontSize: getScaleSize(14),

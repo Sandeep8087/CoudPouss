@@ -166,16 +166,18 @@ export default function CancelScheduledServicePopup(props: CancelScheduledServic
                     <TouchableOpacity
                         style={styles(theme).backButtonContainer}
                         activeOpacity={1}
-                        onPress={()=>{
+                        onPress={() => {
                             onCancel(cancelServiceDetails?.service_id ?? null)
                         }}>
-                        <Text
-                            size={getScaleSize(19)}
-                            font={FONTS.Lato.Bold}
-                            color={theme._C62828}
-                            style={{ alignSelf: 'center' }}>
-                            {STRING.confirm_cancellation}
-                        </Text>
+                        <View style={styles(theme).confirmationButtomWrapper}>
+                            <Text
+                                size={getScaleSize(19)}
+                                font={FONTS.Lato.Bold}
+                                color={theme._C62828}
+                                style={{ alignSelf: 'center' }}>
+                                {STRING.confirm_cancellation}
+                            </Text>
+                        </View>
                     </TouchableOpacity>
                 </View>
             </View>
@@ -222,15 +224,19 @@ const styles = (theme: ThemeContextType['theme']) =>
             paddingVertical: getScaleSize(18),
             backgroundColor: theme.white,
             marginLeft: getScaleSize(8),
-            paddingHorizontal: getScaleSize(22),
+        },
+        confirmationButtomWrapper: {
+            flexShrink: 1,
+            paddingHorizontal: getScaleSize(7)
         },
         nextButtonContainer: {
-            flex: 1.0,
+            // flex: 1.0,
             justifyContent: 'center',
             borderWidth: 1,
             borderColor: theme.primary,
             borderRadius: getScaleSize(12),
             paddingVertical: getScaleSize(18),
+            paddingHorizontal: getScaleSize(22),
             backgroundColor: theme.primary,
             marginRight: getScaleSize(8),
         },

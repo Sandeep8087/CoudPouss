@@ -1,4 +1,4 @@
-import { Alert, Dimensions, Image, Linking, ScrollView, StyleSheet, TouchableOpacity, View } from 'react-native';
+import { Alert, Dimensions, Image, Linking, Platform, ScrollView, StyleSheet, TouchableOpacity, View } from 'react-native';
 import React, { useContext, useEffect, useRef, useState } from 'react';
 
 //CONTEXT
@@ -16,9 +16,12 @@ import { Header, Input, Text, Button } from '../../components';
 import { EventRegister } from 'react-native-event-listeners';
 import { API } from '../../api';
 import { CommonActions } from '@react-navigation/native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 
 export default function PaymentMethod(props: any) {
+
+    const insets = useSafeAreaInsets();
 
     const STRING = useString();
 
@@ -167,7 +170,9 @@ export default function PaymentMethod(props: any) {
     }
 
     return (
-        <View style={styles(theme).container}>
+        <View style={[styles(theme).container,
+        { paddingBottom: Platform.OS === 'android' ? insets.bottom : 0 }
+        ]}>
             <Header
                 onBack={() => {
                     props.navigation.goBack();
@@ -261,9 +266,9 @@ export default function PaymentMethod(props: any) {
                     title={STRING.proceed_to_pay}
                     style={{ flex: 1.0 }}
                     onPress={() => {
-                        if(profile?.has_purchased){
+                        if (profile?.has_purchased) {
                             SHOW_TOAST(STRING.you_have_already_subscribed_to_a_plan, 'info')
-                        }else{
+                        } else {
                             onPayment()
                         }
                     }}

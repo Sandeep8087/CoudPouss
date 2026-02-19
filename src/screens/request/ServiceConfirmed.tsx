@@ -41,8 +41,12 @@ import { CommonActions, useFocusEffect } from '@react-navigation/native';
 import { SCREENS } from '..';
 import { API } from '../../api';
 import moment from 'moment';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 export default function ServiceConfirmed(props: any) {
+
+  const insets = useSafeAreaInsets();
+
   const STRING = useString();
   const { theme } = useContext<any>(ThemeContext);
 
@@ -77,7 +81,9 @@ export default function ServiceConfirmed(props: any) {
   }
 
   return (
-    <View style={styles(theme).container}>
+    <View style={[styles(theme).container,
+    { paddingBottom: Platform.OS === 'android' ? insets.bottom : 0 }
+    ]}>
       <Header
         onBack={() => {
           props?.navigation?.dispatch(
@@ -287,7 +293,7 @@ export default function ServiceConfirmed(props: any) {
                 source={IMAGES.user_placeholder}
               />
             }
-            <View style={{ flex: 1.0,  }}>
+            <View style={{ flex: 1.0, }}>
               <View style={[styles(theme).flexRow, { flex: 1.0, maxWidth: '85%' }]}>
                 <Text
                   style={{ alignSelf: 'center', }}

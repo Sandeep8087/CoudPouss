@@ -30,6 +30,7 @@ import { API } from '../api';
 const Tab = createBottomTabNavigator();
 
 function BottomBar(props: any) {
+
   const { userType } = useContext<any>(AuthContext);
 
   const isProfile = props?.route?.params?.isProfile ?? false;
@@ -79,7 +80,7 @@ function BottomBar(props: any) {
       },
       created => console.log(`createChannel returned '${created}'`), // true if created, false if already exists
     );
-    
+
     const unsubscribe = getMessaging().onMessage(async remoteMessage => {
       // When app in foreground
       console.log('Message handled in the foregroud!', remoteMessage);

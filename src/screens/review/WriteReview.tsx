@@ -145,7 +145,7 @@ export default function WriteReview(props: any) {
               <Rating
                 type="custom"
                 ratingBackgroundColor="#EDEFF0"
-                tintColor="#fff" // background color, useful for layout
+                tintColor={theme.white}
                 ratingCount={5}
                 ratingColor={'#F0B52C'} // grey color
                 startingValue={overallRatting}

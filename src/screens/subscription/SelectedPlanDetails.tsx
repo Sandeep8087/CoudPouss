@@ -1,4 +1,4 @@
-import { Dimensions, Image, SafeAreaView, ScrollView, StyleSheet, TouchableOpacity, View } from 'react-native';
+import { Dimensions, Image, Platform, SafeAreaView, ScrollView, StyleSheet, TouchableOpacity, View } from 'react-native';
 import React, { useContext, useEffect, useRef, useState } from 'react';
 
 //CONTEXT
@@ -14,9 +14,12 @@ import { SCREENS } from '..';
 //COMPONENTS
 import { Header, Input, Text, Button } from '../../components';
 import { API } from '../../api';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 
 export default function SelectedPlanDetails(props: any) {
+
+    const insets = useSafeAreaInsets();
 
     const STRING = useString();
     const { theme } = useContext<any>(ThemeContext);
@@ -52,7 +55,9 @@ export default function SelectedPlanDetails(props: any) {
     }
 
     return (
-        <View style={styles(theme).container}>
+        <View style={[styles(theme).container,
+        { paddingBottom: Platform.OS === 'android' ? insets.bottom : 0 }
+        ]}>
             <Header
                 onBack={() => {
                     props.navigation.goBack();

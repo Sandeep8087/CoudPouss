@@ -1,4 +1,4 @@
-import { Dimensions, Image, ScrollView, StyleSheet, TouchableOpacity, View } from 'react-native';
+import { Dimensions, Image, Platform, ScrollView, StyleSheet, TouchableOpacity, View } from 'react-native';
 import React, { useContext, useEffect, useRef, useState } from 'react';
 
 //CONTEXT
@@ -16,9 +16,13 @@ import { Header, Input, Text, Button } from '../../components';
 
 //PACKAGES
 import OTPTextInput from 'react-native-otp-textinput';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+
 import { API } from '../../api';
 
 export default function Otp(props: any) {
+
+    const insets = useSafeAreaInsets();
 
     const STRING = useString();
     const isFromSignup = props?.route?.params?.isFromSignup || false;
@@ -52,7 +56,7 @@ export default function Otp(props: any) {
         return () => clearInterval(interval);
     }, [isResendDisabled]);
 
-    
+
     async function onOtp() {
         if (isFromSignup) {
             onSignup()
@@ -187,7 +191,9 @@ export default function Otp(props: any) {
     }
 
     return (
-        <View style={styles(theme).container}>
+        <View style={[styles(theme).container,
+        { paddingBottom: Platform.OS === 'android' ? insets.bottom : 0 }
+        ]}>
             <Header
                 onBack={() => {
                     props.navigation.goBack();

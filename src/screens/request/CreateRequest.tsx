@@ -47,11 +47,15 @@ import { API } from '../../api';
 import { launchImageLibrary } from 'react-native-image-picker';
 import moment from 'moment';
 import { createThumbnail } from 'react-native-create-thumbnail';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 const { width } = Dimensions.get('window');
 const cellSize = (width - 30) / 7;
 
 export default function CreateRequest(props: any) {
+
+  const insets = useSafeAreaInsets();
+
   const STRING = useString();
   const { theme } = useContext<any>(ThemeContext);
 
@@ -82,7 +86,7 @@ export default function CreateRequest(props: any) {
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [selectedTime, setSelectedTime] = useState(new Date());
   const [productName, setProductName] = useState('')
-  const [productNameError, setProductNameError] = useState('')
+  const [productNameError, setProductNameError] = useState<any>('')
   const [quantity, setQuantity] = useState('')
   const [quantityError, setQuantityError] = useState('')
   const [firstProductImage, setFirstProductImage] = useState<any>(null);
@@ -93,7 +97,7 @@ export default function CreateRequest(props: any) {
   const [addressError, setAddressError] = useState('')
   const [descriptionError, setDescriptionError] = useState('')
   const [firstImageError, setFirstImageError] = useState('')
- 
+
 
   useEffect(() => {
     getAllCategories();
@@ -350,8 +354,12 @@ export default function CreateRequest(props: any) {
       }
     } else if (selectedProgress == 6) {
       if (!productName) {
-        setProductNameError('Please enter a product name');
-        return;
+        const validation = validateProductName(productName);
+
+        if (!validation.valid) {
+          setProductNameError(validation.message);
+          return;
+        }
       }
       else if (!quantity.trim()) {
         setQuantityError('Quantity is required.');
@@ -533,6 +541,52 @@ export default function CreateRequest(props: any) {
     setDescription(clean);
 
     return true;
+  };
+
+  const validateProductName = (text: any) => {
+    let value = text.trim();
+
+    if (!productName) {
+      return {
+        valid: false,
+        message: 'Enter Product Name',
+      }
+    }
+
+    // block HTML/script tags
+    if (/<[^>]*>|script|select|insert|delete|drop|update|--|;/i.test(value)) {
+      return { valid: false, message: 'Invalid characters detected' };
+    }
+
+    // remove emojis
+    value = value.replace(/[\p{Extended_Pictographic}]/gu, '');
+
+    // allow only approved characters
+    if (!/^[a-zA-Z0-9\s\-&.()]+$/.test(value)) {
+      return {
+        valid: false,
+        message: 'Only letters, numbers and - & . ( ) allowed',
+      };
+    }
+
+    // block consecutive special characters
+    if (/[\-&.()]{2,}/.test(value)) {
+      return {
+        valid: false,
+        message: 'Consecutive special characters not allowed',
+      };
+    }
+
+    // length validation
+    if (value.length < 2) {
+      return { valid: false, message: 'Minimum 2 characters required' };
+    }
+
+    if (value.length > 50) {
+      return { valid: false, message: 'Maximum 50 characters allowed' };
+    }
+
+    return { valid: true, value };
   };
 
   function renderProfessional() {
@@ -1007,9 +1061,15 @@ export default function CreateRequest(props: any) {
             value={productName}
             maxLength={50}
             onChangeText={(text: any) => {
-              const filteredText = text.replace(/[^a-zA-Z0-9\-&.\(\)\s]/g, '')
-              setProductName(filteredText);
-              setProductNameError('');
+              const result = validateProductName(text);
+
+              if (result.valid) {
+                setProductName(result.value);
+                setProductNameError('');
+              } else {
+                setProductName(text.slice(0, 50));
+                setProductNameError(result.message);
+              }
             }}
             isError={productNameError}
           />
@@ -1292,7 +1352,9 @@ export default function CreateRequest(props: any) {
   }
 
   return (
-    <View style={styles(theme).container}>
+    <View style={[styles(theme).container,
+    { paddingBottom: Platform.OS === 'android' ? insets.bottom : 0 }
+    ]}>
       <Header
       />
       <View style={{ flexDirection: 'row', alignItems: 'center', marginRight: getScaleSize(22), marginBottom: getScaleSize(40) }}>
