@@ -393,7 +393,6 @@ export default function ProfessionalHome(props: any) {
                       }}
                     />
                   ))}
-
                   <View style={styles(theme).horizontalContainer}>
                     <Text
                       size={getScaleSize(20)}
@@ -532,7 +531,7 @@ export default function ProfessionalHome(props: any) {
 
 const styles = (theme: ThemeContextType['theme']) =>
   StyleSheet.create({
-    container: { flex: 1, backgroundColor: theme.white },
+    container: {  flex:1.0,backgroundColor: theme.white },
     headerContainer: {
       flexDirection: 'row',
       marginHorizontal: getScaleSize(22),

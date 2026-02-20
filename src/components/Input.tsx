@@ -140,6 +140,7 @@ function Input(props: InputProps & TextInputProps) {
                 : theme._939393
             }
             multiline={props?.multiline ?? false}
+            maxLength={props.maxLength}
             numberOfLines={props?.numberOfLines ?? 1}
             value={props.value}
             secureTextEntry={secureTextEntry}

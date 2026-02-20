@@ -32,9 +32,12 @@ import {
 import { CommonActions } from '@react-navigation/native';
 import { API } from '../../api';
 import { launchImageLibrary } from 'react-native-image-picker';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 
 export default function AddPersonalDetails(props: any) {
+
+  const insets = useSafeAreaInsets();
+
   const STRING = useString();
 
   const { theme } = useContext<any>(ThemeContext);
@@ -166,13 +169,8 @@ export default function AddPersonalDetails(props: any) {
     if (!cleanName) {
       setNameError(STRING.name_required);
       hasError = true;
-    } else if (cleanName.length < 2 || cleanName.length > 50) {
-      setNameError(STRING.name_min_max_error);
-      hasError = true;
-    } else if (emojiRegex.test(cleanName)) {
-      setNameError(STRING.emoji_not_allowed);
-      hasError = true;
-    } else if (!nameRegex.test(cleanName)) {
+    }
+    else if (!/^[A-Za-z]+(?: [A-Za-z]+)*$/.test(cleanName)) {
       setNameError(STRING.name_invalid_characters);
       hasError = true;
     }
@@ -203,16 +201,12 @@ export default function AddPersonalDetails(props: any) {
     if (!cleanAddress) {
       setAddressError(STRING.address_required);
       hasError = true;
-    } else if (cleanAddress.length < 2 || cleanAddress.length > 250) {
-      setAddressError(STRING.address_min_max_error);
-      hasError = true;
-    } else if (emojiRegex.test(cleanAddress)) {
-      setAddressError(STRING.emoji_not_allowed);
-      hasError = true;
-    } else if (onlyNumbers.test(cleanAddress)) {
+    }
+    else if (/^\d+$/.test(cleanAddress)) {
       setAddressError(STRING.address_only_numbers_error);
       hasError = true;
-    } else if (onlySpecialChars.test(cleanAddress)) {
+    }
+    else if (/^[^A-Za-z0-9]+$/.test(cleanAddress)) {
       setAddressError(STRING.address_special_char_error);
       hasError = true;
     }
@@ -350,7 +344,19 @@ export default function AddPersonalDetails(props: any) {
               value={name}
               maxLength={50}
               onChangeText={text => {
-                setName(text.replace(/\s+/g, ' '));
+                // Remove emojis
+                const noEmoji = text.replace(
+                  /([\u2700-\u27BF]|[\uE000-\uF8FF]|[\uD83C-\uDBFF\uDC00-\uDFFF]+)/g,
+                  ''
+                );
+
+                // Allow only letters + space
+                const clean = noEmoji.replace(/[^A-Za-z ]/g, '');
+
+                // Allow single space only
+                const singleSpace = clean.replace(/\s+/g, ' ');
+
+                setName(singleSpace);
                 setNameError('');
               }}
               isError={nameError}
@@ -404,7 +410,14 @@ export default function AddPersonalDetails(props: any) {
               value={address}
               maxLength={250}
               onChangeText={text => {
-                setAddress(text.replace(/\s+/g, ' '));
+                const noEmoji = text.replace(
+                  /([\u2700-\u27BF]|[\uE000-\uF8FF]|[\uD83C-\uDBFF\uDC00-\uDFFF]+)/g,
+                  ''
+                );
+
+                const singleSpace = noEmoji.replace(/\s+/g, ' ');
+
+                setAddress(singleSpace);
                 setAddressError('');
               }}
               isError={addressError}
@@ -416,6 +429,7 @@ export default function AddPersonalDetails(props: any) {
           style={{
             marginVertical: getScaleSize(24),
             marginHorizontal: getScaleSize(24),
+            marginBottom: insets.bottom > 0 ? insets.bottom : 16,
           }}
           onPress={() => {
             onSignup();
@@ -449,7 +463,7 @@ const styles = (theme: ThemeContextType['theme']) =>
       flex: 1.0,
       marginHorizontal: getScaleSize(24),
       marginVertical: getScaleSize(18),
-      justifyContent: 'center',
+      // justifyContent: 'center',
     },
     imageContainer: {
       alignItems: 'center',

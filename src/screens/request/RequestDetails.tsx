@@ -374,7 +374,6 @@ export default function RequestDetails(props: any) {
   console.log('serviceDetails', JSON.stringify(serviceDetails))
   return (
     <View style={[styles(theme).container,
-    { paddingBottom: Platform.OS === 'android' ? insets.bottom : 0 }
     ]}>
       <Header
         onBack={() => {
@@ -384,6 +383,11 @@ export default function RequestDetails(props: any) {
       />
       <ScrollView
         style={styles(theme).scrolledContainer}
+        contentContainerStyle={{
+          paddingBottom: status === 'pending' || status === 'accepted'
+            ? getScaleSize(140)
+            : getScaleSize(40),
+        }}
         showsVerticalScrollIndicator={false}>
         <View style={styles(theme).imageContainer}>
           {serviceDetails?.sub_category_logo ? (
@@ -995,10 +999,15 @@ export default function RequestDetails(props: any) {
             </View>
           </View>
         )}
-        <View style={{ height: getScaleSize(50) }} />
+        {/* <View style={{ height: getScaleSize(50) }} /> */}
       </ScrollView>
       {status === 'pending' && (
-        <View style={styles(theme).buttonContainer}>
+        <View style={[
+          styles(theme).buttonContainer,
+          {
+            paddingBottom: Math.max(insets.bottom, getScaleSize(16)),
+          },
+        ]}>
           <TouchableOpacity
             style={styles(theme).backButtonContainer}
             activeOpacity={1}
@@ -1047,7 +1056,7 @@ export default function RequestDetails(props: any) {
       {status === 'pending' && (
         <AcceptBottomPopup
           onRef={acceptRef}
-          title={`You are about to confirm a service at the rate of €${serviceDetails?.total_renegotiated ?? 0} with the Provider Wade Warren, Are you sure you want to continue? `}
+          title={`You are about to confirm a service at the rate of €${serviceDetails?.total_renegotiated ?? 0} with the Provider ${serviceDetails?.provider?.full_name ?? ''}, Are you sure you want to continue? `}
           onClose={() => {
             acceptRef.current.close();
           }}
@@ -1081,7 +1090,9 @@ export default function RequestDetails(props: any) {
         />
       )}
       {status === 'accepted' && (
-        <View style={styles(theme).buttonContainer}>
+        <View style={[styles(theme).buttonContainer,
+        { paddingBottom: Math.max(insets.bottom, getScaleSize(16)), }
+        ]}>
           <TouchableOpacity
             style={styles(theme).backButtonContainer}
             activeOpacity={1}
@@ -1451,9 +1462,16 @@ const styles = (theme: ThemeContextType['theme']) =>
       backgroundColor: theme._EAF0F3,
     },
     buttonContainer: {
+      position: 'absolute',
+      bottom: 0,
+      left: 0,
+      right: 0,
       flexDirection: 'row',
-      marginHorizontal: getScaleSize(22),
-      marginBottom: getScaleSize(17),
+      paddingHorizontal: getScaleSize(22),
+      paddingTop: getScaleSize(12),
+      backgroundColor: theme.white,
+      borderTopWidth: 1,
+      borderTopColor: '#E6E6E6',
     },
     backButtonContainer: {
       flex: 1.0,

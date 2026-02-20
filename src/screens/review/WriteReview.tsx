@@ -142,6 +142,7 @@ export default function WriteReview(props: any) {
               {STRING.OverallService}
             </Text>
             {!isLoadingRating &&
+            <View style={{ height: 40, justifyContent: 'center' }}>
               <Rating
                 type="custom"
                 ratingBackgroundColor="#EDEFF0"
@@ -152,6 +153,7 @@ export default function WriteReview(props: any) {
                 imageSize={30}
                 onFinishRating={(value: any) => setOverallRatting(value)}
               />
+              </View>
             }
           </View>
           <View style={styles(theme).ratingContainer}>

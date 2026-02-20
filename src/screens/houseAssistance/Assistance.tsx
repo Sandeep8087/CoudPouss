@@ -89,7 +89,7 @@ export default function Assistance(props: any) {
       setLoading(true);
       const result = await API.Instance.get(API.API_ROUTES.getHomeData + `?service_name=${service?.name}`);
       setLoading(false)
-      console.log('CAT',JSON.stringify(result))
+      console.log('CAT', JSON.stringify(result))
       if (result.status) {
         setCategoryList(result?.data?.data?.categories ?? []);
         if (result?.data?.data?.categories?.[0]?.id) {
@@ -125,6 +125,8 @@ export default function Assistance(props: any) {
       setLoading(false);
     }
   }
+
+  console.log('BANNER', JSON.stringify(bannerData))
 
   // const patterns = searchText ? ['small'] : ['small', 'large', 'large', 'small'];
   const patterns = ['small', 'large', 'large', 'small'];
@@ -171,17 +173,37 @@ export default function Assistance(props: any) {
         <Animated.View style={[{ position: 'absolute', top: 0, left: 0, right: 0, zIndex: 1000, backgroundColor: '#fff' }, animatedHeaderStyle]}>
           <>
             {bannerData ? (
-              <TouchableOpacity
-                activeOpacity={0.8}
-                onPress={() => {
-                  props.navigation.navigate(SCREENS.CreateRequest.identifier)
-                }}>
+              // <TouchableOpacity
+              //   activeOpacity={0.8}
+              //   onPress={() => {
+              //     props.navigation.navigate(SCREENS.CreateRequest.identifier)
+              //   }}>
+              //   <Image
+              //     style={styles(theme).bannerContainer}
+              //     resizeMode='cover'
+              //     source={{ uri: bannerData?.url }}
+              //   />
+              // </TouchableOpacity>
+              <View style={styles(theme).bannerWrapper}>
                 <Image
                   style={styles(theme).bannerContainer}
-                  resizeMode='cover'
+                  resizeMode="cover"
                   source={{ uri: bannerData?.url }}
                 />
-              </TouchableOpacity>
+                <TouchableOpacity
+                  activeOpacity={0.8}
+                  onPress={() => {
+                    props.navigation.navigate(SCREENS.CreateRequest.identifier);
+                  }}
+                  style={styles(theme).bookNowButton}>
+                  <Text
+                    size={getScaleSize(14)}
+                    font={FONTS.Lato.Bold}
+                    color={theme.white}>
+                    {STRING.book_now}
+                  </Text>
+                </TouchableOpacity>
+              </View>
             ) : (
               <View style={styles(theme).bannerContainer} />
             )}
@@ -249,7 +271,7 @@ export default function Assistance(props: any) {
             )}
           </>
         </Animated.View>
-        {subCategoryList &&subCategoryList.length > 0 && filteredSubCategories.length > 0 && loading === false ?
+        {subCategoryList && subCategoryList.length > 0 && filteredSubCategories.length > 0 && loading === false ?
           <Animated.FlatList
             data={filteredSubCategories}
             numColumns={2}
@@ -359,5 +381,18 @@ const styles = (theme: ThemeContextType['theme']) =>
     imageView: {
       flex: 1.0,
       borderRadius: getScaleSize(20),
-    }
+    },
+    bannerWrapper: {
+      marginVertical: getScaleSize(20),
+      marginHorizontal: getScaleSize(24),
+    },
+    bookNowButton: {
+      position: 'absolute',
+      bottom: getScaleSize(30),
+      left: getScaleSize(32),
+      paddingHorizontal: getScaleSize(20),
+      paddingVertical: getScaleSize(10),
+      backgroundColor: theme.primary,
+      borderRadius: getScaleSize(25),
+    },
   });
