@@ -687,6 +687,10 @@ export default function EditProfile(props: any) {
                 title={STRING.are_you_sure_you_want_to_delete_your_account}
                 description={STRING.delete_account_message}
                 buttonTitle={STRING.delete_profile}
+                secondButtonTitle={STRING.cancel}
+                onPressSecondButton={() => {
+                    bottomSheetRef.current.close();
+                }}
                 onPressButton={() => {
                     onDeleteProfile()
                 }}
@@ -704,7 +708,7 @@ export default function EditProfile(props: any) {
                     setVisibleCountry(false);
                 }}
             />
-            <SafeAreaView />
+            {/* <SafeAreaView /> */}
         </View>
     );
 }

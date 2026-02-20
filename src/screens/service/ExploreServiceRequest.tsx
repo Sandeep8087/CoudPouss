@@ -11,6 +11,8 @@ import {
   Modal,
   FlatList,
   ActivityIndicator,
+  PermissionsAndroid,
+  Platform,
 } from 'react-native';
 
 //API
@@ -37,6 +39,10 @@ import {
 //SCREENS
 import { SCREENS } from '..';
 
+//PACKAGES
+import Geolocation from 'react-native-geolocation-service';
+import { PERMISSIONS, request, RESULTS } from 'react-native-permissions';
+
 export default function ExploreServiceRequest(props: any) {
 
 
@@ -55,6 +61,7 @@ export default function ExploreServiceRequest(props: any) {
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
   const [searchText, setSearchText] = useState('');
+  const [location, setLocation] = useState<any>(null);
   const [selectedCategory, setSelectedCategory] = useState('');
   const [selectedLocation, setSelectedLocation] = useState('');
   const [selectedFilterType, setSelectedFilterType] = useState<
@@ -62,7 +69,14 @@ export default function ExploreServiceRequest(props: any) {
   >('none');
 
   useEffect(() => {
-    getAllServices()
+    // requestPermissions()
+    // getLocation()
+  }, [])
+
+  useEffect(() => {
+    if (location) {
+      getAllServices(location);
+    }
   }, [page])
 
   useEffect(() => {

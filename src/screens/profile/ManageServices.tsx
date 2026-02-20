@@ -15,7 +15,7 @@ import React, { useContext, useEffect, useRef, useState } from 'react';
 import { AuthContext, ThemeContext, ThemeContextType } from '../../context';
 
 // CONSTANTS & ASSETS
-import { getScaleSize, SHOW_TOAST, useString } from '../../constant';
+import { arrayIcons, getScaleSize, SHOW_TOAST, useString } from '../../constant';
 import { FONTS, IMAGES } from '../../assets';
 
 // COMPONENTS
@@ -217,7 +217,7 @@ export default function ManageServices(props: any) {
                                                     },
                                                 ]}>
                                                 <Image
-                                                    source={IMAGES.ic_hammer_wrench}
+                                                    source={arrayIcons[item?.category_name?.toLowerCase() as keyof typeof arrayIcons] ?? arrayIcons['diy'] as any}
                                                     style={[
                                                         styles(theme).itemIcon,
                                                         {

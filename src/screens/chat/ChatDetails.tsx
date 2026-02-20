@@ -12,6 +12,8 @@ import {
   ActivityIndicator,
   StyleProp,
   ViewStyle,
+  ScrollView,
+  SafeAreaView,
 } from 'react-native';
 
 //ASSETS
@@ -21,7 +23,7 @@ import { FONTS, IMAGES } from '../../assets';
 import { ThemeContext, ThemeContextType, AuthContext } from '../../context';
 
 //CONSTANT
-import { getScaleSize, useString } from '../../constant';
+import {getScaleSize, SHOW_TOAST, useString} from '../../constant';
 
 //COMPONENT
 import { Text } from '../../components';
@@ -29,13 +31,14 @@ import { Text } from '../../components';
 //PACKAGES
 import { useFocusEffect } from '@react-navigation/native';
 import {
-  ChatMessage,
-  buildThreadId,
-  ensureThreadDocument,
-  sendTextMessage,
-  subscribeToMessages,
+  listenToThreads,
+  messagesListThread,
+  messagesNegotiationListThread,
+  negotiationMessage,
+  userMessage,
 } from '../../services/chat';
-import { FirebaseFirestoreTypes } from '@react-native-firebase/firestore';
+import {FirebaseFirestoreTypes} from '@react-native-firebase/firestore';
+import {Screen} from 'react-native-screens';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 export default function ChatDetails(props: any) {
@@ -43,21 +46,33 @@ export default function ChatDetails(props: any) {
   const insets = useSafeAreaInsets();
 
   const STRING = useString();
-  const { theme } = useContext<any>(ThemeContext);
+  const {theme} = useContext<any>(ThemeContext);
+  const {profile} = useContext<any>(AuthContext);
   const { user } = useContext<any>(AuthContext);
   const peerUser = props?.route?.params?.peerUser;
-  const existingThreadId = props?.route?.params?.threadId;
   const [message, setMessage] = useState('');
-  const [messages, setMessages] = useState<ChatMessage[]>([]);
+  const [messages, setMessages] = useState<any[]>([]);
+  const [negotiationMessages, setNegotiationMessages] = useState<any>({});
+
   const [loadingMessages, setLoadingMessages] = useState(true);
   const [isSending, setIsSending] = useState(false);
-  const currentUserId = user?.user_id;
-  const currentUserName = user?.name;
-  const currentUserEmail = user?.email;
-  const currentUserAvatar = user?.avatarUrl;
+  const [editingForMessageId, setEditingForMessageId] = useState<
+    boolean | null
+  >(false);
+  const [offerInputValue, setOfferInputValue] = useState('');
+
+  const [commanId, setCommanId] = useState<string | ''>(
+    props?.route?.params?.conversationId || '',
+  );
+  // Extract user data from profile
+  // const currentUserId = profile?.user?.id;
+  // const currentUserName = profile?.user?.first_name;
+  // const currentUserEmail = profile?.user?.email;
+  const currentUserAvatar = profile?.user?.profile_photo_url;
+  // const currentUserRole = profile?.user?.role;
+
   const peerUserId = peerUser?.user_id;
   const peerUserName = peerUser?.name;
-  const peerUserEmail = peerUser?.email;
   const peerUserAvatar = peerUser?.avatarUrl;
   const messageListContentStyle = useMemo<StyleProp<ViewStyle>>(
     () => ({
@@ -68,18 +83,6 @@ export default function ChatDetails(props: any) {
     [],
   );
 
-  const threadId = useMemo(() => {
-    if (existingThreadId) {
-      return existingThreadId;
-    }
-
-    if (currentUserId && peerUserId) {
-      return buildThreadId(currentUserId, peerUserId);
-    }
-
-    return undefined;
-  }, [existingThreadId, currentUserId, peerUserId]);
-
   useFocusEffect(
     React.useCallback(() => {
       if (Platform.OS === 'android') {
@@ -88,74 +91,104 @@ export default function ChatDetails(props: any) {
       }
     }, [theme.white]),
   );
-
   useEffect(() => {
-    if (!threadId || !currentUserId || !peerUserId) {
-      return;
-    }
-
-    ensureThreadDocument(threadId, [
-      {
-        user_id: currentUserId,
-        name: currentUserName,
-        email: currentUserEmail,
-        avatarUrl: currentUserAvatar,
-      },
-      {
-        user_id: peerUserId,
-        name: peerUserName,
-        email: peerUserEmail,
-        avatarUrl: peerUserAvatar,
-      },
-    ]);
-  }, [
-    threadId,
-    currentUserId,
-    currentUserName,
-    currentUserEmail,
-    currentUserAvatar,
-    peerUserId,
-    peerUserName,
-    peerUserEmail,
-    peerUserAvatar,
-  ]);
-
-  useEffect(() => {
-    if (!threadId) {
-      setMessages([]);
-      setLoadingMessages(false);
-      return;
-    }
-
-    setLoadingMessages(true);
-    const unsubscribe = subscribeToMessages(
-      threadId,
-      list => {
-        setMessages(list);
-        setLoadingMessages(false);
-      },
-      error => {
-        console.log('Failed to subscribe to messages', error);
-        setLoadingMessages(false);
-      },
-    );
-
-    return unsubscribe;
-  }, [threadId]);
-
-  const handleSendMessage = async () => {
-    if (!threadId || !currentUserId || !peerUserId || !message.trim()) {
-      return;
-    }
-
-    setIsSending(true);
-    try {
-      await sendTextMessage({
-        threadId,
-        text: message,
-        senderId: currentUserId,
-        receiverId: peerUserId,
+    const unsubscribe = messagesNegotiationListThread(
+      props.route.params.conversationId,
+    ).onSnapshot(querySnapshot => {
+      const formattedMessages = querySnapshot.docs.map((doc: any) => {
+        return {
+          _id: doc.id,
+          text: '',
+          createdAt: new Date().getTime(),
+          ...doc.data(),
+        };
       });
+
+      // Create common object
+      const commonData = {
+        serviceName: formattedMessages[0]?.serviceName,
+        senderId: formattedMessages[0]?.senderId,
+        receiverId: formattedMessages[0]?.receiverId,
+        type: formattedMessages[0]?.type,
+      };
+
+      // Optional: keep only message-specific fields
+      const messagesData = formattedMessages.map(({...rest}) => rest);
+
+      const result = {
+        commonData,
+        messagesData: messagesData.reverse(),
+      };
+      setLoadingMessages(false);
+      setNegotiationMessages(result);
+    });
+
+    return () => {
+      unsubscribe();
+    };
+  }, []);
+
+  useEffect(() => {
+    if (commanId === '') {
+      return listenToThreads(profile?.user?.id).onSnapshot(querySnapshot => {
+        querySnapshot.docs.map((doc: any) => {
+          if (doc.data().user.recipientId === peerUserId) {
+            setCommanId(doc.id);
+            return messagesListThread(doc.id).onSnapshot(
+              (querySnapshot: any) => {
+                const formattedMessages = querySnapshot.docs.map((doc: any) => {
+                  return {
+                    _id: doc.id,
+                    text: '',
+                    createdAt: new Date().getTime(),
+                    ...doc.data(),
+                  };
+                });
+                setLoadingMessages(false);
+                setMessages(formattedMessages);
+              },
+            );
+          }
+        });
+      });
+    } else {
+      setCommanId(props.route.params.conversationId);
+      const unsubscribe = messagesListThread(
+        props.route.params.conversationId,
+      ).onSnapshot(querySnapshot => {
+        const formattedMessages = querySnapshot.docs.map((doc: any) => {
+          return {
+            _id: doc.id,
+            text: '',
+            createdAt: new Date().getTime(),
+            ...doc.data(),
+          };
+        });
+        setLoadingMessages(false);
+        setMessages(formattedMessages);
+      });
+
+      return () => {
+        unsubscribe();
+      };
+    }
+  }, [commanId]);
+
+  const handleSendMessage = () => {
+    setIsSending(true);
+
+    try {
+      userMessage(
+        profile?.user?.id,
+        profile?.user?.first_name,
+        peerUserId,
+        peerUserName,
+        message,
+        commanId || '',
+        currentUserAvatar,
+        peerUserAvatar,
+        'text',
+      );
       setMessage('');
     } catch (error) {
       console.log('Failed to send message', error);
@@ -164,15 +197,19 @@ export default function ChatDetails(props: any) {
     }
   };
 
-  const renderMessage = ({ item }: { item: ChatMessage }) => {
-    const isMe = item.senderId === currentUserId;
+  const isMe = negotiationMessages?.commonData?.senderId === profile?.user?.id;
+
+  const renderMessage = ({item}: {item: any}) => {
+    const isMessageMe = item.senderId === profile?.user?.id;
     return (
       <View
         style={[
           styles(theme).messageRow,
-          isMe ? styles(theme).messageRowRight : styles(theme).messageRowLeft,
+          isMessageMe
+            ? styles(theme).messageRowRight
+            : styles(theme).messageRowLeft,
         ]}>
-        {!isMe && (
+        {!isMessageMe && (
           <Image
             style={styles(theme).userProfilePic}
             source={
@@ -183,23 +220,23 @@ export default function ChatDetails(props: any) {
         <View
           style={[
             styles(theme).messageContainer,
-            isMe ? styles(theme).selfBubble : styles(theme).peerBubble,
+            isMessageMe ? styles(theme).selfBubble : styles(theme).peerBubble,
           ]}>
           <Text
             size={getScaleSize(16)}
             font={FONTS.Lato.SemiBold}
-            color={isMe ? theme.white : theme._818285}>
-            {item.text}
+            color={isMessageMe ? theme.white : theme._818285}>
+            {item?.text}
           </Text>
           <Text
             size={getScaleSize(10)}
             font={FONTS.Lato.Regular}
-            color={isMe ? theme.white : theme._ACADAD}
+            color={isMessageMe ? theme.white : theme._ACADAD}
             style={[styles(theme).messageTime]}>
             {formatTimestamp(item.createdAt)}
           </Text>
         </View>
-        {isMe && (
+        {isMessageMe && (
           <Image
             style={styles(theme).userProfilePic}
             source={
@@ -209,6 +246,47 @@ export default function ChatDetails(props: any) {
             }
           />
         )}
+      </View>
+    );
+  };
+
+  const renderNegotiationMessage = ({item}: {item: any}) => {
+    return (
+      <View style={styles(theme).pricingRow}>
+        {item.title === 'Original Valuation' ? (
+          <Text
+            style={{flex: 1}}
+            size={getScaleSize(14)}
+            font={FONTS.Lato.Medium}
+            color={theme._6D6D6D}>
+            {item.title}
+          </Text>
+        ) : item.title === 'Initial Quote' ? (
+          <Text
+            style={{flex: 1}}
+            size={getScaleSize(14)}
+            font={FONTS.Lato.Medium}
+            color={theme._6D6D6D}>
+            {item.title}
+          </Text>
+        ) : (
+          <Text
+            style={{flex: 1}}
+            size={getScaleSize(14)}
+            font={FONTS.Lato.Medium}
+            color={theme._6D6D6D}>
+            {item.title === profile?.user?.first_name
+              ? 'Your Previous Offer'
+              : item.title + ' Current Offer'}
+          </Text>
+        )}
+
+        <Text
+          size={getScaleSize(16)}
+          font={FONTS.Lato.Bold}
+          color={theme._424242}>
+          €{item.text}
+        </Text>
       </View>
     );
   };
@@ -227,7 +305,7 @@ export default function ChatDetails(props: any) {
         backgroundColor={theme.white}
         translucent={false}
       />
-      <View style={styles(theme).hearderContainer}>
+      <SafeAreaView style={styles(theme).hearderContainer}>
         <TouchableOpacity
           style={styles(theme).backImage}
           activeOpacity={1}
@@ -257,21 +335,222 @@ export default function ChatDetails(props: any) {
             {peerUser?.status || ''}
           </Text>
         </View>
-      </View>
-      <View style={styles(theme).deviderView} />
+      </SafeAreaView>
       <View style={styles(theme).messagesWrapper}>
         {loadingMessages ? (
           <View style={styles(theme).loaderContainer}>
             <ActivityIndicator size="small" color={theme.primary} />
           </View>
         ) : (
-          <FlatList
-            data={messages}
-            renderItem={renderMessage}
-            keyExtractor={item => item.id}
-            contentContainerStyle={messageListContentStyle}
-            showsVerticalScrollIndicator={false}
-          />
+          <ScrollView showsVerticalScrollIndicator={false}>
+            <FlatList
+              data={messages}
+              renderItem={renderMessage}
+              keyExtractor={item => item.id}
+              contentContainerStyle={messageListContentStyle}
+              showsVerticalScrollIndicator={false}
+            />
+            {negotiationMessages.messagesData.length > 0 && (
+              <View
+                style={
+                  !isMe
+                    ? styles(theme).quoteCardContainer
+                    : styles(theme).negotiationCard
+                }>
+                <Text
+                  size={getScaleSize(16)}
+                  font={FONTS.Lato.Bold}
+                  color={theme._323232}>
+                  {negotiationMessages.commonData.serviceName}
+                </Text>
+                <FlatList
+                  data={negotiationMessages.messagesData}
+                  renderItem={renderNegotiationMessage}
+                  keyExtractor={item => item._id}
+                  contentContainerStyle={messageListContentStyle}
+                  showsVerticalScrollIndicator={false}
+                />
+                {!isMe ? (
+                  <View>
+                    {!editingForMessageId && (
+                      <TouchableOpacity
+                        style={styles(theme).editOfferButton}
+                        onPress={() => {
+                          setEditingForMessageId(!editingForMessageId);
+                        }}>
+                        <Text
+                          size={getScaleSize(14)}
+                          font={FONTS.Lato.SemiBold}
+                          color={theme.primary}>
+                          Edit Offer
+                        </Text>
+                      </TouchableOpacity>
+                    )}
+
+                    {editingForMessageId && (
+                      <View>
+                        <View style={styles(theme).offerInputWrapper}>
+                          <Text
+                            size={getScaleSize(16)}
+                            font={FONTS.Lato.Medium}
+                            color={theme._424242}>
+                            €
+                          </Text>
+                          <TextInput
+                            value={offerInputValue}
+                            onChangeText={setOfferInputValue}
+                            style={styles(theme).offerTextInput}
+                            placeholder="0.00"
+                            placeholderTextColor={theme._ACADAD}
+                            keyboardType="decimal-pad"
+                          />
+                        </View>
+                        <View style={styles(theme).actionRow}>
+                          <TouchableOpacity
+                            style={styles(theme).actionButtonPrimary}
+                            onPress={async () => {
+                              if (!offerInputValue.trim()) {
+                                SHOW_TOAST(
+                                  'Please enter an offer amount',
+                                  'error',
+                                );
+                                return;
+                              }
+                              negotiationMessage(
+                                negotiationMessages.commonData.serviceName,
+                                peerUserId,
+                                profile?.user?.id,
+                                profile?.user?.first_name,
+                                'service_provider',
+                                offerInputValue,
+                                peerUserId,
+                              );
+                              setEditingForMessageId(false);
+                              setOfferInputValue('');
+                            }}>
+                            <Text
+                              size={getScaleSize(14)}
+                              font={FONTS.Lato.SemiBold}
+                              color={theme.white}>
+                              Submit
+                            </Text>
+                          </TouchableOpacity>
+                          <View style={{width: getScaleSize(12)}} />
+                          <TouchableOpacity
+                            style={styles(theme).actionButtonSecondary}
+                            onPress={() => {
+                              setEditingForMessageId(false);
+                              setOfferInputValue('');
+                            }}>
+                            <Text
+                              size={getScaleSize(14)}
+                              font={FONTS.Lato.SemiBold}
+                              color={theme.primary}>
+                              Cancel
+                            </Text>
+                          </TouchableOpacity>
+                        </View>
+                      </View>
+                    )}
+                  </View>
+                ) : (
+                  <View>
+                    {!editingForMessageId && (
+                      <View style={styles(theme).actionRow}>
+                        <TouchableOpacity
+                          style={styles(theme).actionButtonSecondary}
+                          onPress={() => {
+                            setEditingForMessageId(true);
+                          }}>
+                          <Text
+                            size={getScaleSize(14)}
+                            font={FONTS.Lato.SemiBold}
+                            color={theme.primary}>
+                            Counter Offer
+                          </Text>
+                        </TouchableOpacity>
+                        <TouchableOpacity
+                          style={styles(theme).actionButtonPrimary}
+                          onPress={async () => {}}>
+                          <Text
+                            size={getScaleSize(14)}
+                            font={FONTS.Lato.SemiBold}
+                            color={theme.white}>
+                            Accept Offer
+                          </Text>
+                        </TouchableOpacity>
+                      </View>
+                    )}
+                    {editingForMessageId && (
+                      <View>
+                        <View style={styles(theme).offerInputWrapper}>
+                          <Text
+                            size={getScaleSize(16)}
+                            font={FONTS.Lato.Medium}
+                            color={theme._424242}>
+                            €
+                          </Text>
+                          <TextInput
+                            value={offerInputValue}
+                            onChangeText={setOfferInputValue}
+                            style={styles(theme).offerTextInput}
+                            placeholder="0.00"
+                            placeholderTextColor={theme._ACADAD}
+                            keyboardType="decimal-pad"
+                          />
+                        </View>
+                        <View style={styles(theme).actionRow}>
+                          <TouchableOpacity
+                            style={styles(theme).actionButtonPrimary}
+                            onPress={() => {
+                              if (!offerInputValue.trim()) {
+                                SHOW_TOAST(
+                                  'Please enter an offer amount',
+                                  'error',
+                                );
+                                return;
+                              }
+                              negotiationMessage(
+                                negotiationMessages.commonData.serviceName,
+                                profile?.user?.id,
+                                peerUserId,
+                                profile?.user?.first_name,
+                                'elderly_user',
+                                offerInputValue,
+                                profile?.user?.id,
+                              );
+                              setEditingForMessageId(false);
+                              setOfferInputValue('');
+                            }}>
+                            <Text
+                              size={getScaleSize(14)}
+                              font={FONTS.Lato.SemiBold}
+                              color={theme.white}>
+                              Submit
+                            </Text>
+                          </TouchableOpacity>
+                          <View style={{width: getScaleSize(12)}} />
+                          <TouchableOpacity
+                            style={styles(theme).actionButtonSecondary}
+                            onPress={() => {
+                              setEditingForMessageId(false);
+                              setOfferInputValue('');
+                            }}>
+                            <Text
+                              size={getScaleSize(14)}
+                              font={FONTS.Lato.SemiBold}
+                              color={theme.primary}>
+                              Cancel
+                            </Text>
+                          </TouchableOpacity>
+                        </View>
+                      </View>
+                    )}
+                  </View>
+                )}
+              </View>
+            )}
+          </ScrollView>
         )}
       </View>
       <View style={styles(theme).sendMessageContainer}>
@@ -286,8 +565,8 @@ export default function ChatDetails(props: any) {
         />
         <TouchableOpacity
           style={styles(theme).sendButtonWrapper}
-          activeOpacity={0.7}
-          disabled={isSending || !message.trim()}
+          // activeOpacity={0.7}
+          // disabled={isSending || !message.trim()}
           onPress={handleSendMessage}>
           <Image
             style={[
@@ -332,8 +611,8 @@ const styles = (theme: ThemeContextType['theme']) =>
       alignSelf: 'center',
     },
     userImage: {
-      height: getScaleSize(60),
-      width: getScaleSize(60),
+      height: getScaleSize(50),
+      width: getScaleSize(50),
       borderRadius: getScaleSize(30),
       marginLeft: getScaleSize(8),
     },
@@ -359,6 +638,16 @@ const styles = (theme: ThemeContextType['theme']) =>
       paddingHorizontal: getScaleSize(20),
       borderRadius: getScaleSize(22),
       backgroundColor: theme._F6F7F7,
+    },
+    negotiateButton: {
+      alignSelf: 'center',
+      marginRight: getScaleSize(12),
+      paddingHorizontal: getScaleSize(12),
+      paddingVertical: getScaleSize(8),
+      borderRadius: getScaleSize(10),
+      backgroundColor: theme.white,
+      borderWidth: 1,
+      borderColor: theme.primary,
     },
     microphoneImage: {
       height: getScaleSize(24),
@@ -416,5 +705,100 @@ const styles = (theme: ThemeContextType['theme']) =>
     },
     disabledSendIcon: {
       opacity: 0.5,
+    },
+    pricingBreakdownContainer: {
+      marginHorizontal: getScaleSize(16),
+      marginVertical: getScaleSize(12),
+      paddingHorizontal: getScaleSize(16),
+      paddingVertical: getScaleSize(16),
+      borderRadius: getScaleSize(12),
+      backgroundColor: theme._F5F5F5,
+    },
+    quoteCardContainer: {
+      width: '65%',
+      alignSelf: 'flex-end',
+      paddingHorizontal: getScaleSize(16),
+      paddingVertical: getScaleSize(16),
+      borderRadius: getScaleSize(16),
+      backgroundColor: theme._F5F5F5,
+    },
+    negotiationCard: {
+      width: '65%',
+      alignSelf: 'flex-start',
+      paddingHorizontal: getScaleSize(16),
+      paddingVertical: getScaleSize(16),
+      borderRadius: getScaleSize(16),
+      backgroundColor: theme._F5F5F5,
+    },
+    pricingRow: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      marginBottom: getScaleSize(8),
+    },
+    offersHeaderRow: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      marginTop: getScaleSize(2),
+    },
+    offerRow: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      marginBottom: getScaleSize(6),
+    },
+    pricingRowSeparator: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      borderTopWidth: 1,
+      borderTopColor: theme._D5D5D5,
+      paddingTop: getScaleSize(12),
+      marginTop: getScaleSize(8),
+    },
+    editOfferButton: {
+      height: getScaleSize(44),
+      alignItems: 'center',
+      justifyContent: 'center',
+      borderRadius: getScaleSize(8),
+      backgroundColor: theme.white,
+    },
+    offerInputWrapper: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      marginTop: getScaleSize(8),
+      paddingHorizontal: getScaleSize(12),
+      borderRadius: getScaleSize(10),
+      backgroundColor: theme.white,
+      height: getScaleSize(44),
+    },
+    offerTextInput: {
+      flex: 1,
+      marginLeft: getScaleSize(8),
+      fontFamily: FONTS.Lato.Medium,
+      fontSize: getScaleSize(16),
+      color: theme._424242,
+      padding: 0,
+    },
+    actionRow: {
+      flexDirection: 'row',
+      justifyContent: 'flex-end',
+      marginTop: getScaleSize(10),
+    },
+    actionButtonPrimary: {
+      paddingHorizontal: getScaleSize(16),
+      paddingVertical: getScaleSize(10),
+      borderRadius: getScaleSize(12),
+      backgroundColor: theme.primary,
+    },
+    actionButtonSecondary: {
+      paddingHorizontal: getScaleSize(12),
+      paddingVertical: getScaleSize(8),
+      borderRadius: getScaleSize(10),
+      backgroundColor: theme.white,
+      borderWidth: 1,
+      borderColor: theme.primary,
+      marginRight: getScaleSize(8),
     },
   });

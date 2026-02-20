@@ -24,6 +24,9 @@ interface BottomSheetProps {
     security_Code?: any;
     isNotCloseable?: boolean;
     image?: any;
+    icon?: any;
+    renegotiationAmount?: string;
+    subTitle?: string;
 }
 
 export default function BottomSheet(props: BottomSheetProps) {
@@ -32,15 +35,25 @@ export default function BottomSheet(props: BottomSheetProps) {
 
     const { theme } = useContext<any>(ThemeContext);
     const STRING = useString();
-    const { bottomSheetRef,
-        height, title,
-        description, buttonTitle,
-        isInfo, onPressButton,
-        addMoreServices, isStatus,
-        secondButtonTitle, onPressSecondButton,
-        type, security_Code,
+    const {
+        bottomSheetRef,
+        height,
+        subTitle,
+        title,
+        description,
+        buttonTitle,
+        isInfo,
+        onPressButton,
+        addMoreServices,
+        isStatus,
+        secondButtonTitle,
+        onPressSecondButton,
+        type,
+        security_Code,
         isNotCloseable,
-        image
+        image,
+        icon,
+        renegotiationAmount
     } = props;
     return (
         <RBSheet
@@ -54,7 +67,7 @@ export default function BottomSheet(props: BottomSheetProps) {
                     backgroundColor: theme._77777733,
                 },
                 container: {
-                    height: Dimensions.get('window').height * 0.4,
+                    height: height ? height : Dimensions.get('window').height * 0.4,
                     borderTopLeftRadius: getScaleSize(24),
                     borderTopRightRadius: getScaleSize(24),
                     backgroundColor: theme.white,
@@ -172,7 +185,7 @@ export default function BottomSheet(props: BottomSheetProps) {
                 )}
                 {type === 'map_view' && (
                     <View style={styles(theme).mainContainer}>
-                        <Image source={IMAGES.pinIcon} style={[styles(theme).alartIcon, { marginBottom: getScaleSize(12) }]} />
+                        <Image source={icon} style={[styles(theme).alartIcon, { marginBottom: getScaleSize(12) }]} />
                         <Text
                             size={getScaleSize(22)}
                             font={FONTS.Lato.SemiBold}
@@ -206,6 +219,40 @@ export default function BottomSheet(props: BottomSheetProps) {
                             font={FONTS.Lato.SemiBold}
                             align="center"
                             color={theme._555555}>
+                            {description}
+                        </Text>
+                    </View>
+                )}
+                {type === 'renegotiation_view' && (
+                    <View style={styles(theme).mainContainer}>
+                        <Image source={icon} style={[styles(theme).alartIcon, { marginBottom: getScaleSize(12) }]} />
+                        <Text
+                            size={getScaleSize(22)}
+                            font={FONTS.Lato.SemiBold}
+                            align="center"
+                            color={theme._2C6587}>
+                            {title}
+                        </Text>
+                        <Text
+                            style={{ marginVertical: getScaleSize(16) }}
+                            font={FONTS.Lato.Medium}
+                            size={getScaleSize(19)}
+                            color={theme._424242}>
+                            {subTitle}
+                        </Text>
+                        <Text
+                            font={FONTS.Lato.Bold}
+                            size={getScaleSize(27)}
+                            align="center"
+                            color={theme._2C6587} >
+                            {renegotiationAmount ? `€${renegotiationAmount}` : '€0'}
+                        </Text>
+                        <Text
+                            style={{ marginVertical: getScaleSize(16) }}
+                            size={getScaleSize(19)}
+                            font={FONTS.Lato.Medium}
+                            align="center"
+                            color={theme._424242}>
                             {description}
                         </Text>
                     </View>

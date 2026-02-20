@@ -7,6 +7,8 @@ import {
   FlatList,
   TouchableOpacity,
   Image,
+  Modal,
+  TextInput,
   Linking,
   Platform,
 } from 'react-native';
@@ -22,7 +24,7 @@ import {
 } from '../../constant';
 
 //CONTEXT
-import { ThemeContext, ThemeContextType } from '../../context';
+import { AuthContext, ThemeContext, ThemeContextType } from '../../context';
 
 //COMPONENT
 import {
@@ -30,7 +32,6 @@ import {
   Button,
   CancelScheduledServicePopup,
   Header,
-  ModelWebView,
   PaymentBottomPopup,
   ProgressView,
   RejectBottomPopup,
@@ -51,6 +52,11 @@ import moment from 'moment';
 import { EventRegister } from 'react-native-event-listeners';
 import { CommonActions } from '@react-navigation/native';
 import Video from 'react-native-video';
+import {
+  getPrividerbyId,
+  negotiationMessage,
+  userMessage,
+} from '../../services/chat';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 export default function RequestDetails(props: any) {
@@ -60,6 +66,7 @@ export default function RequestDetails(props: any) {
   const STRING = useString();
   const { theme } = useContext<any>(ThemeContext);
   const item = props.route.params?.item ?? {};
+  const serviceId = props.route.params?.serviceId ?? '';
 
   const rejectRef = useRef<any>(null);
   const acceptRef = useRef<any>(null);
@@ -79,6 +86,13 @@ export default function RequestDetails(props: any) {
   const [visibleModelWebView, setVisibleModelWebView] = useState<boolean>(false);
   const [attachments, setAttachments] = useState<any>([]);
 
+  // const [paymentDetails, setPaymentDetails] = useState<any>({});
+  // const [visibleModelWebView, setVisibleModelWebView] =
+  //   useState<boolean>(false);
+  const [showOfferModal, setShowOfferModal] = useState(false);
+  const [newQuoteAmount, setNewQuoteAmount] = useState('');
+  const [newQuoteAmountError, setNewQuoteAmountError] = useState('');
+  const { profile } = useContext<any>(AuthContext);
   useEffect(() => {
     if (item) {
       getServiceDetails();
@@ -103,7 +117,7 @@ export default function RequestDetails(props: any) {
   async function getServiceDetails() {
     try {
       const params = {
-        service_id: item?.id,
+        service_id: serviceId ? serviceId : item?.id,
       };
       setLoading(true);
       const result = await API.Instance.post(
@@ -111,14 +125,12 @@ export default function RequestDetails(props: any) {
         params,
       );
       setLoading(false);
-      console.log('result', result.status, result);
       if (result.status) {
         setStatus(result?.data?.data?.task_status ?? '');
         setServiceDetails(result?.data?.data ?? {});
         setAttachments(normalizeAttachments(result?.data?.data?.media));
       } else {
         SHOW_TOAST(result?.data?.message ?? '', 'error');
-        console.log('error==>', result?.data?.message);
       }
     } catch (error: any) {
       setLoading(false);
@@ -227,12 +239,12 @@ export default function RequestDetails(props: any) {
         params,
       );
       if (result.status) {
-        // const STRIPE_URL = result?.data?.data?.checkout_url ?? '';
-        // paymentRef.current.close();
-        // openStripeCheckout(STRIPE_URL);
-        props.navigation.navigate(SCREENS.ServiceConfirmed.identifier, {
-          serviceId: serviceDetails?.service_id,
-        });
+        const STRIPE_URL = result?.data?.data?.checkout_url ?? '';
+        paymentRef.current.close();
+        openStripeCheckout(STRIPE_URL);
+        // props.navigation.navigate(SCREENS.ServiceConfirmed.identifier, {
+        //   serviceId: serviceDetails?.service_id,
+        // });
       } else {
         SHOW_TOAST(result?.data?.message ?? '', 'error');
       }
@@ -290,6 +302,7 @@ export default function RequestDetails(props: any) {
       const result = await API.Instance.post(API.API_ROUTES.onCancelService + `/${serviceId}`);
       if (result.status) {
         SHOW_TOAST(result?.data?.message ?? '', 'success')
+        setCancelServiceDetails(null);
         cancelScheduledServicePopupRef.current.close();
         props?.navigation.navigate(SCREENS.ServiceCancelled.identifier, {
           item: serviceDetails
@@ -358,7 +371,7 @@ export default function RequestDetails(props: any) {
         return null;
     }
   };
-console.log('serviceDetails',JSON.stringify(serviceDetails))
+  console.log('serviceDetails', JSON.stringify(serviceDetails))
   return (
     <View style={[styles(theme).container,
     { paddingBottom: Platform.OS === 'android' ? insets.bottom : 0 }
@@ -589,9 +602,14 @@ console.log('serviceDetails',JSON.stringify(serviceDetails))
                 style={styles(theme).negociateButton}
                 activeOpacity={1}
                 onPress={() => {
-                  // const peerUser = getPeerUser(user?.user_id);
                   props.navigation.navigate(SCREENS.ChatDetails.identifier, {
-                    // peerUser,
+                    conversationId: profile?.user?.id,
+                    peerUser: {
+                      user_id: serviceDetails?.provider?.id,
+                      name: serviceDetails?.provider?.full_name,
+                      email: serviceDetails?.provider?.email,
+                      avatarUrl: serviceDetails?.provider?.profile_photo_url,
+                    },
                   });
                 }}>
                 <Text
@@ -679,9 +697,14 @@ console.log('serviceDetails',JSON.stringify(serviceDetails))
                 activeOpacity={1}
                 style={[styles(theme).newButton, { marginRight: getScaleSize(6) }]}
                 onPress={() => {
-                  // const peerUser = getPeerUser(user?.user_id);
                   props.navigation.navigate(SCREENS.ChatDetails.identifier, {
-                    // peerUser,
+                    conversationId: profile?.user?.id,
+                    peerUser: {
+                      user_id: serviceDetails?.provider?.id,
+                      name: serviceDetails?.provider?.full_name,
+                      email: serviceDetails?.provider?.email,
+                      avatarUrl: serviceDetails?.provider?.profile_photo_url,
+                    },
                   });
                 }}>
                 <Text
@@ -921,7 +944,7 @@ console.log('serviceDetails',JSON.stringify(serviceDetails))
                 size={getScaleSize(14)}
                 font={FONTS.Lato.SemiBold}
                 color={'#595959'}>
-                {`€${serviceDetails?.payment_breakdown?.total_amount ?? 0}`}
+                {`€${serviceDetails?.payment_breakdown?.finalize_quote_amount ?? 0}`}
               </Text>
             </View>
             <View style={styles(theme).newHorizontalView}>
@@ -1098,12 +1121,185 @@ console.log('serviceDetails',JSON.stringify(serviceDetails))
           setCancelServiceDetails(null);
         }}
         onCancel={(item: any) => {
+          console.log('item==>', item)
           if (item) {
             cancelService(item)
           }
-          setCancelServiceDetails(null);
         }}
       />
+      <AcceptBottomPopup
+        onRef={acceptRef}
+        title={`You are about to confirm a service at the rate of €${serviceDetails?.total_renegotiated ?? 0
+          } with the Provider Wade Warren, Are you sure you want to continue? `}
+        onClose={() => {
+          acceptRef.current.close();
+        }}
+        onNavigate={() => {
+          getServiceAmount();
+        }}
+      />
+      <PaymentBottomPopup
+        onRef={paymentRef}
+        serviceAmount={serviceAmount}
+        onClose={() => {
+          paymentRef.current.close();
+        }}
+        proceedToPay={() => {
+          onAcceptService();
+        }}
+      />
+      <Modal
+        visible={showOfferModal}
+        transparent={true}
+        animationType="fade"
+        onRequestClose={() => setShowOfferModal(false)}>
+        <View style={styles(theme).modalOverlay}>
+          <View style={styles(theme).modalContent}>
+            <Text
+              size={getScaleSize(18)}
+              font={FONTS.Lato.SemiBold}
+              color={theme._323232}
+              style={{ marginBottom: getScaleSize(16) }}>
+              Enter Your Offer Amount
+            </Text>
+            <View
+              style={[
+                styles(theme).inputContainer,
+                {
+                  borderColor: newQuoteAmountError
+                    ? theme._EF5350
+                    : theme._D5D5D5,
+                },
+              ]}>
+              <TextInput
+                style={styles(theme).offerInput}
+                placeholder={'€0.00'}
+                placeholderTextColor={theme._818285}
+                value={newQuoteAmount ? `€${newQuoteAmount}` : ''}
+                keyboardType="decimal-pad"
+                onChangeText={(text: string) => {
+                  setNewQuoteAmount(text.replace('€', ''));
+                  if (text.replace('€', '').trim() === '') {
+                    setNewQuoteAmountError('Please enter an offer amount');
+                  } else {
+                    setNewQuoteAmountError('');
+                  }
+                }}
+              />
+            </View>
+            {newQuoteAmountError ? (
+              <Text
+                style={{ marginTop: getScaleSize(8) }}
+                size={getScaleSize(12)}
+                font={FONTS.Lato.Regular}
+                color={theme._EF5350}>
+                {newQuoteAmountError}
+              </Text>
+            ) : null}
+            <View style={styles(theme).modalButtonContainer}>
+              <TouchableOpacity
+                style={styles(theme).modalCancelButton}
+                activeOpacity={0.8}
+                onPress={() => setShowOfferModal(false)}>
+                <Text
+                  size={getScaleSize(16)}
+                  font={FONTS.Lato.Medium}
+                  color={theme.primary}>
+                  Cancel
+                </Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={styles(theme).modalSubmitButton}
+                activeOpacity={0.8}
+                onPress={async () => {
+                  if (!newQuoteAmount || newQuoteAmount.trim() === '') {
+                    setNewQuoteAmountError('Please enter an offer amount');
+                    return;
+                  }
+
+                  const provider = await getPrividerbyId(
+                    serviceDetails?.provider?.id,
+                  );
+                  if (provider.size > 0) {
+                    props.navigation.navigate(SCREENS.ChatDetails.identifier, {
+                      conversationId: profile?.user?.id,
+                      peerUser: {
+                        user_id: serviceDetails?.provider?.id,
+                        name: serviceDetails?.provider?.full_name,
+                        email: serviceDetails?.provider?.email,
+                        avatarUrl: serviceDetails?.provider?.profile_photo_url,
+                      },
+                    });
+                  } else {
+                    negotiationMessage(
+                      serviceDetails?.sub_category_name,
+                      profile?.user?.id,
+                      serviceDetails?.provider?.id,
+                      'Original Valuation',
+                      'elderly_user',
+                      serviceDetails?.total_renegotiated,
+                      profile?.user?.id,
+                    );
+                    negotiationMessage(
+                      serviceDetails?.sub_category_name,
+                      profile?.user?.id,
+                      serviceDetails?.provider?.id,
+                      'Initial Quote',
+                      'elderly_user',
+                      serviceDetails?.validation_amount,
+                      profile?.user?.id,
+                    );
+                    negotiationMessage(
+                      serviceDetails?.sub_category_name,
+                      profile?.user?.id,
+                      serviceDetails?.provider?.id,
+                      profile?.user?.first_name,
+                      'elderly_user',
+                      newQuoteAmount,
+                      profile?.user?.id,
+                    );
+                    userMessage(
+                      profile?.user?.id,
+                      profile?.user?.first_name,
+                      serviceDetails?.provider?.id,
+                      serviceDetails?.provider?.full_name,
+                      'hi',
+                      profile?.user?.id,
+                      profile?.user?.profile_photo_url,
+                      serviceDetails?.provider?.profile_photo_url,
+                      'text',
+                    );
+                    props.navigation.navigate(SCREENS.ChatDetails.identifier, {
+                      conversationId: profile?.user?.id,
+                      peerUser: {
+                        user_id: serviceDetails?.provider?.id,
+                        name: serviceDetails?.provider?.full_name,
+                        email: serviceDetails?.provider?.email,
+                        avatarUrl: serviceDetails?.provider?.profile_photo_url,
+                      },
+                    });
+                  }
+
+                  setShowOfferModal(false);
+                }}>
+                <Text
+                  size={getScaleSize(16)}
+                  font={FONTS.Lato.Medium}
+                  color={theme.white}>
+                  Submit
+                </Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
+      {/* <ModelWebView
+        visible={visibleModelWebView}
+        onRequestClose={() => {
+          setVisibleModelWebView(false);
+        }}
+        item={paymentDetails}
+      /> */}
       {isLoading && <ProgressView />}
     </View>
   );
@@ -1310,6 +1506,53 @@ const styles = (theme: ThemeContextType['theme']) =>
       borderColor: theme.primary,
       borderWidth: 1,
       marginTop: getScaleSize(8),
+    },
+    modalOverlay: {
+      flex: 1,
+      backgroundColor: 'rgba(0, 0, 0, 0.5)',
+      justifyContent: 'center',
+      alignItems: 'center',
+    },
+    modalContent: {
+      backgroundColor: theme.white,
+      borderRadius: getScaleSize(16),
+      padding: getScaleSize(24),
+      width: '85%',
+      maxWidth: getScaleSize(350),
+    },
+    inputContainer: {
+      borderWidth: 1,
+      borderRadius: getScaleSize(12),
+      paddingHorizontal: getScaleSize(16),
+      height: getScaleSize(56),
+      justifyContent: 'center',
+    },
+    offerInput: {
+      fontSize: getScaleSize(16),
+      color: theme._323232,
+      padding: 0,
+    },
+    modalButtonContainer: {
+      flexDirection: 'row',
+      marginTop: getScaleSize(24),
+      gap: getScaleSize(12),
+    },
+    modalCancelButton: {
+      flex: 1,
+      borderWidth: 1,
+      borderColor: theme.primary,
+      borderRadius: getScaleSize(8),
+      paddingVertical: getScaleSize(12),
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    modalSubmitButton: {
+      flex: 1,
+      backgroundColor: theme.primary,
+      borderRadius: getScaleSize(8),
+      paddingVertical: getScaleSize(12),
+      alignItems: 'center',
+      justifyContent: 'center',
     },
     codeViewDirection: {
       flexDirection: 'row',

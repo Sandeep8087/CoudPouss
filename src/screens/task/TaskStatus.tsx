@@ -396,7 +396,7 @@ export default function TaskStatus(props: any) {
       </ScrollView>
       {serviceFlags.isOutForService && (
         <View style={{ flexDirection: 'row', alignItems: 'center', marginHorizontal: getScaleSize(24), marginBottom: getScaleSize(24) }}>
-          <TouchableOpacity
+          {/* <TouchableOpacity
             onPress={() => { }}
             style={[styles(theme).outForServiceContainer, { borderColor: theme._EF5350 }]}>
             <Text
@@ -405,8 +405,8 @@ export default function TaskStatus(props: any) {
               color={theme._EF5350}>
               {STRING.Cancel}
             </Text>
-          </TouchableOpacity>
-          <View style={{ width: getScaleSize(16) }} />
+          </TouchableOpacity> */}
+          {/* <View style={{ width: getScaleSize(16) }} /> */}
           <Button
             style={{ flex: 1 }}
             title={STRING.OutForService}

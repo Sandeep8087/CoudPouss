@@ -47,7 +47,7 @@ export const formatDecimalInput = (
 export const openStripeCheckout = async (url: any) => {
   try {
     if (await InAppBrowser.isAvailable()) {
-      await InAppBrowser.open(url, {
+      const result = await InAppBrowser.open(url, {
         // iOS
         dismissButtonStyle: 'close',
         preferredBarTintColor: '#ffffff',
@@ -62,6 +62,7 @@ export const openStripeCheckout = async (url: any) => {
         enableDefaultShare: false,
         forceCloseOnRedirection: false,
       });
+      console.log('result==>', result);
     } else {
       // Fallback
       Linking.openURL(url);
@@ -105,5 +106,5 @@ export async function requestLocationPermission() {
 }
 
 const SCREEN_WIDTH = Dimensions.get('window').width;
-const TABBAR_RATIO = getScaleSize(103) / getScaleSize(403);
+const TABBAR_RATIO = getScaleSize(95) / getScaleSize(428);
 export const TABBAR_HEIGHT = SCREEN_WIDTH * TABBAR_RATIO;

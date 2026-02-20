@@ -1,14 +1,14 @@
-import React, { useContext, useEffect, useRef } from 'react';
-import { Alert, Linking, PermissionsAndroid, Platform, View } from 'react-native';
+import React, {useContext, useEffect, useRef} from 'react';
+import {Alert, Linking, PermissionsAndroid, Platform, View} from 'react-native';
 
 //COMPONENTS
-import { Tabbar } from '../components';
+import {Tabbar} from '../components';
 
 //SCREENS
-import { TABS } from '.';
+import { SCREENS, TABS } from '.';
 
 //CONTEXT
-import { AuthContext } from '../context';
+import {AuthContext} from '../context';
 
 //PACKAGES
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
@@ -30,14 +30,13 @@ import { API } from '../api';
 const Tab = createBottomTabNavigator();
 
 function BottomBar(props: any) {
-
-  const { userType } = useContext<any>(AuthContext);
+  const { userType, profile } = useContext<any>(AuthContext);
 
   const isProfile = props?.route?.params?.isProfile ?? false;
-  const isValidationService =
-    props?.route?.params?.isValidationService ?? false;
+  const isValidationService = props?.route?.params?.isValidationService ?? false;
   const isTask = props?.route?.params?.isTask ?? false;
-  const isProfessionalProfile = props?.route?.params?.isProfessionalProfile ?? false;
+  const isProfessionalProfile =
+    props?.route?.params?.isProfessionalProfile ?? false;
 
   function getInitialRouteName() {
     if (isProfile) {
@@ -53,7 +52,8 @@ function BottomBar(props: any) {
     console.log('isTask==>', isTask);
     if (isTask) {
       return TABS.Task.identifier;
-    } if (isProfessionalProfile) {
+    }
+    if (isProfessionalProfile) {
       return TABS.Profile.identifier;
     } else {
       return TABS.ProfessionalHome.identifier;
@@ -68,6 +68,7 @@ function BottomBar(props: any) {
   };
 
   useEffect(() => {
+
     PushNotification.createChannel(
       {
         channelId: 'coudpouss_notification', // Must match the one you use in localNotification
@@ -81,7 +82,7 @@ function BottomBar(props: any) {
       created => console.log(`createChannel returned '${created}'`), // true if created, false if already exists
     );
 
-    const unsubscribe = getMessaging().onMessage(async remoteMessage => {
+    const unsubscribe = getMessaging().onMessage(async (remoteMessage: any) => {
       // When app in foreground
       console.log('Message handled in the foregroud!', remoteMessage);
       if (Platform.OS === 'ios') {
@@ -104,6 +105,30 @@ function BottomBar(props: any) {
         });
       }
     });
+
+    PushNotification.configure({
+      onNotification: function (notification: any) {
+        console.log('LOCAL notification clicked:', notification);
+        if (profile)
+          props?.navigation?.navigate(SCREENS.Notification.identifier);
+      },
+    });
+
+    // 🟡 App opened from BACKGROUND
+    getMessaging().onNotificationOpenedApp(remoteMessage => {
+      console.log('Opened from background:', remoteMessage);
+      if (profile && remoteMessage) {
+        props?.navigation?.navigate(SCREENS.Notification.identifier);
+      }
+    });
+
+    getMessaging().getInitialNotification().then((remoteMessage: any) => {
+      console.log('Opened from killed:', remoteMessage);
+      if (profile && remoteMessage) {
+        props?.navigation?.navigate(SCREENS.Notification.identifier);
+      }
+    });
+
 
     return unsubscribe;
   }, []);
@@ -209,7 +234,7 @@ function BottomBar(props: any) {
           'Notification was declined.',
           'Go to your settings and enable notifications always.',
           [
-            { text: 'No', style: 'cancel' },
+            {text: 'No', style: 'cancel'},
             {
               text: 'Open Settings',
               onPress: () => {

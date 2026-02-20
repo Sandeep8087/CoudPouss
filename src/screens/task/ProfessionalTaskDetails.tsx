@@ -49,6 +49,7 @@ export default function ProfessionalTaskDetails(props: any) {
   const { theme } = useContext<any>(ThemeContext);
 
   const item = props?.route?.params?.item ?? {};
+  const serviceId = props?.route?.params?.serviceId ?? '';
 
   const [isStatus, setIsStatus] = useState(false);
   const [visibleTaskDetails, setVisibleTaskDetails] = useState(false);
@@ -76,9 +77,10 @@ export default function ProfessionalTaskDetails(props: any) {
     try {
       setLoading(true);
       const result = await API.Instance.get(
-        API.API_ROUTES.getTsakDetails + `/quotes/${item?.service_request_id}`,
+        API.API_ROUTES.getTsakDetails + `/quotes/${serviceId ? serviceId : item?.service_request_id}`,
       );
       if (result.status) {
+        console.log('result==>', result?.data?.data);
         setTaskDetails(result?.data?.data ?? {});
         setAttachments(normalizeAttachments(result?.data?.data?.task));
       } else {
@@ -375,14 +377,18 @@ export default function ProfessionalTaskDetails(props: any) {
                 size={getScaleSize(20)}
                 font={FONTS.Lato.SemiBold}
                 color={'#0F232F'}>
-                {`${taskDetails?.elderly_user?.first_name ?? ''} ${taskDetails?.elderly_user?.last_name ?? ''}`}
+                {`${taskDetails?.elderly_user?.first_name ?? ''} ${
+                  taskDetails?.elderly_user?.last_name ?? ''
+                }`}
               </Text>
               <Text
                 style={{ marginLeft: getScaleSize(16) }}
                 size={getScaleSize(12)}
                 font={FONTS.Lato.Medium}
                 color={'#595959'}>
-                {`${taskDetails?.elderly_user?.phone_country_code ?? ''}${taskDetails?.elderly_user?.phone_number ?? ''}`}
+                {`${taskDetails?.elderly_user?.phone_country_code ?? ''}${
+                  taskDetails?.elderly_user?.phone_number ?? ''
+                }`}
               </Text>
             </View>
             {item?.task_status !== 'completed' && (
@@ -393,7 +399,16 @@ export default function ProfessionalTaskDetails(props: any) {
                   { marginRight: getScaleSize(6) },
                 ]}
                 onPress={() => {
-                  props.navigation.navigate(SCREENS.ChatDetails.identifier);
+                  props.navigation.navigate(SCREENS.ChatDetails.identifier, {
+                    conversationId: taskDetails?.elderly_user?.id ?? '',
+                    peerUser: {
+                      user_id: taskDetails?.elderly_user?.id ?? '',
+                      name: taskDetails?.elderly_user?.first_name ?? '',
+                      email: taskDetails?.elderly_user?.email ?? '',
+                      avatarUrl:
+                        taskDetails?.elderly_user?.profile_photo_url ?? '',
+                    },
+                  });
                 }}>
                 <Text
                   size={getScaleSize(14)}
@@ -569,7 +584,7 @@ export default function ProfessionalTaskDetails(props: any) {
                 size={getScaleSize(14)}
                 font={FONTS.Lato.SemiBold}
                 color={'#595959'}>
-                {'€499'}
+                {`€${taskDetails?.quote?.amount ?? 0}`}
               </Text>
             </View>
             <View style={styles(theme).newHorizontalView}>
@@ -584,7 +599,7 @@ export default function ProfessionalTaskDetails(props: any) {
                 size={getScaleSize(14)}
                 font={FONTS.Lato.SemiBold}
                 color={'#595959'}>
-                {'€4'}
+                {`€${taskDetails?.quote?.platform_fee ?? 0}`}
               </Text>
             </View>
             <View style={styles(theme).newHorizontalView}>
@@ -599,7 +614,7 @@ export default function ProfessionalTaskDetails(props: any) {
                 size={getScaleSize(14)}
                 font={FONTS.Lato.SemiBold}
                 color={'#595959'}>
-                {'€12'}
+                {`€${taskDetails?.quote?.tax ?? 0}`}
               </Text>
             </View>
             <View style={styles(theme).dotView} />
@@ -615,7 +630,7 @@ export default function ProfessionalTaskDetails(props: any) {
                 size={getScaleSize(20)}
                 font={FONTS.Lato.SemiBold}
                 color={theme.primary}>
-                {'€560.9'}
+                {`€${taskDetails?.quote?.total ?? 0}`}
               </Text>
             </View>
           </View>

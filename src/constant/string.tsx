@@ -445,8 +445,19 @@ export const useString = () => {
     prefered_language: "Preferred Language",
     french: 'French',
     english: 'English',
-    book_now: 'Book Now'
-
+    book_now: 'Book Now',
+    onboarding_process: "Onboarding Process",
+    you_have_not_completed_your_onboarding: "You have not completed your onboarding",
+    task_details: 'Task Details',
+    please_keep_this_security_code_safe_it_will_be_required_to_confirm_completion_and_release_payment: "Please keep this security code safe — it will be required to confirm completion and release payment.",
+    decline: 'Decline',
+    please_confirm_that_the_expert_has_arrived_at_the_service_location_Do_you_acknowledge_their_arrival: "Please confirm that the expert has arrived at the service location. Do you acknowledge their arrival?",
+    not_arrived: "Not arrived",
+    yes_i_confirm: "Yes, I confirm",
+    confirm_pay: "Confirm & Pay",
+    new_budget_request: "New Budget Request",
+    by_approving_the_updated_amount_will_be_placed_in_escrow: "By approving, the updated amount will be placed in escrow.",
+    the_provider_has_reviewed_the_task_and_proposed_a_revised_budget_the_new_agreed_service_fee_is: "The provider has reviewed the task and proposed a revised budget. The new agreed service fee is:",
   };
 };
 

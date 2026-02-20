@@ -16,6 +16,7 @@ import {
   Linking,
   Platform,
   PermissionsAndroid,
+  AppState,
 } from 'react-native';
 
 //ASSETS
@@ -30,6 +31,7 @@ import { AuthContext, ThemeContext, ThemeContextType } from '../../context';
 //CONSTANT
 import {
   getScaleSize,
+  openStripeCheckout,
   requestLocationPermission,
   SHOW_TOAST,
   useString,
@@ -58,6 +60,7 @@ import {
 import { SCREENS } from '..';
 import Geolocation from 'react-native-geolocation-service';
 import { PERMISSIONS, request, RESULTS } from 'react-native-permissions';
+import { EventRegister } from 'react-native-event-listeners';
 
 export default function ProfessionalHome(props: any) {
 
@@ -69,7 +72,7 @@ export default function ProfessionalHome(props: any) {
 
   const { theme } = useContext<any>(ThemeContext);
 
-  const { profile } = useContext(AuthContext);
+  const { profile, fetchProfile, userType } = useContext(AuthContext);
 
   console.log('profile==', profile);
 
@@ -79,8 +82,49 @@ export default function ProfessionalHome(props: any) {
 
   const isFocused = useIsFocused();
 
+  console.log('profileDATA==>', JSON.stringify(profile));
+
+
+  let currentState = AppState.currentState;
+
+  useEffect(() => {
+    const sub = AppState.addEventListener('change', nextState => {
+      if (currentState === 'active' && nextState === 'background') {
+        onUpdateProfile();
+      }
+
+      if (currentState === 'background' && nextState === 'active') {
+        onUpdateProfile();
+      }
+
+      currentState = nextState;
+    });
+
+    return () => sub.remove();
+  }, []);
+
+  useEffect(() => {
+    EventRegister.addEventListener('onAccountSuccess', (data: any) => {
+      onUpdateProfile();
+    });
+  }, []);
+
+  const onUpdateProfile = async () => {
+    setLoading(true);
+    await fetchProfile();
+    setLoading(false);
+  }
+
+  useEffect(() => {
+    console.log('onAccountCancel');
+    EventRegister.addEventListener('onAccountCancel', (data: any) => {
+      onUpdateProfile();
+    });
+  }, []);
+
   useEffect(() => {
     if (isFocused) {
+      onUpdateProfile();
       requestPermissions();
       getLocation()
     }
@@ -124,7 +168,6 @@ export default function ProfessionalHome(props: any) {
   const requestPermissions = async () => {
     if (Platform.OS === 'android') {
       await PermissionsAndroid.requestMultiple([
-        PermissionsAndroid.PERMISSIONS.CAMERA,
         PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION,
         PermissionsAndroid.PERMISSIONS.WRITE_EXTERNAL_STORAGE,
       ]);
@@ -140,7 +183,7 @@ export default function ProfessionalHome(props: any) {
       const limit = 2;
       setLoading(true);
       const result: any = await API.Instance.get(
-        `${API.API_ROUTES.getProfessionalAllServices}?provider_lat=${location?.latitude}&provider_lon=${location?.longitude}&page=${page}&limit=${limit}`,
+        `${API.API_ROUTES.getProfessionalAllServices}?provider_lat=${location?.latitude}&provider_lon=${location?.longitude}&page=${page}&limit=${limit}&platform=app`,
       );
       setLoading(false)
       if (result?.status) {
@@ -182,7 +225,9 @@ export default function ProfessionalHome(props: any) {
             font={FONTS.Lato.Medium}
             color={theme._6D6D6D}
             style={{}}>
-            {`Hello! ${profile?.user?.first_name + ' ' + profile?.user?.last_name}`}
+            {`Hello! ${
+              profile?.user?.first_name + ' ' + profile?.user?.last_name
+            }`}
           </Text>
           <Text
             size={getScaleSize(24)}
@@ -203,7 +248,7 @@ export default function ProfessionalHome(props: any) {
           }}>
           <Image
             style={styles(theme).notifiationIcon}
-            source={IMAGES.notification_professional}
+            source={IMAGES.notification}
           />
         </TouchableOpacity>
         <TouchableOpacity
@@ -289,179 +334,189 @@ export default function ProfessionalHome(props: any) {
               </Text>
             </View>
           </ImageBackground>
-          {profile?.has_purchased ? (
-            <View>
-              <View
-                style={[
-                  styles(theme).directionView,
-                  { marginBottom: getScaleSize(24) },
-                ]}>
-                <Text
-                  size={getScaleSize(20)}
-                  font={FONTS.Lato.SemiBold}
-                  color={theme._323232}
-                  style={{
-                    marginTop: getScaleSize(28),
-                  }}>
-                  {STRING.ExploreServiceRequests}
-                </Text>
-                <View style={{ flex: 1 }}></View>
-                {serviceList?.open_services?.length > 0 && (
-                  <TouchableOpacity
-                    onPress={() => {
-                      props.navigation.navigate(
-                        SCREENS.ExploreServiceRequest.identifier,
-                      );
-                    }}>
+          {profile?.user?.service_provider_type === 'professional' && profile?.has_purchased === true ? (
+            <>
+              {profile?.onboarding_status === true ? (
+                <View>
+                  <View
+                    style={[
+                      styles(theme).directionView,
+                      { marginBottom: getScaleSize(24) },
+                    ]}>
                     <Text
-                      size={getScaleSize(14)}
-                      font={FONTS.Lato.Medium}
-                      align="center"
-                      color={theme._2C6587}
+                      size={getScaleSize(20)}
+                      font={FONTS.Lato.SemiBold}
+                      color={theme._323232}
                       style={{
                         marginTop: getScaleSize(28),
                       }}>
-                      {STRING.ViewAll}
+                      {STRING.ExploreServiceRequests}
                     </Text>
-                  </TouchableOpacity>
-                )}
-              </View>
-              {(serviceList?.open_services?.length > 0
-                ? serviceList?.open_services
-                : []
-              )?.map((item: any, index: number) => (
-                <ServiceRequest
-                  key={index}
-                  data={item}
-                  onPress={() => {
-                    props.navigation.navigate(SCREENS.ServicePreview.identifier, {
-                      serviceData: item,
-                      isFromHome: true,
-                    });
-                  }}
-                  onPressAccept={() => {
-                    props.navigation.navigate(SCREENS.AddQuote.identifier, {
-                      isItem: item,
-                      isFromHome: true,
-                    });
+                    <View style={{ flex: 1 }}></View>
+                    {serviceList?.open_services?.length > 0 && (
+                      <TouchableOpacity
+                        onPress={() => {
+                          props.navigation.navigate(
+                            SCREENS.ExploreServiceRequest.identifier,
+                          );
+                        }}>
+                        <Text
+                          size={getScaleSize(14)}
+                          font={FONTS.Lato.Medium}
+                          align="center"
+                          color={theme._2C6587}
+                          style={{
+                            marginTop: getScaleSize(28),
+                          }}>
+                          {STRING.ViewAll}
+                        </Text>
+                      </TouchableOpacity>
+                    )}
+                  </View>
+                  {(serviceList?.open_services?.length > 0
+                    ? serviceList?.open_services
+                    : []
+                  )?.map((item: any, index: number) => (
+                    <ServiceRequest
+                      key={index}
+                      data={item}
+                      onPress={() => {
+                        props.navigation.navigate(SCREENS.ServicePreview.identifier, {
+                          serviceData: item,
+                          isFromHome: true,
+                        });
+                      }}
+                      onPressAccept={() => {
+                        props.navigation.navigate(SCREENS.AddQuote.identifier, {
+                          isItem: item,
+                          isFromHome: true,
+                        });
+                      }}
+                    />
+                  ))}
+
+                  <View style={styles(theme).horizontalContainer}>
+                    <Text
+                      size={getScaleSize(20)}
+                      font={FONTS.Lato.SemiBold}
+                      color={theme._323232}
+                      style={{
+                        flex: 1.0,
+                      }}>
+                      {STRING.RecentTasks}
+                    </Text>
+                    {serviceList?.recent_tasks?.data?.length > 0 && (
+                      <TouchableOpacity
+                        style={{ paddingVertical: getScaleSize(8) }}
+                        onPress={() => {
+                          props.navigation.dispatch(
+                            CommonActions.reset({
+                              index: 0,
+                              routes: [
+                                {
+                                  name: SCREENS.BottomBar.identifier,
+                                  params: { isTask: true },
+                                },
+                              ],
+                            }),
+                          );
+                        }}>
+                        <Text
+                          size={getScaleSize(14)}
+                          font={FONTS.Lato.Medium}
+                          color={theme._2C6587}>
+                          {STRING.ViewAll}
+                        </Text>
+                      </TouchableOpacity>
+                    )}
+                  </View>
+                  {serviceList?.recent_tasks?.data?.length > 0 ? (
+                    <>
+                      {(serviceList?.recent_tasks?.data?.length > 0
+                        ? serviceList?.recent_tasks?.data
+                        : []
+                      )?.map((item: any, index: number) => {
+                        return (
+                          <TaskItem
+                            key={index}
+                            item={item}
+                            onPressItem={() => {
+                              // if (item?.task_status === 'pending') {
+                              //   props.navigation.navigate(
+                              //     SCREENS.OpenRequestDetails.identifier,
+                              //     {
+                              //       item: item,
+                              //     },
+                              //   );
+                              // } else if (item?.task_status === 'accepted') {
+                              //   props.navigation.navigate(
+                              //     SCREENS.CompletedTaskDetails.identifier,
+                              //     {
+                              //       item: item,
+                              //     },
+                              //   );
+                              // }
+                              props.navigation.navigate(
+                                SCREENS.ProfessionalTaskDetails.identifier,
+                                {
+                                  item: item,
+                                },
+                              );
+                            }}
+                            onPressStatus={() => {
+                              props.navigation.navigate(
+                                SCREENS.TaskStatus.identifier,
+                                {
+                                  item: item,
+                                },
+                              );
+                            }}
+                            onPressChat={() => {
+                              props.navigation.navigate(
+                                SCREENS.ChatDetails.identifier,
+                              );
+                            }}
+                          />
+                        );
+                      })}
+                    </>
+                  ) : (
+                    <View style={styles(theme).emptyView}>
+                      <Image style={styles(theme).emptyImage} source={IMAGES.empty} />
+                      <Text
+                        size={getScaleSize(16)}
+                        font={FONTS.Lato.Regular}
+                        align="center"
+                        color={theme._939393}
+                        style={{
+                          marginTop: getScaleSize(20),
+                        }}>
+                        {
+                          STRING.you_have_not_accepted_any_request_please_accept_a_request
+                        }
+                      </Text>
+                    </View>
+                  )}
+                </View>
+              ) : (
+                <EmptyView
+                  title={STRING.you_have_not_completed_your_onboarding}
+                  style={styles(theme).emptyContainer}
+                  buttonTitle={STRING.onboarding_process}
+                  onPressButton={() => {
+                    openStripeCheckout(profile?.onboarding_redirect_url ?? '')
                   }}
                 />
-              ))}
-
-              <View style={styles(theme).horizontalContainer}>
-                <Text
-                  size={getScaleSize(20)}
-                  font={FONTS.Lato.SemiBold}
-                  color={theme._323232}
-                  style={{
-                    flex: 1.0,
-                  }}>
-                  {STRING.RecentTasks}
-                </Text>
-                {serviceList?.recent_tasks?.data?.length > 0 && (
-                  <TouchableOpacity
-                    style={{ paddingVertical: getScaleSize(8) }}
-                    onPress={() => {
-                      props.navigation.dispatch(
-                        CommonActions.reset({
-                          index: 0,
-                          routes: [
-                            {
-                              name: SCREENS.BottomBar.identifier,
-                              params: { isTask: true },
-                            },
-                          ],
-                        }),
-                      );
-                    }}>
-                    <Text
-                      size={getScaleSize(14)}
-                      font={FONTS.Lato.Medium}
-                      color={theme._2C6587}>
-                      {STRING.ViewAll}
-                    </Text>
-                  </TouchableOpacity>
-                )}
-              </View>
-              {serviceList?.recent_tasks?.data?.length > 0 ? (
-                <>
-                  {(serviceList?.recent_tasks?.data?.length > 0
-                    ? serviceList?.recent_tasks?.data
-                    : []
-                  )?.map((item: any, index: number) => {
-                    return (
-                      <TaskItem
-                        key={index}
-                        item={item}
-                        onPressItem={() => {
-                          // if (item?.task_status === 'pending') {
-                          //   props.navigation.navigate(
-                          //     SCREENS.OpenRequestDetails.identifier,
-                          //     {
-                          //       item: item,
-                          //     },
-                          //   );
-                          // } else if (item?.task_status === 'accepted') {
-                          //   props.navigation.navigate(
-                          //     SCREENS.CompletedTaskDetails.identifier,
-                          //     {
-                          //       item: item,
-                          //     },
-                          //   );
-                          // }
-                          props.navigation.navigate(
-                            SCREENS.ProfessionalTaskDetails.identifier,
-                            {
-                              item: item,
-                            },
-                          );
-                        }}
-                        onPressStatus={() => {
-                          props.navigation.navigate(
-                            SCREENS.TaskStatus.identifier,
-                            {
-                              item: item,
-                            },
-                          );
-                        }}
-                        onPressChat={() => {
-                          props.navigation.navigate(
-                            SCREENS.ChatDetails.identifier,
-                          );
-                        }}
-                      />
-                    );
-                  })}
-                </>
-              ) : (
-                <View style={styles(theme).emptyView}>
-                  <Image style={styles(theme).emptyImage} source={IMAGES.empty} />
-                  <Text
-                    size={getScaleSize(16)}
-                    font={FONTS.Lato.Regular}
-                    align="center"
-                    color={theme._939393}
-                    style={{
-                      marginTop: getScaleSize(20),
-                    }}>
-                    {
-                      STRING.you_have_not_accepted_any_request_please_accept_a_request
-                    }
-                  </Text>
-                </View>
               )}
-            </View>
+            </>
           ) : (
             <EmptyView
               title={STRING.you_have_not_subscribed_to_any_plan}
               style={styles(theme).emptyContainer}
               onPressButton={() => {
-                props.navigation.navigate(
-                  SCREENS.ChooseYourSubscription.identifier,
-                  {
-                    isFromSubscriptionButton: true,
-                  },
-                );
+                props.navigation.navigate(SCREENS.ChooseYourSubscription.identifier, {
+                  isFromSubscriptionButton: true,
+                });
               }}
             />
           )}

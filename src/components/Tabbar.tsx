@@ -22,7 +22,7 @@ function Tabbar(props: any) {
 
   const { theme } = useContext<any>(ThemeContext);
 
-  const { userType, setUser, setUserType } = useContext<any>(AuthContext);
+  const { userType, setUser, setUserType, fetchProfile } = useContext<any>(AuthContext);
 
   useEffect(() => {
     const parseParams = (url: string) => {
@@ -51,6 +51,28 @@ function Tabbar(props: any) {
             serviceId: serviceId,
           });
         }
+      }
+
+      if (url.includes('account-success')) {
+        const params = parseParams(url);
+        fetchProfile()
+        props?.navigation?.dispatch(
+          CommonActions.reset({
+            index: 0,
+            routes: [{ name: SCREENS.BottomBar.identifier }],
+          }),
+        );
+      }
+
+      if (url.includes('account-cancel')) {
+        const params = parseParams(url);
+        fetchProfile()
+        props?.navigation?.dispatch(
+          CommonActions.reset({
+            index: 0,
+            routes: [{ name: SCREENS.BottomBar.identifier }],
+          }),
+        );
       }
 
       if (url.includes('payment-cancel')) {
@@ -83,6 +105,47 @@ function Tabbar(props: any) {
           }, 2000);
         } else {
         }
+        return;
+      }
+
+      if (url.startsWith('coudpouss://account-success')) {
+        const params = parseParams(url);
+        EventRegister.emit('onAccountSuccess', {
+          message: 'Account created successfully',
+        });
+      }
+
+      if (url.startsWith('coudpouss://payment-success')) {
+        const params = parseParams(url);
+        const type = params.type
+        if (type == 'payment_type') {
+          setTimeout(() => {
+            props.navigation.navigate(SCREENS.Notification.identifier, {
+              isFromDeepLink: true,
+            });
+          }, 2000);
+        }
+        return;
+      }
+
+      if (url.startsWith('coudpouss://payment-cancel')) {
+        const params = parseParams(url);
+        const type = params.type
+        if (type == 'payment_type') {
+          setTimeout(() => {
+            props.navigation.navigate(SCREENS.Notification.identifier, {
+              isFromDeepLink: true,
+              isError: params.error,
+            });
+          }, 2000);
+        }
+      }
+
+      if (url.startsWith('coudpouss://account-cancle')) {
+        const params = parseParams(url);
+        EventRegister.emit('onAccountCancel', {
+          message: 'Account cancelled',
+        });
         return;
       }
       // ❌ PAYMENT CANCEL
@@ -154,6 +217,8 @@ function Tabbar(props: any) {
 
   const STRING = useString();
 
+
+
   function onPress(name: string) {
     if (name === 'plus') {
       props.navigation.navigate(SCREENS.CreateRequest.identifier);
@@ -162,31 +227,70 @@ function Tabbar(props: any) {
     }
   }
 
-  return (
-    <SafeAreaView style={{ backgroundColor: 'transparent' }}>
-      <ImageBackground style={[
-        styles(theme).mainView,
-        { height: TABBAR_HEIGHT + insets.bottom }
-      ]}
-        resizeMode="stretch"
-        source={IMAGES.ic_tab_bar}>
-        <View style={styles(theme).tabContainer}>
-          {props.state.routes.map((route: any, index: number) => {
-            return (
-              <Item
-                key={index}
-                onPress={() => onPress(route.name)}
-                title={route.name}
-                index={index}
-                selected={props.state.index == index}
-                image={images[index]}
-              />
-            );
-          })}
+  function renderView() {
+    return (
+      <View style={userType === 'service_provider' ? styles(theme).tabContainer : styles(theme).tabContainerServiceProvider}>
+        {props.state.routes.map((route: any, index: number) => {
+          return (
+            <Item
+              key={index}
+              onPress={() => onPress(route.name)}
+              title={route.name}
+              index={index}
+              selected={props.state.index == index}
+              image={images[index]}
+            />
+          );
+        })}
+      </View>
+    )
+  }
+
+  if (userType === 'service_provider') {
+    return (
+      <SafeAreaView style={{ backgroundColor: 'transparent' }}>
+        <View style={[styles(theme).mainContainer]}>
+          {renderView()}
         </View>
-      </ImageBackground >
-    </SafeAreaView>
-  );
+      </SafeAreaView>
+    )
+  }
+  else {
+    return (
+      <SafeAreaView style={{ backgroundColor: 'transparent' }}>
+        <ImageBackground style={styles(theme).mainView}
+          resizeMode='cover'
+          source={IMAGES.ic_tab_bar}>
+          {renderView()}
+        </ImageBackground>
+      </SafeAreaView>
+    )
+  }
+  // return (
+  //   <SafeAreaView style={{ backgroundColor: 'transparent' }}>
+  //     <ImageBackground style={[
+  //       styles(theme).mainView,
+  //       { height: TABBAR_HEIGHT + insets.bottom }
+  //     ]}
+  //       resizeMode="stretch"
+  //       source={IMAGES.ic_tab_bar}>
+  //       <View style={styles(theme).tabContainer}>
+  //         {props.state.routes.map((route: any, index: number) => {
+  //           return (
+  //             <Item
+  //               key={index}
+  //               onPress={() => onPress(route.name)}
+  //               title={route.name}
+  //               index={index}
+  //               selected={props.state.index == index}
+  //               image={images[index]}
+  //             />
+  //           );
+  //         })}
+  //       </View>
+  //     </ImageBackground >
+  //   </SafeAreaView>
+  // );
 }
 
 const Item = (props: any) => {
@@ -348,6 +452,12 @@ const Item = (props: any) => {
 
 const styles = (theme: ThemeContextType['theme']) =>
   StyleSheet.create({
+    mainContainer: {
+      backgroundColor: theme.white,
+      borderTopLeftRadius: getScaleSize(20),
+      borderTopRightRadius: getScaleSize(20),
+      overflow: 'hidden',
+    },
     mainView: {
       width: SCREEN_WIDTH,
       position: 'absolute',
@@ -357,7 +467,12 @@ const styles = (theme: ThemeContextType['theme']) =>
     },
     tabContainer: {
       flexDirection: 'row',
-      height: TABBAR_HEIGHT,
+      height: TABBAR_HEIGHT - getScaleSize(20),
+      alignItems: 'center',
+    },
+    tabContainerServiceProvider: {
+      flexDirection: 'row',
+      height: TABBAR_HEIGHT + getScaleSize(20),
       alignItems: 'center',
       paddingBottom: getScaleSize(6),
     },

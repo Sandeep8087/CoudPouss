@@ -14,6 +14,7 @@ import {
   Platform,
   SafeAreaView,
   TextInput,
+  PermissionsAndroid,
 } from 'react-native';
 
 //ASSETS
@@ -47,6 +48,8 @@ import { API } from '../../api';
 import { launchImageLibrary } from 'react-native-image-picker';
 import moment from 'moment';
 import { createThumbnail } from 'react-native-create-thumbnail';
+import Geolocation from 'react-native-geolocation-service';
+import { PERMISSIONS, request, RESULTS } from 'react-native-permissions';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 const { width } = Dimensions.get('window');
@@ -97,11 +100,50 @@ export default function CreateRequest(props: any) {
   const [addressError, setAddressError] = useState('')
   const [descriptionError, setDescriptionError] = useState('')
   const [firstImageError, setFirstImageError] = useState('')
+  const [location, setLocation] = useState<any>(null);
 
 
   useEffect(() => {
     getAllCategories();
+    getLocation()
   }, []);
+
+
+  const hasLocationPermission = async () => {
+    if (Platform.OS === 'ios') {
+      const status = await request(PERMISSIONS.IOS.CAMERA);
+      if (status === RESULTS.GRANTED) {
+        return true;
+      } else {
+        return false;
+      }
+    }
+    const granted = await PermissionsAndroid.request(
+      PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION,
+    );
+
+    return granted === PermissionsAndroid.RESULTS.GRANTED;
+  };
+
+  async function getLocation() {
+    const permission = await hasLocationPermission();
+    if (!permission) return;
+
+    Geolocation.getCurrentPosition(
+      position => {
+        const { latitude, longitude } = position.coords;
+        console.log('latitude', latitude);
+        console.log('longitude', longitude);
+        setLocation({ latitude, longitude });
+      },
+      error => console.log('Error:', error),
+      {
+        enableHighAccuracy: false,
+        timeout: 20000,
+        maximumAge: 10000,
+      },
+    );
+  }
 
   async function getAllCategories() {
     try {
@@ -111,7 +153,11 @@ export default function CreateRequest(props: any) {
       console.log('result', result.status, result)
       if (result.status) {
         console.log('allCategories==', result?.data?.data)
-        setAllCategories(result?.data?.data);
+          const sortedData: any = [...(result?.data?.data || [])].sort(
+            (a: any, b: any) =>
+              a.category_name?.toLowerCase().localeCompare(b.category_name?.toLowerCase())
+          );
+        setAllCategories(sortedData);
       } else {
         SHOW_TOAST(result?.data?.message ?? '', 'error')
         console.log('error==>', result?.data?.message)
@@ -455,8 +501,8 @@ export default function CreateRequest(props: any) {
           description: description.trim(),
           description_files: imageUrls,
           service_address: address.trim(),
-          latitude: 23.2156,
-          longitude: 72.6369,
+          latitude: location?.latitude,
+          longitude: location?.longitude,
           validation_amount: valuation,
           chosen_datetime: dateTime
         }
@@ -469,8 +515,8 @@ export default function CreateRequest(props: any) {
           description_files: imageUrls,
           chosen_datetime: dateTime,
           service_address: address.trim(),
-          latitude: 23.2156,
-          longitude: 72.6369,
+          latitude: location?.latitude,
+          longitude: location?.longitude,
           barter_product: {
             product_name: productName,
             quantity: Number(quantity),

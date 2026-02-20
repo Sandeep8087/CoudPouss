@@ -52,7 +52,7 @@ export default function CancelScheduledServicePopup(props: CancelScheduledServic
                     backgroundColor: theme._77777733,
                 },
                 container: {
-                    height: getScaleSize(550),
+                    height: getScaleSize(500),
                     borderTopLeftRadius: getScaleSize(24),
                     borderTopRightRadius: getScaleSize(24),
                     backgroundColor: theme.white,
@@ -70,20 +70,6 @@ export default function CancelScheduledServicePopup(props: CancelScheduledServic
                     {getTitle()}
                 </Text>
                 {cancelServiceDetails?.hours_before_service && (
-                    <Text
-                        size={getScaleSize(19)}
-                        font={FONTS.Lato.Medium}
-                        color={theme._424242}
-                        align="center"
-                        style={{
-                            alignSelf: 'center',
-                            marginTop: getScaleSize(16),
-                            marginHorizontal: getScaleSize(50),
-                        }}>
-                        {STRING.are_you_sure_you_want_to_cancel_your_scheduled_service_with_the_expert}
-                    </Text>
-                )}
-                {cancelServiceDetails?.hours_before_service && !cancelServiceDetails?.is_within_48_hours && (
                     <View style={styles(theme).informationContainer}>
                         <Text
                             size={getScaleSize(18)}

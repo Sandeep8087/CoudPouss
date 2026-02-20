@@ -33,7 +33,10 @@ export default function MapViewScreen(props: any) {
     const [isLoading, setLoading] = useState(false);
     const [taskStatusLastItem, setTaskStatusLastItem] = useState<any>(null);
     const [taskStatusData, setTaskStatusData] = useState<any>({});
-    const [taskStatus, setTaskStatus] = useState<any>([]);
+    const [clientLocation, setClientLocation] = useState<{
+        latitude: number;
+        longitude: number;
+    } | null>(null);
 
     useEffect(() => {
         getTaskStatus();
@@ -72,11 +75,11 @@ export default function MapViewScreen(props: any) {
         console.log('prevStage==>', prevStage);
 
         // pending ➜ accepted
-        if (prevStage === 'pending' && currentStage === 'accepted' ) {
+        if (prevStage === 'pending' && currentStage === 'accepted') {
             confirmStartBottomSheetRef.current?.open();
         }
 
-        if (prevStage === 'accepted' && currentStage === 'accepted' ) {
+        if (prevStage === 'accepted' && currentStage === 'accepted') {
             confirmStartBottomSheetRef.current?.open();
         }
 
@@ -102,6 +105,12 @@ export default function MapViewScreen(props: any) {
                 console.log('getTaskStatus==>', item);
                 let array = item?.task_status_timeline ?? [];
                 let finalArray = array.pop();
+                if (item?.lat && item?.lng) {
+                    setClientLocation({
+                        latitude: Number(item.lat),
+                        longitude: Number(item.lng),
+                    });
+                }
                 // ✅ IMPORTANT: initialize previous stage ONCE
                 if (!prevStageRef.current && finalArray?.stage) {
                     prevStageRef.current = finalArray.stage;
@@ -117,25 +126,22 @@ export default function MapViewScreen(props: any) {
         }
     }
 
-
-    const CLIENT_LOCATION = {
-        latitude: 37.3901939,
-        longitude: -122.0810236,
-    };
-
     useEffect(() => {
-        if (myLocation && mapRef.current) {
-            mapRef.current.animateToRegion(
-                {
-                    latitude: myLocation.latitude,
-                    longitude: myLocation.longitude,
-                    latitudeDelta: 0.080,
-                    longitudeDelta: 0.080,
+        if (!mapRef.current || !myLocation || !clientLocation) return;
+
+        mapRef.current.fitToCoordinates(
+            [myLocation, clientLocation],
+            {
+                edgePadding: {
+                    top: 80,
+                    right: 80,
+                    bottom: 80,
+                    left: 80,
                 },
-                1000 // animation duration
-            );
-        }
-    }, [myLocation]);
+                animated: true,
+            }
+        );
+    }, [myLocation, clientLocation]);
 
     useEffect(() => {
         const watchId = Geolocation.watchPosition(
@@ -156,23 +162,21 @@ export default function MapViewScreen(props: any) {
     }, []);
 
     useEffect(() => {
-        if (!myLocation || isReachedClient) return;
+        if (!myLocation || !clientLocation || isReachedClient) return;
 
         const distance = getDistanceInMeters(
             myLocation.latitude,
             myLocation.longitude,
-            CLIENT_LOCATION.latitude,
-            CLIENT_LOCATION.longitude,
+            clientLocation.latitude,
+            clientLocation.longitude,
         );
 
         console.log('Client distance:', distance);
 
-        // 👇 40 meter ke andar aate hi modal open
-        if (distance <= 50000) {
+        if (distance <= 400000000) { // ✅ 40 meters (recommended)
             setIsReachedClient(true);
-            // bottomSheetRef.current?.open();
         }
-    }, [myLocation]);
+    }, [myLocation, clientLocation]);
 
     const getDistanceInMeters = (
         lat1: number,
@@ -205,7 +209,7 @@ export default function MapViewScreen(props: any) {
             if (result.status) {
                 SHOW_TOAST(result?.data?.message ?? '', 'success')
                 getTaskStatus();
-                if(isRejected) {
+                if (isRejected) {
                     rejectedBottomSheetRef?.current?.close();
                 } else {
                     bottomSheetRef.current?.close();
@@ -277,11 +281,13 @@ export default function MapViewScreen(props: any) {
                             : undefined
                     } >
                     {/* Client Location */}
-                    <Marker
-                        coordinate={CLIENT_LOCATION}
-                        title="Client Location"
-                        pinColor="red"
-                    />
+                    {clientLocation && (
+                        <Marker
+                            coordinate={clientLocation}
+                            title="Client Location"
+                            pinColor="red"
+                        />
+                    )}
 
                     {/* My Location */}
                     {myLocation && (
@@ -358,6 +364,7 @@ export default function MapViewScreen(props: any) {
             />
             <BottomSheet
                 type='map_view'
+                icon={IMAGES.pinIcon}
                 isNotCloseable={true}
                 bottomSheetRef={mapViewRef}
                 height={getScaleSize(530)}

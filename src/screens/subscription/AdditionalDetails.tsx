@@ -58,7 +58,7 @@ export default function AdditionalDetails(props: any) {
     console.log('proofOfResidence', proofOfResidence)
 
     async function uploadDocuments() {
-        if (copyOfId?.length === 0 || kbisExtract?.length === 0 || proofOfResidence?.length === 0) {
+        if (copyOfId?.length === 0 && kbisExtract?.length === 0 && proofOfResidence?.length === 0) {
             SHOW_TOAST('Please upload all the required documents', 'error')
             return;
         }
