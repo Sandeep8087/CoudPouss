@@ -364,7 +364,7 @@ export default function AddQuote(props: any) {
                   size={getScaleSize(12)}
                   font={FONTS.Lato.Medium}
                   color={theme.primary}>
-                  {moment(isServiceDetails?.date).format('DD MMM, YYYY')}
+                  {moment.utc(isServiceDetails?.date).local().format('DD MMM, YYYY')}
                 </Text>
               </View>
               <View style={styles(theme).itemView}>
@@ -380,7 +380,7 @@ export default function AddQuote(props: any) {
                   size={getScaleSize(12)}
                   font={FONTS.Lato.Medium}
                   color={theme.primary}>
-                  {moment(isServiceDetails?.time, "HH:mm").format("hh:mm A")}
+                  {moment.utc(isServiceDetails?.time, "HH:mm").local().format("hh:mm A")}
                 </Text>
               </View>
             </View>

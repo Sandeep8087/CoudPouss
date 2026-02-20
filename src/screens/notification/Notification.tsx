@@ -273,7 +273,7 @@ export default function Notification(props: any) {
                         size={getScaleSize(12)}
                         font={FONTS.Lato.Regular}
                         color={'#818285'}>
-                        {moment(item?.sent_at).format('ddd, DD MMM YYYY - hh:mm A') ?? ''}
+                        {moment.utc(item?.sent_at).local().format('ddd, DD MMM YYYY - hh:mm A') ?? ''}
                       </Text>
                       <Text
                         style={{ marginLeft: getScaleSize(16) }}
@@ -361,13 +361,13 @@ export default function Notification(props: any) {
                           size={getScaleSize(12)}
                           font={FONTS.Lato.Regular}
                           color={'#818285'}>
-                          {moment(item?.sent_at).format('ddd, DD MMM YYYY - hh:mm A') ?? ''}
+                          {moment.utc(item?.sent_at).local().format('ddd, DD MMM YYYY - hh:mm A') ?? ''}
                         </Text>
                         <Text
                           size={getScaleSize(12)}
                           font={FONTS.Lato.Regular}
                           color={'#818285'}>
-                          {moment(item?.sent_at).fromNow() ?? ''}
+                          {moment.utc(item?.sent_at).local().fromNow() ?? ''}
                         </Text>
                       </View>
                     </View>

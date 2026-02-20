@@ -126,7 +126,7 @@ export default function OpenRequestDetails(props: any) {
                                     size={getScaleSize(12)}
                                     font={FONTS.Lato.Medium}
                                     color={theme.primary}>
-                                    {serviceDetails?.chosen_datetime ? moment(serviceDetails?.chosen_datetime).format('DD MMM, YYYY') : '-'}
+                                    {serviceDetails?.chosen_datetime ? moment.utc(serviceDetails?.chosen_datetime).local().format('DD MMM, YYYY') : '-'}
                                 </Text>
                             </View>
                             <View style={styles(theme).itemView}>
@@ -142,7 +142,7 @@ export default function OpenRequestDetails(props: any) {
                                     size={getScaleSize(12)}
                                     font={FONTS.Lato.Medium}
                                     color={theme.primary}>
-                                    {serviceDetails?.chosen_datetime ? moment(serviceDetails?.chosen_datetime).format('hh:mm A') : '-'}
+                                    {serviceDetails?.chosen_datetime ? moment.utc(serviceDetails?.chosen_datetime).local().format('hh:mm A') : '-'}
                                 </Text>
                             </View>
                         </View>

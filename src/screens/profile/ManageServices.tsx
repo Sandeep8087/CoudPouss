@@ -262,7 +262,7 @@ export default function ManageServices(props: any) {
             )}
             {profile?.has_purchased && (
                 <Button
-                    title={STRING.add_more_services}
+                    title={ services?.services?.length > 0 ? STRING.add_more_services : STRING.add_service}
                     style={{
                         marginHorizontal: getScaleSize(24),
                         marginBottom: getScaleSize(24),

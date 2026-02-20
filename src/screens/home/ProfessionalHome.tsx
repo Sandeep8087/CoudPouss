@@ -225,9 +225,8 @@ export default function ProfessionalHome(props: any) {
             font={FONTS.Lato.Medium}
             color={theme._6D6D6D}
             style={{}}>
-            {`Hello! ${
-              profile?.user?.first_name + ' ' + profile?.user?.last_name
-            }`}
+            {`Hello! ${profile?.user?.first_name + ' ' + profile?.user?.last_name
+              }`}
           </Text>
           <Text
             size={getScaleSize(24)}
@@ -334,7 +333,7 @@ export default function ProfessionalHome(props: any) {
               </Text>
             </View>
           </ImageBackground>
-          {profile?.user?.service_provider_type === 'professional' && profile?.has_purchased === true ? (
+          {profile?.has_purchased === true ? (
             <>
               {profile?.onboarding_status === true ? (
                 <View>
@@ -510,15 +509,19 @@ export default function ProfessionalHome(props: any) {
               )}
             </>
           ) : (
-            <EmptyView
-              title={STRING.you_have_not_subscribed_to_any_plan}
-              style={styles(theme).emptyContainer}
-              onPressButton={() => {
-                props.navigation.navigate(SCREENS.ChooseYourSubscription.identifier, {
-                  isFromSubscriptionButton: true,
-                });
-              }}
-            />
+            <>
+              {profile?.service_provider_type === 'professional' && (
+                <EmptyView
+                  title={STRING.you_have_not_subscribed_to_any_plan}
+                  style={styles(theme).emptyContainer}
+                  onPressButton={() => {
+                    props.navigation.navigate(SCREENS.ChooseYourSubscription.identifier, {
+                      isFromSubscriptionButton: true,
+                    });
+                  }}
+                />
+              )}
+            </>
           )}
         </ScrollView>
       )}

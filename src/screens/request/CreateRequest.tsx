@@ -942,20 +942,7 @@ export default function CreateRequest(props: any) {
             color={theme._939393}>
             {STRING.descriptionMessage}
           </Text>
-          <Input
-            placeholder={'search address'}
-            placeholderTextColor={theme._939393}
-            inputTitle={STRING.enter_address}
-            inputColor={true}
-            searchBox={IMAGES.search}
-            continerStyle={{ marginTop: getScaleSize(12) }}
-            value={address}
-            onChangeText={(text: any) => {
-              setAddress(text);
-              setAddressError('');
-            }}
-            isError={addressError}
-          />
+          
           <Text
             style={{ marginTop: getScaleSize(12) }}
             size={getScaleSize(17)}
@@ -1075,6 +1062,22 @@ export default function CreateRequest(props: any) {
             color={theme._939393}>
             {STRING.you_can_also_upload_a_video}
           </Text>
+          <View>
+            <Input
+            placeholder={'search address'}
+            placeholderTextColor={theme._939393}
+            inputTitle={STRING.enter_address}
+            inputColor={true}
+            searchBox={IMAGES.search}
+            continerStyle={{ marginTop: getScaleSize(12) }}
+            value={address}
+            onChangeText={(text: any) => {
+              setAddress(text);
+              setAddressError('');
+            }}
+            isError={addressError}
+          />
+          </View>
         </View>
       </ScrollView>
     );

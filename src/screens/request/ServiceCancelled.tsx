@@ -116,7 +116,7 @@ export default function ServiceCancelled(props: any) {
                                     font={FONTS.Lato.Medium}
                                     color={theme.primary}>
                                     {item?.chosen_datetime
-                                        ? moment(item?.chosen_datetime).format(
+                                        ? moment.utc(item?.chosen_datetime).local().format(
                                             'DD MMM, YYYY',
                                         )
                                         : '-'}
@@ -136,7 +136,7 @@ export default function ServiceCancelled(props: any) {
                                     font={FONTS.Lato.Medium}
                                     color={theme.primary}>
                                     {item?.chosen_datetime
-                                        ? moment(item?.chosen_datetime).format('hh:mm A')
+                                        ? moment.utc(item?.chosen_datetime).local().format('hh:mm A')
                                         : '-'}
                                 </Text>
                             </View>

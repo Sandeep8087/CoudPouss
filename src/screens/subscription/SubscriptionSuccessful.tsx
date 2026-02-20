@@ -133,7 +133,7 @@ export default function SubscriptionSuccessful(props: any) {
                             <Text size={getScaleSize(16)}
                                 font={FONTS.Lato.Bold}
                                 color={theme._424242}>
-                                {subscriptionData?.start_date ? moment(subscriptionData?.start_date).format('DD MMM YYYY') : ''}
+                                {subscriptionData?.start_date ? moment.utc(subscriptionData?.start_date).local().format('DD MMM YYYY') : ''}
                             </Text>
                         </View>
                         <View style={[styles(theme).flexView, { marginBottom: getScaleSize(16) }]}>
@@ -157,7 +157,7 @@ export default function SubscriptionSuccessful(props: any) {
                             <Text size={getScaleSize(16)}
                                 font={FONTS.Lato.Bold}
                                 color={theme._424242}>
-                                {subscriptionData?.first_charge_date ? moment(subscriptionData?.first_charge_date).format('DD MMM YYYY') : ''}
+                                {subscriptionData?.first_charge_date ? moment.utc(subscriptionData?.first_charge_date).local().format('DD MMM YYYY') : ''}
                             </Text>
                         </View>
                     </View>

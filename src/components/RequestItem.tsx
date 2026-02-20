@@ -135,7 +135,7 @@ function RequestItem(props: any) {
             size={getScaleSize(20)}
             font={FONTS.Lato.SemiBold}
             color={theme.primary}>
-            {moment(item?.chosen_datetime).format('DD MMM')}
+            {moment.utc(item?.chosen_datetime).local().format('DD MMM')}
           </Text>
         </View>
         <View
@@ -154,7 +154,7 @@ function RequestItem(props: any) {
             size={getScaleSize(20)}
             font={FONTS.Lato.SemiBold}
             color={theme.primary}>
-            {moment(item?.chosen_datetime).format('hh:mm A')}
+            {moment.utc(item?.chosen_datetime).local().format('hh:mm A')}
           </Text>
         </View>
       </View>

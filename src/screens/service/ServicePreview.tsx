@@ -148,7 +148,7 @@ export default function ServicePreview(props: any) {
                   size={getScaleSize(12)}
                   font={FONTS.Lato.Medium}
                   color={theme.primary}>
-                  {moment(serviceDetails?.date).format('DD MMM, YYYY')}
+                  {moment.utc(serviceDetails?.date).local().format('DD MMM, YYYY')}
                 </Text>
               </View>
               <View style={styles(theme).itemView}>
@@ -164,7 +164,7 @@ export default function ServicePreview(props: any) {
                   size={getScaleSize(12)}
                   font={FONTS.Lato.Medium}
                   color={theme.primary}>
-                  {moment(serviceDetails?.time, "HH:mm").format("hh:mm A")}
+                  {moment.utc(serviceDetails?.time, "HH:mm").local().format("hh:mm A")}
                 </Text>
               </View>
             </View>

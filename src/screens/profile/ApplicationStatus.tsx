@@ -76,7 +76,7 @@ export default function ApplicationStatus(props: any) {
                 id: 2,
                 name: "Upload Documents",
                 description: "Upload your documents to get verified.",
-                serviceRunning: true,
+                completed: false,
             });
         }
 
@@ -222,7 +222,7 @@ export default function ApplicationStatus(props: any) {
                                 isLast={index === statsData.length - 1}
                             />
                         ))}
-                        {!applicationStatus?.doc_status || applicationStatus?.doc_status == 'null' && (
+                        {(!applicationStatus?.doc_status || applicationStatus?.doc_status == 'null') && (
                             <TouchableOpacity
                                 onPress={() => {
                                     props.navigation.navigate(SCREENS.AdditionalDetails.identifier, {

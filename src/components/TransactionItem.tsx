@@ -34,7 +34,7 @@ export default function TransactionItem(props: any) {
                     {item?.user?.name ?? ''}
                 </Text>
                 <Text size={getScaleSize(16)} font={FONTS.Lato.SemiBold} color={theme._818285}>
-                    {item?.date ? moment(item?.date).format('DD MMM YYYY, hh:mm A') : ''}
+                    {item?.date ? moment.utc(item?.date).local().format('DD MMM YYYY, hh:mm A') : ''}
                 </Text>
             </View>
             <View style={styles(theme).transactionStatusContainer}>

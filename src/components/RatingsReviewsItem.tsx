@@ -60,7 +60,7 @@ export default function RatingsReviewsItem(props: any) {
                         <Text size={getScaleSize(14)}
                             font={FONTS.Lato.Medium}
                             color={theme._6D6D6D}>
-                            {item?.created_at ? moment(item?.created_at).fromNow() : '0 days ago'}
+                            {item?.created_at ? moment.utc(item?.created_at).local().fromNow() : '0 days ago'}
                         </Text>
                     }
                 </View>

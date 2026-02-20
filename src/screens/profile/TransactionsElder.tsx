@@ -27,7 +27,46 @@ import moment from 'moment';
 
 const PAGE_SIZE = 10;
 
+/* ================= HELPERS ================= */
+
+// API months → flat transactions
+const normalizeTransactions = (months: any[]) => {
+    return months.flatMap((m: any) =>
+        (m.transactions || []).map((t: any) => ({
+            ...t,
+            __year: m.year,
+            __month: m.month,
+        }))
+    );
+};
+
+// flat → SectionList (month-wise)
+const groupByMonth = (transactions: any[]) => {
+    const map = new Map();
+
+    transactions.forEach(txn => {
+        const key = `${txn.__year}-${txn.__month}`;
+
+        if (!map.has(key)) {
+            map.set(key, {
+                title: {
+                    year: txn.__year,
+                    month: txn.__month,
+                    total: 0,
+                },
+                data: [],
+            });
+        }
+
+        map.get(key).data.push(txn);
+        map.get(key).title.total += Number(txn.amount || 0);
+    });
+
+    return Array.from(map.values());
+};
+
 export default function TransactionsElder(props: any) {
+
     const { theme } = useContext<any>(ThemeContext);
     const STRING = useString();
 
@@ -35,7 +74,8 @@ export default function TransactionsElder(props: any) {
     const [open, setOpen] = useState(false);
 
     const [requestData, setRequestData] = useState<any>({
-        transactionsData: [],
+        transactions: [],        // SectionList data
+        flatTransactions: [],    // pagination control
         page: 1,
         hasMore: true,
         isLoading: false,
@@ -66,58 +106,62 @@ export default function TransactionsElder(props: any) {
         setRequestData((prev: any) => ({ ...prev, isLoading: true }));
 
         try {
-            const page = customPage ?? 1;
+            const page = customPage ?? requestData.page;
             const startDate = customStartDate ?? requestData.startDate;
             const endDate = customEndDate ?? requestData.endDate;
             const selectedStatus = customStatus ?? requestData.selectedStatus;
 
             let url = API.API_ROUTES.fetchTransactions;
-            url += `?section=transactions`;
+            url += `?section=transactions&page=${page}&limit=${PAGE_SIZE}`;
+
             if (selectedStatus?.value) {
-                url += `&status=${selectedStatus?.value ?? ''}`;
+                url += `&status=${selectedStatus.value}`;
             }
             if (startDate) {
-                url += `&start_date=${startDate ? moment(startDate).format('YYYY-MM-DD') : ''}`;
+                url += `&start_date=${moment(startDate).format('YYYY-MM-DD')}`;
             }
             if (endDate) {
-                url += `&end_date=${endDate ? moment(endDate).format('YYYY-MM-DD') : ''}`;
+                url += `&end_date=${moment(endDate).format('YYYY-MM-DD')}`;
             }
-            url += `&page=${page}`;
-            url += `&limit=${PAGE_SIZE}`;
+
             const result: any = await API.Instance.get(url);
 
-            if (result?.status) {
-                const apiMonths = result?.data?.data?.months ?? [];
-
-                const formattedSections = apiMonths.map((item: any) => ({
-                    title: {
-                        year: item.year,
-                        month: item.month,
-                        total: item.amount,
-                    },
-                    data: item.transactions ?? [],
-                }));
-
-                setRequestData((prev: any) => ({
-                    ...prev,
-                    transactions: reset
-                        ? formattedSections
-                        : [...prev.transactions, ...formattedSections],
-                    page,
-                    hasMore: apiMonths.length > 0,
-                    isLoading: false,
-                }));
-            } else {
+            if (!result?.status) {
                 SHOW_TOAST(result?.data?.message, 'error');
                 setRequestData((prev: any) => ({ ...prev, isLoading: false }));
+                return;
             }
+
+            const apiMonths = result?.data?.data?.months ?? [];
+
+            const newFlat = normalizeTransactions(apiMonths);
+
+            setRequestData((prev: any) => {
+                const allFlat = reset
+                    ? newFlat
+                    : [...prev.flatTransactions, ...newFlat];
+
+                return {
+                    ...prev,
+                    flatTransactions: allFlat,
+                    transactions: groupByMonth(allFlat),
+                    page,
+                    hasMore: newFlat.length === PAGE_SIZE,
+                    isLoading: false,
+                };
+            });
+
         } catch (error: any) {
             SHOW_TOAST(error?.message ?? '', 'error');
             setRequestData((prev: any) => ({ ...prev, isLoading: false }));
         }
     };
 
+    /* ================= EFFECTS ================= */
 
+    useEffect(() => {
+        fetchTransactions({ reset: true, customPage: 1 });
+    }, []);
 
     useEffect(() => {
         fetchTransactions({
@@ -127,23 +171,15 @@ export default function TransactionsElder(props: any) {
             customEndDate: requestData.endDate,
             customPage: 1,
         });
-    }, [
-        requestData.selectedStatus,
-        requestData.startDate,
-        requestData.endDate,
-    ]);
-
-    useEffect(() => {
-        fetchTransactions({ reset: true, customPage: 1 });
-    }, []);
+    }, [requestData.selectedStatus, requestData.startDate, requestData.endDate]);
 
     useEffect(() => {
         if (requestData.page > 1) {
-            fetchTransactions({
-                customPage: requestData.page,
-            });
+            fetchTransactions({ customPage: requestData.page });
         }
     }, [requestData.page]);
+
+    /* ================= ACTIONS ================= */
 
     const loadMore = () => {
         if (!requestData.isLoading && requestData.hasMore) {
@@ -156,22 +192,15 @@ export default function TransactionsElder(props: any) {
 
     const onStatusChange = (status: any) => {
         setVisible(false);
-
         setRequestData((prev: any) => ({
             ...prev,
             selectedStatus: status,
             page: 1,
             hasMore: true,
+            flatTransactions: [],
             transactions: [],
         }));
-
-        fetchTransactions({
-            reset: true,
-            customStatus: status,
-            customPage: 1,
-        });
     };
-
 
     const onDateApply = (start: any, end: any) => {
         setOpen(false);
@@ -184,9 +213,12 @@ export default function TransactionsElder(props: any) {
             endDate: isCleared ? null : end,
             page: 1,
             hasMore: true,
+            flatTransactions: [],
             transactions: [],
         }));
     };
+
+    /* ================= UI ================= */
 
     return (
         <View style={styles(theme).container}>
@@ -196,10 +228,15 @@ export default function TransactionsElder(props: any) {
             />
 
             <View style={styles(theme).headerStyle}>
+
+                {/* STATUS */}
                 <View style={styles(theme).filterView}>
                     <Text size={14} font={FONTS.Lato.Medium} color={theme._2B2B2B}>
-                        {requestData.selectedStatus.title == 'All' ? 'Status' : requestData.selectedStatus.title}
+                        {requestData.selectedStatus.title === 'All'
+                            ? 'Status'
+                            : requestData.selectedStatus.title}
                     </Text>
+
                     <Tooltip
                         isVisible={visible}
                         placement="bottom"
@@ -209,7 +246,7 @@ export default function TransactionsElder(props: any) {
                         contentStyle={styles(theme).tooltipContent}
                         onClose={() => setVisible(false)}
                         content={
-                            <View>'success', 'failed', 'pending'
+                            <View>
                                 {[
                                     { id: '1', title: 'All', value: '' },
                                     { id: '2', title: 'Success', value: 'success' },
@@ -219,21 +256,17 @@ export default function TransactionsElder(props: any) {
                                     <TouchableOpacity
                                         key={item.id}
                                         style={styles(theme).dropdownItem}
-                                        onPress={() => {
-                                            onStatusChange(item);
-                                            setVisible(false);
-                                        }}
+                                        onPress={() => onStatusChange(item)}
                                     >
-                                        <View style={styles(theme).dropdownItemContainer}>
-                                            <Text
-                                                style={{ flex: 1 }}
-                                                size={14}
-                                                font={FONTS.Lato.SemiBold}
-                                                color={requestData.selectedStatus.id == item.id ? theme.primary : theme._555555}
-                                            >
-                                                {item.title}
-                                            </Text>
-                                        </View>
+                                        <Text
+                                            size={14}
+                                            font={FONTS.Lato.SemiBold}
+                                            color={requestData.selectedStatus.id === item.id
+                                                ? theme.primary
+                                                : theme._555555}
+                                        >
+                                            {item.title}
+                                        </Text>
                                     </TouchableOpacity>
                                 ))}
                             </View>
@@ -245,14 +278,14 @@ export default function TransactionsElder(props: any) {
                     </Tooltip>
                 </View>
 
+                {/* DATE */}
                 <View style={styles(theme).filterView}>
                     <Text size={14} font={FONTS.Lato.Medium} color={theme._2B2B2B}>
                         {`${requestData.startDate
                             ? new Date(requestData.startDate).toLocaleDateString()
                             : 'date'}${requestData.endDate
                                 ? ' - ' + new Date(requestData.endDate).toLocaleDateString()
-                                : ''
-                            }`}
+                                : ''}`}
                     </Text>
 
                     <TouchableOpacity onPress={() => setOpen(true)}>
@@ -262,37 +295,32 @@ export default function TransactionsElder(props: any) {
             </View>
 
             <SectionList
-                sections={requestData?.transactions ?? []}
-                keyExtractor={(item, index) => index.toString()}
+                sections={requestData.transactions}
+                keyExtractor={(item) => item.id}
                 onEndReached={loadMore}
-                onEndReachedThreshold={0.5}
+                onEndReachedThreshold={0.4}
                 showsVerticalScrollIndicator={false}
-                renderSectionHeader={({ section }: any) => {
-                    console.log('section==>', section);
-                    return (
-                        <View style={styles(theme).sectionHeaderContainer}>
-                            <View style={{ flex: 1 }}>
-                                <Text size={16} font={FONTS.Lato.Medium} color={theme._2C6587}>
-                                    {section.title.year}
-                                </Text>
-                                <Text size={24} font={FONTS.Lato.Bold} color={theme._2C6587}>
-                                    {section.title.month}
-                                </Text>
-                            </View>
+                renderSectionHeader={({ section }: any) => (
+                    <View style={styles(theme).sectionHeaderContainer}>
+                        <View style={{ flex: 1 }}>
+                            <Text size={16} font={FONTS.Lato.Medium} color={theme._2C6587}>
+                                {section.title.year}
+                            </Text>
                             <Text size={24} font={FONTS.Lato.Bold} color={theme._2C6587}>
-                                {parseFloat(section.title.total).toFixed(2)}
+                                {section.title.month}
                             </Text>
                         </View>
-                    )
-                }}
-                renderItem={({ item }) => {
-                    return (
-                        <TransactionItem
-                            item={item}
-                            itemContainer={styles(theme).itemContainer}
-                        />
-                    )
-                }}
+                        <Text size={24} font={FONTS.Lato.Bold} color={theme._2C6587}>
+                            {section.title.total.toFixed(2)}
+                        </Text>
+                    </View>
+                )}
+                renderItem={({ item }) => (
+                    <TransactionItem
+                        item={item}
+                        itemContainer={styles(theme).itemContainer}
+                    />
+                )}
             />
 
             <DateRangeModal
@@ -309,15 +337,17 @@ export default function TransactionsElder(props: any) {
                     onDateApply(startUTC, endUTC);
                 }}
             />
-            {requestData?.isLoading && <ProgressView />}
+
+            {requestData.isLoading && <ProgressView />}
         </View>
     );
 }
 
+/* ================= STYLES ================= */
 
 const styles = (theme: ThemeContextType['theme']) => StyleSheet.create({
     container: {
-        flex: 1.0,
+        flex: 1,
         backgroundColor: theme.white,
     },
     headerStyle: {
@@ -342,9 +372,6 @@ const styles = (theme: ThemeContextType['theme']) => StyleSheet.create({
         height: getScaleSize(18),
         marginLeft: getScaleSize(10),
     },
-    mainContainer: {
-        flex: 1.0,
-    },
     sectionHeaderContainer: {
         flexDirection: 'row',
         alignItems: 'center',
@@ -353,9 +380,6 @@ const styles = (theme: ThemeContextType['theme']) => StyleSheet.create({
         paddingHorizontal: getScaleSize(22),
         marginTop: getScaleSize(20),
         marginBottom: getScaleSize(12),
-    },
-    dateContainer: {
-        flex: 1.0
     },
     itemContainer: {
         marginHorizontal: getScaleSize(22),
@@ -368,25 +392,8 @@ const styles = (theme: ThemeContextType['theme']) => StyleSheet.create({
         backgroundColor: '#fff',
         borderRadius: getScaleSize(6),
         elevation: getScaleSize(5),
-        shadowColor: theme.black,
-        shadowOffset: { width: 0, height: getScaleSize(2) },
-        shadowOpacity: 0.2,
-        shadowRadius: getScaleSize(4),
     },
     dropdownItem: {
-        paddingVertical: getScaleSize(5),
+        paddingVertical: getScaleSize(6),
     },
-    dropdownItemContainer: {
-        flexDirection: 'row',
-        alignItems: 'center',
-
-    },
-    itemIcon: {
-        width: getScaleSize(20),
-        height: getScaleSize(20),
-        marginLeft: getScaleSize(10),
-    },
-    iconContainer: {
-
-    }
-})
+});

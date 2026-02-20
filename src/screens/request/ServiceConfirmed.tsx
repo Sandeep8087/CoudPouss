@@ -134,7 +134,7 @@ export default function ServiceConfirmed(props: any) {
                   size={getScaleSize(12)}
                   font={FONTS.Lato.Medium}
                   color={theme.primary}>
-                  {paymentDetails?.chosen_datetime ? moment(paymentDetails?.chosen_datetime).format('DD MMM, YYYY') : '-'}
+                  {paymentDetails?.chosen_datetime ? moment.utc(paymentDetails?.chosen_datetime).local().format('DD MMM, YYYY') : '-'}
                 </Text>
               </View>
               <View style={styles(theme).itemView}>
@@ -150,7 +150,7 @@ export default function ServiceConfirmed(props: any) {
                   size={getScaleSize(12)}
                   font={FONTS.Lato.Medium}
                   color={theme.primary}>
-                  {paymentDetails?.chosen_datetime ? moment(paymentDetails?.chosen_datetime).format('hh:mm A') : '-'}
+                  {paymentDetails?.chosen_datetime ? moment.utc(paymentDetails?.chosen_datetime).local().format('hh:mm A') : '-'}
                 </Text>
               </View>
             </View>

@@ -94,7 +94,7 @@ export default function ManageSubscription(props: any) {
                                 align="center"
                                 style={{ marginTop: getScaleSize(16), marginBottom: getScaleSize(8) }}
                                 color={theme.primary}>
-                                {`Your plan will end on ${subscriptionPlanDetails?.subscription_expires_at ? moment(subscriptionPlanDetails?.subscription_expires_at).format('MMMM DD, YYYY') : ''}\nat ${subscriptionPlanDetails?.subscription_expires_at ? moment(subscriptionPlanDetails?.subscription_expires_at).format('hh:mm A') : ''}`}
+                                {`Your plan will end on ${subscriptionPlanDetails?.subscription_expires_at ? moment.utc(subscriptionPlanDetails?.subscription_expires_at).local().format('MMMM DD, YYYY') : ''}\nat ${subscriptionPlanDetails?.subscription_expires_at ? moment.utc(subscriptionPlanDetails?.subscription_expires_at).local().format('hh:mm A') : ''}`}
                             </Text>
                             <Text size={getScaleSize(14)}
                                 font={FONTS.Lato.Medium}
@@ -112,7 +112,7 @@ export default function ManageSubscription(props: any) {
                             <Text size={getScaleSize(14)}
                                 font={FONTS.Lato.SemiBold}
                                 color={theme._0F232F}>
-                                {subscriptionPlanDetails?.subscription_expires_at ? moment(subscriptionPlanDetails?.subscription_expires_at).format('MMMM DD, YYYY') : ''}
+                                {subscriptionPlanDetails?.subscription_expires_at ? moment.utc(subscriptionPlanDetails?.subscription_expires_at).local().format('MMMM DD, YYYY') : ''}
                             </Text>
                         </View>
                         {/* <View style={styles(theme).flexView}>

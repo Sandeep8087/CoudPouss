@@ -229,7 +229,7 @@ export default function CompletedTaskDetails(props: any) {
                   font={FONTS.Lato.Medium}
                   color={theme.primary}>
                   {serviceDetails?.chosen_datetime
-                    ? moment(serviceDetails?.chosen_datetime).format(
+                    ? moment.utc(serviceDetails?.chosen_datetime).local().format(
                         'DD MMM, YYYY',
                       )
                     : '-'}
@@ -249,7 +249,7 @@ export default function CompletedTaskDetails(props: any) {
                   font={FONTS.Lato.Medium}
                   color={theme.primary}>
                   {serviceDetails?.chosen_datetime
-                    ? moment(serviceDetails?.chosen_datetime).format('hh:mm A')
+                    ? moment.utc(serviceDetails?.chosen_datetime).local().format('hh:mm A')
                     : '-'}
                 </Text>
               </View>

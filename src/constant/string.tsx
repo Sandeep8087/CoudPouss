@@ -457,6 +457,7 @@ export const useString = () => {
     new_budget_request: "New Budget Request",
     by_approving_the_updated_amount_will_be_placed_in_escrow: "By approving, the updated amount will be placed in escrow.",
     the_provider_has_reviewed_the_task_and_proposed_a_revised_budget_the_new_agreed_service_fee_is: "The provider has reviewed the task and proposed a revised budget. The new agreed service fee is:",
+    add_service: "Add Service",
   };
 };
 

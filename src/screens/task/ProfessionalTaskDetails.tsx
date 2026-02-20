@@ -211,7 +211,7 @@ export default function ProfessionalTaskDetails(props: any) {
                   font={FONTS.Lato.Medium}
                   color={theme.primary}>
                   {taskDetails?.task?.chosen_date_time
-                    ? moment(taskDetails?.task?.chosen_date_time).format(
+                    ? moment.utc(taskDetails?.task?.chosen_date_time).local().format(
                       'DD MMM, YYYY',
                     )
                     : '-'}
@@ -231,7 +231,7 @@ export default function ProfessionalTaskDetails(props: any) {
                   font={FONTS.Lato.Medium}
                   color={theme.primary}>
                   {taskDetails?.task?.chosen_date_time
-                    ? moment(taskDetails?.task?.chosen_date_time).format(
+                    ? moment.utc(taskDetails?.task?.chosen_date_time).local().format(
                       'hh:mm A',
                     )
                     : '-'}

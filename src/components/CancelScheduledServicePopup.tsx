@@ -133,7 +133,7 @@ export default function CancelScheduledServicePopup(props: CancelScheduledServic
                         </View>
                     </View>
                 )}
-                {/* <View style={{flex:1.0}}/> */}
+                <View style={{flex:1.0}}/>
                 <View style={styles(theme).buttonContainer}>
                     <TouchableOpacity
                         style={styles(theme).nextButtonContainer}
