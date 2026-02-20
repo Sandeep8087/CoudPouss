@@ -1024,7 +1024,7 @@ console.log('serviceDetails',JSON.stringify(serviceDetails))
       {status === 'pending' && (
         <AcceptBottomPopup
           onRef={acceptRef}
-          title={`You are about to confirm a service at the rate of €${serviceDetails?.total_renegotiated ?? 0} with the Provider Wade Warren, Are you sure you want to continue? `}
+          title={`You are about to confirm a service at the rate of €${serviceDetails?.total_renegotiated ?? 0} with the Provider ${serviceDetails?.provider?.full_name ?? ''}, Are you sure you want to continue? `}
           onClose={() => {
             acceptRef.current.close();
           }}

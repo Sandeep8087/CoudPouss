@@ -444,7 +444,8 @@ export const useString = () => {
     no_results_found: "No results found",
     prefered_language: "Preferred Language",
     french: 'French',
-    english: 'English'
+    english: 'English',
+    book_now: 'Book Now'
 
   };
 };

@@ -15,8 +15,11 @@ import { SCREENS } from '..';
 import { Header, Input, Text, Button, SelectCountrySheet } from '../../components';
 import { CommonActions } from '@react-navigation/native';
 import { API } from '../../api';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 export default function Signup(props: any) {
+
+    const insets = useSafeAreaInsets();
 
     const STRING = useString();
 
@@ -94,9 +97,13 @@ export default function Signup(props: any) {
 
     return (
         <KeyboardAvoidingView
-            style={{ flex: 1 ,}}
-            behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-            keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 20}
+            style={{ flex: 1 }}
+            behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+            keyboardVerticalOffset={
+                Platform.OS === 'ios'
+                    ? insets.top
+                    : 0
+            }
         >
             <View style={styles(theme).container}>
                 <Header />
@@ -204,13 +211,11 @@ const styles = (theme: ThemeContextType['theme']) =>
         container: {
             flex: 1.0,
             backgroundColor: theme.white,
-            justifyContent: 'center'
         },
         mainContainer: {
-            flex: 1.0,
+            // flex: 1.0,
             marginHorizontal: getScaleSize(24),
             marginTop: getScaleSize(30),
-            justifyContent: 'center'
         },
         logo: {
             width: Dimensions.get('window').width - getScaleSize(240),
