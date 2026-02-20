@@ -229,7 +229,12 @@ function Tabbar(props: any) {
 
   function renderView() {
     return (
-      <View style={userType === 'service_provider' ? styles(theme).tabContainer : styles(theme).tabContainerServiceProvider}>
+      <View style={[
+        userType === 'service_provider'
+          ? styles(theme).tabContainer
+          : styles(theme).tabContainerServiceProvider,
+        { paddingBottom: insets.bottom }
+      ]}>
         {props.state.routes.map((route: any, index: number) => {
           return (
             <Item
@@ -257,13 +262,15 @@ function Tabbar(props: any) {
   }
   else {
     return (
-      <SafeAreaView style={{ backgroundColor: 'transparent' }}>
-        <ImageBackground style={styles(theme).mainView}
+      <View>
+        <ImageBackground style={[styles(theme).mainView,
+        { height: TABBAR_HEIGHT + insets.bottom }
+        ]}
           resizeMode='cover'
           source={IMAGES.ic_tab_bar}>
           {renderView()}
         </ImageBackground>
-      </SafeAreaView>
+      </View>
     )
   }
   // return (
@@ -384,7 +391,7 @@ const Item = (props: any) => {
           }}
           style={{
             alignSelf: 'center',
-            transform: [{ translateY: -getScaleSize(30) }],
+            transform: [{ translateY: -getScaleSize(15) }],
             zIndex: 10,
           }}>
           <Image
@@ -486,13 +493,13 @@ const styles = (theme: ThemeContextType['theme']) =>
       height: getScaleSize(32),
       width: getScaleSize(32),
       alignSelf: 'center',
-      marginTop: getScaleSize(30)
+      marginTop: getScaleSize(45)
     },
     itemImage: {
       height: getScaleSize(32),
       width: getScaleSize(32),
       alignSelf: 'center',
-      marginTop: getScaleSize(30)
+      marginTop: getScaleSize(45)
     },
     tabText: {
       marginTop: getScaleSize(7),

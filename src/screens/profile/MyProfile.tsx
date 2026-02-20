@@ -169,44 +169,39 @@ export default function MyProfile(props: any) {
 
     // ADDRESS VALIDATION 
 
-    const validateAddress = (value: any) => {
+    const validateAddress = (value: string) => {
+        if (!value) {
+            return "Address is required.";
+        }
+
         const trimmed = value.trim();
 
-        // 1. Only whitespace
         if (!trimmed) {
-            return "Address cannot be empty or only spaces";
+            return "Address is required.";
         }
 
-        // 2. Length check
-        if (trimmed.length < 2 || trimmed.length > 250) {
-            return "Address must be between 2 and 250 characters";
+        if (trimmed.length < 5) {
+            return "Address must be at least 05 characters long.";
         }
 
-        // 3. Emoji check
-        if (containsEmoji(trimmed)) {
-            return "Address cannot contain emojis";
+        if (trimmed.length > 250) {
+            return "Address cannot exceed 250 characters.";
         }
 
-        // 4. HTML/script check
-        if (containsHTML(trimmed)) {
-            return "HTML or script tags are not allowed";
-        }
-
-        // 5. Must contain at least one letter
-        if (!/[A-Za-z]/.test(trimmed)) {
-            return "Address must contain at least one letter";
-        }
-
-        // 6. Allowed characters only
-        const allowedRegex = /^[A-Za-z0-9\s,.\-/#:+()]+$/;
+        // Allow only approved characters
+        const allowedRegex = /^[A-Za-z0-9\s,.\-/#]+$/;
 
         if (!allowedRegex.test(trimmed)) {
-            return "Address contains invalid characters";
+            return "Special characters are not allowed except , . - / #.";
+        }
+
+        // Must contain at least one letter (not only numbers or special chars)
+        if (!/[A-Za-z]/.test(trimmed)) {
+            return "Please enter a valid address.";
         }
 
         return "";
-    };
-
+    }
 
     async function onEditUserProfile() {
 
@@ -346,10 +341,20 @@ export default function MyProfile(props: any) {
                         placeholderTextColor={theme._939393}
                         inputTitle={STRING.full_name}
                         inputColor={true}
+                        maxLength={50}
                         value={name}
                         continerStyle={{ marginBottom: getScaleSize(20) }}
                         onChangeText={text => {
-                            setName(text);
+                            // Remove invalid characters
+                            let cleaned = text.replace(/[^A-Za-z\s]/g, '');
+
+                            // Remove leading spaces
+                            cleaned = cleaned.replace(/^\s+/, '');
+
+                            // Replace multiple spaces with single space
+                            cleaned = cleaned.replace(/\s{2,}/g, ' ');
+
+                            setName(cleaned);
                             setNameError('');
                         }}
                         isError={nameError}
@@ -359,8 +364,15 @@ export default function MyProfile(props: any) {
                         placeholderTextColor={theme._939393}
                         inputTitle={STRING.e_mail_id}
                         inputColor={true}
-                        continerStyle={{ marginBottom: getScaleSize(20) }}
+                        containerStyle={{
+                            paddingHorizontal: 0,
+                            marginBottom: getScaleSize(20)
+                        }}
                         value={email}
+                        inputContainer={{
+                            backgroundColor: theme._F0EFF0,
+                            opacity: 0.7,
+                        }}
                         editable={false}
                         onChangeText={text => {
                             setEmail(text);
@@ -396,6 +408,7 @@ export default function MyProfile(props: any) {
                         value={address}
                         multiline={true}
                         numberOfLines={10}
+                        maxLength={250}
                         onContentSizeChange={(e) => {
                             const newHeight = e.nativeEvent.contentSize.height;
                             setAddressHeight(

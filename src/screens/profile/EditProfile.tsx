@@ -311,25 +311,18 @@ export default function EditProfile(props: any) {
     const validateName = (value: string) => {
         const trimmed = value.trim();
 
-        // 1. Required
         if (!trimmed) return 'Name is required';
 
-        // 2. Length check
         if (trimmed.length < 2)
             return 'Minimum 2 characters required';
 
         if (trimmed.length > 50)
             return 'Maximum 50 characters allowed';
 
-        // 3. Allowed characters only
         const nameRegex = /^[A-Za-z.\-\s]+$/;
 
         if (!nameRegex.test(trimmed))
             return 'Only alphabets, space, dot (.), hyphen (-) allowed';
-
-        // 5. No leading/trailing spaces
-        if (value !== trimmed)
-            return 'No leading or trailing spaces allowed';
 
         return '';
     };
@@ -339,7 +332,7 @@ export default function EditProfile(props: any) {
 
         let value = text;
 
-        // Remove emojis & extended unicode
+        // Remove emojis
         value = value.replace(
             /([\u{1F600}-\u{1F6FF}]|[\u{1F300}-\u{1F5FF}]|[\u{2600}-\u{26FF}])/gu,
             ''
@@ -348,10 +341,13 @@ export default function EditProfile(props: any) {
         // Allow only alphabets + space + dot + hyphen
         value = value.replace(/[^A-Za-z.\-\s]/g, '');
 
-        // Prevent multiple spaces
+        // Remove leading spaces
+        value = value.replace(/^\s+/, '');
+
+        // Replace multiple spaces with single space
         value = value.replace(/\s{2,}/g, ' ');
 
-        // Hard limit to 50 chars
+        // Hard limit 50
         if (value.length > 50) {
             value = value.slice(0, 50);
         }
@@ -371,12 +367,35 @@ export default function EditProfile(props: any) {
     };
 
     const validateAddress = (value: string) => {
+        if (!value) {
+            return "Address is required.";
+        }
+
         const trimmed = value.trim();
 
-        if (!trimmed) return "Address required";
+        if (!trimmed) {
+            return "Address is required.";
+        }
 
-        if (trimmed.length < 2 || trimmed.length > 250)
-            return "Address must be 2–250 characters";
+        if (trimmed.length < 5) {
+            return "Address must be at least 05 characters long.";
+        }
+
+        if (trimmed.length > 250) {
+            return "Address cannot exceed 250 characters.";
+        }
+
+        // Allow only approved characters
+        const allowedRegex = /^[A-Za-z0-9\s,.\-/#]+$/;
+
+        if (!allowedRegex.test(trimmed)) {
+            return "Special characters are not allowed except , . - / #.";
+        }
+
+        // Must contain at least one letter (not only numbers or special chars)
+        if (!/[A-Za-z]/.test(trimmed)) {
+            return "Please enter a valid address.";
+        }
 
         return "";
     };
@@ -520,6 +539,7 @@ export default function EditProfile(props: any) {
                         inputTitle={STRING.address}
                         inputColor={true}
                         value={address}
+                        maxLength={250}
                         multiline={true}
                         numberOfLines={10}
                         onContentSizeChange={(e) => {

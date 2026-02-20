@@ -240,6 +240,7 @@ export default function Request(props: any) {
     <View style={styles(theme).container}>
       <Header
         // type='profile'
+        isFromRequest={true}
         screenName={STRING.Request}
       />
       <View

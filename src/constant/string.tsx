@@ -27,7 +27,7 @@ export const useString = () => {
     JobDate: 'Job Date',
     JobTime: 'Job Time ',
     Home: 'Home',
-    Request: 'Request',
+    Request: 'Requests',
     Chat: 'Chat',
     Profile: 'Profile',
     explore_all_service: 'Explore All Services',

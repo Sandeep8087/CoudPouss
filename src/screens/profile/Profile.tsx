@@ -6,6 +6,7 @@ import {
   Image,
   ScrollView,
   Alert,
+  Dimensions,
 } from 'react-native';
 
 //CONTEXT
@@ -85,7 +86,8 @@ export default function Profile(props: any) {
         screenName={STRING.my_account}
       />
       <ScrollView showsVerticalScrollIndicator={false}
-        contentContainerStyle={{ paddingBottom: getScaleSize(20)
+        contentContainerStyle={{
+          paddingBottom: getScaleSize(20)
         }}>
         <View style={styles(theme).mainContainer}>
           {profile?.user?.profile_photo_url ? (
@@ -106,6 +108,7 @@ export default function Profile(props: any) {
             size={getScaleSize(22)}
             font={FONTS.Lato.SemiBold}
             align="center"
+            numberOfLines={1}
             color={theme._2B2B2B}>
             {(profile?.user?.first_name ?? "") + " " + (profile?.user?.last_name ?? "")}
           </Text>
@@ -181,7 +184,7 @@ export default function Profile(props: any) {
       </ScrollView>
       <BottomSheet
         bottomSheetRef={bottomSheetRef}
-        height={getScaleSize(300)}
+        height={Dimensions.get('window').height * 0.4}
         isInfo={true}
         title={STRING.are_you_sure_you_want_to_logout}
         buttonTitle={STRING.logout}
