@@ -66,6 +66,9 @@ import WebViewScreen from './WebViewScreen';
 import MapView from './task/MapView';
 import TransactionsElder from './profile/TransactionsElder';
 import Language from './profile/language';
+import Address from './request/Address';
+import AddressMapScreen from './request/AddressMapScreen';
+import EditAddress from './request/EditAddress';
 
 export const SCREENS = {
   Splash: {
@@ -301,6 +304,18 @@ export const SCREENS = {
     identifier: 'Language',
     component: Language,
   },
+  Address: {
+    identifier: 'Address',
+    component: Address,
+  },
+  AddressMapScreen: {
+    identifier: 'AddressMapScreen',
+    component: AddressMapScreen,
+  },
+  EditAddress: {
+    identifier: 'EditAddress',
+    component: EditAddress,
+  }
 };
 
 export const TABS = {

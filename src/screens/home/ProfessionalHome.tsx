@@ -509,7 +509,7 @@ export default function ProfessionalHome(props: any) {
             </>
           ) : (
             <>
-              {profile?.service_provider_type === 'professional' && (
+             (
                 <EmptyView
                   title={STRING.you_have_not_subscribed_to_any_plan}
                   style={styles(theme).emptyContainer}
@@ -519,7 +519,7 @@ export default function ProfessionalHome(props: any) {
                     });
                   }}
                 />
-              )}
+              )
             </>
           )}
         </ScrollView>

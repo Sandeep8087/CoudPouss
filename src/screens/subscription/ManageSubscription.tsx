@@ -25,7 +25,9 @@ export default function ManageSubscription(props: any) {
     const [isLoading, setLoading] = useState(false);
 
     useEffect(() => {
-        getSubscriptionPlanDetails();
+        if(profile?.has_purchased){
+            getSubscriptionPlanDetails();
+        }
     }, []);
 
     async function getSubscriptionPlanDetails() {

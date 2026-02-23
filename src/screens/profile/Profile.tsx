@@ -185,7 +185,7 @@ export default function Profile(props: any) {
       </ScrollView>
       <BottomSheet
         bottomSheetRef={bottomSheetRef}
-        height={Dimensions.get('window').height * 0.4}
+        height={getScaleSize(300)}
         isInfo={true}
         title={STRING.are_you_sure_you_want_to_logout}
         buttonTitle={STRING.logout}

@@ -269,6 +269,28 @@ export default function BottomSheet(props: BottomSheetProps) {
                         </Text>
                     </View>
                 )}
+                {type === 'address_map_view' && (
+                    <View style={styles(theme).mainContainer}>
+                        <Image source={icon} style={[styles(theme).alartIcon, { marginBottom: getScaleSize(12) }]} />
+                        <Text
+                            size={getScaleSize(22)}
+                            font={FONTS.Lato.SemiBold}
+                            align="center"
+                            color={theme._323232}>
+                            {title}
+                        </Text>
+                        <View style={styles(theme).addressView}>
+                            <Image source={IMAGES.pin} style={styles(theme).locationIcon} />
+                            <Text
+                                style={{flex: 1}}
+                                size={getScaleSize(18)}
+                                font={FONTS.Lato.Medium}
+                                color={theme._555555}>
+                                {description}
+                            </Text>
+                        </View>
+                    </View>
+                )}
                 {secondButtonTitle ?
                     <View style={styles(theme).buttonContainer}>
                         <TouchableOpacity
@@ -350,4 +372,14 @@ const styles = (theme: ThemeContextType['theme']) =>
             borderWidth: 1,
             borderColor: theme._E6E6E6,
         },
+        locationIcon: {
+            width: getScaleSize(24),
+            height: getScaleSize(24),
+            marginRight: getScaleSize(12),
+            marginTop: getScaleSize(5),
+        },
+        addressView:{
+            flexDirection: 'row',
+            marginVertical: getScaleSize(24),
+        }
     });
