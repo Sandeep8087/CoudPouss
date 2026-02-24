@@ -252,6 +252,8 @@ export default function Notification(props: any) {
             isLoading ? <ActivityIndicator size="large" color={theme.primary} style={{ margin: 20 }} /> : null
           }
           renderItem={({ item, index }) => {
+            const imageUrl = item?.data?.sender_profile_photo_url;
+            const senderName = item?.data?.sender_name?.trim();
             if (item?.data?.event === 'SERVICE_STARTED') {
               return (
                 <View style={styles(theme).notificationContainer}>
@@ -320,17 +322,43 @@ export default function Notification(props: any) {
                       />
                     ) : (
                       <>
-                        {item?.data?.sender_profile_photo_url
-                          ? <Image
-                            style={styles(theme).profilePic}
-                            source={{ uri: item?.data?.sender_profile_photo_url }}
-                          />
-                          : <Image
-                            style={styles(theme).profilePic}
-                            source={IMAGES.user_placeholder}
-                          />
+                        {(() => {
+                          const imageUrl = item?.data?.sender_profile_photo_url;
+                          const senderName = item?.data?.sender_name?.trim();
 
-                        }
+                          // If image exists
+                          if (imageUrl && imageUrl.trim() !== '') {
+                            return (
+                              <Image
+                                style={styles(theme).profilePic}
+                                source={{ uri: imageUrl }}
+                              />
+                            );
+                          }
+
+                          //  If name exists show first letter
+                          if (senderName && senderName.length > 0) {
+                            return (
+                              <View style={[styles(theme).profilePic, { backgroundColor: theme.primary }]}>
+                                <Text
+                                  size={getScaleSize(18)}
+                                  font={FONTS.Lato.Bold}
+                                  color={theme.white}
+                                >
+                                  {senderName.charAt(0).toUpperCase()}
+                                </Text>
+                              </View>
+                            );
+                          }
+
+                          //  If both missing show default circle
+                          return (
+                            <Image style={styles(theme).profilePic}
+                              resizeMode='contain'
+                              source={IMAGES.user_placeholder}>
+                            </Image>
+                          );
+                        })()}
                       </>
                     )}
                     <View style={{ flex: 1.0 }}>

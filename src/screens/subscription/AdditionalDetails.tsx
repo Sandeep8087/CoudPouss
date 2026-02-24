@@ -31,47 +31,6 @@ export default function AdditionalDetails(props: any) {
     const [proofOfResidence, setProofOfResidence] = useState<any>([]);
     const [loading, setLoading] = useState<boolean>(false);
 
-    console.log('copyOfId', copyOfId)
-    console.log('kbisExtract', kbisExtract)
-    console.log('proofOfResidence', proofOfResidence)
-
-    const uploadSingleDocument = async (
-        file: any,
-        fieldName: string,
-        successMessage: string
-    ) => {
-        try {
-            const formData = new FormData();
-
-            formData.append(fieldName, {
-                uri: file?.uri,
-                name: file?.name,
-                type: file?.type,
-            });
-
-            const response = await API.Instance.post(
-                API.API_ROUTES.uploadDocuments,
-                formData,
-                {
-                    headers: {
-                        'Content-Type': 'multipart/form-data',
-                    },
-                }
-            );
-
-            console.log('Single Upload Response:', response?.data);
-
-            if (response?.data?.status) {
-                SHOW_SUCCESS_TOAST(successMessage);
-            } else {
-                SHOW_TOAST(response?.data?.message || 'Upload failed', 'error');
-            }
-
-        } catch (error: any) {
-            SHOW_TOAST(error?.message || 'Upload failed', 'error');
-        }
-    };
-
     const pickDocument = async (type: string) => {
         try {
             const result = await pick({
@@ -89,30 +48,11 @@ export default function AdditionalDetails(props: any) {
 
             if (type === 'id') {
                 setCopyOfId(result);
-
-                await uploadSingleDocument(
-                    file,
-                    'id_document',
-                    'ID document uploaded successfully'
-                );
-
             } else if (type === 'kbis') {
                 setKbisExtract(result);
 
-                await uploadSingleDocument(
-                    file,
-                    'kbis_extract',
-                    'KBIS extract uploaded successfully'
-                );
-
             } else if (type === 'address_proof') {
                 setProofOfResidence(result);
-
-                await uploadSingleDocument(
-                    file,
-                    'proof_of_residence',
-                    'Proof of residence uploaded successfully'
-                );
             }
 
         } catch (err) {
@@ -125,60 +65,79 @@ export default function AdditionalDetails(props: any) {
     };
 
     async function uploadDocuments() {
-        if (
-            copyOfId?.length === 0 ||
-            kbisExtract?.length === 0 ||
-            proofOfResidence?.length === 0
-        ) {
-           SHOW_TOAST('Please upload all the required documents', 'error');
+
+        const errors: string[] = [];
+
+        if (!copyOfId?.length) {
+            errors.push('ID document is required');
+        }
+
+        if (!kbisExtract?.length) {
+            errors.push('KBIS extract is required');
+        }
+
+        if (!proofOfResidence?.length) {
+            errors.push('Proof of residence is required');
+        }
+
+        // If there are errors, show them all at once
+        if (errors.length > 0) {
+            SHOW_TOAST(errors.join('\n'), 'error');
             return;
         }
+
         try {
-            const formData = new FormData();
-            formData.append('id_document', {
-                uri: copyOfId?.[0]?.uri,
-                name: copyOfId?.[0]?.name,
-                type: copyOfId?.[0]?.type,
-            });
-            formData.append('kbis_extract', {
-                uri: kbisExtract?.[0]?.uri,
-                name: kbisExtract?.[0]?.name,
-                type: kbisExtract?.[0]?.type,
-            });
-            formData.append('proof_of_residence', {
-                uri: proofOfResidence?.[0]?.uri,
-                name: proofOfResidence?.[0]?.name,
-                type: proofOfResidence?.[0]?.type,
-            });
-            console.log('formData==>', formData)
             setLoading(true);
-            const result = await API.Instance.post(API.API_ROUTES.uploadDocuments, formData, {
-                headers: {
-                    'Content-Type': 'multipart/form-data',
-                },
+
+            const formData = new FormData();
+
+            formData.append('id_document', {
+                uri: copyOfId[0].uri,
+                name: copyOfId[0].name,
+                type: copyOfId[0].type,
             });
-            setLoading(false);
-            console.log('API RES', result.status, JSON.stringify(result))
 
-            if (result.status) {
+            formData.append('kbis_extract', {
+                uri: kbisExtract[0].uri,
+                name: kbisExtract[0].name,
+                type: kbisExtract[0].type,
+            });
 
-                // SHOW_SUCCESS_TOAST(result?.data?.message || 'Documents uploaded successfully');
+            formData.append('proof_of_residence', {
+                uri: proofOfResidence[0].uri,
+                name: proofOfResidence[0].name,
+                type: proofOfResidence[0].type,
+            });
+
+            const result = await API.Instance.post(
+                API.API_ROUTES.uploadDocuments,
+                formData,
+                {
+                    headers: {
+                        'Content-Type': 'multipart/form-data',
+                    },
+                }
+            );
+
+            if (result?.data?.status) {
+
+                SHOW_SUCCESS_TOAST('All documents uploaded successfully');
+
                 if (isFromApplicationStatus) {
                     props.navigation.navigate(SCREENS.ApplicationStatus.identifier);
                 } else {
-                    props.navigation.navigate(SCREENS.YearsOfExperience.identifier, {
-                        planDetails: planDetails,
-                    });
+                    props.navigation.navigate(
+                        SCREENS.YearsOfExperience.identifier,
+                        { planDetails }
+                    );
                 }
+
             } else {
-                SHOW_TOAST(result?.data?.message ?? '', 'error')
+                SHOW_TOAST(result?.data?.message || 'Upload failed', 'error');
             }
-            console.log('error==>', result?.data?.message)
-        }
-        catch (error: any) {
-            setLoading(false);
-            SHOW_TOAST(error?.message ?? '', 'error');
-            console.log(error?.message)
+
+        } catch (error: any) {
+            SHOW_TOAST(error?.message || 'Upload failed', 'error');
         } finally {
             setLoading(false);
         }

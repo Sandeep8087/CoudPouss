@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useState } from 'react';
+import React, { useContext, useEffect, useRef, useState } from 'react';
 import {
   View,
   StatusBar,
@@ -523,6 +523,7 @@ export default function ProfessionalHome(props: any) {
             </>
           )}
         </ScrollView>
+
       )}
       {isLoading && <ProgressView />}
     </View>
@@ -531,7 +532,7 @@ export default function ProfessionalHome(props: any) {
 
 const styles = (theme: ThemeContextType['theme']) =>
   StyleSheet.create({
-    container: {  flex:1.0,backgroundColor: theme.white },
+    container: { flex: 1.0, backgroundColor: theme.white },
     headerContainer: {
       flexDirection: 'row',
       marginHorizontal: getScaleSize(22),
@@ -548,6 +549,7 @@ const styles = (theme: ThemeContextType['theme']) =>
       height: getScaleSize(24),
       width: getScaleSize(24),
       alignSelf: 'center',
+      tintColor: '#6D6D6D'
     },
     profilePic: {
       height: getScaleSize(34),

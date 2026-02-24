@@ -98,7 +98,7 @@ export default function MyProfileProfessional(props: any) {
                   font={FONTS.Lato.Bold}
                   color={'#1D7885'}
                   style={{ alignSelf: 'center' }}>
-                  {profile?.customer_ratings?.overall_average ?? '0.0'}
+                  {profile?.customer_ratings?.average_rating ?? '0.0'}
                 </Text>
                 <Text
                   size={getScaleSize(12)}

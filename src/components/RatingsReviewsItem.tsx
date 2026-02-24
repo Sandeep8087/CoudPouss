@@ -39,7 +39,7 @@ export default function RatingsReviewsItem(props: any) {
                 {item?.profile_photo_url ?
                     <Image source={{ uri: item?.profile_photo_url }} style={styles(theme).profileIcon} />
                     :
-                    <View style={styles(theme).profileIcon} />
+                    <Image source={IMAGES.user_placeholder} style={styles(theme).profileIcon} />
                 }
                 <View style={{ flex: 1.0 }}>
                     <Text
@@ -146,7 +146,6 @@ const styles = (theme: ThemeContextType['theme']) => StyleSheet.create({
         width: getScaleSize(40),
         height: getScaleSize(40),
         borderRadius: getScaleSize(40),
-        backgroundColor: theme._D5D5D5,
         marginRight: getScaleSize(8),
     },
     starIcon: {
