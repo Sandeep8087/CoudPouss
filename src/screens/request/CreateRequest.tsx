@@ -21,7 +21,7 @@ import {
 import { FONTS, IMAGES } from '../../assets';
 
 //CONTEXT
-import { ThemeContext, ThemeContextType } from '../../context';
+import { AuthContext, ThemeContext, ThemeContextType } from '../../context';
 
 //CONSTANT
 import { formatDecimalInput, getScaleSize, SHOW_TOAST, useString } from '../../constant';
@@ -29,6 +29,7 @@ import { formatDecimalInput, getScaleSize, SHOW_TOAST, useString } from '../../c
 //COMPONENT
 import {
   AssistanceItems,
+  Button,
   CalendarComponent,
   CategoryDropdown,
   Header,
@@ -61,6 +62,7 @@ export default function CreateRequest(props: any) {
 
   const STRING = useString();
   const { theme } = useContext<any>(ThemeContext);
+  const { selectedAddress } = useContext<any>(AuthContext);
 
   const category = props.route.params?.category;
   const subCategory = props.route.params?.subCategory;
@@ -96,7 +98,6 @@ export default function CreateRequest(props: any) {
   const [secondProductImage, setSecondProductImage] = useState<any>(null);
   const [firstProductImageURL, setFirstProductImageURL] = useState<any>(null);
   const [secondProductImageURL, setSecondProductImageURL] = useState<any>(null);
-  const [address, setAddress] = useState('');
   const [addressError, setAddressError] = useState('')
   const [descriptionError, setDescriptionError] = useState('')
   const [firstImageError, setFirstImageError] = useState('')
@@ -153,10 +154,10 @@ export default function CreateRequest(props: any) {
       console.log('result', result.status, result)
       if (result.status) {
         console.log('allCategories==', result?.data?.data)
-          const sortedData: any = [...(result?.data?.data || [])].sort(
-            (a: any, b: any) =>
-              a.category_name?.toLowerCase().localeCompare(b.category_name?.toLowerCase())
-          );
+        const sortedData: any = [...(result?.data?.data || [])].sort(
+          (a: any, b: any) =>
+            a.category_name?.toLowerCase().localeCompare(b.category_name?.toLowerCase())
+        );
         setAllCategories(sortedData);
       } else {
         SHOW_TOAST(result?.data?.message ?? '', 'error')
@@ -321,18 +322,18 @@ export default function CreateRequest(props: any) {
         setSelectedProgress(4);
       }
     } else if (selectedProgress === 4) {
-      if (!address && !firstImageURL && !description) {
-        setAddressError('Please enter an address');
-        setFirstImageError('Please upload a photo');
+      if (!selectedAddress && !firstImageURL && !description) {
         setDescriptionError('Please enter a description');
+        setFirstImageError('Please upload a photo');
+        setAddressError('Please Select an address');
         return;
-      } else if (!address) {
-        setAddressError('Please enter an address');
+      } else if (!validateDescription()) {
         return;
       } else if (!firstImageURL) {
         SHOW_TOAST('Please upload a photo', 'error');
         return;
-      } else if (!validateDescription()) {
+      } else if (!selectedAddress) {
+        setAddressError('Please Select an address');
         return;
       } else {
         setSelectedProgress(5);
@@ -380,10 +381,18 @@ export default function CreateRequest(props: any) {
         setSelectedProgress(4);
       }
     } else if (selectedProgress === 4) {
-      if (!firstImageURL) {
-        SHOW_TOAST('Please upload a photo', 'error');
+      if (!description && !firstImageURL && !selectedAddress) {
+        setDescriptionError('Please enter a description');
+        setFirstImageError('Please upload a photo');
+        setAddressError('Please Select an address');
         return;
       } else if (!validateDescription()) {
+        return;
+      } else if (!firstImageURL) {
+        SHOW_TOAST('Please upload a photo', 'error');
+        return;
+      } else if (!selectedAddress) {
+        setAddressError('Please Select an address');
         return;
       } else {
         setSelectedProgress(5);
@@ -500,9 +509,7 @@ export default function CreateRequest(props: any) {
           sub_category_id: selectSubCategoryItem?.id,
           description: description.trim(),
           description_files: imageUrls,
-          service_address: address.trim(),
-          latitude: location?.latitude,
-          longitude: location?.longitude,
+          address_id: selectedAddress?.id,
           validation_amount: valuation,
           chosen_datetime: dateTime
         }
@@ -514,9 +521,7 @@ export default function CreateRequest(props: any) {
           description: description.trim(),
           description_files: imageUrls,
           chosen_datetime: dateTime,
-          service_address: address.trim(),
-          latitude: location?.latitude,
-          longitude: location?.longitude,
+          address_id: selectedAddress?.id,
           barter_product: {
             product_name: productName,
             quantity: Number(quantity),
@@ -942,7 +947,7 @@ export default function CreateRequest(props: any) {
             color={theme._939393}>
             {STRING.descriptionMessage}
           </Text>
-          
+
           <Text
             style={{ marginTop: getScaleSize(12) }}
             size={getScaleSize(17)}
@@ -1062,21 +1067,32 @@ export default function CreateRequest(props: any) {
             color={theme._939393}>
             {STRING.you_can_also_upload_a_video}
           </Text>
-          <View>
-            <Input
-            placeholder={'search address'}
-            placeholderTextColor={theme._939393}
-            inputTitle={STRING.enter_address}
-            inputColor={true}
-            searchBox={IMAGES.search}
-            continerStyle={{ marginTop: getScaleSize(12) }}
-            value={address}
-            onChangeText={(text: any) => {
-              setAddress(text);
-              setAddressError('');
-            }}
-            isError={addressError}
-          />
+          <View style={[styles(theme).addressContainer, { borderColor: addressError ? theme._EF5350 : theme._D5D5D5, }]}>
+            <Image source={IMAGES.home_unselected} style={styles(theme).addressIcon} />
+            <View style={{ flex: 1, alignSelf: 'flex-start' }}>
+              <Text
+                size={getScaleSize(18)}
+                font={FONTS.Lato.Medium}
+                color={theme._2B2B2B}>
+                {selectedAddress ?
+                  `${selectedAddress.banglo}, ${selectedAddress.city}, ${selectedAddress.state}, ${selectedAddress.postal_code}`
+                  : addressError ? addressError : '-'}
+              </Text>
+            </View>
+            <TouchableOpacity
+              activeOpacity={1}
+              style={styles(theme).selectAddressButton}
+              onPress={() => {
+                props.navigation.navigate(SCREENS.Address.identifier);
+              }}
+            >
+              <Text
+                size={getScaleSize(12)}
+                font={FONTS.Lato.Regular}
+                color={theme.white}>
+                {STRING.select_address}
+              </Text>
+            </TouchableOpacity>
           </View>
         </View>
       </ScrollView>
@@ -1642,4 +1658,31 @@ const styles = (theme: ThemeContextType['theme']) =>
       backgroundColor: theme._D6D6D6,
       width: getScaleSize(1),
     },
+    addressContainer: {
+      marginTop: getScaleSize(8),
+      borderWidth: 1,
+      borderRadius: getScaleSize(12),
+      paddingBottom: getScaleSize(14),
+      paddingTop: getScaleSize(12),
+      paddingHorizontal: getScaleSize(16),
+      flexDirection: 'row',
+      alignItems: 'flex-start',
+      flex: 1,
+    },
+    addressIcon: {
+      width: getScaleSize(24),
+      height: getScaleSize(24),
+      marginRight: getScaleSize(12),
+      tintColor: theme._2C6587,
+      marginTop: getScaleSize(6),
+    },
+    selectAddressButton: {
+      backgroundColor: theme.primary,
+      paddingVertical: getScaleSize(12),
+      paddingHorizontal: getScaleSize(16),
+      borderRadius: getScaleSize(12),
+      alignSelf: 'flex-start',
+      marginTop: getScaleSize(4),
+      marginLeft: getScaleSize(12),
+    }
   });

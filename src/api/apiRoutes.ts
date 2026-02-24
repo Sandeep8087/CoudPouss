@@ -78,7 +78,10 @@ const API_ROUTES = {
     onConfirmStart: "service_confirmation/service_accept/elder/confirm_start",
     onNotArrived: "service_confirmation/service_accept/elder/not_arrived",
     onRenegotiationAccept: "service_confirmation/service_accept/renegotiation/accept",
-    onRenegotiationDecline: "service_confirmation/service_accept/renegotiation/decline"
+    onRenegotiationDecline: "service_confirmation/service_accept/renegotiation/decline",
+    getSavedAddresses: "service_request/addresses/get_list",
+    onCreateAddress: "service_request/addresses/create",
+    onUpdateAddress: "service_request/addresses"
 } 
 
 export { API_ROUTES, API_BASE_URL, DISABLE_API_LOGS }

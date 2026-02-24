@@ -21,6 +21,7 @@ export function AuthProvider(props: Readonly<AuthProviderProps>): any {
   //professional, non_professional
   const [profile, setProfile] = useState<any>(null);
   const [selectedServices, setSelectedServices] = useState<any>([]);
+  const [selectedAddress, setSelectedAddress] = useState<any>(null);
 
   async function fetchProfile() {
     try {
@@ -51,6 +52,8 @@ export function AuthProvider(props: Readonly<AuthProviderProps>): any {
         fetchProfile,
         selectedServices,
         setSelectedServices,
+        selectedAddress,
+        setSelectedAddress,
       }}>
       {props.children}
     </AuthContext.Provider>

@@ -459,6 +459,20 @@ export const useString = () => {
     by_approving_the_updated_amount_will_be_placed_in_escrow: "By approving, the updated amount will be placed in escrow.",
     the_provider_has_reviewed_the_task_and_proposed_a_revised_budget_the_new_agreed_service_fee_is: "The provider has reviewed the task and proposed a revised budget. The new agreed service fee is:",
     add_service: "Add Service",
+    select_address: "Select Address",
+    saved_addresses: "Saved Addresses",
+    add_new_address: "Add New Address",
+    search_an_area_or_address: "Search an area or address",
+    confirm_and_proceed: 'Confirm & Proceed',
+    edit: 'Edit',
+    confirm_your_address: "Confirm your address",
+    save_address: "Save Address",
+    address_line_1: "Address Line 1",
+    city: "City",
+    state: "State",
+    country: "Country",
+    postal_code: "Postal Code",
+    edit_address: "Edit Address"
   };
 };
 
