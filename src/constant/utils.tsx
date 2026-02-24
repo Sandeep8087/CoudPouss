@@ -84,6 +84,11 @@ export const arrayIcons = {
   gardening: IMAGES.gardening,
 };
 
+export const isImageFile = (file: any) => {
+  const type = file?.nativeType || file?.type || '';
+  return type?.startsWith('image/');
+};
+
 export async function requestLocationPermission() {
   if (Platform.OS === 'ios') return true;
 

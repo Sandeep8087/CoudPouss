@@ -63,6 +63,8 @@ export default function ManageServices(props: any) {
 
             if (result.status) {
                 const serviceList = result?.data?.data?.services ?? [];
+
+                console.log('serviceList==>', JSON.stringify(result?.data?.data))
                 setServices(result?.data?.data ?? []);
 
                 if (!keepSelection || !selectedCategoryId) {
@@ -134,10 +136,16 @@ export default function ManageServices(props: any) {
                                 removeService(item.sub_category_id)
                             }
                             onEdit={(item: any) => {
+
+                                const subCategoryIds = services?.services?.flatMap((service: any) =>
+                                    service.subcategories.map((sub: any) => sub.sub_category_id)
+                                ) || [];
+
                                 props.navigation.navigate(SCREENS.AddServices.identifier, {
                                     isFromManageServices: true,
                                     isEdit: true,
-                                    categoryId: item,
+                                    categoryId: selectedCategoryId,
+                                    disableServicesIds: subCategoryIds,
                                 });
                             }}
                         />
@@ -186,9 +194,9 @@ export default function ManageServices(props: any) {
                         font={FONTS.Lato.Medium}
                         color={theme._737373}
                         style={{ marginHorizontal: getScaleSize(24) }}>
-                        {
-                            STRING.here_you_can_easily_manage_your_service_categories_each_additional_category_you_add_will_incur_a_monthly_fee_of
-                        }
+                        {profile?.user?.service_provider_type === 'professional' ?
+                            STRING.all_service_categories_are_included_in_your_plan_Add_as_many_as_you_need_all_included_in_subscription_plan
+                            : STRING.here_you_can_easily_manage_your_service_categories_each_additional_category_you_add_will_incur_a_monthly_fee_of}
                     </Text>
                     {services?.services?.length > 0 && (
                         <>
@@ -262,24 +270,33 @@ export default function ManageServices(props: any) {
             )}
             {profile?.has_purchased && (
                 <Button
-                    title={ services?.services?.length > 0 ? STRING.add_more_services : STRING.add_service}
+                    title={services?.services?.length > 0 ? STRING.add_more_services : STRING.add_service}
                     style={{
                         marginHorizontal: getScaleSize(24),
                         marginBottom: getScaleSize(24),
                     }}
                     onPress={() => {
                         if (profile?.user?.service_provider_type === 'professional') {
+                            const subCategoryIds = services?.services?.flatMap((service: any) =>
+                                service.subcategories.map((sub: any) => sub.sub_category_id)
+                            ) || [];
+
                             props.navigation.navigate(
                                 SCREENS.AddServices.identifier,
-                                { isFromManageServices: true }
+                                { isFromManageServices: true, disableServicesIds: subCategoryIds }
                             );
                         } else {
                             if (services?.services?.length > 0) {
                                 bottomSheetRef.current.open();
                             } else {
+
+                                const subCategoryIds = services?.services?.flatMap((service: any) =>
+                                    service.subcategories.map((sub: any) => sub.sub_category_id)
+                                ) || [];
+
                                 props.navigation.navigate(
                                     SCREENS.AddServices.identifier,
-                                    { isFromManageServices: true }
+                                    { isFromManageServices: true, disableServicesIds: subCategoryIds }
                                 );
                             }
                         }
@@ -299,8 +316,13 @@ export default function ManageServices(props: any) {
                 buttonTitle={STRING.proceed}
                 secondButtonTitle={STRING.cancel}
                 onPressButton={() => {
+
+                    const subCategoryIds = services?.services?.flatMap((service: any) =>
+                        service.subcategories.map((sub: any) => sub.sub_category_id)
+                    ) || [];
+
                     props.navigation.navigate(SCREENS.AddServices.identifier,
-                        { isFromManageServices: true }
+                        { isFromManageServices: true, disableServicesIds: subCategoryIds }
                     );
                     bottomSheetRef.current.close();
                 }}

@@ -102,6 +102,20 @@ const CalendarComponent = (props: any) => {
     year: 'numeric',
   });
 
+  const isPastDate = (day: number | null) => {
+    if (!day) return false;
+
+    const date = new Date(
+      currentDate.getFullYear(),
+      currentDate.getMonth(),
+      day
+    );
+
+    return moment(date).isBefore(
+      moment().startOf('day')
+    );
+  };
+
   return (
     <View style={styles(theme).container}>
       <View style={styles(theme).calenderHeader}>
@@ -153,9 +167,10 @@ const CalendarComponent = (props: any) => {
                 <View key={dayIndex} style={styles(theme).dayCell}>
                   {day ? (
                     <TouchableOpacity
+                      disabled={isPastDate(day)}
                       onPress={() => {
                         const date = new Date(currentDate.getFullYear(), currentDate.getMonth(), day);
-                        const currentDateMoment = moment().set({hour: 0, minute: 0, second: 0, millisecond: 0});
+                        const currentDateMoment = moment().set({ hour: 0, minute: 0, second: 0, millisecond: 0 });
                         if (moment(date).isBefore(currentDateMoment)) {
                           SHOW_TOAST('You cannot select a date in the past', 'error');
                           return;
@@ -166,6 +181,7 @@ const CalendarComponent = (props: any) => {
                       style={[
                         styles(theme).dayContainer,
                         isToday(day) && styles(theme).todayContainer,
+                        isPastDate(day) && styles(theme).disabledDayContainer,
                       ]}>
                       <Text
                         size={getScaleSize(14)}
@@ -295,6 +311,10 @@ const styles = (theme: ThemeContextType['theme']) =>
       // paddingHorizontal: getScaleSize(16),
       borderRadius: getScaleSize(18),
       backgroundColor: '#FBFBFB',
+    },
+    disabledDayContainer: {
+      backgroundColor: 'transparent',
+      opacity: 0.4,
     },
   });
 

@@ -410,7 +410,7 @@ export default function Notification(props: any) {
                   )}
                   {userType === 'elderly_user' && (
                     <>
-                      {item?.title === 'Provider reached on location' && (
+                      {item?.data?.event === "PROVIDER_REACHED" && (
                         <View style={styles(theme).buttonContainer}>
                           <TouchableOpacity
                             style={styles(theme).nextButtonContainer}

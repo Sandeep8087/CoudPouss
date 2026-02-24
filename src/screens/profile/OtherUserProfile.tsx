@@ -43,6 +43,7 @@ export default function OtherUserProfile(props: any) {
   const { theme } = useContext<any>(ThemeContext);
 
   const item = props?.route?.params?.item ?? {};
+  const providerId = props?.route?.params?.providerId ?? '';
 
   const [isLoading, setLoading] = useState(false);
   const [showMore, setShowMore] = useState(false);
@@ -58,10 +59,10 @@ export default function OtherUserProfile(props: any) {
 
     try {
       const params = {
-        user_id: item?.id,
+        user_id: providerId ? providerId : item?.id,
       }
 
-      console.log('item?.id,',item?.id,)
+      console.log('item?.id,', item?.id,)
       setLoading(true);
       const result = await API.Instance.post(API.API_ROUTES.otherUserProfile, params);
       if (result.status) {
@@ -395,9 +396,10 @@ export default function OtherUserProfile(props: any) {
               color={'#2C6587'}>
               {STRING.RecentWorksReviews}
             </Text>
-            {/* {(userProfile?.recent_works_and_reviews ?? []).map((item: any, index: number) => {
+            {(userProfile?.recent_works_and_reviews ?? []).map((item: any, index: number) => {
               return (
                 <RatingsReviewsItem
+                  item={item}
                   key={index}
                   itemContainer={{ marginTop: index === 0 ? getScaleSize(20) : getScaleSize(16) }}
                   onPressShowMore={() => {
@@ -406,7 +408,7 @@ export default function OtherUserProfile(props: any) {
                   showMore={showMore}
                 />
               );
-            })} */}
+            })}
           </View>
         }
         <View style={{ height: getScaleSize(32) }} />

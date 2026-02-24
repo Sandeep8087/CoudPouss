@@ -29,7 +29,9 @@ const Button = (props: ButtonProps) => {
   const { style, title, onPress, disabled } = props;
 
   return (
-    <TouchableOpacity onPress={onPress} style={[styles(theme).gradient, { backgroundColor: disabled ? theme._DFE8ED : theme._214C65 }, style]} activeOpacity={0.8}>
+    <TouchableOpacity 
+    onPress={onPress} 
+    style={[styles(theme).gradient, { backgroundColor: disabled ? theme._DFE8ED : theme._214C65 }, style]} activeOpacity={0.8}>
       <Text
         align="center"
         font={FONTS.Lato.Bold}

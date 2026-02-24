@@ -330,7 +330,7 @@ export default function ServiceConfirmed(props: any) {
               style={[styles(theme).newButton, { marginLeft: getScaleSize(6) }]}
               onPress={() => {
                 props.navigation.navigate(SCREENS.OtherUserProfile.identifier, {
-                  item: paymentDetails?.provider_id,
+                  providerId: paymentDetails?.provider_id ?? '',
                 });
               }}>
               <Text
