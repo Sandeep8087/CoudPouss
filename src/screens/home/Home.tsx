@@ -347,7 +347,7 @@ export default function Home(props: any) {
             color={theme._323232}>
             {STRING.ResentRequests}
           </Text>
-          {recentRequests?.length > 0 &&
+          {recentRequests?.length >= 2 &&
             <Text
               size={getScaleSize(16)}
               font={FONTS.Lato.Regular}
@@ -441,7 +441,7 @@ export default function Home(props: any) {
             </Text>
           </View>
         )}
-        <View style={{ height: TABBAR_HEIGHT }} />
+        {/* <View style={{ height: TABBAR_HEIGHT }} /> */}
       </ScrollView>
       {isLoading && <ProgressView />}
     </View>

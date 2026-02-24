@@ -260,7 +260,7 @@ export default function AddQuote(props: any) {
       setDescriptionError('Please enter short description');
     } else if (photoIds.length === 0) {
       setDocError('Please upload at least one document');
-    }  else {
+    } else {
       try {
         setLoading(true);
 

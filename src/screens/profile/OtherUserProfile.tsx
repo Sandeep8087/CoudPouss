@@ -61,7 +61,7 @@ export default function OtherUserProfile(props: any) {
         user_id: item?.id,
       }
 
-      console.log('item?.id,',item?.id,)
+      console.log('item?.id,', item?.id,)
       setLoading(true);
       const result = await API.Instance.post(API.API_ROUTES.otherUserProfile, params);
       if (result.status) {
@@ -455,6 +455,7 @@ const styles = (theme: ThemeContextType['theme']) =>
       borderRadius: 8,
       resizeMode: 'cover',
       marginTop: getScaleSize(18),
+      marginRight: getScaleSize(10)
     },
     ratingimage: {
       resizeMode: 'cover',

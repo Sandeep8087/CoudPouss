@@ -33,6 +33,7 @@ import { CommonActions } from '@react-navigation/native';
 import { API } from '../../api';
 import { launchImageLibrary } from 'react-native-image-picker';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
+import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 
 export default function AddPersonalDetails(props: any) {
 
@@ -284,172 +285,179 @@ export default function AddPersonalDetails(props: any) {
   }
 
   return (
-      <View style={styles(theme).container}>
-        <Header
-          onBack={() => {
-            props.navigation.goBack();
-          }}
-          screenName={STRING.add_personal_details}
-        />
-        <ScrollView showsVerticalScrollIndicator={false} style={{ flex: 1 }}>
-          <View style={styles(theme).mainContainer}>
-            <View style={styles(theme).imageContainer}>
-              {profileImage ? (
-                <Image
-                  source={{ uri: profileImage?.uri }}
-                  style={styles(theme).image}
-                />
-              ) : name.trim() ? (
-                <View style={styles(theme).image}>
-                  <Text
-                    size={getScaleSize(24)}
-                    font={FONTS.Lato.Regular}
-                    color={theme._262B43E5}>
-                    {getInitialName(name)}
-                  </Text>
-                </View>
-              ) : (
-                <Image
-                  source={IMAGES.user_placeholder}
-                  style={styles(theme).image}
-                  resizeMode="cover"
-                />
-              )}
-              <TouchableOpacity
-                onPress={() => {
-                  pickImage();
-                }}>
+    <View style={styles(theme).container}>
+      <Header
+        onBack={() => {
+          props.navigation.goBack();
+        }}
+        screenName={STRING.add_personal_details}
+      />
+      <KeyboardAwareScrollView
+        showsVerticalScrollIndicator={false}
+        enableOnAndroid={true}
+        extraScrollHeight={20}
+        keyboardShouldPersistTaps="handled"
+        contentContainerStyle={{
+          paddingBottom: 20,
+        }}
+      >
+        <View style={styles(theme).mainContainer}>
+          <View style={styles(theme).imageContainer}>
+            {profileImage ? (
+              <Image
+                source={{ uri: profileImage?.uri }}
+                style={styles(theme).image}
+              />
+            ) : name.trim() ? (
+              <View style={styles(theme).image}>
                 <Text
-                  size={getScaleSize(16)}
-                  font={FONTS.Lato.SemiBold}
-                  color={theme._2C6587}
-                  align="center">
-                  {STRING.upload_profile_picture}
+                  size={getScaleSize(24)}
+                  font={FONTS.Lato.Regular}
+                  color={theme._262B43E5}>
+                  {getInitialName(name)}
                 </Text>
-              </TouchableOpacity>
-            </View>
-            <Text
-              size={getScaleSize(18)}
-              font={FONTS.Lato.SemiBold}
-              color={theme._565656}
-              style={{ marginBottom: getScaleSize(16) }}>
-              {STRING.enter_profile_details}
-            </Text>
-            <Input
-              placeholder={STRING.enter_name}
-              placeholderTextColor={theme._939393}
-              inputTitle={STRING.name}
-              inputColor={true}
-              continerStyle={{ marginBottom: getScaleSize(16) }}
-              value={name}
-              maxLength={50}
-              onChangeText={text => {
-                // Remove emojis
-                const noEmoji = text.replace(
-                  /([\u2700-\u27BF]|[\uE000-\uF8FF]|[\uD83C-\uDBFF\uDC00-\uDFFF]+)/g,
-                  ''
-                );
-
-                // Allow only letters + space
-                const clean = noEmoji.replace(/[^A-Za-z ]/g, '');
-
-                // Allow single space only
-                const singleSpace = clean.replace(/\s+/g, ' ');
-
-                setName(singleSpace);
-                setNameError('');
-              }}
-              isError={nameError}
-            />
-            <Input
-              placeholder={STRING.enter_mobile_no}
-              placeholderTextColor={theme._939393}
-              inputTitle={STRING.mobile_no}
-              inputColor={true}
-              continerStyle={{ marginBottom: getScaleSize(16) }}
-              value={mobileNo}
-              // editable={!isPhoneNumber}
-              onChangeText={text => {
-                const digitsOnly = text.replace(/[^0-9]/g, '');
-                setMobileNo(digitsOnly);
-                setMobileNoError('');
-              }}
-              keyboardType="number-pad"
-              maxLength={10}
-              isError={mobileNoError}
-              countryCode={countryCode}
-              countryFlag={countryFlag}
-              onPressCountryCode={() => {
-                setVisibleCountry(true);
-              }}
-            />
-            <Input
-              placeholder={STRING.enter_email}
-              placeholderTextColor={theme._939393}
-              inputTitle={STRING.email}
-              inputColor={true}
-              containerStyle={{
-                opacity: 0.5,
-                backgroundColor: theme._F0EFF0,
-              }}
-              continerStyle={{ marginBottom: getScaleSize(16) }}
-              value={email}
-              editable={isEmail ? false : true}
-              onChangeText={text => {
-                setEmail(text);
-                setEmailError('');
-              }}
-              isError={emailError}
-            />
-            <Input
-              placeholder={STRING.enter_address}
-              placeholderTextColor={theme._939393}
-              inputTitle={STRING.address}
-              inputColor={true}
-              continerStyle={{ marginBottom: getScaleSize(16) }}
-              value={address}
-              maxLength={250}
-              onChangeText={text => {
-                const noEmoji = text.replace(
-                  /([\u2700-\u27BF]|[\uE000-\uF8FF]|[\uD83C-\uDBFF\uDC00-\uDFFF]+)/g,
-                  ''
-                );
-
-                const singleSpace = noEmoji.replace(/\s+/g, ' ');
-
-                setAddress(singleSpace);
-                setAddressError('');
-              }}
-              isError={addressError}
-            />
+              </View>
+            ) : (
+              <Image
+                source={IMAGES.user_placeholder}
+                style={styles(theme).image}
+                resizeMode="cover"
+              />
+            )}
+            <TouchableOpacity
+              onPress={() => {
+                pickImage();
+              }}>
+              <Text
+                size={getScaleSize(16)}
+                font={FONTS.Lato.SemiBold}
+                color={theme._2C6587}
+                align="center">
+                {STRING.upload_profile_picture}
+              </Text>
+            </TouchableOpacity>
           </View>
-        </ScrollView>
-        <Button
-          title={STRING.next}
-          style={{
-            marginVertical: getScaleSize(24),
-            marginHorizontal: getScaleSize(24),
-            marginBottom: insets.bottom > 0 ? insets.bottom : 16,
-          }}
-          onPress={() => {
-            onSignup();
-          }}
-        />
-        <SelectCountrySheet
-          height={getScaleSize(500)}
-          isVisible={visibleCountry}
-          onPress={(e: any) => {
-            console.log('e', e)
-            setCountryCode(e.dial_code);
-            setCountryFlag(e.flag);
-            setVisibleCountry(false);
-          }}
-          onClose={() => {
-            setVisibleCountry(false);
-          }}
-        />
-        {/* <SafeAreaView /> */}
-      </View>
+          <Text
+            size={getScaleSize(18)}
+            font={FONTS.Lato.SemiBold}
+            color={theme._565656}
+            style={{ marginBottom: getScaleSize(16) }}>
+            {STRING.enter_profile_details}
+          </Text>
+          <Input
+            placeholder={STRING.enter_name}
+            placeholderTextColor={theme._939393}
+            inputTitle={STRING.name}
+            inputColor={true}
+            continerStyle={{ marginBottom: getScaleSize(16) }}
+            value={name}
+            maxLength={50}
+            onChangeText={text => {
+              // Remove emojis
+              const noEmoji = text.replace(
+                /([\u2700-\u27BF]|[\uE000-\uF8FF]|[\uD83C-\uDBFF\uDC00-\uDFFF]+)/g,
+                ''
+              );
+
+              // Allow only letters + space
+              const clean = noEmoji.replace(/[^A-Za-z ]/g, '');
+
+              // Allow single space only
+              const singleSpace = clean.replace(/\s+/g, ' ');
+
+              setName(singleSpace);
+              setNameError('');
+            }}
+            isError={nameError}
+          />
+          <Input
+            placeholder={STRING.enter_mobile_no}
+            placeholderTextColor={theme._939393}
+            inputTitle={STRING.mobile_no}
+            inputColor={true}
+            continerStyle={{ marginBottom: getScaleSize(16) }}
+            value={mobileNo}
+            // editable={!isPhoneNumber}
+            onChangeText={text => {
+              const digitsOnly = text.replace(/[^0-9]/g, '');
+              setMobileNo(digitsOnly);
+              setMobileNoError('');
+            }}
+            keyboardType="number-pad"
+            maxLength={10}
+            isError={mobileNoError}
+            countryCode={countryCode}
+            countryFlag={countryFlag}
+            onPressCountryCode={() => {
+              setVisibleCountry(true);
+            }}
+          />
+          <Input
+            placeholder={STRING.enter_email}
+            placeholderTextColor={theme._939393}
+            inputTitle={STRING.email}
+            inputColor={true}
+            containerStyle={{
+              opacity: 0.5,
+              backgroundColor: theme._F0EFF0,
+            }}
+            continerStyle={{ marginBottom: getScaleSize(16) }}
+            value={email}
+            editable={isEmail ? false : true}
+            onChangeText={text => {
+              setEmail(text);
+              setEmailError('');
+            }}
+            isError={emailError}
+          />
+          <Input
+            placeholder={STRING.enter_address}
+            placeholderTextColor={theme._939393}
+            inputTitle={STRING.address}
+            inputColor={true}
+            continerStyle={{ marginBottom: getScaleSize(16) }}
+            value={address}
+            maxLength={250}
+            onChangeText={text => {
+              const noEmoji = text.replace(
+                /([\u2700-\u27BF]|[\uE000-\uF8FF]|[\uD83C-\uDBFF\uDC00-\uDFFF]+)/g,
+                ''
+              );
+
+              const singleSpace = noEmoji.replace(/\s+/g, ' ');
+
+              setAddress(singleSpace);
+              setAddressError('');
+            }}
+            isError={addressError}
+          />
+          <Button
+            title={STRING.next}
+            style={{
+              marginVertical: getScaleSize(24),
+              // marginHorizontal: getScaleSize(24),
+              marginBottom: insets.bottom > 0 ? insets.bottom : 16,
+            }}
+            onPress={() => {
+              onSignup();
+            }}
+          />
+        </View>
+      </KeyboardAwareScrollView>
+      <SelectCountrySheet
+        height={getScaleSize(500)}
+        isVisible={visibleCountry}
+        onPress={(e: any) => {
+          console.log('e', e)
+          setCountryCode(e.dial_code);
+          setCountryFlag(e.flag);
+          setVisibleCountry(false);
+        }}
+        onClose={() => {
+          setVisibleCountry(false);
+        }}
+      />
+    </View>
   );
 }
 
@@ -460,7 +468,7 @@ const styles = (theme: ThemeContextType['theme']) =>
       flex: 1.0,
     },
     mainContainer: {
-      flex: 1.0,
+      // flex: 1.0,
       marginHorizontal: getScaleSize(24),
       marginVertical: getScaleSize(18),
       // justifyContent: 'center',

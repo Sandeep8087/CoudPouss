@@ -66,7 +66,7 @@ export default function SubscriptionSuccessful(props: any) {
     return (
         <View style={styles(theme).container}>
             <Header
-                screenName={STRING.payment_method}
+                screenName={STRING.subscription_successful}
             />
             <ScrollView showsVerticalScrollIndicator={false}>
                 <View style={styles(theme).mainContainer}>

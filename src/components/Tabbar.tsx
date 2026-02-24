@@ -268,7 +268,9 @@ function Tabbar(props: any) {
         ]}
           resizeMode='cover'
           source={IMAGES.ic_tab_bar}>
-          {renderView()}
+          <SafeAreaView edges={['bottom']}>
+            {renderView()}
+          </SafeAreaView>
         </ImageBackground>
       </View>
     )
@@ -467,10 +469,10 @@ const styles = (theme: ThemeContextType['theme']) =>
     },
     mainView: {
       width: SCREEN_WIDTH,
-      position: 'absolute',
-      bottom: 0,
-      left: 0,
-      right: 0,
+      // position: 'absolute',
+      // bottom: 0,
+      // left: 0,
+      // right: 0,
     },
     tabContainer: {
       flexDirection: 'row',

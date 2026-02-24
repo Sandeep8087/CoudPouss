@@ -67,7 +67,7 @@ export default function BottomSheet(props: BottomSheetProps) {
                     backgroundColor: theme._77777733,
                 },
                 container: {
-                    height: height ? height : Dimensions.get('window').height * 0.4,
+                    height: Dimensions.get('window').height * 0.4,
                     borderTopLeftRadius: getScaleSize(24),
                     borderTopRightRadius: getScaleSize(24),
                     backgroundColor: theme.white,
