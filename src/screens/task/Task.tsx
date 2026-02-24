@@ -142,7 +142,7 @@ export default function Task(props: any) {
       hasMoreLoading: false,
     });
   };
-  
+
   async function getServiceDetails(serviceRequestId: string) {
     try {
       const result = await API.Instance.get(
@@ -249,7 +249,7 @@ export default function Task(props: any) {
 
   return (
     <View style={[styles(theme).container,
-    { paddingTop: Platform.OS === 'android' ? insets.bottom : 0 }
+    { paddingTop: insets.top }
     ]}>
       <Text
         size={getScaleSize(24)}

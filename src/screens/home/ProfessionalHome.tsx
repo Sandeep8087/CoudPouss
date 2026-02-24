@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useState } from 'react';
+import React, { useContext, useEffect, useRef, useState } from 'react';
 import {
   View,
   StatusBar,
@@ -537,6 +537,7 @@ export default function ProfessionalHome(props: any) {
           </ImageBackground>
           {renderServiceRequestView()}
         </ScrollView>
+
       )}
       {isLoading && <ProgressView />}
     </View>
@@ -562,6 +563,7 @@ const styles = (theme: ThemeContextType['theme']) =>
       height: getScaleSize(24),
       width: getScaleSize(24),
       alignSelf: 'center',
+      tintColor: '#6D6D6D'
     },
     profilePic: {
       height: getScaleSize(34),

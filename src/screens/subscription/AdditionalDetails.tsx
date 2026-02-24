@@ -6,7 +6,7 @@ import { ThemeContext, ThemeContextType } from '../../context';
 
 //CONSTANT & ASSETS
 import { FONTS, IMAGES } from '../../assets';
-import { getScaleSize, useString, SHOW_TOAST, isImageFile } from '../../constant';
+import { getScaleSize, useString, SHOW_TOAST, isImageFile, SHOW_SUCCESS_TOAST } from '../../constant';
 
 //SCREENS
 import { SCREENS } from '..';
@@ -39,16 +39,27 @@ export default function AdditionalDetails(props: any) {
     const pickDocument = async (type: string) => {
         try {
             const result = await pick({
-                type: [types.allFiles],
+                type: [types.images, types.pdf],
             });
+
+            const file: any = result?.[0];
+
+            const allowedTypes = ['image/jpeg', 'image/png', 'application/pdf'];
+
+            if (!allowedTypes.includes(file?.type)) {
+                SHOW_TOAST('Only JPG, PNG or PDF files are allowed', 'error');
+                return;
+            }
 
             if (type === 'id') {
                 setCopyOfId(result);
             } else if (type === 'kbis') {
                 setKbisExtract(result);
+
             } else if (type === 'address_proof') {
                 setProofOfResidence(result);
             }
+
         } catch (err) {
             if (isErrorWithCode(err) && err.code === errorCodes.OPERATION_CANCELED) {
                 console.log('User cancelled');
@@ -58,54 +69,75 @@ export default function AdditionalDetails(props: any) {
         }
     };
 
-    console.log('copyOfId', copyOfId)
-    console.log('kbisExtract', kbisExtract)
-    console.log('proofOfResidence', proofOfResidence)
-
     async function uploadDocuments() {
         if (copyOfId?.length === 0 || kbisExtract?.length === 0 || proofOfResidence?.length === 0) {
             SHOW_TOAST('Please upload all the required documents', 'error')
             return;
         }
-        try {
-            const formData = new FormData();
-            formData.append('id_document', {
-                uri: copyOfId?.[0]?.uri,
-                name: copyOfId?.[0]?.name,
-                type: copyOfId?.[0]?.type,
-            });
-            formData.append('kbis_extract', {
-                uri: kbisExtract?.[0]?.uri,
-                name: kbisExtract?.[0]?.name,
-                type: kbisExtract?.[0]?.type,
-            });
-            formData.append('proof_of_residence', {
-                uri: proofOfResidence?.[0]?.uri,
-                name: proofOfResidence?.[0]?.name,
-                type: proofOfResidence?.[0]?.type,
-            });
-            console.log('formData==>', formData)
-            setLoading(true);
-            const result = await API.Instance.post(API.API_ROUTES.uploadDocuments, formData, {
-                headers: {
-                    'Content-Type': 'multipart/form-data',
-                },
-            });
-            setLoading(false);
-            console.log('result', result.status, result)
-            if (result.status) {
-                props.navigation.navigate(SCREENS.YearsOfExperience.identifier, {
-                    planDetails: planDetails,
-                });
-            } else {
-                SHOW_TOAST(result?.data?.message ?? '', 'error')
-            }
-            console.log('error==>', result?.data?.message)
+        const errors: string[] = [];
+
+        if (!copyOfId?.length) {
+            errors.push('ID document is required');
         }
-        catch (error: any) {
-            setLoading(false);
-            SHOW_TOAST(error?.message ?? '', 'error');
-            console.log(error?.message)
+
+        if (!kbisExtract?.length) {
+            errors.push('KBIS extract is required');
+        }
+
+        if (!proofOfResidence?.length) {
+            errors.push('Proof of residence is required');
+        }
+
+        // If there are errors, show them all at once
+        if (errors.length > 0) {
+            SHOW_TOAST(errors.join('\n'), 'error');
+            return
+        }
+
+        try {
+            setLoading(true);
+
+            const formData = new FormData();
+
+            formData.append('id_document', {
+                uri: copyOfId[0].uri,
+                name: copyOfId[0].name,
+                type: copyOfId[0].type,
+            });
+
+            formData.append('kbis_extract', {
+                uri: kbisExtract[0].uri,
+                name: kbisExtract[0].name,
+                type: kbisExtract[0].type,
+            });
+
+            formData.append('proof_of_residence', {
+                uri: proofOfResidence[0].uri,
+                name: proofOfResidence[0].name,
+                type: proofOfResidence[0].type,
+            });
+
+            const result = await API.Instance.post(
+                API.API_ROUTES.uploadDocuments,
+                formData,
+                {
+                    headers: {
+                        'Content-Type': 'multipart/form-data',
+                    },
+                }
+            );
+            if (result?.data?.status) {
+                SHOW_SUCCESS_TOAST('All documents uploaded successfully');
+                props.navigation.navigate(
+                    SCREENS.YearsOfExperience.identifier,
+                    { planDetails }
+                );
+            } else {
+                SHOW_TOAST(result?.data?.message || 'Upload failed', 'error');
+            }
+
+        } catch (error: any) {
+            SHOW_TOAST(error?.message || 'Upload failed', 'error');
         } finally {
             setLoading(false);
         }
@@ -160,8 +192,7 @@ export default function AdditionalDetails(props: any) {
                                     {STRING.upload_from_device}
                                 </Text>
                             </>
-                        )}
-
+                        )} 
                     </TouchableOpacity>
                     <Text size={getScaleSize(17)}
                         font={FONTS.Lato.Medium}
@@ -318,5 +349,6 @@ const styles = (theme: ThemeContextType['theme']) =>
         imageIcon: {
             width: getScaleSize(100),
             height: getScaleSize(100),
+            resizeMode: 'contain',
         }
     });

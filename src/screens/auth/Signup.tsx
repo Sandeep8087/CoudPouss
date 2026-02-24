@@ -16,6 +16,7 @@ import { Header, Input, Text, Button, SelectCountrySheet } from '../../component
 import { CommonActions } from '@react-navigation/native';
 import { API } from '../../api';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 
 export default function Signup(props: any) {
 
@@ -94,11 +95,11 @@ export default function Signup(props: any) {
                             props.navigation.navigate(SCREENS.CreatePassword.identifier, {
                                 email: email,
                             })
-                        }else if (result?.data?.message == 'Password already set. Redirect to Details page.') {
+                        } else if (result?.data?.message == 'Password already set. Redirect to Details page.') {
                             props.navigation.navigate(SCREENS.AddPersonalDetails.identifier, {
                                 email: email,
                             })
-                        }else {
+                        } else {
                             SHOW_TOAST(result?.data?.message ?? '', 'error')
                         }
                     } else {
@@ -115,17 +116,17 @@ export default function Signup(props: any) {
     }
 
     return (
-        <KeyboardAvoidingView
-            style={{ flex: 1 }}
-            behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-            keyboardVerticalOffset={
-                Platform.OS === 'ios'
-                    ? insets.top
-                    : 0
-            }
-        >
-            <View style={styles(theme).container}>
-                <Header />
+        <View style={styles(theme).container}>
+            <Header />
+            <KeyboardAwareScrollView
+                showsVerticalScrollIndicator={false}
+                enableOnAndroid={true}
+                extraScrollHeight={20}
+                keyboardShouldPersistTaps="handled"
+                contentContainerStyle={{
+                    paddingBottom: 20,
+                }}
+            >
                 <View style={styles(theme).mainContainer}>
                     <Image source={IMAGES.ic_logo} style={styles(theme).logo} />
                     <Text
@@ -208,7 +209,8 @@ export default function Signup(props: any) {
                         </Text>
                     </Text>
                 </View>
-                {/* <SelectCountrySheet
+            </KeyboardAwareScrollView>
+            {/* <SelectCountrySheet
                 height={getScaleSize(500)}
                 isVisible={visibleCountry}
                 onPress={(e: any) => {
@@ -220,8 +222,7 @@ export default function Signup(props: any) {
                     setVisibleCountry(false);
                 }}
             /> */}
-            </View>
-        </KeyboardAvoidingView>
+        </View>
     );
 }
 

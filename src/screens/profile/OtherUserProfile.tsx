@@ -457,6 +457,7 @@ const styles = (theme: ThemeContextType['theme']) =>
       borderRadius: 8,
       resizeMode: 'cover',
       marginTop: getScaleSize(18),
+      marginRight: getScaleSize(10)
     },
     ratingimage: {
       resizeMode: 'cover',

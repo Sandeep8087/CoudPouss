@@ -142,10 +142,10 @@ export default function SelectedPlanDetails(props: any) {
                     title={STRING.subscribe}
                     style={{ flex: 1.0 }}
                     onPress={() => {
-                        props.navigation.navigate(SCREENS.PaymentMethod.identifier, {
-                            planDetails: planDetails,
-                            isFromSubscriptionButton: isFromSubscriptionButton
-                        });
+                        // props.navigation.navigate(SCREENS.PaymentMethod.identifier, {
+                        //     planDetails: planDetails,
+                        //     isFromSubscriptionButton: isFromSubscriptionButton
+                        // });
                     }}
                 />
             </View>

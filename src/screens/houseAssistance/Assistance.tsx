@@ -184,7 +184,7 @@ export default function Assistance(props: any) {
               //     source={{ uri: bannerData?.url }}
               //   />
               // </TouchableOpacity>
-              <View style={styles(theme).bannerWrapper}>
+              <View>
                 <Image
                   style={styles(theme).bannerContainer}
                   resizeMode="cover"
@@ -382,13 +382,9 @@ const styles = (theme: ThemeContextType['theme']) =>
       flex: 1.0,
       borderRadius: getScaleSize(20),
     },
-    bannerWrapper: {
-      marginVertical: getScaleSize(20),
-      marginHorizontal: getScaleSize(24),
-    },
     bookNowButton: {
       position: 'absolute',
-      bottom: getScaleSize(30),
+      bottom: getScaleSize(35),
       left: getScaleSize(32),
       paddingHorizontal: getScaleSize(20),
       paddingVertical: getScaleSize(10),

@@ -282,7 +282,7 @@ export default function BottomSheet(props: BottomSheetProps) {
                         <View style={styles(theme).addressView}>
                             <Image source={IMAGES.pin} style={styles(theme).locationIcon} />
                             <Text
-                                style={{flex: 1}}
+                                style={{ flex: 1 }}
                                 size={getScaleSize(18)}
                                 font={FONTS.Lato.Medium}
                                 color={theme._555555}>
@@ -378,7 +378,7 @@ const styles = (theme: ThemeContextType['theme']) =>
             marginRight: getScaleSize(12),
             marginTop: getScaleSize(5),
         },
-        addressView:{
+        addressView: {
             flexDirection: 'row',
             marginVertical: getScaleSize(24),
         }

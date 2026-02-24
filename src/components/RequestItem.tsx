@@ -24,7 +24,7 @@ function RequestItem(props: any) {
   const STRING = useString();
   const { theme } = useContext(ThemeContext);
 
-  const { item, selectedFilter } = props;
+  const { item, selectedFilter, isFromSearch } = props;
 
   function getStatus(status: any) {
     if (status === 'open') {
@@ -94,7 +94,7 @@ function RequestItem(props: any) {
               size={getScaleSize(16)}
               font={FONTS.Lato.SemiBold}
               color={theme._F0B52C}>
-              {getStatus(item?.status)}
+              {isFromSearch === true ? getStatus(item?.task_status) : getStatus(item?.status)}
             </Text>
           </View>
         )}

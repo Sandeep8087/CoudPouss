@@ -47,7 +47,7 @@ export default function Search(props: any) {
     const abortControllerRef = useRef<AbortController | undefined>(undefined);
 
     useEffect(() => {
-        if (searchDebouncedText) {
+        if (searchDebouncedText.trim().length > 0) {
             getSearchData();
         } else {
             setSearchData([]);
@@ -66,7 +66,7 @@ export default function Search(props: any) {
             }
             const abortController = new AbortController();
             abortControllerRef.current = abortController;
-            const result = await API.Instance.get(API.API_ROUTES.getHomeData + `?search=${searchText}`);
+            const result = await API.Instance.get(API.API_ROUTES.getHomeData + `?search=${searchDebouncedText.trim()}`);
             console.log('result', result.status, result)
             if (result.status) {
                 console.log('searchData==', result?.data?.data)
@@ -98,7 +98,16 @@ export default function Search(props: any) {
                         value={searchText}
                         onChangeText={(text: any) => {
                             setSearchText(text);
-                            debouncedSearch(text);
+
+                            const trimmed = text.trim();
+
+                            if (trimmed.length === 0) {
+                                setSearchDebouncedText('');
+                                setSearchData([]);
+                                return;
+                            }
+
+                            debouncedSearch(trimmed);
                         }} />
                 </View>
                 <FlatList
@@ -113,6 +122,7 @@ export default function Search(props: any) {
                         <RequestItem
                             selectedFilter={typeof searchText === 'string' ? { id: '1', title: 'All', filter: 'all' } : null}
                             key={index}
+                            isFromSearch={true}
                             onPress={() => {
                                 props.navigation.navigate(SCREENS.RequestDetails.identifier, {
                                     item: item
