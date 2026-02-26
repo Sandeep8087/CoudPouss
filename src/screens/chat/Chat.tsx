@@ -34,10 +34,10 @@ export default function Chat(props: any) {
   const [searchQuery, setSearchQuery] = useState('');
   const [_isLoading, setIsLoading] = useState(false);
 
-  const [filteredDataSource, setFilteredDataSource] = useState<any[]>([]);
+  const [filteredDataSource, setFilteredDataSource] = useState<any>([]);
   const [filteredNegotiationDataSource, setFilteredNegotiationDataSource] =
-    useState<any[]>([]);
-  const [masterDataSource, setMasterDataSource] = useState<any[]>([]);
+    useState<any>([]);
+  const [masterDataSource, setMasterDataSource] = useState<any>([]);
   const [masterNegotiationDataSource, setMasterNegotiationDataSource] =
     useState<any[]>([]);
   const [selectedTab, setSelectedTab] = useState('chat');
@@ -80,7 +80,6 @@ export default function Chat(props: any) {
         style={styles(theme).itemContainer}
         activeOpacity={1}
         onPress={() => {
-          console.log('item==>', item);
           props.navigation.navigate(SCREENS.ChatDetails.identifier, {
             conversationId: item._id,
             peerUser: {
@@ -114,14 +113,16 @@ export default function Chat(props: any) {
             {item.message}
           </Text>
         </View>
-        <View style={styles(theme).messageContainer}>
-          <Text
-            size={getScaleSize(12)}
-            font={FONTS.Lato.Medium}
-            color={theme.white}>
-            {'1'}
-          </Text>
-        </View>
+        {item.readCount > 0 && (
+          <View style={styles(theme).messageContainer}>
+            <Text
+              size={getScaleSize(12)}
+              font={FONTS.Lato.Medium}
+              color={theme.white}>
+              {`${item.readCount}`}
+            </Text>
+          </View>
+        )}
       </TouchableOpacity>
     );
   };

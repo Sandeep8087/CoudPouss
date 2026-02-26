@@ -29,7 +29,12 @@ import {Text} from '../../components';
 
 //PACKAGES
 import {useFocusEffect} from '@react-navigation/native';
-import {messagesListThread, userMessage} from '../../services/chat';
+import {
+  getReadCount,
+  messagesListThread,
+  updateReadCount,
+  userMessage,
+} from '../../services/chat';
 import {FirebaseFirestoreTypes} from '@react-native-firebase/firestore';
 
 export default function ChatDetails(props: any) {
@@ -70,10 +75,12 @@ export default function ChatDetails(props: any) {
       }
     }, [theme.white]),
   );
+  useEffect(() => {}, []);
 
   useEffect(() => {
     // chat found, so we need to get the messages
     setCommanId(props.route.params.conversationId);
+    updateReadCount(profile?.user?.id, commanId);
     const unsubscribe = messagesListThread(
       props.route.params.conversationId,
     ).onSnapshot(querySnapshot => {
@@ -94,7 +101,7 @@ export default function ChatDetails(props: any) {
     };
   }, []);
 
-  const handleSendMessage = () => {
+  const handleSendMessage = async () => {
     if (!message.trim()) {
       SHOW_TOAST('Please enter a message', 'error');
       return;
@@ -104,20 +111,22 @@ export default function ChatDetails(props: any) {
     if (!profile?.user?.id || !commanId) {
       throw new Error('Chat not initialized');
     }
-    userMessage(
-      '',
+    const readCount = await getReadCount(peerUserId, commanId);
+
+    await userMessage(
       profile?.user?.id,
       profile?.user?.first_name || 'User',
       peerUserId,
       peerUserName,
       commanId,
-      {
-        type: 'TEXT',
-        text: message,
-      },
+      message,
       profile?.user?.profile_photo_url || '',
       peerUserAvatar,
+      'TEXT',
+      readCount + 1,
     );
+
+    await updateReadCount(profile?.user?.id, commanId);
     setMessage('');
   };
 

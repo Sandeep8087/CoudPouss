@@ -89,24 +89,18 @@ export const createNewThread = (
    Single User Message
 ========================= */
 export const userMessage = async (
-  serviceId: string,
   userId: string,
   userName: string,
   recipientId: string,
   recipientName: string,
   conversationId: string,
-  payload: {
-    type: string;
-    text: string;
-    negotiation: NegotiationPayload;
-  },
+  text: string,
   userPhoto: string,
   recipientPhoto: string,
+  type: string,
+  readCount: number,
 ): Promise<any> => {
-  const previewMessage =
-    payload.type === 'TEXT'
-      ? payload.text
-      : `Negotiation: ${payload.negotiation?.currentAmount}`;
+
 
   return await firestore()
     .collection('Users')
@@ -115,15 +109,14 @@ export const userMessage = async (
     .doc(conversationId)
     .set(
       {
-        message: previewMessage,
+        message: text,
         createdAt: new Date().getTime(),
-        readCount: 'true',
+        readCount: readCount || 0,
         user: {
           userId: userId,
           name: recipientName,
           recipientId: recipientId,
           recipientPhoto: recipientPhoto,
-          chatVisible: 'single',
         },
       },
       { merge: true },
@@ -136,93 +129,34 @@ export const userMessage = async (
         .doc(conversationId)
         .set(
           {
-            message: previewMessage,
+            message: text,
             createdAt: new Date().getTime(),
-            readCount: 'false',
+            readCount: readCount || 0,
             user: {
               userId: userId,
               name: userName,
               recipientId: userId,
               recipientPhoto: userPhoto,
-              chatVisible: 'single',
             },
           },
           { merge: true },
         );
     })
     .then(() => {
-      if (payload.type === 'NEGOTIATION') {
-        return firestore()
-          .collection('MESSAGES')
-          .doc(conversationId)
-          .set({
-            latestMessageId: '1',
-            offers: payload.negotiation?.offers || [],
-          }, { merge: true },)
-          .then(() => {
-            return firestore()
-              .collection('MESSAGES')
-              .doc(conversationId)
-              .collection('MESSAGE_THREADS')
-              .add({
-                senderId: userId || '',
-                receiverId: recipientId || '',
-                text: payload.text || '',
-                serviceId: serviceId,
-                negotiation: payload.negotiation || null,
-                createdAt: new Date().getTime(),
-                type: payload.type || '',
-              });
-          });
-      } else {
-        return firestore()
-          .collection('MESSAGES')
-          .doc(conversationId)
-          .collection('MESSAGE_THREADS')
-          .add({
-            senderId: userId || '',
-            receiverId: recipientId || '',
-            text: payload.text || '',
-            serviceId: serviceId,
-            negotiation: payload.negotiation || null,
-            createdAt: new Date().getTime(),
-            type: payload.type || '',
-          });
-      }
+      return firestore()
+        .collection('MESSAGES')
+        .doc(conversationId)
+        .collection('MESSAGE_THREADS')
+        .add({
+          senderId: userId || '',
+          receiverId: recipientId || '',
+          text: text || '',
+          type: type || '',
+          createdAt: new Date().getTime(),
+        });
     });
 };
 
-
-type NegotiationPayload = {
-  serviceId: string;
-  serviceName: string;
-  status: "PENDING" | "ACCEPTED" | "REJECTED";
-  currentTurn: string;
-  currentAmount: number;
-  initialQuote: number;
-  originalValuation?: number;
-  createdBy: string;
-  createdAt: number;
-  latestMessageId: string;
-  offers: {
-    amount: number;
-    by: string;
-    label?: string;
-    userName?: string;
-    createdAt: number;
-  }[];
-};
-
-export const getNegotiationFieldData = async (conversationId: string) => {
-  const docSnap = await firestore()
-    .collection('MESSAGES')
-    .doc(conversationId)
-    .get();
-
-  if (docSnap.exists) {
-    return docSnap.data();
-  }
-};
 /* =========================
    Listeners
 ========================= */
@@ -252,6 +186,35 @@ export const isThreadExists = async (threadId: string) => {
 
   return docSnap.docs.length > 0 ? '1' : '0';
 };
+
+export const getReadCount = async (userId: string, conversationId: string) => {
+  const docSnap = await firestore()
+    .collection('Users')
+    .doc(userId)
+    .collection('MESSAGES')
+    .doc(conversationId)
+    .get();
+
+  return docSnap.exists ? docSnap.data()?.readCount || 0 : 0;
+};
+
+export const updateReadCount = async (recipientId: string, conversationId: string) => {
+  return await firestore()
+    .collection('Users')
+    .doc(recipientId)
+    .collection('MESSAGES')
+    .doc(conversationId)
+    .set(
+      {
+
+        createdAt: new Date().getTime(),
+        readCount: 0,
+
+      },
+      { merge: true },
+    );
+};
+
 // export const getPrividerbyId = async (providerId: string) => {
 //   return await firestore()
 //     .collection('Users')
