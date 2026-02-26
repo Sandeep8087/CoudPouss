@@ -64,12 +64,12 @@ import ServiceCancelled from './request/ServiceCancelled';
 import Search from './home/Search';
 import WebViewScreen from './WebViewScreen';
 import MapView from './task/MapView';
-import NegotiationDetails from './chat/NegotiationDetails';
 import TransactionsElder from './profile/TransactionsElder';
 import Language from './profile/language';
 import Address from './request/Address';
 import AddressMapScreen from './request/AddressMapScreen';
 import EditAddress from './request/EditAddress';
+import NegotiationDetails from './chat/NegotiationDetails';
 
 export const SCREENS = {
   Splash: {
@@ -301,10 +301,6 @@ export const SCREENS = {
     identifier: 'MapView',
     component: MapView,
   },
-  NegotiationDetails: {
-    identifier: 'NegotiationDetails',
-    component: NegotiationDetails,
-  },
   Language: {
     identifier: 'Language',
     component: Language,
@@ -320,6 +316,10 @@ export const SCREENS = {
   EditAddress: {
     identifier: 'EditAddress',
     component: EditAddress,
+  },
+  NegotiationDetails: {
+    identifier: 'NegotiationDetails',
+    component: NegotiationDetails,
   },
 };
 

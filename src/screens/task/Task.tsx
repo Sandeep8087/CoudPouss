@@ -22,11 +22,10 @@ import {getScaleSize, SHOW_TOAST, useString} from '../../constant';
 import {Header, TaskItem, Text} from '../../components';
 
 //PACKAGES
-
-import {buildThreadId} from '../../services/chat';
 import {SCREENS} from '..';
 import {API} from '../../api';
 import {useIsFocused} from '@react-navigation/native';
+import {buildThreadId} from '../../services/chat';
 
 export default function Task(props: any) {
   const STRING = useString();

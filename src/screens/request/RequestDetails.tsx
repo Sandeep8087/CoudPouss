@@ -49,11 +49,10 @@ import {API} from '../../api';
 
 //PACKAGES
 import moment from 'moment';
-
-import {buildThreadId} from '../../services/chat';
 import {EventRegister} from 'react-native-event-listeners';
 import {CommonActions} from '@react-navigation/native';
 import Video from 'react-native-video';
+import {buildThreadId} from '../../services/chat';
 import {
   getNegotiationFieldData,
   userNegotiationMessage,
@@ -383,6 +382,8 @@ export default function RequestDetails(props: any) {
         return null;
     }
   };
+
+  console.log('serviceDetails', JSON.stringify(serviceDetails));
   const handleStartNegotiation = async () => {
     if (!serviceDetails?.provider?.id) return;
     if (!newQuoteAmount || Number(newQuoteAmount) <= 0) return;
@@ -717,21 +718,32 @@ export default function RequestDetails(props: any) {
               <TouchableOpacity
                 style={styles(theme).negociateButton}
                 activeOpacity={1}
-                onPress={() => {
+                onPress={async () => {
                   const conversationId = buildThreadId(
                     profile?.user?.id,
-
-                    serviceDetails?.provider?.id,
+                    serviceDetails?.service_id,
                   );
-                  props.navigation.navigate(SCREENS.ChatDetails.identifier, {
-                    conversationId: conversationId,
-                    peerUser: {
-                      user_id: serviceDetails?.provider?.id,
-                      name: serviceDetails?.provider?.full_name,
-                      email: serviceDetails?.provider?.email,
-                      avatarUrl: serviceDetails?.provider?.profile_photo_url,
-                    },
-                  });
+                  const negotiationFieldData =
+                    await getNegotiationFieldData(conversationId);
+                  if (negotiationFieldData) {
+                    props.navigation.navigate(
+                      SCREENS.NegotiationDetails.identifier,
+                      {
+                        conversationId: conversationId,
+                        peerUser: {
+                          user_id: serviceDetails?.provider?.id,
+                          name: serviceDetails?.provider?.full_name,
+                          email: serviceDetails?.provider?.email,
+                          avatarUrl:
+                            serviceDetails?.provider?.profile_photo_url,
+                        },
+                      },
+                    );
+                  } else {
+                    setNewQuoteAmount('');
+                    setNewQuoteAmountError('');
+                    setShowOfferModal(true);
+                  }
                 }}>
                 <Text
                   size={getScaleSize(14)}
@@ -820,32 +832,20 @@ export default function RequestDetails(props: any) {
                   styles(theme).newButton,
                   {marginRight: getScaleSize(6)},
                 ]}
-                onPress={async () => {
+                onPress={() => {
                   const conversationId = buildThreadId(
                     profile?.user?.id,
-                    serviceDetails?.service_id,
+                    serviceDetails?.provider?.id,
                   );
-                  const negotiationFieldData =
-                    await getNegotiationFieldData(conversationId);
-                  if (negotiationFieldData) {
-                    props.navigation.navigate(
-                      SCREENS.NegotiationDetails.identifier,
-                      {
-                        conversationId: conversationId,
-                        peerUser: {
-                          user_id: serviceDetails?.provider?.id,
-                          name: serviceDetails?.provider?.full_name,
-                          email: serviceDetails?.provider?.email,
-                          avatarUrl:
-                            serviceDetails?.provider?.profile_photo_url,
-                        },
-                      },
-                    );
-                  } else {
-                    setNewQuoteAmount('');
-                    setNewQuoteAmountError('');
-                    setShowOfferModal(true);
-                  }
+                  props.navigation.navigate(SCREENS.ChatDetails.identifier, {
+                    conversationId: conversationId,
+                    peerUser: {
+                      user_id: serviceDetails?.provider?.id,
+                      name: serviceDetails?.provider?.full_name,
+                      email: serviceDetails?.provider?.email,
+                      avatarUrl: serviceDetails?.provider?.profile_photo_url,
+                    },
+                  });
                 }}>
                 <Text
                   size={getScaleSize(14)}
