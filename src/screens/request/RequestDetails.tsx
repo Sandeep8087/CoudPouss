@@ -852,6 +852,7 @@ export default function RequestDetails(props: any) {
                       key={index}
                       item={item}
                       index={index}
+                      securityCode={serviceDetails?.security_code ?? ''}
                       isLast={index === serviceDetails?.lifecycle?.length - 1}
                     />
                   ))}

@@ -38,7 +38,7 @@ export default function RenegotiationSheet(props: RenegotiationProps) {
     const { theme } = useContext<any>(ThemeContext);
 
     const STRING = useString();
-    const { onRef, onProcessPress, onClose, newQuoteAmount, type, newQuoteAmountError, onChangeNewQuoteAmount, item } = props;
+    const { onRef, onProcessPress, onClose, newQuoteAmount, type, newQuoteAmountError, onChangeNewQuoteAmount, item, height } = props;
 
     return (
         <RBSheet
@@ -52,7 +52,7 @@ export default function RenegotiationSheet(props: RenegotiationProps) {
                     backgroundColor: theme._77777733,
                 },
                 container: {
-                    height: getScaleSize(580),
+                    height: height ? height : getScaleSize(580),
                     borderTopLeftRadius: getScaleSize(24),
                     borderTopRightRadius: getScaleSize(24),
                     backgroundColor: theme.white,

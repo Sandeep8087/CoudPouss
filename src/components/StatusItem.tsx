@@ -12,7 +12,7 @@ const StatusItem = (props: any) => {
   const STRING = useString();
   const { theme } = useContext<any>(ThemeContext);
 
-  const { item, isLast, isPaymentReceived, taskStatusData } = props;
+  const { item, isLast, isPaymentReceived, taskStatusData, securityCode } = props;
 
   const isProcessing =
     isPaymentReceived === false &&
@@ -29,6 +29,10 @@ const StatusItem = (props: any) => {
       if (isProcessing) {
         return IMAGES.service_running;
       }
+    }
+
+    if (item?.name === 'Service Cancelled') {
+      return IMAGES.ic_rejected;
     }
 
     if (item?.serviceRunning) {
@@ -61,7 +65,7 @@ const StatusItem = (props: any) => {
           }}
           source={getImage()}
         />
-        {!item?.completed && item?.id && getImage() !== IMAGES.service_running && (
+        {!item?.completed && item?.id && getImage() !== IMAGES.service_running && getImage() !== IMAGES.ic_rejected && (
           <Text
             style={{ position: 'absolute', top: getScaleSize(3.2) }}
             size={getScaleSize(12)}
@@ -105,7 +109,7 @@ const StatusItem = (props: any) => {
               item?.time ? moment.utc(item?.time).local().format('ddd, DD MMM’ YYYY  -  hh:mm A')
                 : '-')}
         </Text>
-        {/* {props?.item?.securityCode && (
+        {item?.name === 'Service Started' && securityCode && (
           <>
             <Text
               size={getScaleSize(14)}
@@ -118,33 +122,27 @@ const StatusItem = (props: any) => {
             </Text>
             <View style={styles(theme).informationView}>
               <Text
-                style={[
-                  styles(theme).date,
-                  {
-                    fontFamily: FONTS.Lato.Medium,
-                    fontSize: 16,
-                    color: '#2C6587',
-                  },
-                ]}>
-                {'Security Code'}
+                size={getScaleSize(16)}
+                font={FONTS.Lato.Medium}
+                color={theme._2C6587}>
+                {STRING.SecurityCode}
               </Text>
-              <Text
-                style={[
-                  styles(theme).date,
-                  {
-                    fontFamily: FONTS.Lato.Bold,
-                    fontSize: 24,
-                    color: '#2C6587',
-                    marginTop: getScaleSize(2),
-                    textAlign: 'center',
-                    alignSelf: 'center',
-                  },
-                ]}>
-                {'7    9    6'}
-              </Text>
+              <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: getScaleSize(40), marginTop: getScaleSize(6) }}>
+                {securityCode.split('').map((char: any, index: any) => (
+                  <View key={index} style={{ marginVertical: getScaleSize(0) }} >
+                    <Text
+                      font={FONTS.Lato.Bold}
+                      size={getScaleSize(27)}
+                      align="center"
+                      color={theme._2C6587} >
+                      {char}
+                    </Text>
+                  </View>
+                ))}
+              </View>
             </View>
           </>
-        )} */}
+        )}
       </View>
     </View>
   );

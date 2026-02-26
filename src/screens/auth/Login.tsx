@@ -137,12 +137,6 @@ export default function Login(props: any) {
 
         // API returns data.data.user structure
         const userProfileData = result?.data?.data?.user;
-        console.log('=== Login: Profile Data Received ===');
-        console.log(
-          'userProfileData:',
-          JSON.stringify(userProfileData, null, 2),
-        );
-        console.log('All available keys:', Object.keys(userProfileData || {}));
         setProfile(result?.data?.data);
 
         // Save user to Firebase for chat functionality
@@ -314,7 +308,7 @@ export default function Login(props: any) {
               font={FONTS.Lato.SemiBold}
               color={theme._2C6587}
               onPress={() => {
-                props.navigation.navigate(SCREENS.AdditionalDetails.identifier);
+                props.navigation.navigate(SCREENS.SignupSelect.identifier);
               }}>
               {STRING.sign_up}
             </Text>

@@ -82,8 +82,6 @@ export default function ProfessionalHome(props: any) {
 
   const isFocused = useIsFocused();
 
-  console.log('profileDATA==>', JSON.stringify(profile));
-
 
   let currentState = AppState.currentState;
 
@@ -146,24 +144,52 @@ export default function ProfessionalHome(props: any) {
     return granted === PermissionsAndroid.RESULTS.GRANTED;
   };
 
-  async function getLocation() {
-    const permission = await hasLocationPermission();
-    if (!permission) return;
+  const getLocation = () => {
+    let resolved = false;
 
-    Geolocation.getCurrentPosition(
-      position => {
-        const { latitude, longitude } = position.coords;
-        setLoading(false);
-        getAllServices({ latitude, longitude });
+    const watchId = Geolocation.watchPosition(
+      pos => {
+        if (!resolved) {
+          resolved = true;
+          Geolocation.clearWatch(watchId);
+          console.log('LOCATION 👉', pos);
+          const { latitude, longitude } = pos.coords;
+          setLoading(false);
+          getAllServices({ latitude, longitude });
+        }
       },
-      error => console.log('Error:', error),
-      {
-        enableHighAccuracy: false,
-        timeout: 20000,
-        maximumAge: 10000,
+      err => {
+        console.log('WATCH ERROR 👉', err);
       },
+      { enableHighAccuracy: false }
     );
-  }
+
+    setTimeout(() => {
+      if (!resolved) {
+        Geolocation.clearWatch(watchId);
+        console.log('Location timeout fallback');
+      }
+    }, 35000);
+  };
+
+  // async function getLocation() {
+  //   const permission = await hasLocationPermission();
+  //   if (!permission) return;
+
+  //   Geolocation.getCurrentPosition(
+  //     position => {
+  //       const { latitude, longitude } = position.coords;
+  //       setLoading(false);
+  //       getAllServices({ latitude, longitude });
+  //     },
+  //     error => console.log('Error:', error),
+  //     {
+  //       enableHighAccuracy: false,
+  //       timeout: 30000,
+  //       maximumAge: 10000,
+  //     },
+  //   );
+  // }
 
   const requestPermissions = async () => {
     if (Platform.OS === 'android') {

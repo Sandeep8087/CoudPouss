@@ -86,16 +86,8 @@ export default function ServiceConfirmed(props: any) {
     ]}>
       <Header
         onBack={() => {
-          props?.navigation?.dispatch(
-            CommonActions.reset({
-              index: 0,
-              routes: [{
-                name: SCREENS.BottomBar.identifier,
-                params: { isValidationService: true },
-              }
-              ],
-            }),
-          );
+          props.navigation.navigate(SCREENS.RequestDetails.identifier,
+            { serviceId: serviceId ? serviceId : item?.service_id });
         }}
         screenName={STRING.ServiceConfirmed}
       />
@@ -348,7 +340,7 @@ export default function ServiceConfirmed(props: any) {
         title={STRING.Trackservice}
         style={{ marginHorizontal: getScaleSize(22), marginBottom: getScaleSize(16) }}
         onPress={() => {
-          props.navigation.navigate(SCREENS.CompletedTaskDetails.identifier,
+          props.navigation.navigate(SCREENS.RequestDetails.identifier,
             { serviceId: serviceId ? serviceId : item?.service_id });
         }}
       />

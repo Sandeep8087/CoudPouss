@@ -48,8 +48,6 @@ export default function MyProfileProfessional(props: any) {
   const [showMore, setShowMore] = useState(false);
   const [showMoreExperience, setShowMoreExperience] = useState(false);
 
-  console.log('profileDATA==>', JSON.stringify(profile))
-
   return (
     <View style={styles(theme).container}>
       <Header
@@ -114,6 +112,7 @@ export default function MyProfileProfessional(props: any) {
                 styles(theme).itemContainer,
                 { marginHorizontal: getScaleSize(16) },
               ]}>
+
               <View>
                 {/* <Text
                   size={getScaleSize(16)}
@@ -122,20 +121,23 @@ export default function MyProfileProfessional(props: any) {
                   style={{alignSelf: 'center'}}>
                   {'4.6'}
                 </Text> */}
-                <Image
-                  style={{
-                    height: getScaleSize(24),
-                    width: getScaleSize(24),
-                    alignSelf: 'center',
-                  }}
-                  source={IMAGES.verify}
-                />
+                {profile?.provider_info?.is_verified && (
+                  <Image
+                    style={{
+                      height: getScaleSize(24),
+                      width: getScaleSize(24),
+                      alignSelf: 'center',
+                    }}
+                    source={IMAGES.verify}
+                  />
+                )}
                 <Text
                   size={getScaleSize(12)}
                   font={FONTS.Lato.Medium}
                   color={'#214C65'}
-                  style={{ alignSelf: 'center', marginTop: getScaleSize(4) }}>
-                  {STRING.Certified}
+                  align='center'
+                  style={{ marginTop: getScaleSize(4) }}>
+                  {profile?.provider_info?.is_certified === true ? STRING.Certified : 'Not\ncertified'}
                 </Text>
               </View>
             </View>

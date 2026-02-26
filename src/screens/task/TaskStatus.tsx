@@ -65,7 +65,6 @@ export default function TaskStatus(props: any) {
   const [serviceFlags, setServiceFlags] = useState({
     isOutForService: false,
     isExpertConfirmed: false,
-    isStartedService: false,
     isServiceCompleted: false,
     isServiceFinalized: false,
     isPaymentReceived: false,
@@ -87,8 +86,6 @@ export default function TaskStatus(props: any) {
   }, [isFocused]);
 
   const intervalRef = useRef<any>(null);
-
-  console.log('taskStatusData==>', taskStatusData?.is_renegotiated);
 
   useEffect(() => {
     if (serviceFlags.isServiceFinalized === false && taskStatusData?.is_renegotiated === "pending") {
@@ -162,7 +159,6 @@ export default function TaskStatus(props: any) {
     );
 
     const outForService = timeline.find(i => i.name === 'Out for service');
-    const expertConfirmed = timeline.find(i => i.name === 'Expert confirmed');
     const startedService = timeline.find(i => i.name === 'Started service');
     const serviceCompleted = timeline.find(i => i.name === 'Service completed');
     const paymentReceived = timeline.find(i => i.name === 'Payment received');
@@ -170,8 +166,7 @@ export default function TaskStatus(props: any) {
     console.log('serviceFlags.isOutForService ', serviceFlags.isOutForService)
     setServiceFlags({
       isOutForService: !!accepted && !outForService?.completed,
-      isExpertConfirmed: !!outForService?.completed && !expertConfirmed?.completed,
-      isStartedService: !!expertConfirmed?.completed && !startedService?.completed,
+      isExpertConfirmed: !!outForService?.completed && !startedService?.completed,
       isServiceCompleted: (startedService?.completed === true && serviceCompleted?.completed === false),
       isServiceFinalized: (serviceCompleted?.completed === true && startedService?.completed === true && paymentReceived?.completed === false),
       isPaymentReceived: (paymentReceived?.completed === true && serviceCompleted?.completed === true && startedService?.completed === true)
@@ -241,7 +236,7 @@ export default function TaskStatus(props: any) {
       if (result.status) {
         const item = result?.data?.data ?? {}
         setRenegotiationDetails(item);
-        renegotiatioAcceptSheetRef.current?.open();
+        renegotiationSheetRef.current?.open();
       } else {
         SHOW_TOAST(result?.data?.message ?? '', 'error');
       }
@@ -253,25 +248,42 @@ export default function TaskStatus(props: any) {
   }
 
   const onProcessPress = () => {
-    if (!newQuoteAmount) {
-      setNewQuoteAmountError('Please enter an amount');
+    if (!newQuoteAmount || isNaN(Number(newQuoteAmount))) {
+      setNewQuoteAmountError('Please enter a valid amount');
       return;
     }
-    const finalAmount = renegotiationDetails?.finalized_quote_amount ?? 0;
 
-    if (finalAmount <= 0) {
+    const finalAmount = Number(renegotiationDetails?.finalized_quote_amount);
+
+    if (!finalAmount || finalAmount <= 0) {
       return;
     }
+
     const enteredAmount = Number(newQuoteAmount);
-    const maxAllowedAmount = finalAmount * 1.2;
+
+    if (enteredAmount <= 0) {
+      setNewQuoteAmountError('Amount must be greater than zero');
+      return;
+    }
+
+    const maxAllowedAmount = Math.round(finalAmount * 1.2);
 
     if (enteredAmount > maxAllowedAmount) {
-      setNewQuoteAmountError('Counter offer can only be increased up to 20% of final amount');
+      setNewQuoteAmountError(
+        `Counter offer can only be increased up to 20% (Max ${maxAllowedAmount})`
+      );
+      return;
+    }
+
+    if (enteredAmount < finalAmount) {
+      setNewQuoteAmountError(
+        `Amount cannot be less than finalized amount (${finalAmount})`
+      );
       return;
     }
 
     setNewQuoteAmountError('');
-    onNext()
+    onNext();
   };
   async function onNext() {
     try {
@@ -429,7 +441,7 @@ export default function TaskStatus(props: any) {
       )}
       {serviceFlags.isServiceCompleted && (
         <View style={{ flexDirection: 'row', alignItems: 'center', marginHorizontal: getScaleSize(24), marginBottom: getScaleSize(24) }}>
-          {taskStatusData?.is_renegotiated != 'accepted' &&
+          {taskStatusData?.is_renegotiated == 'no_record' &&
             <TouchableOpacity
               onPress={() => {
                 getRenegotiationDetails()
@@ -443,7 +455,7 @@ export default function TaskStatus(props: any) {
               </Text>
             </TouchableOpacity>
           }
-          <View style={{ width: getScaleSize(16) }} />
+          {taskStatusData?.is_renegotiated == 'no_record' && <View style={{ width: getScaleSize(16) }} />}
           <Button
             style={{ flex: 1 }}
             title={STRING.mark_as_completed}
@@ -503,6 +515,7 @@ export default function TaskStatus(props: any) {
       <RenegotiationSheet
         onRef={renegotiationSheetRef}
         item={renegotiationDetails}
+        height={getScaleSize(700)}
         newQuoteAmount={newQuoteAmount}
         newQuoteAmountError={newQuoteAmountError}
         onChangeNewQuoteAmount={(text: string) => {
@@ -541,7 +554,7 @@ export default function TaskStatus(props: any) {
           enterSecurityCodeSheetRef.current?.close();
         }}
         onProcessPress={() => {
-          if (!otp) {
+          if (!otp || otp.length !== 3) {
             setOtpError('Please enter Valid Code');
             return;
           } else {
