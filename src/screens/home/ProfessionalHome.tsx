@@ -62,8 +62,6 @@ export default function ProfessionalHome(props: any) {
 
   const {profile} = useContext(AuthContext);
 
-  console.log('profile==', profile);
-
   const [isLoading, setLoading] = useState(false);
   const [serviceList, setServiceList] = useState<any>([]);
 

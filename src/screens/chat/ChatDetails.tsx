@@ -296,37 +296,37 @@ export default function ChatDetails(props: any) {
                               return;
                             }
 
-                            const updatedNegotiation = {
-                              ...item.negotiation,
-                              currentAmount: offerInputValue,
-                              latestMessageId: '1', // 👈 only new message has 1
-                              offers: [
-                                ...item.negotiation.offers,
-                                {
-                                  amount: offerInputValue.toString(),
-                                  by: profile?.user?.id,
-                                  label: 'EDITED',
-                                  createdAt: Date.now(),
-                                  userName: profile?.user?.first_name,
-                                },
-                              ],
-                            };
+                            // const updatedNegotiation = {
+                            //   ...item.negotiation,
+                            //   currentAmount: offerInputValue,
+                            //   latestMessageId: '1', // 👈 only new message has 1
+                            //   offers: [
+                            //     ...item.negotiation.offers,
+                            //     {
+                            //       amount: offerInputValue.toString(),
+                            //       by: profile?.user?.id,
+                            //       label: 'EDITED',
+                            //       createdAt: Date.now(),
+                            //       userName: profile?.user?.first_name,
+                            //     },
+                            //   ],
+                            // };
 
-                            userMessage(
-                              item.negotiation.serviceId,
-                              peerUserId,
-                              profile?.user?.first_name,
-                              profile?.user?.id,
-                              peerUserName,
-                              commanId,
-                              {
-                                type: 'NEGOTIATION',
-                                text: `My revised offer is €${offerInputValue}`,
-                                negotiation: updatedNegotiation,
-                              },
-                              profile?.user?.profile_photo_url || '',
-                              peerUserAvatar ?? '',
-                            );
+                            // userMessage(
+                            //   item.negotiation.serviceId,
+                            //   peerUserId,
+                            //   profile?.user?.first_name,
+                            //   profile?.user?.id,
+                            //   peerUserName,
+                            //   commanId,
+                            //   {
+                            //     type: 'NEGOTIATION',
+                            //     text: `My revised offer is €${offerInputValue}`,
+                            //     negotiation: updatedNegotiation,
+                            //   },
+                            //   profile?.user?.profile_photo_url || '',
+                            //   peerUserAvatar ?? '',
+                            // );
                             setEditingForMessageId(false);
                             setOfferInputValue('');
                           }}>
@@ -422,36 +422,36 @@ export default function ChatDetails(props: any) {
                               return;
                             }
 
-                            const newOffer = {
-                              amount: offerInputValue.toString(),
-                              by: profile?.user?.id,
-                              label: 'COUNTER', // or ACCEPTED / REJECTED
-                              createdAt: Date.now(),
-                              userName: profile?.user?.first_name,
-                            };
+                            // const newOffer = {
+                            //   amount: offerInputValue.toString(),
+                            //   by: profile?.user?.id,
+                            //   label: 'COUNTER', // or ACCEPTED / REJECTED
+                            //   createdAt: Date.now(),
+                            //   userName: profile?.user?.first_name,
+                            // };
 
-                            const updatedNegotiation = {
-                              ...item.negotiation,
-                              currentAmount: offerInputValue,
-                              currentTurn: item.senderId, // switch turn
-                              offers: [...item.negotiation.offers, newOffer],
-                            };
+                            // const updatedNegotiation = {
+                            //   ...item.negotiation,
+                            //   currentAmount: offerInputValue,
+                            //   currentTurn: item.senderId, // switch turn
+                            //   offers: [...item.negotiation.offers, newOffer],
+                            // };
 
-                            userMessage(
-                              item.negotiation.serviceId,
-                              profile?.user?.id,
-                              profile?.user?.first_name,
-                              peerUserId,
-                              peerUserName,
-                              commanId,
-                              {
-                                type: 'NEGOTIATION',
-                                text: `My revised offer is €${offerInputValue}`,
-                                negotiation: updatedNegotiation,
-                              },
-                              profile?.user?.profile_photo_url || '',
-                              peerUserAvatar ?? '',
-                            );
+                            // userMessage(
+                            //   item.negotiation.serviceId,
+                            //   profile?.user?.id,
+                            //   profile?.user?.first_name,
+                            //   peerUserId,
+                            //   peerUserName,
+                            //   commanId,
+                            //   {
+                            //     type: 'NEGOTIATION',
+                            //     text: `My revised offer is €${offerInputValue}`,
+                            //     negotiation: updatedNegotiation,
+                            //   },
+                            //   profile?.user?.profile_photo_url || '',
+                            //   peerUserAvatar ?? '',
+                            // );
 
                             // if (!offerInputValue.trim()) {
                             //   SHOW_TOAST(

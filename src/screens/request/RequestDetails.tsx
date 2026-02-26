@@ -265,7 +265,6 @@ export default function RequestDetails(props: any) {
       profile?.user?.id,
       serviceDetails?.service_id,
     );
-    console;
     try {
       const currentUserId = profile?.user?.id;
       const currentUserName = profile?.user?.first_name;
