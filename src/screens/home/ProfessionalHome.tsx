@@ -72,8 +72,6 @@ export default function ProfessionalHome(props: any) {
 
   const { profile, fetchProfile, userType } = useContext(AuthContext);
 
-  console.log('profile==', profile);
-
   const [isLoading, setLoading] = useState(false);
   const [serviceList, setServiceList] = useState<any>([]);
   const [locationDenied, setLocationDenied] = useState(false);
