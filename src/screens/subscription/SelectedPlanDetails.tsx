@@ -1,4 +1,4 @@
-import { Dimensions, Image, SafeAreaView, ScrollView, StyleSheet, TouchableOpacity, View } from 'react-native';
+import { Dimensions, Image, Platform, SafeAreaView, ScrollView, StyleSheet, TouchableOpacity, View } from 'react-native';
 import React, { useContext, useEffect, useRef, useState } from 'react';
 
 //CONTEXT
@@ -14,7 +14,6 @@ import { SCREENS } from '..';
 //COMPONENTS
 import { Header, Input, Text, Button } from '../../components';
 import { API } from '../../api';
-
 
 export default function SelectedPlanDetails(props: any) {
 
@@ -72,7 +71,7 @@ export default function SelectedPlanDetails(props: any) {
                         font={FONTS.Lato.SemiBold}
                         color={theme._939393}
                         style={{ marginBottom: getScaleSize(18) }}>
-                        {STRING.subscription_details_text}
+                        {STRING.subscription_content}
                     </Text>
                     <View style={styles(theme).subscriptionItem}>
                         <View style={[styles(theme).flexView]}>

@@ -1,24 +1,38 @@
-import React, {useContext, useRef, useState} from 'react';
-import {View, StyleSheet, TouchableOpacity, Alert, Image} from 'react-native';
-import {ThemeContext, ThemeContextType} from '../context';
-import {getScaleSize, useString} from '../constant';
-import {FONTS, IMAGES} from '../assets';
-import {constant} from 'lodash';
+import React, { useContext, useRef, useState } from 'react';
+import { View, StyleSheet, TouchableOpacity, Alert, Image } from 'react-native';
+import { ThemeContext, ThemeContextType } from '../context';
+import { getScaleSize, useString } from '../constant';
+import { FONTS, IMAGES } from '../assets';
+import { constant } from 'lodash';
 import RBSheet from 'react-native-raw-bottom-sheet';
 import Text from './Text';
 import moment from 'moment';
 
 const StatusItem = (props: any) => {
   const STRING = useString();
-  const {theme} = useContext<any>(ThemeContext);
+  const { theme } = useContext<any>(ThemeContext);
 
-  const {item, isLast} = props;
+  const { item, isLast, isPaymentReceived, taskStatusData, securityCode } = props;
+
+  const isProcessing =
+    isPaymentReceived === false &&
+    taskStatusData?.is_otp_verifed?.status === true;
 
   function getImage() {
     if (item?.name === 'Started service') {
       if (item?.completed) {
         return IMAGES.service_running;
       }
+    }
+
+    if (item?.name === 'Payment received') {
+      if (isProcessing) {
+        return IMAGES.service_running;
+      }
+    }
+
+    if (item?.name === 'Service Cancelled') {
+      return IMAGES.ic_rejected;
     }
 
     if (item?.serviceRunning) {
@@ -51,9 +65,9 @@ const StatusItem = (props: any) => {
           }}
           source={getImage()}
         />
-        {!item?.completed && item?.id && (
+        {!item?.completed && item?.id && getImage() !== IMAGES.service_running && getImage() !== IMAGES.ic_rejected && (
           <Text
-            style={{position: 'absolute', top: getScaleSize(3.2)}}
+            style={{ position: 'absolute', top: getScaleSize(3.2) }}
             size={getScaleSize(12)}
             font={FONTS.Lato.Medium}
             color={theme.white}>
@@ -83,18 +97,19 @@ const StatusItem = (props: any) => {
           font={FONTS.Lato.SemiBold}
           color={theme._2B2B2B}
           style={{}}>
-          {item?.name ?? ''}
+          {(item?.name === 'Payment received' && isProcessing ? 'Processing Payment' : item?.name) ?? ''}
         </Text>
         <Text
           size={getScaleSize(12)}
           font={FONTS.Lato.Regular}
           color={theme._737373}
-          style={{marginTop: getScaleSize(4)}}>
-          {item?.time
-            ? moment(item?.time).format('ddd, DD MMM’ YYYY  -  h:mma')
-            : '-'}
+          style={{ marginTop: getScaleSize(4) }}>
+          {
+            (item?.name === 'Payment received' && isProcessing ? 'Scheduled on ' + moment.utc(taskStatusData?.is_otp_verifed?.time).local().format('ddd, DD MMM’ YYYY  -  hh:mm A') :
+              item?.time ? moment.utc(item?.time).local().format('ddd, DD MMM’ YYYY  -  hh:mm A')
+                : '-')}
         </Text>
-        {/* {props?.item?.securityCode && (
+        {item?.name === 'Service Started' && securityCode && (
           <>
             <Text
               size={getScaleSize(14)}
@@ -107,33 +122,27 @@ const StatusItem = (props: any) => {
             </Text>
             <View style={styles(theme).informationView}>
               <Text
-                style={[
-                  styles(theme).date,
-                  {
-                    fontFamily: FONTS.Lato.Medium,
-                    fontSize: 16,
-                    color: '#2C6587',
-                  },
-                ]}>
-                {'Security Code'}
+                size={getScaleSize(16)}
+                font={FONTS.Lato.Medium}
+                color={theme._2C6587}>
+                {STRING.SecurityCode}
               </Text>
-              <Text
-                style={[
-                  styles(theme).date,
-                  {
-                    fontFamily: FONTS.Lato.Bold,
-                    fontSize: 24,
-                    color: '#2C6587',
-                    marginTop: getScaleSize(2),
-                    textAlign: 'center',
-                    alignSelf: 'center',
-                  },
-                ]}>
-                {'7    9    6'}
-              </Text>
+              <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: getScaleSize(40), marginTop: getScaleSize(6) }}>
+                {securityCode.split('').map((char: any, index: any) => (
+                  <View key={index} style={{ marginVertical: getScaleSize(0) }} >
+                    <Text
+                      font={FONTS.Lato.Bold}
+                      size={getScaleSize(27)}
+                      align="center"
+                      color={theme._2C6587} >
+                      {char}
+                    </Text>
+                  </View>
+                ))}
+              </View>
             </View>
           </>
-        )} */}
+        )}
       </View>
     </View>
   );

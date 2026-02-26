@@ -44,6 +44,8 @@ export default function Request(props: any) {
   const STRING = useString();
   const {theme} = useContext<any>(ThemeContext);
 
+  const flatListRef = useRef<FlatList>(null);
+
   const [requestData, setRequestData] = useState<any>({
     selectedFilter: {id: '1', title: 'All', filter: 'all'},
     allRequests: [],
@@ -181,39 +183,9 @@ export default function Request(props: any) {
             <RequestItem
               selectedFilter={requestData?.selectedFilter}
               onPress={() => {
-                if (item?.status === 'open') {
-                  props.navigation.navigate(
-                    SCREENS.OpenRequestDetails.identifier,
-                    {
-                      item: item,
-                    },
-                  );
-                } else if (item?.status === 'pending') {
-                  props.navigation.navigate(SCREENS.RequestDetails.identifier, {
-                    item: item,
-                  });
-                } else if (item?.status === 'completed') {
-                  props.navigation.navigate(
-                    SCREENS.CompletedTaskDetails.identifier,
-                    {
-                      item: item,
-                    },
-                  );
-                } else if (item?.status === 'accepted') {
-                  props.navigation.navigate(
-                    SCREENS.CompletedTaskDetails.identifier,
-                    {
-                      item: item,
-                    },
-                  );
-                } else if (item?.status === 'cancelled') {
-                  props.navigation.navigate(
-                    SCREENS.CompletedTaskDetails.identifier,
-                    {
-                      item: item,
-                    },
-                  );
-                }
+                props.navigation.navigate(SCREENS.RequestDetails.identifier, {
+                  item: item
+                })
               }}
               item={item}
             />
@@ -268,6 +240,7 @@ export default function Request(props: any) {
     <View style={styles(theme).container}>
       <Header
         // type='profile'
+        isFromRequest={true}
         screenName={STRING.Request}
       />
       <View
@@ -288,6 +261,7 @@ export default function Request(props: any) {
       </View>
       <View style={{marginVertical: getScaleSize(18)}}>
         <FlatList
+          ref={flatListRef}
           data={data}
           keyExtractor={item => item.id}
           ListHeaderComponent={() => {
@@ -320,6 +294,11 @@ export default function Request(props: any) {
                   allRequests: [],
                   isLoading: true,
                 }));
+                flatListRef.current?.scrollToIndex({
+                  index,
+                  animated: true,
+                  viewPosition: 0.5, // 👈 centers item
+                });
               }}>
               <Text
                 size={getScaleSize(16)}

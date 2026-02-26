@@ -142,16 +142,18 @@ export default function WriteReview(props: any) {
               {STRING.OverallService}
             </Text>
             {!isLoadingRating &&
+            <View style={{ height: 40, justifyContent: 'center' }}>
               <Rating
                 type="custom"
                 ratingBackgroundColor="#EDEFF0"
-                tintColor="#fff" // background color, useful for layout
+                tintColor={theme.white}
                 ratingCount={5}
                 ratingColor={'#F0B52C'} // grey color
                 startingValue={overallRatting}
                 imageSize={30}
                 onFinishRating={(value: any) => setOverallRatting(value)}
               />
+              </View>
             }
           </View>
           <View style={styles(theme).ratingContainer}>
@@ -269,7 +271,7 @@ export default function WriteReview(props: any) {
       />
       <BottomSheet
         bottomSheetRef={successBottomSheetRef}
-        height={300}
+        height={330}
         type="review"
         title={STRING.thank_you_for_your_review}
         description={STRING.we_appreciated_you_taking_the_time_to_reflect_on_your_experience}

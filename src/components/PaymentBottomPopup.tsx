@@ -89,7 +89,7 @@ const PaymentBottomPopup = (props: any) => {
         customStyles={{
           container: {
             backgroundColor: '#FFF',
-            height: getScaleSize(550),
+            height: getScaleSize(580),
             borderTopLeftRadius: getScaleSize(20),
             borderTopRightRadius: getScaleSize(20),
           },

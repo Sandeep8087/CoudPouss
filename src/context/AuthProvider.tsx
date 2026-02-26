@@ -21,13 +21,15 @@ export function AuthProvider(props: Readonly<AuthProviderProps>): any {
   //professional, non_professional
   const [profile, setProfile] = useState<any>(null);
   const [selectedServices, setSelectedServices] = useState<any>([]);
+  const [selectedAddress, setSelectedAddress] = useState<any>(null);
 
   async function fetchProfile() {
     try {
-      const result = await API.Instance.get(API.API_ROUTES.getUserDetails);
+      const result = await API.Instance.get(API.API_ROUTES.getUserDetails + `?platform=app`);
       if (result.status) {
-        const userDetail = result?.data?.data?.user;
-        setProfile(result?.data?.data);
+        const userDetail = result?.data?.data;
+        console.log('PRO',JSON.stringify(userDetail))
+        setProfile(userDetail);
         return userDetail;
       }
       return null;
@@ -50,6 +52,8 @@ export function AuthProvider(props: Readonly<AuthProviderProps>): any {
         fetchProfile,
         selectedServices,
         setSelectedServices,
+        selectedAddress,
+        setSelectedAddress,
       }}>
       {props.children}
     </AuthContext.Provider>

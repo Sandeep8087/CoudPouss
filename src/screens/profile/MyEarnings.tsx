@@ -1,4 +1,4 @@
-import { Dimensions, Image, ScrollView, StyleSheet, TouchableOpacity, View } from 'react-native'
+import { Dimensions, Image, Platform, ScrollView, StyleSheet, TouchableOpacity, View } from 'react-native'
 import React, { useContext, useEffect, useState } from 'react'
 import { ThemeContext, ThemeContextType } from '../../context'
 import { Button, EarningsChart, Header, Text, TransactionItem } from '../../components'
@@ -11,6 +11,7 @@ import { API } from '../../api'
 import DateTimePicker from '@react-native-community/datetimepicker';
 
 export default function MyEarnings(props: any) {
+
     const { theme } = useContext<any>(ThemeContext);
     const STRING = useString();
 
@@ -128,7 +129,7 @@ export default function MyEarnings(props: any) {
                         {itemData.map((item: any, index: number) => {
                             return (
                                 <TouchableOpacity
-                                    key={index}
+                                    key={item.id}
                                     style={styles(theme).itemContainer}
                                     onPress={() => { props.navigation.navigate(item.onPress) }}>
                                     <Text

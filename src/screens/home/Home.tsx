@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useState } from 'react';
+import React, { useContext, useEffect, useRef, useState } from 'react';
 import {
   View,
   StatusBar,
@@ -24,7 +24,7 @@ import Animated, {
 } from 'react-native-reanimated';
 import { AuthContext, ThemeContext, ThemeContextType } from '../../context';
 import { FONTS, IMAGES } from '../../assets';
-import { getScaleSize, SHOW_TOAST, useString } from '../../constant';
+import { getScaleSize, SHOW_TOAST, TABBAR_HEIGHT, useString } from '../../constant';
 import {
   Text,
   HomeHeader,
@@ -38,10 +38,11 @@ import { SCREENS, TABS } from '..';
 import { API } from '../../api';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-
 export default function Home(props: any) {
   const STRING = useString();
   const { theme } = useContext<any>(ThemeContext);
+
+  const acceptRef = useRef<any>(null)
 
   const [isLoading, setLoading] = useState(false);
   const [allServices, setAllServices] = useState([]);
@@ -137,8 +138,6 @@ export default function Home(props: any) {
     }
   }
 
-
-
   return (
     <View style={styles(theme).container}>
       <StatusBar
@@ -147,39 +146,76 @@ export default function Home(props: any) {
         backgroundColor={theme.primary}
         barStyle={'light-content'} />
       {/* HEADER */}
+      <HomeHeader
+        professionalConnectedCount={professionalConnectedCount}
+        onSearchPress={() => {
+          props.navigation.navigate(SCREENS.Search.identifier);
+        }}
+        onPressNotification={() => {
+          props.navigation.navigate(SCREENS.Notification.identifier);
+        }}
+        onPressUserProfile={() => {
+          props.navigation.dispatch(
+            CommonActions.reset({
+              index: 0,
+              routes: [
+                {
+                  name: SCREENS.BottomBar.identifier,
+                  params: { isProfile: true },
+                },
+              ],
+            }),
+          );
+        }}
+      />
       <ScrollView
         showsVerticalScrollIndicator={false}
-        scrollEnabled={true}
-        style={{}}>
-        <View>
-          <HomeHeader
-            professionalConnectedCount={professionalConnectedCount}
-            onSearchPress={() => {
-              props.navigation.navigate(SCREENS.Search.identifier);
-            }}
-            onPressNotification={() => {
-              props.navigation.navigate(SCREENS.Notification.identifier);
-            }}
-            onPressUserProfile={() => {
-              props.navigation.dispatch(
-                CommonActions.reset({
-                  index: 0,
-                  routes: [
-                    {
-                      name: SCREENS.BottomBar.identifier,
-                      params: { isProfile: true },
-                    },
-                  ],
-                }),
-              );
-            }}
-          />
+        scrollEnabled={true}>
+        <View style={{
+          marginTop: 0 - getScaleSize(70),
+          backgroundColor: theme.primary,
+          paddingTop: StatusBar.currentHeight,
+          borderBottomLeftRadius: getScaleSize(60),
+          borderBottomRightRadius: getScaleSize(60),
+          overflow: 'hidden',
+        }}>
+          <View style={styles(theme).bottomText}>
+            <View style={styles(theme).userImage}>
+              <Image style={styles(theme).workerImage} source={IMAGES.worker} />
+            </View>
+            <View style={styles(theme).textView}>
+              <View style={{ flexDirection: 'row' }}>
+                <Text
+                  size={getScaleSize(48)}
+                  font={FONTS.Lato.Bold}
+                  color={theme.white}>
+                  {props?.professionalConnectedCount ?? '0'}{' '}
+                </Text>
+                <Text
+                  size={getScaleSize(20)}
+                  font={FONTS.Lato.SemiBold}
+                  color={theme.white}>
+                  {'Professionals\nConnected Today'}
+                </Text>
+              </View>
+              <Text
+                style={{ marginTop: getScaleSize(8) }}
+                size={getScaleSize(12)}
+                font={FONTS.Lato.Regular}
+                color={theme.white}>
+                {
+                  'Verified professionals ready to\nhelp you today'
+                }
+              </Text>
+            </View>
+          </View>
         </View>
         <Text
           size={getScaleSize(20)}
           font={FONTS.Lato.SemiBold}
           style={{
             marginTop: getScaleSize(31),
+
             marginHorizontal: getScaleSize(22),
           }}
           color={theme._323232}>
@@ -312,7 +348,7 @@ export default function Home(props: any) {
             color={theme._323232}>
             {STRING.ResentRequests}
           </Text>
-          {recentRequests?.length > 0 &&
+          {recentRequests?.length >= 2 &&
             <Text
               size={getScaleSize(16)}
               font={FONTS.Lato.Regular}
@@ -333,23 +369,9 @@ export default function Home(props: any) {
                   key={index}
                   item={item}
                   onPress={() => {
-                    if (item?.status === 'open') {
-                      props.navigation.navigate(SCREENS.OpenRequestDetails.identifier, {
-                        item: item
-                      })
-                    } else if (item?.status === 'pending') {
-                      props.navigation.navigate(SCREENS.RequestDetails.identifier, {
-                        item: item
-                      })
-                    } else if (item?.status === 'accepted') {
-                      props.navigation.navigate(SCREENS.CompletedTaskDetails.identifier, {
-                        item: item
-                      })
-                    } else if (item?.status === 'completed') {
-                      props.navigation.navigate(SCREENS.CompletedTaskDetails.identifier, {
-                        item: item
-                      })
-                    }
+                    props.navigation.navigate(SCREENS.RequestDetails.identifier, {
+                      item: item
+                    })
                   }}
                 />
               );
@@ -420,7 +442,7 @@ export default function Home(props: any) {
             </Text>
           </View>
         )}
-        <View style={{ height: getScaleSize(50) }} />
+        {/* <View style={{ height: TABBAR_HEIGHT }} /> */}
       </ScrollView>
       {isLoading && <ProgressView />}
     </View>
@@ -483,5 +505,32 @@ const styles = (theme: ThemeContextType['theme']) =>
     },
     statusBar: {
       height: StatusBar.currentHeight
+    },
+    userImage: {
+      overflow: 'visible',
+      width: getScaleSize(240),
+      height: getScaleSize(225),
+      marginTop: getScaleSize(32),
+      backgroundColor: '#1E4A5D',
+      borderRadius: 112,
+      left: -56,
+      top: 26,
+    },
+    workerImage: {
+      height: getScaleSize(250),
+      width: getScaleSize(151),
+      position: 'absolute',
+      resizeMode: 'cover',
+      left: 50,
+      top: -45,
+    },
+    bottomText: {
+      flexDirection: 'row',
+      marginLeft: getScaleSize(16),
+    },
+    textView: {
+      justifyContent: 'center',
+      marginTop: getScaleSize(32),
+      marginLeft: getScaleSize(-40),
     },
   });

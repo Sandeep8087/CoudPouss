@@ -29,10 +29,6 @@ export default function ServiceRequest(props: any) {
 
   const { data, onPress, onPressAccept } = props
 
-  const getTimeAgo = (date: string, time: string) => {
-    return moment(`${date} ${time}`, 'YYYY-MM-DD HH:mm').fromNow();
-  };
-
   return (
     <TouchableOpacity
       style={styles(theme).container}
@@ -63,7 +59,7 @@ export default function ServiceRequest(props: any) {
           size={getScaleSize(14)}
           font={FONTS.Lato.Medium}
           color={theme._737373}>
-          {getTimeAgo(data?.date, data?.time)}
+          {data?.created_ago ?? ''}
         </Text>
       </View>
       <View style={styles(theme).verticalView}>
@@ -81,7 +77,7 @@ export default function ServiceRequest(props: any) {
               size={getScaleSize(14)}
               font={FONTS.Lato.Medium}
               color={theme._424242}>
-              {data?.date ? moment(data?.date).format('DD MMM, YYYY') : ''}
+              {data?.date ? moment.utc(data?.date).local().format('DD MMM, YYYY') : ''}
             </Text>
           </View>
           <View style={styles(theme).itemView}>
@@ -97,7 +93,7 @@ export default function ServiceRequest(props: any) {
               size={getScaleSize(14)}
               font={FONTS.Lato.Medium}
               color={theme._424242}>
-              {moment(data?.time, "HH:mm").format("hh:mm A")}
+              {moment.utc(data?.time, "HH:mm").local().format("hh:mm A")}
             </Text>
           </View>
         </View>
@@ -130,14 +126,13 @@ export default function ServiceRequest(props: any) {
             <Text
               style={{
                 marginHorizontal: getScaleSize(8),
-
                 flex: 1.0,
               }}
               size={getScaleSize(14)}
               font={FONTS.Lato.Medium}
               numberOfLines={4}
               color={theme._424242}>
-              {data?.location}
+              {data?.service_address ?? '-'}
             </Text>
           </View>
         </View>

@@ -5,28 +5,35 @@ import {Alert, Linking, PermissionsAndroid, Platform, View} from 'react-native';
 import {Tabbar} from '../components';
 
 //SCREENS
-import {TABS} from '.';
+import { SCREENS, TABS } from '.';
 
 //CONTEXT
 import {AuthContext} from '../context';
 
 //PACKAGES
-import {createBottomTabNavigator} from '@react-navigation/bottom-tabs';
-import {getApp} from '@react-native-firebase/app';
+import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import { getApp, initializeApp, getApps } from '@react-native-firebase/app';
 import {
   getMessaging,
   registerDeviceForRemoteMessages,
   AuthorizationStatus,
+  onNotificationOpenedApp,
+  getInitialNotification,
+  onMessage,
 } from '@react-native-firebase/messaging';
+import PushNotificationIOS from '@react-native-community/push-notification-ios';
+import PushNotification from 'react-native-push-notification';
+
+//API
+import { API } from '../api';
 
 const Tab = createBottomTabNavigator();
 
 function BottomBar(props: any) {
-  const {userType} = useContext<any>(AuthContext);
+  const { userType, profile } = useContext<any>(AuthContext);
 
   const isProfile = props?.route?.params?.isProfile ?? false;
-  const isValidationService =
-    props?.route?.params?.isValidationService ?? false;
+  const isValidationService = props?.route?.params?.isValidationService ?? false;
   const isTask = props?.route?.params?.isTask ?? false;
   const isProfessionalProfile =
     props?.route?.params?.isProfessionalProfile ?? false;
@@ -53,6 +60,79 @@ function BottomBar(props: any) {
     }
   }
 
+  const firebaseConfig = {
+    apiKey: 'your-api-key',
+    projectId: 'your-project-id',
+    appId: 'your-app-id',
+    messagingSenderId: 'your-sender-id',
+  };
+
+  useEffect(() => {
+
+    PushNotification.createChannel(
+      {
+        channelId: 'coudpouss_notification', // Must match the one you use in localNotification
+        channelName: 'CoudPouss Notifications',
+        channelDescription: 'Channel for CoudPouss foreground notifications',
+        playSound: true,
+        soundName: 'default',
+        importance: 4, // HIGH importance
+        vibrate: true,
+      },
+      created => console.log(`createChannel returned '${created}'`), // true if created, false if already exists
+    );
+
+    const unsubscribe = getMessaging().onMessage(async (remoteMessage: any) => {
+      // When app in foreground
+      console.log('Message handled in the foregroud!', remoteMessage);
+      if (Platform.OS === 'ios') {
+        PushNotificationIOS.presentLocalNotification({
+          alertTitle: remoteMessage?.notification?.title,
+          alertBody: remoteMessage?.notification?.body ?? '',
+          userInfo: remoteMessage.data,
+        });
+      } else {
+        PushNotification.localNotification({
+          channelId: 'coudpouss_notification',
+          vibration: 300,
+          priority: 'high',
+          importance: 'high',
+          title: remoteMessage?.notification?.title ?? '',
+          message: remoteMessage?.notification?.body ?? '',
+          smallIcon: 'ic_stat_notification',
+          largeIcon: 'ic_stat_notification',
+          userInfo: remoteMessage?.data,
+        });
+      }
+    });
+
+    PushNotification.configure({
+      onNotification: function (notification: any) {
+        console.log('LOCAL notification clicked:', notification);
+        if (profile)
+          props?.navigation?.navigate(SCREENS.Notification.identifier);
+      },
+    });
+
+    // 🟡 App opened from BACKGROUND
+    getMessaging().onNotificationOpenedApp(remoteMessage => {
+      console.log('Opened from background:', remoteMessage);
+      if (profile && remoteMessage) {
+        props?.navigation?.navigate(SCREENS.Notification.identifier);
+      }
+    });
+
+    getMessaging().getInitialNotification().then((remoteMessage: any) => {
+      console.log('Opened from killed:', remoteMessage);
+      if (profile && remoteMessage) {
+        props?.navigation?.navigate(SCREENS.Notification.identifier);
+      }
+    });
+
+
+    return unsubscribe;
+  }, []);
+
   useEffect(() => {
     getNotificationTokens();
   }, []);
@@ -63,12 +143,31 @@ function BottomBar(props: any) {
       console.log('token===', JSON.stringify(token));
       if (token) {
         console.log('token===', JSON.stringify(token));
-        // onUpdateFcmToken(token)
+        onNotification(token);
       } else {
         console.log('No FCM token received');
       }
     } catch (e) {
       console.log(JSON.stringify(e));
+    }
+  }
+
+  async function onNotification(token: any) {
+    try {
+      const params = {
+        token: token,
+        platform: Platform.OS,
+      }
+      const result = await API.Instance.post(API.API_ROUTES.onNotification, params);
+      console.log('result', result.status, result)
+      if (result.status) {
+        console.log('result==>', result?.data?.message)
+      } else {
+        console.log('error==>', result?.data?.message)
+
+      }
+    } catch (error: any) {
+      console.log(error?.message)
     }
   }
 
@@ -79,7 +178,8 @@ function BottomBar(props: any) {
           PermissionsAndroid.PERMISSIONS.POST_NOTIFICATIONS,
         );
         if (status) {
-          const app: any = getApp();
+          const app: any =
+            getApps().length === 0 ? initializeApp(firebaseConfig) : getApp();
           let fcmToken = await getMessaging(app).getToken();
           return fcmToken;
         }
@@ -90,7 +190,7 @@ function BottomBar(props: any) {
           [
             {
               text: 'No',
-              onPress: () => {},
+              onPress: () => { },
             },
             {
               text: 'Open Settings',

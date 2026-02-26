@@ -47,7 +47,7 @@ export default function Search(props: any) {
     const abortControllerRef = useRef<AbortController | undefined>(undefined);
 
     useEffect(() => {
-        if (searchDebouncedText) {
+        if (searchDebouncedText.trim().length > 0) {
             getSearchData();
         } else {
             setSearchData([]);
@@ -66,7 +66,7 @@ export default function Search(props: any) {
             }
             const abortController = new AbortController();
             abortControllerRef.current = abortController;
-            const result = await API.Instance.get(API.API_ROUTES.getHomeData + `?search=${searchText}`);
+            const result = await API.Instance.get(API.API_ROUTES.getHomeData + `?search=${searchDebouncedText.trim()}`);
             console.log('result', result.status, result)
             if (result.status) {
                 console.log('searchData==', result?.data?.data)
@@ -91,44 +91,64 @@ export default function Search(props: any) {
                 }}
             />
             <View style={styles(theme).notificationContainer}>
-                <View style={{ marginHorizontal: getScaleSize(24) }}>
+                <View style={{
+                    marginHorizontal: getScaleSize(24), marginBottom: getScaleSize(15)
+                }}>
                     <SearchComponent
                         value={searchText}
                         onChangeText={(text: any) => {
                             setSearchText(text);
-                            debouncedSearch(text);
+
+                            const trimmed = text.trim();
+
+                            if (trimmed.length === 0) {
+                                setSearchDebouncedText('');
+                                setSearchData([]);
+                                return;
+                            }
+
+                            debouncedSearch(trimmed);
                         }} />
                 </View>
                 <FlatList
                     data={searchData?.services ?? []}
-                    contentContainerStyle={{ paddingBottom: getScaleSize(50) }}
+                    contentContainerStyle={{
+                        paddingBottom: getScaleSize(50),
+                        flexGrow: 1,
+                    }}
                     showsVerticalScrollIndicator={false}
                     keyExtractor={(item: any, index: number) => index.toString()}
                     renderItem={({ item, index }) => (
                         <RequestItem
                             selectedFilter={typeof searchText === 'string' ? { id: '1', title: 'All', filter: 'all' } : null}
                             key={index}
+                            isFromSearch={true}
                             onPress={() => {
-                                if (item?.status === 'open') {
-                                    props.navigation.navigate(SCREENS.OpenRequestDetails.identifier, {
-                                        item: item
-                                    })
-                                } else if (item?.status === 'pending') {
-                                    props.navigation.navigate(SCREENS.RequestDetails.identifier, {
-                                        item: item
-                                    })
-                                } else if (item?.status === 'completed') {
-                                    props.navigation.navigate(SCREENS.CompletedTaskDetails.identifier, {
-                                        item: item
-                                    })
-                                } else if (item?.status === 'accepted') {
-                                    props.navigation.navigate(SCREENS.CompletedTaskDetails.identifier, {
-                                        item: item
-                                    })
-                                }
+                                props.navigation.navigate(SCREENS.RequestDetails.identifier, {
+                                    item: item
+                                })
                             }}
                             item={item} />
                     )}
+                    ListEmptyComponent={() => {
+                        if (isLoading) return null;
+
+                        if (searchData.length === 0) {
+                            return (
+                                <View style={styles(theme).emptyContainer}>
+                                    <Text
+                                        size={getScaleSize(16)}
+                                        font={FONTS.Lato.Regular}
+                                        color={theme._565656}
+                                    >
+                                        {STRING.no_results_found}
+                                    </Text>
+                                </View>
+                            );
+                        }
+
+                        return null;
+                    }}
                 />
             </View>
             {isLoading && <ProgressView />}
@@ -173,5 +193,10 @@ const styles = (theme: ThemeContextType['theme']) =>
             backgroundColor: theme.primary,
             marginRight: getScaleSize(8),
             paddingHorizontal: getScaleSize(10),
+        },
+        emptyContainer: {
+            flex: 1,
+            justifyContent: 'center',
+            alignItems: 'center',
         },
     });

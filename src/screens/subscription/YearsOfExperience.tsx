@@ -21,15 +21,19 @@ export default function YearsOfExperience(props: any) {
     const STRING = useString();
     const { setSelectedServices } = useContext<any>(AuthContext);
     const { theme } = useContext<any>(ThemeContext);
-    
+
     const [yearsOfExperience, setYearsOfExperience] = useState('');
     const [isLoading, setLoading] = useState(false);
 
     async function addYearsOfExperience() {
-        if (!yearsOfExperience) {
-            SHOW_TOAST('Please enter your years of experience', 'error')
+
+        const trimmedValue = yearsOfExperience.trim();
+
+        if (!trimmedValue) {
+            SHOW_TOAST('Please enter your years of experience', 'error');
             return;
         }
+
         try {
             const params = {
                 years_of_experience: yearsOfExperience,
@@ -51,6 +55,49 @@ export default function YearsOfExperience(props: any) {
             setLoading(false);
         }
     }
+
+    const validateExperienceInput = (text: string) => {
+        if (!text) return '';
+
+        // Allow digits + dot only
+        let value = text.replace(/[^0-9.]/g, '');
+
+        // Prevent dot as first character
+        if (value.startsWith('.')) {
+            value = value.slice(1);
+        }
+
+        // Prevent multiple dots
+        const parts = value.split('.');
+        if (parts.length > 2) {
+            value = parts[0] + '.' + parts[1];
+        }
+
+        let [integerPart = '', decimalPart] = value.split('.');
+
+        // Remove leading zeros (but keep single 0)
+        integerPart = integerPart.replace(/^0+(?=\d)/, '');
+
+        // Limit decimal to 2 digits
+        if (decimalPart !== undefined) {
+            decimalPart = decimalPart.slice(0, 2);
+            value = `${integerPart}.${decimalPart}`;
+        } else {
+            value = integerPart;
+        }
+
+        // Allow trailing dot while typing (e.g., "1.")
+        if (text.endsWith('.') && !value.includes('.')) {
+            value = integerPart + '.';
+        }
+
+        // Max value 99
+        if (parseFloat(value) > 99) {
+            value = '99';
+        }
+
+        return value;
+    };
 
     return (
         <View style={styles(theme).container}>
@@ -78,10 +125,11 @@ export default function YearsOfExperience(props: any) {
                         placeholder={STRING.experience}
                         inputTitle={STRING.years_of_experience}
                         inputColor={true}
-                        keyboardType="numeric"
+                        keyboardType="decimal-pad"
                         value={yearsOfExperience}
                         onChangeText={(text) => {
-                            setYearsOfExperience(text);
+                            const cleanedValue = validateExperienceInput(text);
+                            setYearsOfExperience(cleanedValue);
                         }}
                     />
                 </View>

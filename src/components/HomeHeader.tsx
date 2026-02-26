@@ -4,6 +4,7 @@ import {
   ImageBackground,
   Pressable,
   SafeAreaView,
+  ScrollView,
   StatusBar,
   StyleSheet,
   TextInput,
@@ -32,18 +33,22 @@ const HomeHeader = (props: any) => {
   const { theme } = useContext(ThemeContext);
   const { user, profile } = useContext<any>(AuthContext);
 
+  const getInitials = (firstName?: string, lastName?: string) => {
+    const f = firstName?.trim()?.[0] || '';
+    const l = lastName?.trim()?.[0] || '';
+
+    return (f + l).toUpperCase();
+  };
+
   return (
     <View style={styles(theme).container}>
       <View style={styles(theme).headerView}>
         <View style={{ flex: 1.0, marginRight: getScaleSize(16) }}>
           <Text
-            style={{ flex: 1.0 }}
-            numberOfLines={1}
             size={getScaleSize(16)}
             font={FONTS.Lato.Medium}
             color={theme.white}>
-            {`Hello! ${(profile?.user?.first_name ?? "") + " " + (profile?.user?.last_name ?? "")}\n`}
-
+            {`Hello! ${(profile?.user?.first_name ?? "") + " " + (profile?.user?.last_name ?? " ")}`}
           </Text>
           <Text
             size={getScaleSize(24)}
@@ -70,16 +75,30 @@ const HomeHeader = (props: any) => {
           ]}
           activeOpacity={1}
           onPress={() => { props?.onPressUserProfile() }}>
-          {profile?.user?.profile_photo_url ?
+          {profile?.user?.profile_photo_url ? (
             <Image
               style={styles(theme).placeholderImage}
               source={{ uri: profile?.user?.profile_photo_url }}
             />
-            :
-            <Image
-              style={styles(theme).placeholderImage}
-              source={IMAGES.user_placeholder}
-            />
+          ) :
+            <>
+              {profile?.user?.first_name && profile?.user?.last_name ? (
+                <View style={styles(theme).EmptyProfileContainer}>
+                  <Text size={getScaleSize(12)}
+                    font={FONTS.Lato.Medium}
+                    align="center"
+                    color={theme._262B43E5}>
+                    {(profile?.user?.first_name?.charAt(0) ?? '').toUpperCase() +
+                      (profile?.user?.last_name?.charAt(0) ?? '').toUpperCase()}
+                  </Text>
+                </View>
+              ) : (
+                <Image
+                  style={styles(theme).placeholderImage}
+                  source={IMAGES.user_placeholder}
+                />
+              )}
+            </>
           }
         </TouchableOpacity>
       </View>
@@ -104,36 +123,6 @@ const HomeHeader = (props: any) => {
           />
         </TouchableOpacity>
       </View>
-      <View style={styles(theme).bottomText}>
-        <View style={styles(theme).userImage}>
-          <Image style={styles(theme).workerImage} source={IMAGES.worker} />
-        </View>
-        <View style={styles(theme).textView}>
-          <View style={{ flexDirection: 'row' }}>
-            <Text
-              size={getScaleSize(48)}
-              font={FONTS.Lato.Bold}
-              color={theme.white}>
-              {props?.professionalConnectedCount ?? '0'}{' '}
-            </Text>
-            <Text
-              size={getScaleSize(20)}
-              font={FONTS.Lato.SemiBold}
-              color={theme.white}>
-              {'Professionals\nConnected Today'}
-            </Text>
-          </View>
-          <Text
-            style={{ marginTop: getScaleSize(8) }}
-            size={getScaleSize(12)}
-            font={FONTS.Lato.Regular}
-            color={theme.white}>
-            {
-              'Verified professionals ready to\nhelp you today'
-            }
-          </Text>
-        </View>
-      </View>
     </View>
   );
 };
@@ -141,22 +130,18 @@ const HomeHeader = (props: any) => {
 const styles = (theme: ThemeContextType['theme']) =>
   StyleSheet.create({
     container: {
-      flex: 1.0,
       backgroundColor: theme.primary,
-      paddingTop: StatusBar.currentHeight,
-      // paddingHorizontal: getScaleSize(20),
-      borderBottomLeftRadius: getScaleSize(60),
-      borderBottomRightRadius: getScaleSize(60),
-      overflow: 'hidden',
+      paddingTop: getScaleSize(10)
     },
     headerView: {
-      flex: 1.0,
+      // flex: 1.0,
       flexDirection: 'row',
       marginHorizontal: getScaleSize(21),
     },
     searchView: {
       flexDirection: 'row',
       marginHorizontal: getScaleSize(21),
+      marginBottom: getScaleSize(10)
     },
     searchBox: {
       flexDirection: 'row',
@@ -227,6 +212,15 @@ const styles = (theme: ThemeContextType['theme']) =>
       width: getScaleSize(34),
       borderRadius: getScaleSize(17),
       alignSelf: 'center'
+    },
+    EmptyProfileContainer: {
+      width: getScaleSize(34),
+      height: getScaleSize(34),
+      backgroundColor: theme._F0EFF0,
+      borderRadius: getScaleSize(34),
+      alignSelf: 'center',
+      alignItems: 'center',
+      justifyContent: 'center',
     },
     bottomText: {
       flexDirection: 'row',

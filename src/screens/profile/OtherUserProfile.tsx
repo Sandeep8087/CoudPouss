@@ -43,6 +43,7 @@ export default function OtherUserProfile(props: any) {
   const { theme } = useContext<any>(ThemeContext);
 
   const item = props?.route?.params?.item ?? {};
+  const providerId = props?.route?.params?.providerId ?? '';
 
   const [isLoading, setLoading] = useState(false);
   const [showMore, setShowMore] = useState(false);
@@ -58,12 +59,13 @@ export default function OtherUserProfile(props: any) {
 
     try {
       const params = {
-        user_id: item?.id,
+        user_id: providerId ? providerId : item?.id,
       }
+
+      console.log('item?.id,', item?.id,)
       setLoading(true);
       const result = await API.Instance.post(API.API_ROUTES.otherUserProfile, params);
       if (result.status) {
-        console.log('otherUserProfile==>', result?.data?.data)
         setUserProfile(result?.data?.data ?? {});
         parseRatings(result?.data?.data?.customer_ratings)
       } else {
@@ -88,6 +90,10 @@ export default function OtherUserProfile(props: any) {
       return {};
     }
   };
+
+  console.log('userProfile?.profile_photo_url', userProfile?.profile_photo_url)
+
+  const overallRating = Number(userProfile?.overall_ratings ?? 0);
 
   return (
     <View style={styles(theme).container}>
@@ -151,20 +157,23 @@ export default function OtherUserProfile(props: any) {
                   style={{alignSelf: 'center'}}>
                   {'4.6'}
                 </Text> */}
-                <Image
-                  style={{
-                    height: getScaleSize(24),
-                    width: getScaleSize(24),
-                    alignSelf: 'center',
-                  }}
-                  source={IMAGES.verify}
-                />
+                {item?.is_certified === true &&
+                  <Image
+                    style={{
+                      height: getScaleSize(24),
+                      width: getScaleSize(24),
+                      alignSelf: 'center',
+                    }}
+                    source={IMAGES.verify}
+                  />
+                }
                 <Text
                   size={getScaleSize(12)}
                   font={FONTS.Lato.Medium}
                   color={'#214C65'}
-                  style={{ alignSelf: 'center', marginTop: getScaleSize(4) }}>
-                  {STRING.Certified}
+                  align='center'
+                  style={{ marginTop: getScaleSize(4) }}>
+                  {item?.is_certified === true ? STRING.Certified : 'Not\ncertified'}
                 </Text>
               </View>
             </View>
@@ -261,10 +270,17 @@ export default function OtherUserProfile(props: any) {
               showsHorizontalScrollIndicator={false}
               renderItem={({ item, index }) => {
                 return (
-                  <Image
-                    style={[styles(theme).photosView]}
-                    source={{ uri: item }}
-                  />
+                  <TouchableOpacity onPress={() => {
+                    props.navigation.navigate(SCREENS.WebViewScreen.identifier, {
+                      url: item,
+                    })
+                  }}>
+                    <Image
+                      style={[styles(theme).photosView]}
+                      resizeMode='cover'
+                      source={{ uri: item }}
+                    />
+                  </TouchableOpacity>
                 );
               }}
             />
@@ -310,13 +326,17 @@ export default function OtherUserProfile(props: any) {
                 alignSelf: 'center',
               }}>
               <View style={styles(theme).rowView}>
-                {[...Array(5)].map((_, i) => (
-                  <Image
-                    key={i}
-                    source={IMAGES.star}
-                    style={styles(theme).ratingimage}
-                  />
-                ))}
+                {[...Array(5)].map((_, i) => {
+                  const filled = i < Math.round(overallRating);
+
+                  return (
+                    <Image
+                      key={i}
+                      source={filled ? IMAGES.star : IMAGES.ic_star_blank}
+                      style={styles(theme).ratingimage}
+                    />
+                  );
+                })}
               </View>
               <Text
                 size={getScaleSize(12)}
@@ -376,9 +396,10 @@ export default function OtherUserProfile(props: any) {
               color={'#2C6587'}>
               {STRING.RecentWorksReviews}
             </Text>
-            {/* {(userProfile?.recent_works_and_reviews ?? []).map((item: any, index: number) => {
+            {(userProfile?.recent_works_and_reviews ?? []).map((item: any, index: number) => {
               return (
                 <RatingsReviewsItem
+                  item={item}
                   key={index}
                   itemContainer={{ marginTop: index === 0 ? getScaleSize(20) : getScaleSize(16) }}
                   onPressShowMore={() => {
@@ -387,7 +408,7 @@ export default function OtherUserProfile(props: any) {
                   showMore={showMore}
                 />
               );
-            })} */}
+            })}
           </View>
         }
         <View style={{ height: getScaleSize(32) }} />
@@ -436,6 +457,7 @@ const styles = (theme: ThemeContextType['theme']) =>
       borderRadius: 8,
       resizeMode: 'cover',
       marginTop: getScaleSize(18),
+      marginRight: getScaleSize(10)
     },
     ratingimage: {
       resizeMode: 'cover',

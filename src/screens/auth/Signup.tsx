@@ -1,4 +1,4 @@
-import { Dimensions, Image, ScrollView, StyleSheet, TouchableOpacity, View } from 'react-native';
+import { Dimensions, Image, KeyboardAvoidingView, Platform, ScrollView, StyleSheet, TouchableOpacity, View } from 'react-native';
 import React, { useContext, useEffect, useState } from 'react';
 
 //CONTEXT
@@ -15,6 +15,7 @@ import { SCREENS } from '..';
 import { Header, Input, Text, Button, SelectCountrySheet } from '../../components';
 import { CommonActions } from '@react-navigation/native';
 import { API } from '../../api';
+import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 
 export default function Signup(props: any) {
 
@@ -41,8 +42,17 @@ export default function Signup(props: any) {
     // }, [email])
 
     async function onSignup() {
-        if (!email) {
-            setEmailError(STRING.please_enter_your_email);
+        const trimmedEmail = email.trim();
+
+        if (!trimmedEmail) {
+            setEmailError(STRING.email_required);
+
+        } else if (trimmedEmail.length < 6 || trimmedEmail.length > 100) {
+            setEmailError(STRING.email_must_be_six_to_hundred_char_allow);
+
+        } else if (!REGEX.email.test(trimmedEmail)) {
+            setEmailError(STRING.please_enter_valid_email);
+
         } else {
             setEmailError('');
             // let params = {}
@@ -53,16 +63,16 @@ export default function Signup(props: any) {
             //         role: userType,
             //     }
             // } else {
-               const params = {
-                    email: email,
-                    role: userType,
-                }
+            const params = {
+                email: trimmedEmail,
+                role: userType,
+            }
             // }
             try {
                 setLoading(true);
-                const result = await API.Instance.post(API.API_ROUTES.signup, params);
+                const result: any = await API.Instance.post(API.API_ROUTES.signup, params);
                 setLoading(false);
-                console.log('result', result.status, result)
+                console.log('result', result?.code, result)
                 if (result.status) {
                     SHOW_TOAST(result?.data?.message ?? '', 'success')
                     props.navigation.navigate(SCREENS.Otp.identifier, {
@@ -72,8 +82,27 @@ export default function Signup(props: any) {
                         // countryCode: countryCode,
                     });
                 } else {
-                    SHOW_TOAST(result?.data?.message ?? '', 'error')
-                    console.log('error==>', result?.data?.message)
+                    if (result?.code === 409) {
+                        if (result?.data?.message == 'OTP already sent. Redirect to Verify page.') {
+                            props.navigation.navigate(SCREENS.Otp.identifier, {
+                                isFromSignup: true,
+                                email: email,
+                            })
+                        } else if (result?.data?.message == 'OTP already verified. Redirect to Password page.') {
+                            props.navigation.navigate(SCREENS.CreatePassword.identifier, {
+                                email: email,
+                            })
+                        } else if (result?.data?.message == 'Password already set. Redirect to Details page.') {
+                            props.navigation.navigate(SCREENS.AddPersonalDetails.identifier, {
+                                email: email,
+                            })
+                        } else {
+                            SHOW_TOAST(result?.data?.message ?? '', 'error')
+                        }
+                    } else {
+                        SHOW_TOAST(result?.data?.message ?? '', 'error')
+                        console.log('error==>', result?.data?.message)
+                    }
                 }
             } catch (error: any) {
                 setLoading(false);
@@ -86,7 +115,16 @@ export default function Signup(props: any) {
     return (
         <View style={styles(theme).container}>
             <Header />
-            <ScrollView showsVerticalScrollIndicator={false}>
+            <KeyboardAwareScrollView
+                showsVerticalScrollIndicator={false}
+                enableOnAndroid={true}
+                // extraScrollHeight={20}
+                keyboardShouldPersistTaps="handled"
+                contentContainerStyle={{
+                    paddingBottom: 20,
+                     flexGrow: 1,
+                }}
+            >
                 <View style={styles(theme).mainContainer}>
                     <Image source={IMAGES.ic_logo} style={styles(theme).logo} />
                     <Text
@@ -127,21 +165,22 @@ export default function Signup(props: any) {
                             }}
                         />
                     ) : ( */}
-                        <Input
-                            placeholder={STRING.enter_email}
-                            placeholderTextColor={theme._939393}
-                            inputTitle={STRING.email}
-                            inputColor={false}
-                            continerStyle={{ marginTop: getScaleSize(82) }}
-                            value={email}
-                            keyboardType="email-address"
-                            autoCapitalize="none"
-                            onChangeText={text => {
-                                setEmail(text);
-                                setEmailError('');
-                            }}
-                            isError={emailError}
-                        />
+                    <Input
+                        placeholder={STRING.enter_email}
+                        placeholderTextColor={theme._939393}
+                        inputTitle={STRING.email}
+                        inputColor={false}
+                        continerStyle={{ marginTop: getScaleSize(82) }}
+                        value={email}
+                        maxLength={100}
+                        keyboardType="email-address"
+                        autoCapitalize="none"
+                        onChangeText={text => {
+                            setEmail(text.replace(/\s/g, ''));
+                            setEmailError('');
+                        }}
+                        isError={emailError}
+                    />
                     {/* )} */}
                     <Button
                         title={STRING.continue}
@@ -168,7 +207,7 @@ export default function Signup(props: any) {
                         </Text>
                     </Text>
                 </View>
-            </ScrollView>
+            </KeyboardAwareScrollView>
             {/* <SelectCountrySheet
                 height={getScaleSize(500)}
                 isVisible={visibleCountry}
@@ -190,13 +229,11 @@ const styles = (theme: ThemeContextType['theme']) =>
         container: {
             flex: 1.0,
             backgroundColor: theme.white,
-            justifyContent: 'center'
         },
         mainContainer: {
-            flex: 1.0,
+            // flex: 1.0,
             marginHorizontal: getScaleSize(24),
             marginTop: getScaleSize(30),
-            justifyContent: 'center'
         },
         logo: {
             width: Dimensions.get('window').width - getScaleSize(240),

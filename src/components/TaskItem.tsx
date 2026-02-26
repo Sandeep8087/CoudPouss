@@ -17,7 +17,7 @@ export default function TaskItem(props: any) {
       return 'Quote Submitted';
     } else if (item?.quote_status === 'accepted') {
       return 'Quote Accepted';
-    } else if (item?.quote_status === 'completed') {
+    } else if (item?.quote_status === 'complete') {
       return 'Task Completed'
     }
   }
@@ -60,7 +60,7 @@ export default function TaskItem(props: any) {
               size={getScaleSize(14)}
               font={FONTS.Lato.Medium}
               color={theme._2C6587}>
-              {item?.chosen_date_time ? moment(item?.chosen_date_time).format('DD MMM, YYYY') : ''}
+              {item?.chosen_date_time ? moment.utc(item?.chosen_date_time).local().format('DD MMM, YYYY') : ''}
             </Text>
           </View>
           <View style={styles(theme).itemView}>
@@ -76,7 +76,7 @@ export default function TaskItem(props: any) {
               size={getScaleSize(14)}
               font={FONTS.Lato.Medium}
               color={theme._2C6587}>
-              {item?.chosen_date_time ? moment(item?.chosen_date_time).format('hh:mm A') : ''}
+              {item?.chosen_date_time ? moment.utc(item?.chosen_date_time).local().format('hh:mm A') : ''}
             </Text>
           </View>
         </View>

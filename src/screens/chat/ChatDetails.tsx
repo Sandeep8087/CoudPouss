@@ -41,6 +41,7 @@ export default function ChatDetails(props: any) {
   const STRING = useString();
   const {theme} = useContext<any>(ThemeContext);
   const {profile} = useContext<any>(AuthContext);
+  const {user} = useContext<any>(AuthContext);
   const peerUser = props?.route?.params?.peerUser;
   const [message, setMessage] = useState('');
   const [messages, setMessages] = useState<any[]>([]);

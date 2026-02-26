@@ -5,6 +5,8 @@ import {
   TouchableOpacity,
   Image,
   ScrollView,
+  Alert,
+  Dimensions,
 } from 'react-native';
 
 //CONTEXT
@@ -12,30 +14,35 @@ import { AuthContext, ThemeContext, ThemeContextType } from '../../context';
 
 //CONSTANT & ASSETS
 import { FONTS, IMAGES } from '../../assets';
-import { getScaleSize, Storage, useString } from '../../constant';
+import { getScaleSize, openStripeCheckout, Storage, TABBAR_HEIGHT, useString } from '../../constant';
 
 //COMPONENTS
 import { Text, HomeHeader, SearchComponent, Header, Button, BottomSheet, ProgressView } from '../../components';
 import { SCREENS } from '..';
 import { CommonActions } from '@react-navigation/native';
+import { stubFalse } from 'lodash';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 
 export default function Profile(props: any) {
 
   const STRING = useString();
+  const insets = useSafeAreaInsets();
+
   const { theme } = useContext<any>(ThemeContext);
   const { userType, profile } = useContext<any>(AuthContext);
 
   const [isLoading, setLoading] = useState(false);
   const bottomSheetRef = useRef<any>(null);
 
-  console.log('user', profile)
+  console.log('user', insets.bottom)
 
   const profileItemsElder = [
     { id: 1, title: STRING.my_profile, icon: IMAGES.ic_my_profile, onPress: SCREENS.MyProfile.identifier },
-    { id: 2, title: STRING.transactions, icon: IMAGES.ic_transactions, onPress: SCREENS.Transactions.identifier },
+    { id: 2, title: STRING.transactions, icon: IMAGES.ic_transactions, onPress: SCREENS.TransactionsElder.identifier },
     { id: 3, title: STRING.ratings_reviews, icon: IMAGES.ic_ratings_reviews, onPress: SCREENS.RatingsReviews.identifier },
-    { id: 4, title: STRING.notifications, icon: IMAGES.ic_notifications, onPress: SCREENS.Notifications.identifier },
+    { id: 4, title: STRING.notifications, icon: IMAGES.ic_notifications, onPress: SCREENS.Notification.identifier },
+    { id: 5, title: STRING.prefered_language, icon: IMAGES.ic_language, onPress: SCREENS.Language.identifier }
   ]
 
   const profieItemsProfessional = [
@@ -44,7 +51,9 @@ export default function Profile(props: any) {
     { id: 3, title: STRING.manage_services, icon: IMAGES.ic_manage_services, onPress: SCREENS.ManageServices.identifier },
     { id: 4, title: STRING.manage_subscription, icon: IMAGES.ic_manage_subscription, onPress: SCREENS.ManageSubscription.identifier },
     { id: 5, title: STRING.ratings_reviews, icon: IMAGES.ic_ratings_reviews, onPress: SCREENS.RatingsReviews.identifier },
-    { id: 6, title: STRING.notifications, icon: IMAGES.ic_notifications, onPress: SCREENS.Notifications.identifier },
+    { id: 6, title: STRING.notifications, icon: IMAGES.ic_notifications, onPress: SCREENS.Notification.identifier },
+    { id: 7, title: STRING.prefered_language, icon: IMAGES.ic_language, onPress: SCREENS.Language.identifier }
+
   ]
 
   function getProfileItems() {
@@ -79,7 +88,10 @@ export default function Profile(props: any) {
         }}
         screenName={STRING.my_account}
       />
-      <ScrollView showsVerticalScrollIndicator={false}>
+      <ScrollView showsVerticalScrollIndicator={false}
+        contentContainerStyle={{
+          paddingBottom: getScaleSize(20)
+        }}>
         <View style={styles(theme).mainContainer}>
           {profile?.user?.profile_photo_url ? (
             <Image source={{ uri: profile?.user?.profile_photo_url }} resizeMode='cover' style={styles(theme).profileContainer} />
@@ -99,36 +111,55 @@ export default function Profile(props: any) {
             size={getScaleSize(22)}
             font={FONTS.Lato.SemiBold}
             align="center"
+            numberOfLines={1}
             color={theme._2B2B2B}>
             {(profile?.user?.first_name ?? "") + " " + (profile?.user?.last_name ?? "")}
           </Text>
           {userType === 'service_provider' && (
             <>
-              {profile?.provider_info?.is_docs_verified == false && (
-                <View style={styles(theme).checkStatusContainer}>
-                  <Image source={IMAGES.ic_alart} style={styles(theme).alartIcon} />
-                  <Text
-                    size={getScaleSize(19)}
-                    font={FONTS.Lato.Bold}
-                    align="center"
-                    color={theme._214C65}>
-                    {STRING.account_under_verification}
-                  </Text>
-                  <TouchableOpacity
-                    onPress={() => {
-                      props.navigation.navigate(SCREENS.ApplicationStatus.identifier);
-                    }}
-                    style={styles(theme).checkStatusButton}>
+              {(profile?.provider_info?.is_docs_verified === false ||
+                profile?.onboarding_status === false) && (
+                  <View style={styles(theme).checkStatusContainer}>
+                    <Image source={IMAGES.ic_alart} style={styles(theme).alartIcon} />
                     <Text
-                      size={getScaleSize(16)}
-                      font={FONTS.Lato.SemiBold}
+                      size={getScaleSize(19)}
+                      font={FONTS.Lato.Bold}
                       align="center"
-                      color={theme.white}>
-                      {STRING.check_status}
+                      color={theme._214C65}>
+                      {STRING.account_under_verification}
                     </Text>
-                  </TouchableOpacity>
-                </View>
-              )}
+                    {profile?.provider_info?.is_docs_verified === false && (
+                      <TouchableOpacity
+                        onPress={() => {
+                          props.navigation.navigate(SCREENS.ApplicationStatus.identifier);
+                        }}
+                        style={[styles(theme).checkStatusButton, { backgroundColor: theme._214C65 }]}>
+                        <Text
+                          size={getScaleSize(16)}
+                          font={FONTS.Lato.SemiBold}
+                          align="center"
+                          color={theme.white}>
+                          {STRING.check_status}
+                        </Text>
+                      </TouchableOpacity>
+                    )}
+                    {profile?.onboarding_status === false && (
+                      <TouchableOpacity
+                        onPress={() => {
+                          openStripeCheckout(profile?.onboarding_redirect_url ?? '')
+                        }}
+                        style={[styles(theme).checkStatusButton, { backgroundColor: theme._F0B52C }]}>
+                        <Text
+                          size={getScaleSize(16)}
+                          font={FONTS.Lato.SemiBold}
+                          align="center"
+                          color={theme.white}>
+                          {STRING.onboarding_process}
+                        </Text>
+                      </TouchableOpacity>
+                    )}
+                  </View>
+                )}
             </>
           )}
           <View style={{ marginTop: userType === 'service_provider' ? getScaleSize(20) : getScaleSize(40) }}>
@@ -157,16 +188,19 @@ export default function Profile(props: any) {
       </ScrollView>
       <BottomSheet
         bottomSheetRef={bottomSheetRef}
-        height={getScaleSize(300)}
+        height={getScaleSize(330)}
         isInfo={true}
         title={STRING.are_you_sure_you_want_to_logout}
         buttonTitle={STRING.logout}
+        secondButtonTitle={STRING.cancel}
+        onPressSecondButton={() => {
+          bottomSheetRef.current.close();
+        }}
         onPressButton={() => {
           logout()
         }}
       />
       {isLoading && <ProgressView />}
-      ˝
     </View>
   );
 }
@@ -232,7 +266,7 @@ const styles = (theme: ThemeContextType['theme']) =>
       marginBottom: getScaleSize(12),
     },
     checkStatusButton: {
-      backgroundColor: theme._214C65,
+
       borderRadius: getScaleSize(12),
       alignItems: 'center',
       paddingVertical: getScaleSize(10),

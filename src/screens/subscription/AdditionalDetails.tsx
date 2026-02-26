@@ -6,7 +6,7 @@ import { ThemeContext, ThemeContextType } from '../../context';
 
 //CONSTANT & ASSETS
 import { FONTS, IMAGES } from '../../assets';
-import { getScaleSize, useString, SHOW_TOAST } from '../../constant';
+import { getScaleSize, useString, SHOW_TOAST, isImageFile, SHOW_SUCCESS_TOAST } from '../../constant';
 
 //SCREENS
 import { SCREENS } from '..';
@@ -19,32 +19,47 @@ import { CommonActions } from '@react-navigation/native';
 import { pick, types, isErrorWithCode, errorCodes } from '@react-native-documents/picker';
 import { API } from '../../api';
 
-
 export default function AdditionalDetails(props: any) {
 
     const STRING = useString();
     const { theme } = useContext<any>(ThemeContext);
 
     const planDetails: any = props?.route?.params?.planDetails ?? {};
-    const isFromApplicationStatus: any = props?.route?.params?.isFromApplicationStatus ?? false;
     const [copyOfId, setCopyOfId] = useState<any>([]);
     const [kbisExtract, setKbisExtract] = useState<any>([]);
     const [proofOfResidence, setProofOfResidence] = useState<any>([]);
     const [loading, setLoading] = useState<boolean>(false);
 
+
+
+    console.log('copyOfId', copyOfId)
+    console.log('kbisExtract', kbisExtract)
+    console.log('proofOfResidence', proofOfResidence)
+
     const pickDocument = async (type: string) => {
         try {
             const result = await pick({
-                type: [types.allFiles],
+                type: [types.images, types.pdf],
             });
+
+            const file: any = result?.[0];
+
+            const allowedTypes = ['image/jpeg', 'image/png', 'application/pdf'];
+
+            if (!allowedTypes.includes(file?.type)) {
+                SHOW_TOAST('Only JPG, PNG or PDF files are allowed', 'error');
+                return;
+            }
 
             if (type === 'id') {
                 setCopyOfId(result);
             } else if (type === 'kbis') {
                 setKbisExtract(result);
+
             } else if (type === 'address_proof') {
                 setProofOfResidence(result);
             }
+
         } catch (err) {
             if (isErrorWithCode(err) && err.code === errorCodes.OPERATION_CANCELED) {
                 console.log('User cancelled');
@@ -54,58 +69,75 @@ export default function AdditionalDetails(props: any) {
         }
     };
 
-    console.log('copyOfId', copyOfId)
-    console.log('kbisExtract', kbisExtract)
-    console.log('proofOfResidence', proofOfResidence)
-
     async function uploadDocuments() {
         if (copyOfId?.length === 0 || kbisExtract?.length === 0 || proofOfResidence?.length === 0) {
             SHOW_TOAST('Please upload all the required documents', 'error')
             return;
         }
-        try {
-            const formData = new FormData();
-            formData.append('id_document', {
-                uri: copyOfId?.[0]?.uri,
-                name: copyOfId?.[0]?.name,
-                type: copyOfId?.[0]?.type,
-            });
-            formData.append('kbis_extract', {
-                uri: kbisExtract?.[0]?.uri,
-                name: kbisExtract?.[0]?.name,
-                type: kbisExtract?.[0]?.type,
-            });
-            formData.append('proof_of_residence', {
-                uri: proofOfResidence?.[0]?.uri,
-                name: proofOfResidence?.[0]?.name,
-                type: proofOfResidence?.[0]?.type,
-            });
-            console.log('formData==>', formData)
-            setLoading(true);
-            const result = await API.Instance.post(API.API_ROUTES.uploadDocuments, formData, {
-                headers: {
-                    'Content-Type': 'multipart/form-data',
-                },
-            });
-            setLoading(false);
-            console.log('result', result.status, result)
-            if (result.status) {
-                if (isFromApplicationStatus) {
-                    props.navigation.navigate(SCREENS.ApplicationStatus.identifier);
-                } else {
-                    props.navigation.navigate(SCREENS.YearsOfExperience.identifier, {
-                        planDetails: planDetails,
-                    });
-                }
-            } else {
-                SHOW_TOAST(result?.data?.message ?? '', 'error')
-            }
-            console.log('error==>', result?.data?.message)
+        const errors: string[] = [];
+
+        if (!copyOfId?.length) {
+            errors.push(STRING.id_docuement_required);
         }
-        catch (error: any) {
-            setLoading(false);
-            SHOW_TOAST(error?.message ?? '', 'error');
-            console.log(error?.message)
+
+        if (!kbisExtract?.length) {
+            errors.push(STRING.kbis_extract_required);
+        }
+
+        if (!proofOfResidence?.length) {
+            errors.push(STRING.proof_of_residence_required);
+        }
+
+        // If there are errors, show them all at once
+        if (errors.length > 0) {
+            SHOW_TOAST(errors.join('\n'), 'error');
+            return
+        }
+
+        try {
+            setLoading(true);
+
+            const formData = new FormData();
+
+            formData.append('id_document', {
+                uri: copyOfId[0].uri,
+                name: copyOfId[0].name,
+                type: copyOfId[0].type,
+            });
+
+            formData.append('kbis_extract', {
+                uri: kbisExtract[0].uri,
+                name: kbisExtract[0].name,
+                type: kbisExtract[0].type,
+            });
+
+            formData.append('proof_of_residence', {
+                uri: proofOfResidence[0].uri,
+                name: proofOfResidence[0].name,
+                type: proofOfResidence[0].type,
+            });
+
+            const result = await API.Instance.post(
+                API.API_ROUTES.uploadDocuments,
+                formData,
+                {
+                    headers: {
+                        'Content-Type': 'multipart/form-data',
+                    },
+                }
+            );
+            if (result?.data?.status) {
+                SHOW_SUCCESS_TOAST('All documents uploaded successfully');
+                props.navigation.navigate(
+                    SCREENS.YearsOfExperience.identifier,
+                    { planDetails }
+                );
+            } else {
+                SHOW_TOAST(result?.data?.message || 'Upload failed', 'error');
+            }
+
+        } catch (error: any) {
+            SHOW_TOAST(error?.message || 'Upload failed', 'error');
         } finally {
             setLoading(false);
         }
@@ -137,9 +169,20 @@ export default function AdditionalDetails(props: any) {
                         onPress={() => {
                             pickDocument('id')
                         }}
-                        style={[styles(theme).itemContainer, { paddingVertical: copyOfId?.[0]?.uri ? getScaleSize(24) : getScaleSize(47), }]}>
+                        style={[styles(theme).itemContainer, { paddingVertical: isImageFile(copyOfId?.[0]) ? getScaleSize(24) : getScaleSize(47), }]}>
                         {copyOfId?.length > 0 ? (
-                            <Image source={{ uri: copyOfId?.[0]?.uri }} style={styles(theme).imageIcon} />
+                            isImageFile(copyOfId?.[0]) ? (
+                                <Image source={{ uri: copyOfId?.[0]?.uri }} style={styles(theme).imageIcon} />
+                            ) : (
+                                <>
+                                    <Image source={IMAGES.ic_file} style={[styles(theme).fileIcon, { tintColor: theme.primary }]} />
+                                    <Text size={getScaleSize(12)}
+                                        font={FONTS.Lato.Regular}
+                                        color={theme._818285}>
+                                        {copyOfId?.[0]?.name}
+                                    </Text>
+                                </>
+                            )
                         ) : (
                             <>
                                 <Image source={IMAGES.ic_file_uplord} style={styles(theme).fileIcon} />
@@ -149,8 +192,7 @@ export default function AdditionalDetails(props: any) {
                                     {STRING.upload_from_device}
                                 </Text>
                             </>
-                        )}
-
+                        )} 
                     </TouchableOpacity>
                     <Text size={getScaleSize(17)}
                         font={FONTS.Lato.Medium}
@@ -162,9 +204,20 @@ export default function AdditionalDetails(props: any) {
                         onPress={() => {
                             pickDocument('kbis')
                         }}
-                        style={[styles(theme).itemContainer, { paddingVertical: kbisExtract?.[0]?.uri ? getScaleSize(24) : getScaleSize(47), }]}>
+                        style={[styles(theme).itemContainer, { paddingVertical: isImageFile(kbisExtract?.[0]) ? getScaleSize(24) : getScaleSize(47), }]}>
                         {kbisExtract?.length > 0 ? (
-                            <Image source={{ uri: kbisExtract?.[0]?.uri }} style={styles(theme).imageIcon} />
+                            isImageFile(kbisExtract?.[0]) ? (
+                                <Image source={{ uri: kbisExtract?.[0]?.uri }} style={styles(theme).imageIcon} />
+                            ) : (
+                                <>
+                                    <Image source={IMAGES.ic_file} style={[styles(theme).fileIcon, { tintColor: theme.primary }]} />
+                                    <Text size={getScaleSize(12)}
+                                        font={FONTS.Lato.Regular}
+                                        color={theme._818285}>
+                                        {kbisExtract?.[0]?.name}
+                                    </Text>
+                                </>
+                            )
                         ) : (
                             <>
                                 <Image source={IMAGES.ic_file_uplord} style={styles(theme).fileIcon} />
@@ -192,9 +245,20 @@ export default function AdditionalDetails(props: any) {
                         onPress={() => {
                             pickDocument('address_proof')
                         }}
-                        style={[styles(theme).itemContainer, { paddingVertical: proofOfResidence?.[0]?.uri ? getScaleSize(24) : getScaleSize(47), }]}>
+                        style={[styles(theme).itemContainer, { paddingVertical: isImageFile(proofOfResidence?.[0]) ? getScaleSize(24) : getScaleSize(47), }]}>
                         {proofOfResidence?.length > 0 ? (
-                            <Image source={{ uri: proofOfResidence?.[0]?.uri }} style={styles(theme).imageIcon} />
+                            isImageFile(proofOfResidence?.[0]) ? (
+                                <Image source={{ uri: proofOfResidence?.[0]?.uri }} style={styles(theme).imageIcon} />
+                            ) : (
+                                <>
+                                    <Image source={IMAGES.ic_file} style={[styles(theme).fileIcon, { tintColor: theme.primary }]} />
+                                    <Text size={getScaleSize(12)}
+                                        font={FONTS.Lato.Regular}
+                                        color={theme._818285}>
+                                        {proofOfResidence?.[0]?.name}
+                                    </Text>
+                                </>
+                            )
                         ) : (
                             <>
                                 <Image source={IMAGES.ic_file_uplord} style={styles(theme).fileIcon} />
@@ -285,5 +349,6 @@ const styles = (theme: ThemeContextType['theme']) =>
         imageIcon: {
             width: getScaleSize(100),
             height: getScaleSize(100),
+            resizeMode: 'contain',
         }
     });

@@ -15,6 +15,6 @@ export function SHOW_SUCCESS_TOAST(message: string) {
     Toast.show({
         type: 'success',
         text1: message,
-        position: 'bottom'
+        position: 'top'
     })
 }

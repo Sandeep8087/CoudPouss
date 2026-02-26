@@ -1,4 +1,4 @@
-import { Alert, Dimensions, Image, Linking, ScrollView, StyleSheet, TouchableOpacity, View } from 'react-native';
+import { Alert, Dimensions, Image, Linking, Platform, ScrollView, StyleSheet, TouchableOpacity, View } from 'react-native';
 import React, { useContext, useEffect, useRef, useState } from 'react';
 
 //CONTEXT
@@ -17,7 +17,6 @@ import { EventRegister } from 'react-native-event-listeners';
 import { API } from '../../api';
 import { CommonActions } from '@react-navigation/native';
 
-
 export default function PaymentMethod(props: any) {
 
     const STRING = useString();
@@ -29,6 +28,8 @@ export default function PaymentMethod(props: any) {
 
     const [isLoading, setLoading] = useState(false);
     const [paymentDetails, setPaymentDetails] = useState<any>({});
+
+    console.log(isFromSubscriptionButton, 'isFromSubscriptionButton')
 
     const paymentMethods = [
         { id: 1, title: 'Google Pay', icon: IMAGES.ic_google_pay },
@@ -65,10 +66,16 @@ export default function PaymentMethod(props: any) {
             if (url.includes('payment-success')) {
                 const params = parseParams(url);
                 const type = params.type;
+                const subscriptionId = params.succription_id;
+                console.log(subscriptionId, params, 'params')
                 if (type == 'add') {
                     Alert.alert('Payment successful');
                     fetchProfile()
-                    props.navigation.navigate(SCREENS.SubscriptionSuccessful.identifier);
+                    setTimeout(() => {
+                        props.navigation.navigate(SCREENS.SubscriptionSuccessful.identifier, {
+                            id: subscriptionId
+                        });
+                    }, 2000);
                 } else if (type == 'update') {
                     fetchProfile()
                     props?.navigation?.dispatch(
@@ -90,17 +97,21 @@ export default function PaymentMethod(props: any) {
             }
         });
 
+        //coudpouss://payment-success?type=add&succription_id=91fb80cb-0d1a-4640-b908-95fc32d2660d
         const handleUrl = ({ url }: { url: string }) => {
             console.log('Deep link:', url);
             // ✅ PAYMENT SUCCESS
             if (url.startsWith('coudpouss://payment-success')) {
                 const params = parseParams(url);
                 const type = params.type;
-
+                const subscriptionId = params.succription_id;
+                console.log(subscriptionId, params, 'params')
                 if (type == 'add') {
                     fetchProfile()
                     setTimeout(() => {
-                        props.navigation.navigate(SCREENS.SubscriptionSuccessful.identifier);
+                        props.navigation.navigate(SCREENS.SubscriptionSuccessful.identifier, {
+                            id: subscriptionId
+                        });
                     }, 2000);
                 } else if (type == 'update') {
                     fetchProfile()
@@ -134,16 +145,6 @@ export default function PaymentMethod(props: any) {
         };
     }, []);
 
-    useEffect(() => {
-        EventRegister.addEventListener('subscriptionPaymentCancel', (data: any) => {
-            SHOW_TOAST(data?.message ?? '', 'error')
-        });
-        return () => {
-            EventRegister.removeEventListener('subscriptionPaymentCancel')
-        }
-    }, []);
-
-    console.log(profile, 'profile')
     async function onPayment() {
         try {
             setLoading(true);
@@ -261,9 +262,9 @@ export default function PaymentMethod(props: any) {
                     title={STRING.proceed_to_pay}
                     style={{ flex: 1.0 }}
                     onPress={() => {
-                        if(profile?.has_purchased){
+                        if (profile?.has_purchased) {
                             SHOW_TOAST(STRING.you_have_already_subscribed_to_a_plan, 'info')
-                        }else{
+                        } else {
                             onPayment()
                         }
                     }}

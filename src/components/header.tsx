@@ -20,7 +20,8 @@ interface HeaderProps {
         title: string
     },
     onPress?: () => void,
-    icon?: any
+    icon?: any,
+    isFromRequest?: boolean
 }
 
 const Header = (props: HeaderProps) => {
@@ -86,9 +87,9 @@ const Header = (props: HeaderProps) => {
                         {props.screenName &&
                             <TouchableOpacity style={{ flex: 1.0 }} onPress={props.onBack}>
                                 <Text
-                                    size={getScaleSize(20)}
-                                    font={FONTS.Lato.SemiBold}
-                                    color={theme._323232}
+                                    size={props.isFromRequest === true ? getScaleSize(24) : getScaleSize(20)}
+                                    font={props.isFromRequest === true ? FONTS.Lato.Bold : FONTS.Lato.SemiBold}
+                                    color={props.isFromRequest === true ? theme._2C6587 : theme._323232}
                                     style={{ textTransform: 'capitalize' }}>
                                     {props.screenName}
                                 </Text>
@@ -130,7 +131,7 @@ const styles = (theme: ThemeContextType['theme']) => StyleSheet.create({
         alignItems: 'center'
     },
     statusBar: {
-        height: StatusBar.currentHeight
+        // height: StatusBar.currentHeight
     },
     backIcon: {
         width: getScaleSize(40),

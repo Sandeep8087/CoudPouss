@@ -1,22 +1,28 @@
-import React, {useContext, useEffect} from 'react';
-import {Image, Linking, StyleSheet, TouchableOpacity, View} from 'react-native';
+import React, { useContext, useEffect } from 'react';
+import { Alert, Dimensions, Image, ImageBackground, Linking, StyleSheet, TouchableOpacity, View } from 'react-native';
 
 // CONSTANT & ASSETS
-import {getScaleSize, useString, Storage} from '../constant';
-import {IMAGES} from '../assets/images';
-import {FONTS} from '../assets';
-import {AuthContext, ThemeContext, ThemeContextType} from '../context';
+import { getScaleSize, useString, Storage, TABBAR_HEIGHT } from '../constant';
+import { IMAGES } from '../assets/images';
+import { FONTS } from '../assets';
+import { AuthContext, ThemeContext, ThemeContextType } from '../context';
 import Text from './Text';
-import {head} from 'lodash';
-import {EventRegister} from 'react-native-event-listeners';
-import {CommonActions} from '@react-navigation/native';
-import {SCREENS} from '../screens';
-import {SafeAreaView} from 'react-native-safe-area-context';
+import { head } from 'lodash';
+import { EventRegister } from 'react-native-event-listeners';
+import { CommonActions } from '@react-navigation/native';
+import { SCREENS } from '../screens';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+
+const SCREEN_WIDTH = Dimensions.get('window').width;
 
 function Tabbar(props: any) {
-  const {theme} = useContext<any>(ThemeContext);
 
-  const {userType, setUser, setUserType} = useContext<any>(AuthContext);
+  const insets = useSafeAreaInsets();
+
+  const { theme } = useContext<any>(ThemeContext);
+
+  const { userType, setUser, setUserType, fetchProfile } = useContext<any>(AuthContext);
 
   useEffect(() => {
     const parseParams = (url: string) => {
@@ -41,11 +47,32 @@ function Tabbar(props: any) {
         const serviceId = params.service_id;
         const type = params.type;
         if (type == 'services_payment') {
-          Alert.alert('Payment successful');
           props.navigation.navigate(SCREENS.ServiceConfirmed.identifier, {
             serviceId: serviceId,
           });
         }
+      }
+
+      if (url.includes('account-success')) {
+        const params = parseParams(url);
+        fetchProfile()
+        props?.navigation?.dispatch(
+          CommonActions.reset({
+            index: 0,
+            routes: [{ name: SCREENS.BottomBar.identifier }],
+          }),
+        );
+      }
+
+      if (url.includes('account-cancel')) {
+        const params = parseParams(url);
+        fetchProfile()
+        props?.navigation?.dispatch(
+          CommonActions.reset({
+            index: 0,
+            routes: [{ name: SCREENS.BottomBar.identifier }],
+          }),
+        );
       }
 
       if (url.includes('payment-cancel')) {
@@ -61,7 +88,7 @@ function Tabbar(props: any) {
       }
     });
 
-    const handleUrl = ({url}: {url: string}) => {
+    const handleUrl = ({ url }: { url: string }) => {
       console.log('Deep link:', url);
       // ✅ PAYMENT SUCCESS
       if (url.startsWith('coudpouss://payment-success')) {
@@ -78,6 +105,47 @@ function Tabbar(props: any) {
           }, 2000);
         } else {
         }
+        return;
+      }
+
+      if (url.startsWith('coudpouss://account-success')) {
+        const params = parseParams(url);
+        EventRegister.emit('onAccountSuccess', {
+          message: 'Account created successfully',
+        });
+      }
+
+      if (url.startsWith('coudpouss://payment-success')) {
+        const params = parseParams(url);
+        const type = params.type
+        if (type == 'payment_type') {
+          setTimeout(() => {
+            props.navigation.navigate(SCREENS.Notification.identifier, {
+              isFromDeepLink: true,
+            });
+          }, 2000);
+        }
+        return;
+      }
+
+      if (url.startsWith('coudpouss://payment-cancel')) {
+        const params = parseParams(url);
+        const type = params.type
+        if (type == 'payment_type') {
+          setTimeout(() => {
+            props.navigation.navigate(SCREENS.Notification.identifier, {
+              isFromDeepLink: true,
+              isError: params.error,
+            });
+          }, 2000);
+        }
+      }
+
+      if (url.startsWith('coudpouss://account-cancle')) {
+        const params = parseParams(url);
+        EventRegister.emit('onAccountCancel', {
+          message: 'Account cancelled',
+        });
         return;
       }
       // ❌ PAYMENT CANCEL
@@ -118,7 +186,7 @@ function Tabbar(props: any) {
     props.navigation.dispatch(
       CommonActions.reset({
         index: 0,
-        routes: [{name: SCREENS.Login.identifier}],
+        routes: [{ name: SCREENS.Login.identifier }],
       }),
     );
   }
@@ -149,6 +217,8 @@ function Tabbar(props: any) {
 
   const STRING = useString();
 
+
+
   function onPress(name: string) {
     if (name === 'plus') {
       props.navigation.navigate(SCREENS.CreateRequest.identifier);
@@ -157,9 +227,14 @@ function Tabbar(props: any) {
     }
   }
 
-  return (
-    <View style={styles(theme).mainView}>
-      <View style={styles(theme).tabContainer}>
+  function renderView() {
+    return (
+      <View style={[
+        userType === 'service_provider'
+          ? styles(theme).tabContainer
+          : styles(theme).tabContainerServiceProvider,
+        // { paddingBottom: insets.bottom }
+      ]}>
         {props.state.routes.map((route: any, index: number) => {
           return (
             <Item
@@ -173,15 +248,62 @@ function Tabbar(props: any) {
           );
         })}
       </View>
-      <SafeAreaView edges={['bottom']} />
-    </View>
-  );
+    )
+  }
+
+  if (userType === 'service_provider') {
+    return (
+      // <SafeAreaView style={{ backgroundColor: 'transparent' }}>
+        <View style={[styles(theme).mainContainer]}>
+          {renderView()}
+        </View>
+      // </SafeAreaView>
+    )
+  }
+  else {
+    return (
+        <ImageBackground style={[styles(theme).mainView,
+        { height: TABBAR_HEIGHT  }
+        ]}
+          resizeMode='cover'
+          source={IMAGES.ic_tab_bar}>
+          {/* <SafeAreaView edges={['bottom']}> */}
+            {renderView()}
+          {/* </SafeAreaView> */}
+        </ImageBackground>
+    )
+  }
+  // return (
+  //   <SafeAreaView style={{ backgroundColor: 'transparent' }}>
+  //     <ImageBackground style={[
+  //       styles(theme).mainView,
+  //       { height: TABBAR_HEIGHT + insets.bottom }
+  //     ]}
+  //       resizeMode="stretch"
+  //       source={IMAGES.ic_tab_bar}>
+  //       <View style={styles(theme).tabContainer}>
+  //         {props.state.routes.map((route: any, index: number) => {
+  //           return (
+  //             <Item
+  //               key={index}
+  //               onPress={() => onPress(route.name)}
+  //               title={route.name}
+  //               index={index}
+  //               selected={props.state.index == index}
+  //               image={images[index]}
+  //             />
+  //           );
+  //         })}
+  //       </View>
+  //     </ImageBackground >
+  //   </SafeAreaView>
+  // );
 }
 
 const Item = (props: any) => {
-  const {theme} = useContext<any>(ThemeContext);
+  const { theme } = useContext<any>(ThemeContext);
 
-  const {userType} = useContext<any>(AuthContext);
+  const { userType } = useContext<any>(AuthContext);
 
   let images: any = [];
   let names: any = [];
@@ -216,7 +338,7 @@ const Item = (props: any) => {
         <View>
           {/*  */}
           {props?.selected ? (
-            <View style={{alignSelf: 'center'}}>
+            <View style={{ alignSelf: 'center' }}>
               <Image
                 style={
                   props.selected
@@ -228,7 +350,7 @@ const Item = (props: any) => {
                 source={images[props.index]}
               />
               <Text
-                style={{marginTop: getScaleSize(8)}}
+                style={{ marginTop: getScaleSize(8) }}
                 size={getScaleSize(14)}
                 font={FONTS.Lato.Bold}
                 color={theme.primary}
@@ -237,7 +359,7 @@ const Item = (props: any) => {
               </Text>
             </View>
           ) : (
-            <View style={{alignSelf: 'center'}}>
+            <View style={{ alignSelf: 'center' }}>
               <Image
                 style={
                   props.selected
@@ -248,7 +370,7 @@ const Item = (props: any) => {
                 source={images[props.index]}
               />
               <Text
-                style={{marginTop: getScaleSize(8)}}
+                style={{ marginTop: getScaleSize(8) }}
                 size={getScaleSize(12)}
                 font={FONTS.Lato.Medium}
                 color={'#E6E6E6'}
@@ -267,9 +389,13 @@ const Item = (props: any) => {
           onPress={() => {
             props.onPress(SCREENS.CreateRequest.identifier);
           }}
-          style={{alignSelf: 'center', marginTop: getScaleSize(-80)}}>
+          style={{
+            alignSelf: 'center',
+            transform: [{ translateY: -getScaleSize(15) }],
+            zIndex: 10,
+          }}>
           <Image
-            style={{height: getScaleSize(98), width: getScaleSize(98)}}
+            style={{ height: getScaleSize(98), width: getScaleSize(98) }}
             resizeMode="contain"
             source={IMAGES.plus}
           />
@@ -283,7 +409,7 @@ const Item = (props: any) => {
           <View>
             {/*  */}
             {props?.selected ? (
-              <View style={{alignSelf: 'center'}}>
+              <View style={{ alignSelf: 'center' }}>
                 <Image
                   style={
                     props.selected
@@ -295,7 +421,7 @@ const Item = (props: any) => {
                   source={images[props.index]}
                 />
                 <Text
-                  style={{marginTop: getScaleSize(8)}}
+                  style={{ marginTop: getScaleSize(8) }}
                   size={getScaleSize(14)}
                   font={FONTS.Lato.Bold}
                   color={theme.primary}
@@ -304,7 +430,7 @@ const Item = (props: any) => {
                 </Text>
               </View>
             ) : (
-              <View style={{alignSelf: 'center'}}>
+              <View style={{ alignSelf: 'center' }}>
                 <Image
                   style={
                     props.selected
@@ -315,7 +441,7 @@ const Item = (props: any) => {
                   source={images[props.index]}
                 />
                 <Text
-                  style={{marginTop: getScaleSize(8)}}
+                  style={{ marginTop: getScaleSize(4) }}
                   size={getScaleSize(12)}
                   font={FONTS.Lato.Medium}
                   color={'#E6E6E6'}
@@ -333,30 +459,48 @@ const Item = (props: any) => {
 
 const styles = (theme: ThemeContextType['theme']) =>
   StyleSheet.create({
-    mainView: {
+    mainContainer: {
       backgroundColor: theme.white,
       borderTopLeftRadius: getScaleSize(20),
       borderTopRightRadius: getScaleSize(20),
-      elevation: 2,
+      overflow: 'hidden',
+    },
+    mainView: {
+      width: SCREEN_WIDTH,
+      backgroundColor: theme.white,
+      // position: 'absolute',
+      // bottom: 0,
+      // left: 0,
+      // right: 0,
     },
     tabContainer: {
       flexDirection: 'row',
-      height: getScaleSize(96),
+      height: TABBAR_HEIGHT - getScaleSize(20),
+      alignItems: 'center',
+    },
+    tabContainerServiceProvider: {
+      flexDirection: 'row',
+      height: TABBAR_HEIGHT + getScaleSize(20),
+      alignItems: 'center',
+      paddingBottom: getScaleSize(6),
     },
     itemContainer: {
-      flex: 1.0,
-      justifyContent: 'center',
+      flex: 1,
+      justifyContent: 'flex-start',
       alignItems: 'center',
+      paddingTop: getScaleSize(10),
     },
     itemImageSelected: {
       height: getScaleSize(32),
       width: getScaleSize(32),
       alignSelf: 'center',
+      // marginTop: getScaleSize(45)
     },
     itemImage: {
       height: getScaleSize(32),
       width: getScaleSize(32),
       alignSelf: 'center',
+      // marginTop: getScaleSize(45)
     },
     tabText: {
       marginTop: getScaleSize(7),

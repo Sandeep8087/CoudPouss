@@ -14,13 +14,14 @@ import {
   Platform,
   SafeAreaView,
   TextInput,
+  PermissionsAndroid,
 } from 'react-native';
 
 //ASSETS
 import { FONTS, IMAGES } from '../../assets';
 
 //CONTEXT
-import { ThemeContext, ThemeContextType } from '../../context';
+import { AuthContext, ThemeContext, ThemeContextType } from '../../context';
 
 //CONSTANT
 import { formatDecimalInput, getScaleSize, SHOW_TOAST, useString } from '../../constant';
@@ -28,6 +29,7 @@ import { formatDecimalInput, getScaleSize, SHOW_TOAST, useString } from '../../c
 //COMPONENT
 import {
   AssistanceItems,
+  Button,
   CalendarComponent,
   CategoryDropdown,
   Header,
@@ -47,13 +49,21 @@ import { API } from '../../api';
 import { launchImageLibrary } from 'react-native-image-picker';
 import moment from 'moment';
 import { createThumbnail } from 'react-native-create-thumbnail';
+import Geolocation from 'react-native-geolocation-service';
+import { PERMISSIONS, request, RESULTS } from 'react-native-permissions';
 
 const { width } = Dimensions.get('window');
 const cellSize = (width - 30) / 7;
 
+type ProductValidationResult =
+  | { valid: true; value: string }
+  | { valid: false; message: string };
+
 export default function CreateRequest(props: any) {
+
   const STRING = useString();
   const { theme } = useContext<any>(ThemeContext);
+  const { selectedAddress } = useContext<any>(AuthContext);
 
   const category = props.route.params?.category;
   const subCategory = props.route.params?.subCategory;
@@ -82,19 +92,60 @@ export default function CreateRequest(props: any) {
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [selectedTime, setSelectedTime] = useState(new Date());
   const [productName, setProductName] = useState('')
-  const [productNameError, setProductNameError] = useState('')
-  const [quantity, setQuantity] = useState(0)
+  const [productNameError, setProductNameError] = useState<any>('')
+  const [quantity, setQuantity] = useState('')
   const [quantityError, setQuantityError] = useState('')
   const [firstProductImage, setFirstProductImage] = useState<any>(null);
   const [secondProductImage, setSecondProductImage] = useState<any>(null);
   const [firstProductImageURL, setFirstProductImageURL] = useState<any>(null);
   const [secondProductImageURL, setSecondProductImageURL] = useState<any>(null);
-  const [address, setAddress] = useState('');
   const [addressError, setAddressError] = useState('')
+  const [descriptionError, setDescriptionError] = useState('')
+  const [firstImageError, setFirstImageError] = useState('')
+  const [location, setLocation] = useState<any>(null);
+
 
   useEffect(() => {
     getAllCategories();
+    getLocation()
   }, []);
+
+
+  const hasLocationPermission = async () => {
+    if (Platform.OS === 'ios') {
+      const status = await request(PERMISSIONS.IOS.CAMERA);
+      if (status === RESULTS.GRANTED) {
+        return true;
+      } else {
+        return false;
+      }
+    }
+    const granted = await PermissionsAndroid.request(
+      PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION,
+    );
+
+    return granted === PermissionsAndroid.RESULTS.GRANTED;
+  };
+
+  async function getLocation() {
+    const permission = await hasLocationPermission();
+    if (!permission) return;
+
+    Geolocation.getCurrentPosition(
+      position => {
+        const { latitude, longitude } = position.coords;
+        console.log('latitude', latitude);
+        console.log('longitude', longitude);
+        setLocation({ latitude, longitude });
+      },
+      error => console.log('Error:', error),
+      {
+        enableHighAccuracy: false,
+        timeout: 20000,
+        maximumAge: 10000,
+      },
+    );
+  }
 
   async function getAllCategories() {
     try {
@@ -104,7 +155,11 @@ export default function CreateRequest(props: any) {
       console.log('result', result.status, result)
       if (result.status) {
         console.log('allCategories==', result?.data?.data)
-        setAllCategories(result?.data?.data);
+        const sortedData: any = [...(result?.data?.data || [])].sort(
+          (a: any, b: any) =>
+            a.category_name?.toLowerCase().localeCompare(b.category_name?.toLowerCase())
+        );
+        setAllCategories(sortedData);
       } else {
         SHOW_TOAST(result?.data?.message ?? '', 'error')
         console.log('error==>', result?.data?.message)
@@ -141,7 +196,6 @@ export default function CreateRequest(props: any) {
   }
 
   const pickImage = async (type: string) => {
-    setLoading(true);
     launchImageLibrary(
       {
         mediaType: 'mixed', // 👈 image + video
@@ -208,23 +262,25 @@ export default function CreateRequest(props: any) {
       const formData = new FormData();
 
       const isVideo = asset?.type?.startsWith('video');
-
+      console.log('isVideo', isVideo, asset)
       formData.append('file', {
-        uri: isVideo ? asset.thumbnailUri : asset.uri,
+        uri: isVideo ? asset.uri : asset.uri,
         name: isVideo
-          ? `video_thumb_${Date.now()}.jpg`
+          ? `video_thumb_${Date.now()}.mp4`
           : asset?.fileName || 'profile_image.jpg',
-        type: isVideo ? 'image/jpeg' : asset?.type || 'image/jpeg',
+        type: isVideo ? asset?.type : asset?.type || 'image/jpeg',
       });
       setLoading(true);
       const result = await API.Instance.post(API.API_ROUTES.uploadServiceRequestImage, formData, {
         headers: { 'Content-Type': 'multipart/form-data' }
       });
       if (result.status) {
-        if (type === 'first') setFirstImageURL(result?.data);
-        else if (type === 'second') setSecondImageURL(result?.data);
-        else if (type === 'firstProduct') setFirstProductImageURL(result?.data);
-        else if (type === 'secondProduct') setSecondProductImageURL(result?.data);
+        const file = result?.data?.files?.[0];
+        if (!file) return;
+        if (type === 'first') setFirstImageURL(file);
+        else if (type === 'second') setSecondImageURL(file);
+        else if (type === 'firstProduct') setFirstProductImageURL(file);
+        else if (type === 'secondProduct') setSecondProductImageURL(file);
       } else {
         SHOW_TOAST(result?.data?.message ?? '', 'error');
         if (type === 'first') setFirstImage(null);
@@ -246,47 +302,51 @@ export default function CreateRequest(props: any) {
   function onNextProfessional() {
     if (selectedProgress === 1) {
       if (!selectedCategoryItem) {
-        SHOW_TOAST('Please select a category', 'error');
+        SHOW_TOAST(STRING.please_select_category, 'error');
         return;
       } else {
         setSelectedProgress(2);
       }
     } else if (selectedProgress === 2) {
       if (!selectSubCategoryItem) {
-        SHOW_TOAST('Please select a service', 'error');
+        SHOW_TOAST(STRING.please_select_service, 'error');
         return;
       } else {
         setSelectedProgress(3);
       }
     } else if (selectedProgress === 3) {
       if (!selectedCategory) {
-        SHOW_TOAST('Please select a service provider', 'error');
+        SHOW_TOAST(STRING.please_select_service_provider, 'error');
         return;
       } else {
         setSelectedProgress(4);
       }
     } else if (selectedProgress === 4) {
-      if (!address) {
-        setAddressError('Please enter an address');
+      if (!selectedAddress && !firstImageURL && !description.trim()) {
+        setDescriptionError(STRING.please_enter_description);
+        setFirstImageError(STRING.please_upload_photo);
+        setAddressError(STRING.please_select_address);
+        return;
+      } else if (!validateDescription()) {
         return;
       } else if (!firstImageURL) {
-        SHOW_TOAST('Please upload a photo', 'error');
+        SHOW_TOAST(STRING.please_upload_photo, 'error');
         return;
-      } else if (!description) {
-        SHOW_TOAST('Please enter a description', 'error');
+      } else if (!selectedAddress) {
+        setAddressError(STRING.please_select_address);
         return;
       } else {
         setSelectedProgress(5);
       }
     } else if (selectedProgress == 5) {
       if (!valuation) {
-        SHOW_TOAST('Please enter a valuation', 'error');
+        SHOW_TOAST(STRING.please_enter_valuation, 'error');
         return;
       } else if (!selectedDate) {
-        SHOW_TOAST('Please select a date', 'error');
+        SHOW_TOAST(STRING.please_select_date, 'error');
         return;
       } else if (!selectedTime) {
-        SHOW_TOAST('Please select a time', 'error');
+        SHOW_TOAST(STRING.please_select_time, 'error');
         return;
       } else {
         setSelectedProgress(6);
@@ -301,54 +361,67 @@ export default function CreateRequest(props: any) {
   function onNextNonProfessional() {
     if (selectedProgress === 1) {
       if (!selectedCategoryItem) {
-        SHOW_TOAST('Please select a category', 'error');
+        SHOW_TOAST(STRING.please_select_category, 'error');
         return;
       } else {
         setSelectedProgress(2);
       }
     } else if (selectedProgress === 2) {
       if (!selectSubCategoryItem) {
-        SHOW_TOAST('Please select a service', 'error');
+        SHOW_TOAST(STRING.please_select_service, 'error');
         return;
       } else {
         setSelectedProgress(3);
       }
     } else if (selectedProgress === 3) {
       if (!selectedCategory) {
-        SHOW_TOAST('Please select a service provider', 'error');
+        SHOW_TOAST(STRING.please_select_service_provider, 'error');
         return;
       } else {
         setSelectedProgress(4);
       }
     } else if (selectedProgress === 4) {
-      if (!firstImageURL) {
-        SHOW_TOAST('Please upload a photo', 'error');
+      if (!selectedAddress && !firstImageURL && !description.trim()) {
+        setDescriptionError(STRING.please_enter_description);
+        setFirstImageError(STRING.please_upload_photo);
+        setAddressError(STRING.please_select_address);
         return;
-      } else if (!description) {
-        SHOW_TOAST('Please enter a description', 'error');
+      } else if (!validateDescription()) {
+        return;
+      } else if (!firstImageURL) {
+        SHOW_TOAST(STRING.please_upload_photo, 'error');
+        return;
+      } else if (!selectedAddress) {
+        setAddressError(STRING.please_select_address);
         return;
       } else {
         setSelectedProgress(5);
       }
     } else if (selectedProgress == 5) {
       if (!selectedDate) {
-        SHOW_TOAST('Please select a date', 'error');
+        SHOW_TOAST(STRING.please_select_date, 'error');
         return;
       } else if (!selectedTime) {
-        SHOW_TOAST('Please select a time', 'error');
+        SHOW_TOAST(STRING.please_select_time, 'error');
         return;
       } else {
         setSelectedProgress(6);
       }
     } else if (selectedProgress == 6) {
       if (!productName) {
-        setProductNameError('Please enter a product name');
+        const validation = validateProductName(productName);
+
+        if (!validation.valid) {
+          setProductNameError(validation.message);
+          return;
+        }
+      }
+      else if (!quantity.trim()) {
+        setQuantityError(STRING.quantity_required);
         return;
-      } else if (!quantity) {
-        setQuantityError('Please enter a quantity');
-        return;
-      } else if (!firstProductImageURL) {
-        SHOW_TOAST('Please upload a photo', 'error');
+      }
+      else if (!firstProductImageURL) {
+        SHOW_TOAST(STRING.please_upload_photo, 'error');
         return;
       } else {
         setSelectedProgress(7);
@@ -436,9 +509,7 @@ export default function CreateRequest(props: any) {
           sub_category_id: selectSubCategoryItem?.id,
           description: description.trim(),
           description_files: imageUrls,
-          service_address: address.trim(),
-          latitude: 23.2156,
-          longitude: 72.6369,
+          address_id: selectedAddress?.id,
           validation_amount: valuation,
           chosen_datetime: dateTime
         }
@@ -450,12 +521,10 @@ export default function CreateRequest(props: any) {
           description: description.trim(),
           description_files: imageUrls,
           chosen_datetime: dateTime,
-          service_address: address.trim(),
-          latitude: 23.2156,
-          longitude: 72.6369,
+          address_id: selectedAddress?.id,
           barter_product: {
             product_name: productName,
-            quantity: quantity,
+            quantity: Number(quantity),
             barter_photo_files: productImageUrls
           }
         }
@@ -484,6 +553,102 @@ export default function CreateRequest(props: any) {
       setLoading(false);
     }
   }
+
+  const validateDescription = () => {
+    const clean = description.trim();
+
+    if (clean.length === 0) {
+      setDescriptionError(STRING.des_cannot_be_empty);
+      return false;
+    }
+
+    if (clean.length < 10) {
+      setDescriptionError(STRING.minimum_10_char_required);
+      return false;
+    }
+
+    if (clean.length > 500) {
+      setDescriptionError(STRING.maximum_500_char_allowed);
+      return false;
+    }
+
+    if (/^[^a-zA-Z0-9]/.test(clean)) {
+      setDescriptionError(STRING.description_cannot_start_with_special_character);
+      return false;
+    }
+
+    if (/^[^a-zA-Z0-9]+$/.test(clean)) {
+      setDescriptionError(STRING.description_cannot_contain_only_special_characters);
+      return false;
+    }
+
+    setDescription(clean);
+    setDescriptionError('');
+    return true;
+  };
+
+  const validateProductName = (text: string): ProductValidationResult => {
+    let value = text.trim();
+
+    // 1️⃣ Required
+    if (!value) {
+      return { valid: false, message: STRING.product_name_required };
+    }
+
+    // 2️⃣ Length check
+    if (value.length < 2) {
+      return { valid: false, message: STRING.minimum_2_char_required };
+    }
+
+    if (value.length > 50) {
+      return { valid: false, message: STRING.maximum_50_char_allowed };
+    }
+
+    // 3️⃣ Block emojis
+    const emojiRegex = /[\p{Extended_Pictographic}]/gu;
+    if (emojiRegex.test(value)) {
+      return { valid: false, message: STRING.emojis_not_allowed };
+    }
+
+    // 4️⃣ Block HTML tags
+    if (/<[^>]*>/g.test(value)) {
+      return { valid: false, message: STRING.html_tags_not_allowed };
+    }
+
+    // 5️⃣ Block SQL injection patterns
+    const sqlRegex = /(script|select|insert|delete|drop|update|--|;|\/\*|\*\/)/i;
+    if (sqlRegex.test(value)) {
+      return { valid: false, message: STRING.sql_injection_detected };
+    }
+
+    // 6️⃣ Allow only specific characters
+    const allowedRegex = /^[a-zA-Z0-9\s\-&.()]+$/;
+    if (!allowedRegex.test(value)) {
+      return {
+        valid: false,
+        message: STRING.only_letters_numbers_special_characters_allowed,
+      };
+    }
+
+    // 7️⃣ Block consecutive special characters
+    const consecutiveSpecial = /[\-&.()]{2,}/;
+    if (consecutiveSpecial.test(value)) {
+      return {
+        valid: false,
+        message: STRING.consecutive_special_characters_not_allowed,
+      };
+    }
+
+    // 8️⃣ Block only numbers
+    if (/^\d+$/.test(value)) {
+      return {
+        valid: false,
+        message: STRING.only_numbers_not_allowed,
+      };
+    }
+
+    return { valid: true, value };
+  };
 
   function renderProfessional() {
     if (selectedProgress === 1) {
@@ -792,20 +957,7 @@ export default function CreateRequest(props: any) {
             color={theme._939393}>
             {STRING.descriptionMessage}
           </Text>
-          <Input
-            placeholder={'search address'}
-            placeholderTextColor={theme._939393}
-            inputTitle={STRING.enter_address}
-            inputColor={true}
-            searchBox={IMAGES.search}
-            continerStyle={{ marginTop: getScaleSize(12) }}
-            value={address}
-            onChangeText={(text: any) => {
-              setAddress(text);
-              setAddressError('');
-            }}
-            isError={addressError}
-          />
+
           <Text
             style={{ marginTop: getScaleSize(12) }}
             size={getScaleSize(17)}
@@ -813,22 +965,37 @@ export default function CreateRequest(props: any) {
             color={theme._424242}>
             {STRING.EnterServicedescription}
           </Text>
-          <View style={styles(theme).inputContainer}>
+          <View style={[styles(theme).inputContainer, { borderColor: descriptionError ? theme._EF5350 : theme._D5D5D5, }]}>
             <TextInput
               style={styles(theme).textInput}
               value={description}
               onChangeText={(text: any) => {
-                if (text.startsWith(' ')) return;
-                setDescription(text);
+                const noEmoji = text.replace(
+                  /[\p{Extended_Pictographic}]/gu,
+                  ''
+                );
+                const noHtml = noEmoji.replace(/<[^>]*>/g, '');
+                const trimmedToMax = noHtml.slice(0, 500);
+                setDescription(trimmedToMax);
+                setDescriptionError('');
               }}
               placeholder={STRING.Enterdescriptionhere}
-              placeholderTextColor="#999"
+              placeholderTextColor={theme._999999}
               multiline={true}
               numberOfLines={8}
               textAlignVertical="top"
               returnKeyType="default"
             />
           </View>
+          {descriptionError ? (
+            <Text
+              size={getScaleSize(14)}
+              font={FONTS.Lato.Regular}
+              color="red"
+              style={{ marginTop: getScaleSize(6) }}>
+              {descriptionError}
+            </Text>
+          ) : null}
           <Text
             style={{ marginTop: getScaleSize(20) }}
             size={getScaleSize(17)}
@@ -838,10 +1005,11 @@ export default function CreateRequest(props: any) {
           </Text>
           <View style={styles(theme).imageUploadContent}>
             <TouchableOpacity
-              style={[styles(theme).uploadButton, { marginRight: getScaleSize(9) }]}
+              style={[styles(theme).uploadButton, { marginRight: getScaleSize(9), borderColor: firstImageError ? theme._EF5350 : theme._818285, }]}
               activeOpacity={1}
               onPress={() => {
                 pickImage('first');
+                setFirstImageError('');
               }}>
               {firstImage ? (
                 <Image
@@ -866,9 +1034,10 @@ export default function CreateRequest(props: any) {
               )}
             </TouchableOpacity>
             <TouchableOpacity
-              style={[styles(theme).uploadButton, { marginLeft: getScaleSize(9) }]}
+              style={[styles(theme).uploadButton, { marginLeft: getScaleSize(9), borderColor: firstImageError ? theme._EF5350 : theme._818285, }]}
               activeOpacity={1}
               onPress={() => {
+                setFirstImageError('');
                 pickImage('second');
               }}>
               {secondImage ? (
@@ -908,6 +1077,33 @@ export default function CreateRequest(props: any) {
             color={theme._939393}>
             {STRING.you_can_also_upload_a_video}
           </Text>
+          <View style={[styles(theme).addressContainer, { borderColor: addressError ? theme._EF5350 : theme._D5D5D5, }]}>
+            <Image source={IMAGES.home_unselected} style={styles(theme).addressIcon} />
+            <View style={{ flex: 1, alignSelf: 'flex-start' }}>
+              <Text
+                size={getScaleSize(18)}
+                font={FONTS.Lato.Medium}
+                color={theme._2B2B2B}>
+                {selectedAddress ?
+                  `${selectedAddress.banglo}, ${selectedAddress.city}, ${selectedAddress.state}, ${selectedAddress.postal_code}`
+                  : addressError ? addressError : '-'}
+              </Text>
+            </View>
+            <TouchableOpacity
+              activeOpacity={1}
+              style={styles(theme).selectAddressButton}
+              onPress={() => {
+                props.navigation.navigate(SCREENS.Address.identifier);
+              }}
+            >
+              <Text
+                size={getScaleSize(12)}
+                font={FONTS.Lato.Regular}
+                color={theme.white}>
+                {STRING.select_address}
+              </Text>
+            </TouchableOpacity>
+          </View>
         </View>
       </ScrollView>
     );
@@ -938,29 +1134,45 @@ export default function CreateRequest(props: any) {
             inputColor={true}
             continerStyle={{ marginBottom: getScaleSize(22) }}
             value={productName}
-            onChangeText={text => {
-              setProductName(text.trim());
+            maxLength={50}
+            onChangeText={(text: any) => {
+
+              const result = validateProductName(text);
+
+              if (result.valid) {
+                setProductName(result.value);
+                setProductNameError('');
+              } else {
+                setProductName(text.slice(0, 50));
+                setProductNameError(result.message);
+              }
             }}
             isError={productNameError}
           />
           <Input
-            placeholder={STRING.enter_name}
+            placeholder={"Enter Quantity"}
             placeholderTextColor={theme._939393}
             inputTitle={STRING.quantity}
             inputColor={true}
+            keyboardType="number-pad"
             quantityIcon={true}
+            maxLength={7}
             continerStyle={{ marginBottom: getScaleSize(22) }}
             value={quantity.toString()}
-            onChangeText={(text: any) => {
-              const cleaned = text.replace(/[^0-9]/g, '');
-              setQuantity(cleaned === '' ? 0 : Number(cleaned));
+            onChangeText={(text: string) => {
+              const cleaned = text.replace(/[^0-9]/g, '').slice(0, 7);
+              setQuantity(cleaned);
+              setQuantityError('');
             }}
             isError={quantityError}
             onPressQuantityRemove={() => {
-              setQuantity(prev => (prev > 0 ? prev - 1 : 0));
+              if (quantity.length === 0) return;
+              const newQty = Math.max(Number(quantity) - 1, 0).toString();
+              setQuantity(newQty === '0' ? '' : newQty);
             }}
             onPressQuantityAdd={() => {
-              setQuantity(prev => prev + 1);
+              const newQty = (Number(quantity || 0) + 1).toString();
+              if (newQty.length <= 7) setQuantity(newQty);
             }}
           />
           <Text
@@ -972,7 +1184,7 @@ export default function CreateRequest(props: any) {
           </Text>
           <View style={styles(theme).imageUploadContent}>
             <TouchableOpacity
-              style={[styles(theme).uploadButton, { marginRight: getScaleSize(9) }]}
+              style={[styles(theme).uploadButton, { marginRight: getScaleSize(9), borderColor: theme._818285, }]}
               activeOpacity={1}
               onPress={() => {
                 pickImage('firstProduct');
@@ -1000,7 +1212,7 @@ export default function CreateRequest(props: any) {
               )}
             </TouchableOpacity>
             <TouchableOpacity
-              style={[styles(theme).uploadButton, { marginLeft: getScaleSize(9) }]}
+              style={[styles(theme).uploadButton, { marginLeft: getScaleSize(9), borderColor: theme._818285, }]}
               activeOpacity={1}
               onPress={() => {
                 pickImage('secondProduct');
@@ -1262,6 +1474,7 @@ export default function CreateRequest(props: any) {
           style={styles(theme).nextButtonContainer}
           activeOpacity={1}
           onPress={() => {
+            if (isLoading) return;
             if (selectedCategory == 'professional') {
               onNextProfessional();
             } else {
@@ -1338,7 +1551,7 @@ const styles = (theme: ThemeContextType['theme']) =>
     },
     inputContainer: {
       borderWidth: 1,
-      borderColor: theme._D5D5D5,
+
       borderRadius: getScaleSize(12),
       marginTop: getScaleSize(12),
     },
@@ -1377,7 +1590,7 @@ const styles = (theme: ThemeContextType['theme']) =>
       paddingVertical: getScaleSize(8),
       paddingHorizontal: getScaleSize(12),
       borderRadius: getScaleSize(18),
-      backgroundColor: '#FBFBFB',
+      backgroundColor: theme._FBFBFB,
       flexDirection: 'row',
     },
     nextImage: {
@@ -1386,7 +1599,7 @@ const styles = (theme: ThemeContextType['theme']) =>
     },
     categoryView: {
       height: getScaleSize(228),
-      backgroundColor: '#EAF0F3',
+      backgroundColor: theme._EAF0F3,
       borderRadius: getScaleSize(20),
       marginTop: getScaleSize(18),
     },
@@ -1404,7 +1617,7 @@ const styles = (theme: ThemeContextType['theme']) =>
       paddingVertical: getScaleSize(21),
       flexDirection: 'row',
       borderRadius: getScaleSize(16),
-      backgroundColor: '#FBFBFB',
+      backgroundColor: theme._FBFBFB,
       marginTop: getScaleSize(18),
     },
     itemView: {
@@ -1415,7 +1628,7 @@ const styles = (theme: ThemeContextType['theme']) =>
     },
     deviderView: {
       height: getScaleSize(1),
-      backgroundColor: '#D6D6D6',
+      backgroundColor: theme._D6D6D6,
       marginVertical: getScaleSize(18),
     },
     serviceDescriptionView: {
@@ -1452,7 +1665,34 @@ const styles = (theme: ThemeContextType['theme']) =>
     },
     deviderVerticalView: {
       height: '100%',
-      backgroundColor: '#D6D6D6',
+      backgroundColor: theme._D6D6D6,
       width: getScaleSize(1),
     },
+    addressContainer: {
+      marginTop: getScaleSize(8),
+      borderWidth: 1,
+      borderRadius: getScaleSize(12),
+      paddingBottom: getScaleSize(14),
+      paddingTop: getScaleSize(12),
+      paddingHorizontal: getScaleSize(16),
+      flexDirection: 'row',
+      alignItems: 'flex-start',
+      flex: 1,
+    },
+    addressIcon: {
+      width: getScaleSize(24),
+      height: getScaleSize(24),
+      marginRight: getScaleSize(12),
+      tintColor: theme._2C6587,
+      marginTop: getScaleSize(6),
+    },
+    selectAddressButton: {
+      backgroundColor: theme.primary,
+      paddingVertical: getScaleSize(12),
+      paddingHorizontal: getScaleSize(16),
+      borderRadius: getScaleSize(12),
+      alignSelf: 'flex-start',
+      marginTop: getScaleSize(4),
+      marginLeft: getScaleSize(12),
+    }
   });

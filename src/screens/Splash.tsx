@@ -7,25 +7,25 @@ import {
   Text,
   View,
 } from 'react-native';
-import React, {useContext, useEffect} from 'react';
+import React, { useContext, useEffect } from 'react';
 
 //CONTEXT
-import {AuthContext, ThemeContext, ThemeContextType} from '../context';
+import { AuthContext, ThemeContext, ThemeContextType } from '../context';
 
 //CONSTANT & ASSETS
-import {IMAGES} from '../assets';
-import {getScaleSize, SHOW_TOAST, Storage} from '../constant';
+import { IMAGES } from '../assets';
+import { getScaleSize, SHOW_TOAST, Storage } from '../constant';
 
 //SCREENS
-import {SCREENS} from '.';
-import {CommonActions} from '@react-navigation/native';
+import { SCREENS } from '.';
+import { CommonActions } from '@react-navigation/native';
 
 //API
-import {API} from '../api';
+import { API } from '../api';
 
 export default function Splash(props: any) {
-  const {theme} = useContext(ThemeContext);
-  const {setUser, setUserType, setProfile} = useContext<any>(AuthContext);
+  const { theme } = useContext(ThemeContext);
+  const { setUser, setUserType, setProfile } = useContext<any>(AuthContext);
 
   useEffect(() => {
     checkUserDetails();
@@ -34,7 +34,6 @@ export default function Splash(props: any) {
   async function checkUserDetails() {
     const userDetails = await Storage.get(Storage.USER_DETAILS);
     const userData = JSON.parse(userDetails ?? '{}');
-
     if (userData && userData?.user_data?.role) {
       setUser(userData);
       setUserType(userData?.user_data?.role);
@@ -44,56 +43,52 @@ export default function Splash(props: any) {
         props?.navigation?.dispatch(
           CommonActions.reset({
             index: 0,
-            routes: [{name: SCREENS.Login.identifier}],
+            routes: [{ name: SCREENS.Login.identifier }],
           }),
         );
         setUser('');
         setUserType('');
         setProfile('');
-      }, 2000);
+      }, 2000)
     }
-  }
+  };
 
   async function getProfileData() {
     try {
-      const result = await API.Instance.get(API.API_ROUTES.getUserDetails);
+      const result = await API.Instance.get(API.API_ROUTES.getUserDetails + `?platform=app`);
       if (result.status) {
-        setProfile(result?.data?.data);
+        setProfile(result?.data?.data)
         props.navigation.dispatch(
           CommonActions.reset({
             index: 0,
-            routes: [
-              {
-                name: SCREENS.BottomBar.identifier,
-              },
-            ],
+            routes: [{
+              name: SCREENS.BottomBar.identifier
+            }],
           }),
-        );
+        )
       } else {
         props.navigation.dispatch(
           CommonActions.reset({
             index: 0,
-            routes: [
-              {
-                name: SCREENS.Login.identifier,
-              },
-            ],
+            routes: [{
+              name: SCREENS.Login.identifier
+            }],
           }),
-        );
+        )
       }
+
     } catch (error: any) {
       props.navigation.dispatch(
         CommonActions.reset({
           index: 0,
-          routes: [
-            {
-              name: SCREENS.Login.identifier,
-            },
-          ],
+          routes: [{
+            name: SCREENS.Login.identifier
+          }],
         }),
-      );
+      )
     }
   }
+
 
   return (
     <View style={styles(theme).container}>

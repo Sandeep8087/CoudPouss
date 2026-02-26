@@ -1,4 +1,4 @@
-import { Dimensions, Image, ScrollView, StyleSheet, TouchableOpacity, View } from 'react-native';
+import { Dimensions, Image, KeyboardAvoidingView, Platform, ScrollView, StyleSheet, TouchableOpacity, View } from 'react-native';
 import React, { useContext, useEffect, useState } from 'react';
 
 //CONTEXT
@@ -23,7 +23,6 @@ export default function SignupSelect(props: any) {
     return (
         <View style={styles(theme).container}>
             <Header />
-            <ScrollView showsVerticalScrollIndicator={false}>
                 <View style={styles(theme).mainContainer}>
                     <Image source={IMAGES.ic_logo} style={styles(theme).logo} />
                     <Text
@@ -63,12 +62,12 @@ export default function SignupSelect(props: any) {
                         </View>
                     </View>
                     <TouchableOpacity
-                     style={styles(theme).btnView}
-                     activeOpacity={0.5}
-                     onPress={() => {
-                        props.navigation.navigate(SCREENS.Signup.identifier)
-                        setUserType('service_provider')
-                     }}>
+                        style={styles(theme).btnView}
+                        activeOpacity={0.5}
+                        onPress={() => {
+                            props.navigation.navigate(SCREENS.Signup.identifier)
+                            setUserType('service_provider')
+                        }}>
                         <Text
                             size={getScaleSize(19)}
                             font={FONTS.Lato.Bold}
@@ -78,8 +77,7 @@ export default function SignupSelect(props: any) {
                         </Text>
                     </TouchableOpacity>
                 </View>
-            </ScrollView>
-        </View>
+        </View >
     );
 }
 
@@ -88,13 +86,13 @@ const styles = (theme: ThemeContextType['theme']) =>
         container: {
             flex: 1.0,
             backgroundColor: theme.white,
-            justifyContent: 'center'
+            justifyContent:'center'
         },
         mainContainer: {
-            flex: 1.0,
+            flexGrow: 1,
             marginHorizontal: getScaleSize(24),
             marginTop: getScaleSize(63),
-            justifyContent: 'center'
+            paddingBottom: getScaleSize(40),
         },
         logo: {
             width: Dimensions.get('window').width - getScaleSize(190),
@@ -118,7 +116,7 @@ const styles = (theme: ThemeContextType['theme']) =>
             height: 1,
             backgroundColor: theme._F2F3F3,
         },
-        orText:{
+        orText: {
             marginTop: getScaleSize(-14),
             backgroundColor: theme.white,
             paddingHorizontal: getScaleSize(20),

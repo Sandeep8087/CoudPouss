@@ -1,4 +1,4 @@
-import { Dimensions, Image, ScrollView, StyleSheet, TouchableOpacity, View } from 'react-native';
+import { Dimensions, Image, Platform, ScrollView, StyleSheet, TouchableOpacity, View } from 'react-native';
 import React, { useContext, useEffect, useRef, useState } from 'react';
 
 //CONTEXT
@@ -16,7 +16,6 @@ import { Header, Input, Text, Button } from '../../components';
 import { API } from '../../api';
 import { CommonActions } from '@react-navigation/native';
 
-
 export default function ChooseYourSubscription(props: any) {
 
     const STRING = useString();
@@ -31,6 +30,28 @@ export default function ChooseYourSubscription(props: any) {
     useEffect(() => {
         getAllPlans();
     }, []);
+
+    useEffect(() => {
+        const unsubscribe = props.navigation.addListener('beforeRemove', (e: any) => {
+            // If this is already a reset action, allow it
+            if (e.data.action.type === 'RESET') {
+                return;
+            }
+
+            // Prevent default back behavior
+            e.preventDefault();
+
+            // Redirect to Home (BottomBar)
+            props.navigation.dispatch(
+                CommonActions.reset({
+                    index: 0,
+                    routes: [{ name: SCREENS.BottomBar.identifier }],
+                }),
+            );
+        });
+
+        return unsubscribe;
+    }, [props.navigation]);
 
     async function getAllPlans() {
         try {
@@ -53,7 +74,6 @@ export default function ChooseYourSubscription(props: any) {
             setLoading(false);
         }
     }
-
 
     return (
         <View style={styles(theme).container}>
@@ -148,7 +168,10 @@ export default function ChooseYourSubscription(props: any) {
                     props.navigation.dispatch(
                         CommonActions.reset({
                             index: 0,
-                            routes: [{ name: SCREENS.BottomBar.identifier }],
+                            routes: [{
+                                name: SCREENS.BottomBar.identifier,
+                                params: { skipSubscription: true }
+                            }],
                         }),
                     );
                 }}>

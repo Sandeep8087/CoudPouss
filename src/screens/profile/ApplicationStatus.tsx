@@ -1,4 +1,4 @@
-import { Image, ScrollView, StyleSheet, TouchableOpacity, View } from 'react-native'
+import { ActivityIndicator, Image, ScrollView, StyleSheet, TouchableOpacity, View } from 'react-native'
 import React, { useContext, useEffect, useRef, useState } from 'react'
 
 //CONTEXT
@@ -23,11 +23,12 @@ export default function ApplicationStatus(props: any) {
     const bottomSheetRef = useRef<any>(null);
     const successBottomSheetRef = useRef<any>(null);
 
-    const [isLoading, setLoading] = useState(false);
+    const [isLoading, setLoading] = useState(true);
     const [applicationStatus, setApplicationStatus] = useState<any>(null);
     const [statsData, setStatsData] = useState<any>(null);
     const [certificate, setCertificate] = useState<any>([]);
     const [kbisExtract, setKbisExtract] = useState<any>([]);
+    const [addressProof, setAddressProof] = useState<any>([]);
 
     const isFocused = useIsFocused();
 
@@ -76,7 +77,7 @@ export default function ApplicationStatus(props: any) {
                 id: 2,
                 name: "Upload Documents",
                 description: "Upload your documents to get verified.",
-                serviceRunning: true,
+                completed: false,
             });
         }
 
@@ -139,6 +140,8 @@ export default function ApplicationStatus(props: any) {
                 setCertificate(result);
             } else if (type === 'kbis') {
                 setKbisExtract(result);
+            } else if (type === 'address_proof') {
+                setAddressProof(result);
             }
         } catch (err) {
             if (isErrorWithCode(err) && err.code === errorCodes.OPERATION_CANCELED) {
@@ -150,7 +153,7 @@ export default function ApplicationStatus(props: any) {
     };
 
     async function uploadDocuments() {
-        if (kbisExtract?.length === 0 || certificate?.length === 0) {
+        if (kbisExtract?.length === 0 || certificate?.length === 0 || addressProof?.length === 0) {
             SHOW_TOAST('Please upload all the required documents', 'error')
             return;
         }
@@ -161,10 +164,15 @@ export default function ApplicationStatus(props: any) {
                 name: certificate?.[0]?.name,
                 type: certificate?.[0]?.type,
             });
-            formData.append('certificate', {
+            formData.append('kbis_extract', {
                 uri: kbisExtract?.[0]?.uri,
                 name: kbisExtract?.[0]?.name,
                 type: kbisExtract?.[0]?.type,
+            });
+            formData.append('proof_of_residence', {
+                uri: addressProof?.[0]?.uri,
+                name: addressProof?.[0]?.name,
+                type: addressProof?.[0]?.type,
             });
             console.log('formData==>', formData)
             setLoading(true);
@@ -202,7 +210,11 @@ export default function ApplicationStatus(props: any) {
                 }}
                 screenName={STRING.application_status}
             />
-            {applicationStatus?.subscription ? (
+            {isLoading ? (
+                <View style={{ marginTop: getScaleSize(100), alignItems: 'center' }}>
+                    <ActivityIndicator size="large" color={theme.primary} />
+                </View>
+            ) : (
                 <ScrollView
                     showsVerticalScrollIndicator={false}
                     style={styles(theme).scrolledContainer}>
@@ -222,12 +234,10 @@ export default function ApplicationStatus(props: any) {
                                 isLast={index === statsData.length - 1}
                             />
                         ))}
-                        {!applicationStatus?.doc_status || applicationStatus?.doc_status == 'null' && (
+                        {(!applicationStatus?.doc_status || applicationStatus?.doc_status == 'null') && (
                             <TouchableOpacity
                                 onPress={() => {
-                                    props.navigation.navigate(SCREENS.AdditionalDetails.identifier, {
-                                        isFromApplicationStatus: true,
-                                    });
+                                    bottomSheetRef.current?.open();
                                 }}
                                 style={styles(theme).uploadDocumentsButton}>
                                 <Text
@@ -256,25 +266,15 @@ export default function ApplicationStatus(props: any) {
                         )}
                     </View>
                 </ScrollView>
-            ) : (
-                <EmptyView
-                    title={STRING.you_have_not_subscribed_to_any_plan}
-                    style={styles(theme).emptyView}
-                    onPressButton={() => {
-                        props.navigation.navigate(SCREENS.ChooseYourSubscription.identifier, {
-                            isFromSubscriptionButton: true,
-                        });
-                    }}
-                />
             )}
-
             <UploadDocumentsSheet
                 bottomSheetRef={bottomSheetRef}
-                height={470}
+                height={580}
                 buttonTitle={STRING.upload}
                 onPressDocument={(type: string) => { pickDocument(type) }}
                 certificate={certificate}
                 kbisExtract={kbisExtract}
+                addressProof={addressProof}
                 onPressButton={() => {
                     uploadDocuments()
                 }}
@@ -292,6 +292,7 @@ export default function ApplicationStatus(props: any) {
             />
         </View>
     )
+
 }
 
 const styles = (theme: ThemeContextType['theme']) =>

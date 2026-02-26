@@ -143,7 +143,7 @@ export default function ServicePreview(props: any) {
                   size={getScaleSize(12)}
                   font={FONTS.Lato.Medium}
                   color={theme.primary}>
-                  {moment(serviceDetails?.date).format('DD MMM, YYYY')}
+                  {moment.utc(serviceDetails?.date).local().format('DD MMM, YYYY')}
                 </Text>
               </View>
               <View style={styles(theme).itemView}>
@@ -159,7 +159,7 @@ export default function ServicePreview(props: any) {
                   size={getScaleSize(12)}
                   font={FONTS.Lato.Medium}
                   color={theme.primary}>
-                  {moment(serviceDetails?.time, "HH:mm").format("hh:mm A")}
+                  {moment.utc(serviceDetails?.time, "HH:mm").local().format("hh:mm A")}
                 </Text>
               </View>
             </View>
@@ -203,7 +203,7 @@ export default function ServicePreview(props: any) {
                   font={FONTS.Lato.Medium}
                   numberOfLines={4}
                   color={theme.primary}>
-                  {serviceDetails?.about_client?.address ?? '-'}
+                  {serviceDetails?.service_address ?? '-'}
                 </Text>
               </View>
             </View>
@@ -364,7 +364,7 @@ export default function ServicePreview(props: any) {
                   style={styles(theme).photosView}
                   resizeMode='cover'
                   source={{ uri: item }}
-                /> 
+                />
               </TouchableOpacity>
 
             );

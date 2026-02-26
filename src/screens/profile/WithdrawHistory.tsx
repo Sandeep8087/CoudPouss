@@ -102,7 +102,7 @@ export default function WithdrawHistory(props: any) {
                                         size={getScaleSize(14)}
                                         font={FONTS.Lato.Medium}
                                         color={theme._818285}>
-                                        {`Requested on ${moment(item.created_at).format('DD MMMM YYYY')}`}
+                                        {`Requested on ${moment.utc(item.created_at).local().format('DD MMMM YYYY')}`}
                                     </Text>
                                 </View>
                                 <Text

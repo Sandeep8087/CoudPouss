@@ -35,13 +35,48 @@ export default function NewPassword(props: any) {
     const [confirmShow, setConfirmShow] = useState(true);
 
     async function onNewPassword() {
-        if (!password) {
-            setPasswordError(STRING.please_enter_your_password);
-        } else if (!REGEX.password.test(password)) {
+        const cleanPassword = password.trim();
+        const cleanConfirmPassword = confirmPassword.trim();
+
+        setPasswordError('');
+        setConfirmPasswordError('');
+
+        // Password required
+        if (!cleanPassword) {
+            setPasswordError(STRING.password_required);
+            return;
+        }
+
+        // No whitespace allowed
+        else if (/\s/.test(cleanPassword)) {
+            setPasswordError('Password cannot contain spaces');
+            return;
+        }
+
+        // Length check (8–12)
+        else if (cleanPassword.length < 8 || cleanPassword.length > 12) {
+            setPasswordError('Password must be 8 to 12 characters long');
+            return;
+        }
+
+        // Strong password validation
+        else if (!REGEX.password.test(cleanPassword)) {
             setPasswordError(STRING.password_validation_message);
-        } else if (!confirmPassword) {
-            setConfirmPasswordError(STRING.please_enter_your_re_enter_password);
-        } else {
+            return;
+        }
+
+        // Confirm password required
+        else if (!cleanConfirmPassword) {
+            setConfirmPasswordError('Confirm password is required');
+            return;
+        }
+
+        // Password mismatch
+        else if (cleanPassword !== cleanConfirmPassword) {
+            setConfirmPasswordError('Passwords do not match');
+            return;
+        }
+        else {
             setPasswordError('');
             setConfirmPasswordError('');
             // let params = {}
@@ -113,7 +148,11 @@ export default function NewPassword(props: any) {
                             setShow(!show);
                         }}
                         onChangeText={text => {
-                            setPassword(text);
+                            const trimmed = text.trimStart(); // remove leading spaces
+                            const noSpaces = trimmed.replace(/\s/g, ''); // remove all spaces
+                            const limited = noSpaces.slice(0, 12); // max 12 chars
+
+                            setPassword(limited);
                             setPasswordError('');
                         }}
                         isError={passwordError}
@@ -129,7 +168,11 @@ export default function NewPassword(props: any) {
                             setConfirmShow(!confirmShow);
                         }}
                         onChangeText={text => {
-                            setConfirmPassword(text);
+                            const trimmed = text.trimStart();
+                            const noSpaces = trimmed.replace(/\s/g, '');
+                            const limited = noSpaces.slice(0, 12);
+
+                            setConfirmPassword(limited);
                             setConfirmPasswordError('');
                         }}
                         isError={confirmPasswordError}

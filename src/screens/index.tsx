@@ -49,7 +49,6 @@ import OpenRequestDetails from './task/OpenRequestDetails';
 import MyProfile from './profile/MyProfile';
 import RatingsReviews from './profile/RatingsReviews';
 import Transactions from './profile/Transactions';
-import Notifications from './profile/Notifications';
 import MyProfileProfessional from './profile/MyProfileProfessional';
 import EditProfile from './profile/EditProfile';
 import ApplicationStatus from './profile/ApplicationStatus';
@@ -66,6 +65,11 @@ import Search from './home/Search';
 import WebViewScreen from './WebViewScreen';
 import MapView from './task/MapView';
 import NegotiationDetails from './chat/NegotiationDetails';
+import TransactionsElder from './profile/TransactionsElder';
+import Language from './profile/language';
+import Address from './request/Address';
+import AddressMapScreen from './request/AddressMapScreen';
+import EditAddress from './request/EditAddress';
 
 export const SCREENS = {
   Splash: {
@@ -161,9 +165,9 @@ export const SCREENS = {
     identifier: 'Transactions',
     component: Transactions,
   },
-  Notifications: {
-    identifier: 'Notifications',
-    component: Notifications,
+  TransactionsElder: {
+    identifier: 'TransactionsElder',
+    component: TransactionsElder,
   },
   ChatDetails: {
     identifier: 'ChatDetails',
@@ -300,6 +304,22 @@ export const SCREENS = {
   NegotiationDetails: {
     identifier: 'NegotiationDetails',
     component: NegotiationDetails,
+  },
+  Language: {
+    identifier: 'Language',
+    component: Language,
+  },
+  Address: {
+    identifier: 'Address',
+    component: Address,
+  },
+  AddressMapScreen: {
+    identifier: 'AddressMapScreen',
+    component: AddressMapScreen,
+  },
+  EditAddress: {
+    identifier: 'EditAddress',
+    component: EditAddress,
   },
 };
 

@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useState } from 'react';
+import React, { useContext, useEffect, useRef, useState } from 'react';
 import {
   View,
   StyleSheet,
@@ -48,7 +48,7 @@ export default function Assistance(props: any) {
   const { theme } = useContext<any>(ThemeContext);
 
   const [selectedCategory, setSelectedCategory] = useState<any>(null);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [categoryList, setCategoryList] = useState([]);
   const [subCategoryList, setSubCategoryList] = useState([]);
   const [bannerData, setBannerData] = useState<any>(null);
@@ -57,6 +57,7 @@ export default function Assistance(props: any) {
 
   const scrollY = useSharedValue(0);
   const maxScrollOffset = getScaleSize(220);
+  const flatListRef = useRef<FlatList>(null);
 
   useEffect(() => {
     getCategoryData();
@@ -87,6 +88,8 @@ export default function Assistance(props: any) {
     try {
       setLoading(true);
       const result = await API.Instance.get(API.API_ROUTES.getHomeData + `?service_name=${service?.name}`);
+      setLoading(false)
+      console.log('CAT', JSON.stringify(result))
       if (result.status) {
         setCategoryList(result?.data?.data?.categories ?? []);
         if (result?.data?.data?.categories?.[0]?.id) {
@@ -107,6 +110,7 @@ export default function Assistance(props: any) {
     try {
       setLoading(true);
       const result = await API.Instance.get(API.API_ROUTES.getHomeData + `/${id}`);
+      setLoading(false)
       if (result.status) {
         console.log('subcategoryList==', JSON.stringify(result?.data?.data))
         setBannerData(result?.data?.data?.Banner ?? null);
@@ -121,6 +125,8 @@ export default function Assistance(props: any) {
       setLoading(false);
     }
   }
+
+  console.log('BANNER', JSON.stringify(bannerData))
 
   // const patterns = searchText ? ['small'] : ['small', 'large', 'large', 'small'];
   const patterns = ['small', 'large', 'large', 'small'];
@@ -142,7 +148,6 @@ export default function Assistance(props: any) {
       transform: [{ translateY }],
     };
   });
-
   return (
     <View style={styles(theme).container}>
       <Header
@@ -168,23 +173,44 @@ export default function Assistance(props: any) {
         <Animated.View style={[{ position: 'absolute', top: 0, left: 0, right: 0, zIndex: 1000, backgroundColor: '#fff' }, animatedHeaderStyle]}>
           <>
             {bannerData ? (
-              <TouchableOpacity
-                activeOpacity={0.8}
-                onPress={() => {
-                  props.navigation.navigate(SCREENS.CreateRequest.identifier)
-                }}>
+              // <TouchableOpacity
+              //   activeOpacity={0.8}
+              //   onPress={() => {
+              //     props.navigation.navigate(SCREENS.CreateRequest.identifier)
+              //   }}>
+              //   <Image
+              //     style={styles(theme).bannerContainer}
+              //     resizeMode='cover'
+              //     source={{ uri: bannerData?.url }}
+              //   />
+              // </TouchableOpacity>
+              <View>
                 <Image
                   style={styles(theme).bannerContainer}
-                  resizeMode='cover'
+                  resizeMode="cover"
                   source={{ uri: bannerData?.url }}
                 />
-              </TouchableOpacity>
+                <TouchableOpacity
+                  activeOpacity={0.8}
+                  onPress={() => {
+                    props.navigation.navigate(SCREENS.CreateRequest.identifier);
+                  }}
+                  style={styles(theme).bookNowButton}>
+                  <Text
+                    size={getScaleSize(14)}
+                    font={FONTS.Lato.Bold}
+                    color={theme.white}>
+                    {STRING.book_now}
+                  </Text>
+                </TouchableOpacity>
+              </View>
             ) : (
               <View style={styles(theme).bannerContainer} />
             )}
             {categoryList.length > 1 && (
               <View style={{ paddingBottom: getScaleSize(20), paddingTop: getScaleSize(20), backgroundColor: '#fff' }}>
                 <FlatList
+                  ref={flatListRef}
                   data={categoryList}
                   horizontal
                   showsHorizontalScrollIndicator={false}
@@ -212,6 +238,11 @@ export default function Assistance(props: any) {
                         onPress={() => {
                           setSearchText('');
                           setSelectedCategory(item);
+                          flatListRef.current?.scrollToIndex({
+                            index,
+                            animated: true,
+                            viewPosition: 0.5, // 👈 centers item
+                          });
                         }}>
                         <Image
                           resizeMode='cover'
@@ -240,7 +271,7 @@ export default function Assistance(props: any) {
             )}
           </>
         </Animated.View>
-        {subCategoryList &&subCategoryList.length > 0 && filteredSubCategories.length > 0 && loading === false ?
+        {subCategoryList && subCategoryList.length > 0 && filteredSubCategories.length > 0 && loading === false ?
           <Animated.FlatList
             data={filteredSubCategories}
             numColumns={2}
@@ -350,5 +381,14 @@ const styles = (theme: ThemeContextType['theme']) =>
     imageView: {
       flex: 1.0,
       borderRadius: getScaleSize(20),
-    }
+    },
+    bookNowButton: {
+      position: 'absolute',
+      bottom: getScaleSize(35),
+      left: getScaleSize(32),
+      paddingHorizontal: getScaleSize(20),
+      paddingVertical: getScaleSize(10),
+      backgroundColor: theme.primary,
+      borderRadius: getScaleSize(25),
+    },
   });

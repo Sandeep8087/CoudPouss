@@ -10,7 +10,7 @@ import Button from './Button';
 export default function EmptyView(props: any) {
     const { theme } = useContext<any>(ThemeContext);
     const STRING = useString();
-    const { onPressButton, title, style } = props;
+    const { onPressButton, title, style, buttonTitle } = props;
     return (
         <View style={[styles(theme).emptyView, style]}>
             <Image source={IMAGES.empty} style={styles(theme).emptyImage} />
@@ -28,7 +28,7 @@ export default function EmptyView(props: any) {
             </Text>
             <Button
                 style={styles(theme).btnRequestService}
-                title={STRING.subscribe}
+                title={buttonTitle ? buttonTitle : STRING.subscribe}
                 onPress={onPressButton}
             />
         </View>

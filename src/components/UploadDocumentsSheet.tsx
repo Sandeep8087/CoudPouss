@@ -17,13 +17,14 @@ interface UploadDocumentsSheetProps {
     onPressDocument?: any,
     certificate?: any
     kbisExtract?: any
+    addressProof?: any
 }
 
 export default function UploadDocumentsSheet(props: UploadDocumentsSheetProps) {
     const { theme } = useContext<any>(ThemeContext);
     const STRING = useString();
 
-    const { bottomSheetRef, height, onPressDocument, buttonTitle, onPressButton, certificate, kbisExtract } = props;
+    const { bottomSheetRef, height, onPressDocument, buttonTitle, onPressButton, certificate, kbisExtract, addressProof } = props;
 
     return (
         <RBSheet
@@ -95,6 +96,33 @@ export default function UploadDocumentsSheet(props: UploadDocumentsSheetProps) {
                         onPress={() => { onPressDocument('kbis') }}>
                         {kbisExtract?.length > 0 ? (
                             <Image source={{ uri: kbisExtract?.[0]?.uri }} style={styles(theme).imageIcon} />
+                        ) : (
+                            <>
+                                <Image
+                                    style={styles(theme).attachmentIcon}
+                                    source={IMAGES.upload_attachment}
+                                />
+                                <Text
+                                    size={getScaleSize(12)}
+                                    font={FONTS.Lato.Regular}
+                                    color={theme._818285}>
+                                    {STRING.upload_from_device}
+                                </Text>
+                            </>
+                        )}
+                    </TouchableOpacity>
+                    <Text
+                        size={getScaleSize(17)}
+                        font={FONTS.Lato.Medium}
+                        color={theme._555555}>
+                        {STRING.proof_of_residence}
+                    </Text>
+                    <TouchableOpacity
+                        style={[styles(theme).uploadButton, { paddingVertical: addressProof?.length > 0 ? getScaleSize(12) : getScaleSize(24) }]}
+                        activeOpacity={1}
+                        onPress={() => { onPressDocument('address_proof') }}>
+                        {addressProof?.length > 0 ? (
+                            <Image source={{ uri: addressProof?.[0]?.uri }} style={styles(theme).imageIcon} />
                         ) : (
                             <>
                                 <Image

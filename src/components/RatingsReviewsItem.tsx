@@ -9,10 +9,29 @@ import moment from 'moment';
 
 export default function RatingsReviewsItem(props: any) {
 
-    const { onPressShowMore, showMore, itemContainer, item } = props;
+    const { onPressShowMore, showMore, itemContainer, item, isFromProfessionalProfile } = props;
 
     const { theme } = useContext<any>(ThemeContext);
+
     const STRING = useString();
+
+    const formatDaysAgo = (days: any) => {
+        if (days == null) return '';
+
+        if (days < 30) {
+            return days === 0
+                ? 'Today'
+                : days === 1
+                    ? '1 day ago'
+                    : `${days} days ago`;
+        }
+
+        const months = Math.floor(days / 30);
+
+        return months === 1
+            ? '1 month ago'
+            : `${months} months ago`;
+    };
 
     return (
         <View style={[styles(theme).itemContainer, itemContainer]}>
@@ -20,20 +39,23 @@ export default function RatingsReviewsItem(props: any) {
                 {item?.profile_photo_url ?
                     <Image source={{ uri: item?.profile_photo_url }} style={styles(theme).profileIcon} />
                     :
-                    <View style={styles(theme).profileIcon} />
+                    <Image source={IMAGES.user_placeholder} style={styles(theme).profileIcon} />
                 }
                 <View style={{ flex: 1.0 }}>
                     <Text
                         size={getScaleSize(16)}
                         font={FONTS.Lato.SemiBold}
                         color={theme._2B2B2B}>
-                        {item?.full_name ?? ''}
+                        {isFromProfessionalProfile ? item?.name : item?.full_name ?? ''}
                     </Text>
-                    <Text size={getScaleSize(14)}
+                    <Text
+                        size={getScaleSize(14)}
                         font={FONTS.Lato.Medium}
-                        color={theme._6D6D6D}>
-                        {item?.created_at ? moment(item?.created_at).fromNow() : '0 days ago'}
+                        color={theme._6D6D6D}
+                    >
+                        {formatDaysAgo(item?.days_ago)}
                     </Text>
+
                 </View>
                 <View style={styles(theme).flexView}>
                     <Rating
@@ -42,7 +64,7 @@ export default function RatingsReviewsItem(props: any) {
                         tintColor="#fff" // background color, useful for layout
                         ratingCount={5}
                         ratingColor={'#F0B52C'} // grey color
-                        startingValue={item?.average_rating ?? 0}
+                        startingValue={item?.rating ?? 0}
                         imageSize={18}
                         readonly
                     />
@@ -54,9 +76,9 @@ export default function RatingsReviewsItem(props: any) {
                 font={FONTS.Lato.Medium}
                 color={theme._131313}
                 numberOfLines={showMore ? undefined : 3}>
-                {item?.review_description ?? ''}
+                {item?.review ?? ''}
             </Text>
-            {item?.review_description?.length > 100 &&
+            {item?.review?.length > 100 &&
                 <Text size={getScaleSize(11)}
                     font={FONTS.Lato.Regular}
                     color={theme._436A00}
@@ -108,7 +130,6 @@ const styles = (theme: ThemeContextType['theme']) => StyleSheet.create({
         width: getScaleSize(40),
         height: getScaleSize(40),
         borderRadius: getScaleSize(40),
-        backgroundColor: theme._D5D5D5,
         marginRight: getScaleSize(8),
     },
     starIcon: {

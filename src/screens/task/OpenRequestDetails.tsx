@@ -47,12 +47,15 @@ export default function OpenRequestDetails(props: any) {
     const [visibleTaskDetails, setVisibleTaskDetails] = useState(false);
     const [isLoading, setLoading] = useState(false);
     const [serviceDetails, setServiceDetails] = useState<any>({});
+    const [status, setStatus] = useState<any>('');
 
     useEffect(() => {
         if (item) {
             getServiceDetails();
         }
     }, []);
+
+    const openservice = serviceDetails?.task_status === 'open';
 
     async function getServiceDetails() {
         try {
@@ -64,6 +67,7 @@ export default function OpenRequestDetails(props: any) {
             setLoading(false);
             if (result.status) {
                 setServiceDetails(result?.data?.data ?? {});
+                
             } else {
                 SHOW_TOAST(result?.data?.message ?? '', 'error')
             }
@@ -122,7 +126,7 @@ export default function OpenRequestDetails(props: any) {
                                     size={getScaleSize(12)}
                                     font={FONTS.Lato.Medium}
                                     color={theme.primary}>
-                                    {serviceDetails?.chosen_datetime ? moment(serviceDetails?.chosen_datetime).format('DD MMM, YYYY') : '-'}
+                                    {serviceDetails?.chosen_datetime ? moment.utc(serviceDetails?.chosen_datetime).local().format('DD MMM, YYYY') : '-'}
                                 </Text>
                             </View>
                             <View style={styles(theme).itemView}>
@@ -138,7 +142,7 @@ export default function OpenRequestDetails(props: any) {
                                     size={getScaleSize(12)}
                                     font={FONTS.Lato.Medium}
                                     color={theme.primary}>
-                                    {serviceDetails?.chosen_datetime ? moment(serviceDetails?.chosen_datetime).format('hh:mm A') : '-'}
+                                    {serviceDetails?.chosen_datetime ? moment.utc(serviceDetails?.chosen_datetime).local().format('hh:mm A') : '-'}
                                 </Text>
                             </View>
                         </View>

@@ -6,6 +6,8 @@ import {
   openStripeCheckout,
   arrayIcons,
   requestLocationPermission,
+  TABBAR_HEIGHT,
+  isImageFile
 } from './utils';
 import {Storage} from './storage';
 import {REGEX} from './regex';
@@ -19,9 +21,11 @@ export {
   Storage,
   arrayIcons,
   REGEX,
+  isImageFile,
   formatDecimalInput,
   openStripeCheckout,
   requestLocationPermission,
+  TABBAR_HEIGHT,
   getPeerUser,
   convertProviderToPeerUser,
 };

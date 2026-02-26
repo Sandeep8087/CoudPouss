@@ -1,7 +1,8 @@
 import {IMAGES} from '../assets';
 import InAppBrowser from 'react-native-inappbrowser-reborn';
-import {Linking} from 'react-native';
+import {Dimensions, Linking} from 'react-native';
 import {PermissionsAndroid, Platform} from 'react-native';
+import { getScaleSize } from './scaleSize';
 
 export const formatDecimalInput = (
   text: string,
@@ -12,6 +13,10 @@ export const formatDecimalInput = (
 
   // Allow typing "." → "0."
   if (value === '.') return '0.';
+
+  if (/^0\d+/.test(value)) {
+    return '0';
+  }
 
   // Allow only one dot
   const firstDot = value.indexOf('.');
@@ -42,7 +47,7 @@ export const formatDecimalInput = (
 export const openStripeCheckout = async (url: any) => {
   try {
     if (await InAppBrowser.isAvailable()) {
-      await InAppBrowser.open(url, {
+      const result = await InAppBrowser.open(url, {
         // iOS
         dismissButtonStyle: 'close',
         preferredBarTintColor: '#ffffff',
@@ -57,6 +62,7 @@ export const openStripeCheckout = async (url: any) => {
         enableDefaultShare: false,
         forceCloseOnRedirection: false,
       });
+      console.log('result==>', result);
     } else {
       // Fallback
       Linking.openURL(url);
@@ -78,13 +84,20 @@ export const arrayIcons = {
   gardening: IMAGES.gardening,
 };
 
-export const requestLocationPermission = async () => {
-  if (Platform.OS === 'android') {
+export const isImageFile = (file: any) => {
+  const type = file?.nativeType || file?.type || '';
+  return type?.startsWith('image/');
+};
+
+export async function requestLocationPermission() {
+  if (Platform.OS === 'ios') return true;
+
+  try {
     const granted = await PermissionsAndroid.request(
       PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION,
       {
         title: 'Location Permission',
-        message: 'This app needs access to your location',
+        message: 'App needs access to your location',
         buttonNeutral: 'Ask Me Later',
         buttonNegative: 'Cancel',
         buttonPositive: 'OK',
@@ -92,6 +105,11 @@ export const requestLocationPermission = async () => {
     );
 
     return granted === PermissionsAndroid.RESULTS.GRANTED;
+  } catch (err) {
+    return false;
   }
-  return true;
-};
+}
+
+const SCREEN_WIDTH = Dimensions.get('window').width;
+const TABBAR_RATIO = getScaleSize(105) / getScaleSize(428);
+export const TABBAR_HEIGHT = SCREEN_WIDTH * TABBAR_RATIO;
