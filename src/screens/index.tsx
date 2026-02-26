@@ -69,6 +69,7 @@ import Language from './profile/language';
 import Address from './request/Address';
 import AddressMapScreen from './request/AddressMapScreen';
 import EditAddress from './request/EditAddress';
+import NegotiationDetails from './chat/NegotiationDetails';
 
 export const SCREENS = {
   Splash: {
@@ -315,7 +316,11 @@ export const SCREENS = {
   EditAddress: {
     identifier: 'EditAddress',
     component: EditAddress,
-  }
+  },
+  NegotiationDetails: {
+    identifier: 'NegotiationDetails',
+    component: NegotiationDetails,
+  },
 };
 
 export const TABS = {
@@ -344,5 +349,4 @@ export const TABS = {
     identifier: 'Task',
     component: Task,
   },
-
 };

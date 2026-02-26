@@ -52,11 +52,12 @@ import moment from 'moment';
 import { EventRegister } from 'react-native-event-listeners';
 import { CommonActions } from '@react-navigation/native';
 import Video from 'react-native-video';
+import { buildThreadId } from '../../services/chat';
 import {
-  getPrividerbyId,
-  negotiationMessage,
-  userMessage,
-} from '../../services/chat';
+  getNegotiationFieldData,
+  userNegotiationMessage,
+} from '../../services/negotiationchat';
+
 
 export default function RequestDetails(props: any) {
 
@@ -368,7 +369,104 @@ export default function RequestDetails(props: any) {
         return null;
     }
   };
+
   console.log('serviceDetails', JSON.stringify(serviceDetails))
+  const handleStartNegotiation = async () => {
+    if (!serviceDetails?.provider?.id) return;
+    if (!newQuoteAmount || Number(newQuoteAmount) <= 0) return;
+
+    const conversationId = buildThreadId(
+      profile?.user?.id,
+      serviceDetails?.service_id,
+    );
+    console;
+    try {
+      const currentUserId = profile?.user?.id;
+      const currentUserName = profile?.user?.first_name;
+      const providerId = serviceDetails?.provider?.id;
+      const providerName = serviceDetails?.provider?.full_name;
+
+      const baseValuation = Number(serviceDetails?.validation_amount ?? 0);
+      const providerQuote = Number(
+        (serviceDetails?.total_renegotiated?.[0] ||
+          serviceDetails?.total_renegotiated) ??
+        0,
+      );
+
+      const now = Date.now();
+
+      const negotiationPayload = {
+        serviceId: serviceDetails?.service_id,
+        serviceName:
+          serviceDetails?.sub_category_name || serviceDetails?.category_name,
+        status: 'PENDING',
+        currentTurn: '',
+        currentAmount: newQuoteAmount,
+        initialQuote: providerQuote,
+        originalValuation: baseValuation,
+        createdBy: currentUserId,
+        createdAt: now,
+        latestMessageId: '1',
+        offers: [
+          // 1️⃣ Elder valuation (original)
+          {
+            amount: baseValuation.toString(),
+            by: currentUserId, // or serviceDetail.created_by if available
+            label: 'ORIGINAL_VALUATION',
+            createdAt: now - 2000,
+          },
+
+          // 2️⃣ Provider quote
+          {
+            amount: providerQuote.toString(),
+            by: providerId,
+            label: 'PROVIDER_QUOTE',
+            createdAt: now - 1000,
+          },
+
+          // 3️⃣ Current user's counter offer
+          {
+            amount: newQuoteAmount,
+            by: currentUserId,
+            label: 'COUNTER',
+            createdAt: now,
+            userName: currentUserName,
+          },
+        ],
+      };
+
+      await userNegotiationMessage(
+        serviceDetails?.service_id,
+        serviceDetails?.sub_category_name || serviceDetails?.category_name,
+        serviceDetails?.sub_category_logo ?? '',
+        currentUserId,
+        currentUserName,
+        providerId,
+        providerName,
+        conversationId,
+        {
+          type: 'NEGOTIATION',
+          text: 'hi',
+          negotiation: negotiationPayload,
+        },
+        profile?.user?.profile_photo_url || '',
+        serviceDetails?.provider?.profile_photo_url ?? '',
+      );
+      props.navigation.navigate(SCREENS.NegotiationDetails.identifier, {
+        conversationId: conversationId,
+        peerUser: {
+          user_id: serviceDetails?.provider?.id,
+          name: serviceDetails?.provider?.full_name,
+          email: serviceDetails?.provider?.email,
+          avatarUrl: serviceDetails?.provider?.profile_photo_url,
+        },
+      });
+    } catch (error: any) {
+      console.error('Negotiation error:', error?.message);
+    }
+  };
+
+
   return (
     <View style={[styles(theme).container,
     ]}>
@@ -602,16 +700,32 @@ export default function RequestDetails(props: any) {
               <TouchableOpacity
                 style={styles(theme).negociateButton}
                 activeOpacity={1}
-                onPress={() => {
-                  props.navigation.navigate(SCREENS.ChatDetails.identifier, {
-                    conversationId: profile?.user?.id,
-                    peerUser: {
-                      user_id: serviceDetails?.provider?.id,
-                      name: serviceDetails?.provider?.full_name,
-                      email: serviceDetails?.provider?.email,
-                      avatarUrl: serviceDetails?.provider?.profile_photo_url,
-                    },
-                  });
+                onPress={async () => {
+                  const conversationId = buildThreadId(
+                    profile?.user?.id,
+                    serviceDetails?.service_id,
+                  );
+                  const negotiationFieldData = await getNegotiationFieldData(
+                    conversationId,
+                  );
+                  if (negotiationFieldData) {
+                    props.navigation.navigate(
+                      SCREENS.NegotiationDetails.identifier,
+                      {
+                        conversationId: conversationId,
+                        peerUser: {
+                          user_id: serviceDetails?.provider?.id,
+                          name: serviceDetails?.provider?.full_name,
+                          email: serviceDetails?.provider?.email,
+                          avatarUrl: serviceDetails?.provider?.profile_photo_url,
+                        },
+                      },
+                    );
+                  } else {
+                    setNewQuoteAmount('');
+                    setNewQuoteAmountError('');
+                    setShowOfferModal(true);
+                  }
                 }}>
                 <Text
                   size={getScaleSize(14)}
@@ -698,8 +812,12 @@ export default function RequestDetails(props: any) {
                 activeOpacity={1}
                 style={[styles(theme).newButton, { marginRight: getScaleSize(6) }]}
                 onPress={() => {
+                  const conversationId = buildThreadId(
+                    profile?.user?.id,
+                    serviceDetails?.provider?.id,
+                  );
                   props.navigation.navigate(SCREENS.ChatDetails.identifier, {
-                    conversationId: profile?.user?.id,
+                    conversationId: conversationId,
                     peerUser: {
                       user_id: serviceDetails?.provider?.id,
                       name: serviceDetails?.provider?.full_name,
@@ -1227,68 +1345,7 @@ export default function RequestDetails(props: any) {
                     return;
                   }
 
-                  const provider = await getPrividerbyId(
-                    serviceDetails?.provider?.id,
-                  );
-                  if (provider.size > 0) {
-                    props.navigation.navigate(SCREENS.ChatDetails.identifier, {
-                      conversationId: profile?.user?.id,
-                      peerUser: {
-                        user_id: serviceDetails?.provider?.id,
-                        name: serviceDetails?.provider?.full_name,
-                        email: serviceDetails?.provider?.email,
-                        avatarUrl: serviceDetails?.provider?.profile_photo_url,
-                      },
-                    });
-                  } else {
-                    negotiationMessage(
-                      serviceDetails?.sub_category_name,
-                      profile?.user?.id,
-                      serviceDetails?.provider?.id,
-                      'Original Valuation',
-                      'elderly_user',
-                      serviceDetails?.total_renegotiated,
-                      profile?.user?.id,
-                    );
-                    negotiationMessage(
-                      serviceDetails?.sub_category_name,
-                      profile?.user?.id,
-                      serviceDetails?.provider?.id,
-                      'Initial Quote',
-                      'elderly_user',
-                      serviceDetails?.validation_amount,
-                      profile?.user?.id,
-                    );
-                    negotiationMessage(
-                      serviceDetails?.sub_category_name,
-                      profile?.user?.id,
-                      serviceDetails?.provider?.id,
-                      profile?.user?.first_name,
-                      'elderly_user',
-                      newQuoteAmount,
-                      profile?.user?.id,
-                    );
-                    userMessage(
-                      profile?.user?.id,
-                      profile?.user?.first_name,
-                      serviceDetails?.provider?.id,
-                      serviceDetails?.provider?.full_name,
-                      'hi',
-                      profile?.user?.id,
-                      profile?.user?.profile_photo_url,
-                      serviceDetails?.provider?.profile_photo_url,
-                      'text',
-                    );
-                    props.navigation.navigate(SCREENS.ChatDetails.identifier, {
-                      conversationId: profile?.user?.id,
-                      peerUser: {
-                        user_id: serviceDetails?.provider?.id,
-                        name: serviceDetails?.provider?.full_name,
-                        email: serviceDetails?.provider?.email,
-                        avatarUrl: serviceDetails?.provider?.profile_photo_url,
-                      },
-                    });
-                  }
+                  await handleStartNegotiation();
 
                   setShowOfferModal(false);
                 }}>

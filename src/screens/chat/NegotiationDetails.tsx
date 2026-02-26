@@ -29,23 +29,21 @@ import {Text} from '../../components';
 
 //PACKAGES
 import {useFocusEffect} from '@react-navigation/native';
-import {
-  getReadCount,
-  messagesListThread,
-  updateReadCount,
-  userMessage,
-} from '../../services/chat';
 import {FirebaseFirestoreTypes} from '@react-native-firebase/firestore';
+import {
+  messagesListThread,
+  userNegotiationMessage,
+} from '../../services/negotiationchat';
 
-export default function ChatDetails(props: any) {
+export default function NegotiationDetails(props: any) {
   const STRING = useString();
   const {theme} = useContext<any>(ThemeContext);
   const {profile} = useContext<any>(AuthContext);
   const peerUser = props?.route?.params?.peerUser;
-  const [message, setMessage] = useState('');
+  // const [message, setMessage] = useState('');
   const [messages, setMessages] = useState<any[]>([]);
   const [loadingMessages, setLoadingMessages] = useState(true);
-  const [isSending, setIsSending] = useState(false);
+  // const [isSending, setIsSending] = useState(false);
   const [editingForMessageId, setEditingForMessageId] = useState<
     boolean | null
   >(false);
@@ -75,12 +73,10 @@ export default function ChatDetails(props: any) {
       }
     }, [theme.white]),
   );
-  useEffect(() => {}, []);
 
   useEffect(() => {
     // chat found, so we need to get the messages
     setCommanId(props.route.params.conversationId);
-    updateReadCount(profile?.user?.id, commanId);
     const unsubscribe = messagesListThread(
       props.route.params.conversationId,
     ).onSnapshot(querySnapshot => {
@@ -101,34 +97,34 @@ export default function ChatDetails(props: any) {
     };
   }, []);
 
-  const handleSendMessage = async () => {
-    if (!message.trim()) {
-      SHOW_TOAST('Please enter a message', 'error');
-      return;
-    }
-    setIsSending(true);
+  // const handleSendMessage = () => {
+  //   if (!message.trim()) {
+  //     SHOW_TOAST('Please enter a message', 'error');
+  //     return;
+  //   }
+  //   setIsSending(true);
 
-    if (!profile?.user?.id || !commanId) {
-      throw new Error('Chat not initialized');
-    }
-    const readCount = await getReadCount(peerUserId, commanId);
-
-    await userMessage(
-      profile?.user?.id,
-      profile?.user?.first_name || 'User',
-      peerUserId,
-      peerUserName,
-      commanId,
-      message,
-      profile?.user?.profile_photo_url || '',
-      peerUserAvatar,
-      'TEXT',
-      readCount + 1,
-    );
-
-    await updateReadCount(profile?.user?.id, commanId);
-    setMessage('');
-  };
+  //   if (!profile?.user?.id || !commanId) {
+  //     throw new Error('Chat not initialized');
+  //   }
+  //   userNegotiationMessage(
+  //     '',
+  //     '',
+  //     '',
+  //     profile?.user?.id,
+  //     profile?.user?.first_name || 'User',
+  //     peerUserId,
+  //     peerUserName,
+  //     commanId,
+  //     {
+  //       type: 'TEXT',
+  //       text: message,
+  //     },
+  //     profile?.user?.profile_photo_url || '',
+  //     peerUserAvatar,
+  //   );
+  //   setMessage('');
+  // };
 
   const renderMessage = ({item}: {item: any}) => {
     switch (item.type) {
@@ -188,15 +184,16 @@ export default function ChatDetails(props: any) {
         );
       case 'NEGOTIATION':
         const isMe = item.senderId === profile?.user?.id;
+
         const latestNegotiationMessage = messages
           ?.filter(msg => msg.type === 'NEGOTIATION')
           ?.sort((a, b) => b.createdAt - a.createdAt)[0];
         const isLatest = latestNegotiationMessage?._id === item._id;
 
-        return (
+        return isLatest ? (
           <View
             style={
-              !isMe
+              profile?.user?.role === 'service_provider'
                 ? styles(theme).quoteCardContainer
                 : styles(theme).negotiationCard
             }>
@@ -248,8 +245,7 @@ export default function ChatDetails(props: any) {
             })}
 
             {item.negotiation?.status === 'PENDING' &&
-              isLatest &&
-              (!isMe ? (
+              (profile?.user?.role === 'service_provider' ? (
                 <View>
                   {!editingForMessageId && (
                     <TouchableOpacity
@@ -296,37 +292,38 @@ export default function ChatDetails(props: any) {
                               return;
                             }
 
-                            // const updatedNegotiation = {
-                            //   ...item.negotiation,
-                            //   currentAmount: offerInputValue,
-                            //   latestMessageId: '1', // 👈 only new message has 1
-                            //   offers: [
-                            //     ...item.negotiation.offers,
-                            //     {
-                            //       amount: offerInputValue.toString(),
-                            //       by: profile?.user?.id,
-                            //       label: 'EDITED',
-                            //       createdAt: Date.now(),
-                            //       userName: profile?.user?.first_name,
-                            //     },
-                            //   ],
-                            // };
+                            const updatedNegotiation = {
+                              ...item.negotiation,
+                              currentAmount: offerInputValue,
+                              offers: [
+                                ...item.negotiation.offers,
+                                {
+                                  amount: offerInputValue.toString(),
+                                  by: profile?.user?.id,
+                                  label: 'EDITED',
+                                  createdAt: Date.now(),
+                                  userName: profile?.user?.first_name,
+                                },
+                              ],
+                            };
 
-                            // userMessage(
-                            //   item.negotiation.serviceId,
-                            //   peerUserId,
-                            //   profile?.user?.first_name,
-                            //   profile?.user?.id,
-                            //   peerUserName,
-                            //   commanId,
-                            //   {
-                            //     type: 'NEGOTIATION',
-                            //     text: `My revised offer is €${offerInputValue}`,
-                            //     negotiation: updatedNegotiation,
-                            //   },
-                            //   profile?.user?.profile_photo_url || '',
-                            //   peerUserAvatar ?? '',
-                            // );
+                            userNegotiationMessage(
+                              item.serviceId,
+                              item.serviceName,
+                              item.servicePhoto,
+                              profile?.user?.id,
+                              profile?.user?.first_name,
+                              peerUserId,
+                              peerUserName,
+                              commanId,
+                              {
+                                type: 'NEGOTIATION',
+                                text: `My revised offer is €${offerInputValue}`,
+                                negotiation: updatedNegotiation,
+                              },
+                              peerUserAvatar ?? '',
+                              profile?.user?.profile_photo_url || '',
+                            );
                             setEditingForMessageId(false);
                             setOfferInputValue('');
                           }}>
@@ -355,7 +352,7 @@ export default function ChatDetails(props: any) {
                     </View>
                   )}
                 </View>
-              ) : isMe ? (
+              ) : profile?.user?.role === 'elderly_user' ? (
                 <View>
                   {!editingForMessageId && (
                     <View style={styles(theme).actionRow}>
@@ -422,52 +419,38 @@ export default function ChatDetails(props: any) {
                               return;
                             }
 
-                            // const newOffer = {
-                            //   amount: offerInputValue.toString(),
-                            //   by: profile?.user?.id,
-                            //   label: 'COUNTER', // or ACCEPTED / REJECTED
-                            //   createdAt: Date.now(),
-                            //   userName: profile?.user?.first_name,
-                            // };
+                            const newOffer = {
+                              amount: offerInputValue.toString(),
+                              by: profile?.user?.id,
+                              label: 'COUNTER', // or ACCEPTED / REJECTED
+                              createdAt: Date.now(),
+                              userName: profile?.user?.first_name,
+                            };
 
-                            // const updatedNegotiation = {
-                            //   ...item.negotiation,
-                            //   currentAmount: offerInputValue,
-                            //   currentTurn: item.senderId, // switch turn
-                            //   offers: [...item.negotiation.offers, newOffer],
-                            // };
+                            const updatedNegotiation = {
+                              ...item.negotiation,
+                              currentAmount: offerInputValue,
+                              offers: [...item.negotiation.offers, newOffer],
+                            };
 
-                            // userMessage(
-                            //   item.negotiation.serviceId,
-                            //   profile?.user?.id,
-                            //   profile?.user?.first_name,
-                            //   peerUserId,
-                            //   peerUserName,
-                            //   commanId,
-                            //   {
-                            //     type: 'NEGOTIATION',
-                            //     text: `My revised offer is €${offerInputValue}`,
-                            //     negotiation: updatedNegotiation,
-                            //   },
-                            //   profile?.user?.profile_photo_url || '',
-                            //   peerUserAvatar ?? '',
-                            // );
+                            userNegotiationMessage(
+                              item.serviceId,
+                              item.serviceName,
+                              item.servicePhoto,
+                              profile?.user?.id,
+                              profile?.user?.first_name,
+                              peerUserId,
+                              peerUserName,
+                              commanId,
+                              {
+                                type: 'NEGOTIATION',
+                                text: `My revised offer is €${offerInputValue}`,
+                                negotiation: updatedNegotiation,
+                              },
+                              profile?.user?.profile_photo_url || '',
+                              peerUserAvatar ?? '',
+                            );
 
-                            // if (!offerInputValue.trim()) {
-                            //   SHOW_TOAST(
-                            //     'Please enter an offer amount',
-                            //     'error',
-                            //   );
-                            //   return;
-                            // }
-                            // counterNegotiation({
-                            //   conversationId: commanId,
-                            //   messageId: negotiationMessages[0]._id,
-                            //   userId: profile?.user?.id,
-                            //   amount: parseFloat(offerInputValue),
-                            //   label: 'COUNTER',
-                            //   userName: profile?.user?.first_name,
-                            // });
                             setEditingForMessageId(false);
                             setOfferInputValue('');
                           }}>
@@ -497,6 +480,60 @@ export default function ChatDetails(props: any) {
                   )}
                 </View>
               ) : null)}
+          </View>
+        ) : (
+          <View
+            style={
+              isMe
+                ? styles(theme).quoteCardContainer
+                : styles(theme).negotiationCard
+            }>
+            <Text
+              size={getScaleSize(16)}
+              font={FONTS.Lato.Bold}
+              color={theme._323232}>
+              {item.negotiation.serviceName}
+            </Text>
+            {item.negotiation?.offers.map((offer: any) => {
+              return (
+                <View style={styles(theme).pricingRow}>
+                  {offer.label === 'ORIGINAL_VALUATION' ? (
+                    <Text
+                      style={{flex: 1}}
+                      size={getScaleSize(14)}
+                      font={FONTS.Lato.Medium}
+                      color={theme._6D6D6D}>
+                      {'Original Valuation :'}
+                    </Text>
+                  ) : offer.label === 'PROVIDER_QUOTE' ? (
+                    <Text
+                      style={{flex: 1}}
+                      size={getScaleSize(14)}
+                      font={FONTS.Lato.Medium}
+                      color={theme._6D6D6D}>
+                      {'Initial Quote :'}
+                    </Text>
+                  ) : (
+                    <Text
+                      style={{flex: 1}}
+                      size={getScaleSize(14)}
+                      font={FONTS.Lato.Medium}
+                      color={theme._6D6D6D}>
+                      {offer.userName === profile?.user?.first_name
+                        ? 'Your Previous Offer'
+                        : offer.userName + ' Current Offer'}
+                    </Text>
+                  )}
+
+                  <Text
+                    size={getScaleSize(16)}
+                    font={FONTS.Lato.Bold}
+                    color={theme._424242}>
+                    €{offer.amount}
+                  </Text>
+                </View>
+              );
+            })}
           </View>
         );
       default:
@@ -614,7 +651,7 @@ export default function ChatDetails(props: any) {
           // </ScrollView>
         )}
       </View>
-      <View style={styles(theme).sendMessageContainer}>
+      {/* <View style={styles(theme).sendMessageContainer}>
         <Image style={styles(theme).microphoneImage} source={IMAGES.mic} />
         <TextInput
           style={styles(theme).searchInput}
@@ -637,7 +674,7 @@ export default function ChatDetails(props: any) {
             source={IMAGES.message_send}
           />
         </TouchableOpacity>
-      </View>
+      </View> */}
     </KeyboardAvoidingView>
   );
 }
@@ -865,4 +902,3 @@ const styles = (theme: ThemeContextType['theme']) =>
       marginRight: getScaleSize(8),
     },
   });
- 

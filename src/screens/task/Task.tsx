@@ -25,6 +25,7 @@ import { Header, TaskItem, Text } from '../../components';
 import { SCREENS } from '..';
 import { API } from '../../api';
 import { useIsFocused } from '@react-navigation/native';
+import {buildThreadId} from '../../services/chat';
 
 export default function Task(props: any) {
 
@@ -146,14 +147,17 @@ export default function Task(props: any) {
         API.API_ROUTES.getTsakDetails + `/quotes/${serviceRequestId}`,
       );
       if (result.status) {
+        const conversationId = buildThreadId(
+          result?.data?.data?.elderly_user?.id,
+          result?.data?.data?.provider?.id,
+        );
         props.navigation.navigate(SCREENS.ChatDetails.identifier, {
-          conversationId: result?.data?.data?.elderly_user?.id ?? '',
+          conversationId: conversationId,
           peerUser: {
-            user_id: result?.data?.data?.elderly_user?.id ?? '',
-            name: result?.data?.data?.elderly_user?.full_name ?? '',
-            email: result?.data?.data?.elderly_user?.email ?? '',
-            avatarUrl:
-              result?.data?.data?.elderly_user?.profile_photo_url ?? '',
+            user_id: result?.data?.data?.provider?.id,
+            name: result?.data?.data?.provider?.full_name,
+            email: result?.data?.data?.provider?.email,
+            avatarUrl: result?.data?.data?.provider?.profile_photo_url,
           },
         });
       } else {
