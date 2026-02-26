@@ -25,11 +25,8 @@ import { TaskItem, Text } from '../../components';
 import { SCREENS } from '..';
 import { API } from '../../api';
 import { useIsFocused } from '@react-navigation/native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 export default function Task(props: any) {
-
-  const insets = useSafeAreaInsets();
 
   const STRING = useString();
   const { theme } = useContext<any>(ThemeContext);
@@ -248,9 +245,7 @@ export default function Task(props: any) {
   }
 
   return (
-    <View style={[styles(theme).container,
-    { paddingTop: insets.top }
-    ]}>
+    <View style={styles(theme).container}>
       <Text
         size={getScaleSize(24)}
         font={FONTS.Lato.Bold}

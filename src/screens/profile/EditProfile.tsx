@@ -269,16 +269,26 @@ export default function EditProfile(props: any) {
     const sanitizeOptionalText = (text: string) => {
         if (!text) return '';
 
-        // Remove emojis & extended unicode (strict emoji block)
-        let value = text.replace(
-            /([\u{1F600}-\u{1F6FF}]|[\u{1F300}-\u{1F5FF}]|[\u{1F700}-\u{1F77F}]|[\u{2600}-\u{26FF}])/gu,
+        let value = text;
+
+        // Remove emojis
+        value = value.replace(
+            /([\u{1F000}-\u{1FFFF}]|[\u{2600}-\u{27BF}])/gu,
             ''
         );
 
-        // Allow only: alphabets, numbers, space, . , ' - _ @
+        // Allow characters
         value = value.replace(/[^a-zA-Z0-9\s.,'@_-]/g, '');
 
-        // HARD limit to 300 chars
+        // Remove leading spaces
+        value = value.replace(/^\s+/, '');
+
+        // Replace multiple spaces
+        value = value.replace(/\s{2,}/g, ' ');
+
+        // Remove trailing spaces
+        value = value.replace(/\s+$/, '');
+
         if (value.length > 300) {
             value = value.slice(0, 300);
         }
@@ -289,20 +299,23 @@ export default function EditProfile(props: any) {
     const validateOptionalText = (value: string) => {
         const trimmed = value.trim();
 
-        // Optional field
+        // If only whitespace → invalid
+        if (value && !trimmed) {
+            return STRING.enter_valid_text;
+        }
+
         if (!trimmed) return '';
 
-        // Must contain at least one letter or number
         if (!/[a-zA-Z0-9]/.test(trimmed)) {
-            return 'Enter valid text';
+            return STRING.enter_valid_text;
         }
 
         if (trimmed.length < 5) {
-            return 'Minimum 5 characters required';
+            return STRING.minimum_five_char_required;
         }
 
         if (trimmed.length > 300) {
-            return 'Maximum 300 characters allowed';
+            return STRING.maximum_three_hundred_char_allowed;
         }
 
         return '';
@@ -311,18 +324,19 @@ export default function EditProfile(props: any) {
     const validateName = (value: string) => {
         const trimmed = value.trim();
 
-        if (!trimmed) return 'Name is required';
+        if (!trimmed)
+            return STRING.name_is_rqequired;
 
         if (trimmed.length < 2)
-            return 'Minimum 2 characters required';
+            return STRING.minimum_two_char_required;
 
         if (trimmed.length > 50)
-            return 'Maximum 50 characters allowed';
+            return STRING.maximum_fifty_char_allowed;
 
         const nameRegex = /^[A-Za-z.\-\s]+$/;
 
         if (!nameRegex.test(trimmed))
-            return 'Only alphabets, space, dot (.), hyphen (-) allowed';
+            return STRING.only_alphabets_space_dot_hyphen_allowed;
 
         return '';
     };
@@ -333,10 +347,7 @@ export default function EditProfile(props: any) {
         let value = text;
 
         // Remove emojis
-        value = value.replace(
-            /([\u{1F600}-\u{1F6FF}]|[\u{1F300}-\u{1F5FF}]|[\u{2600}-\u{26FF}])/gu,
-            ''
-        );
+        value = value.replace(/([\u{1F000}-\u{1FFFF}]|[\u{2600}-\u{27BF}])/gu, '');
 
         // Allow only alphabets + space + dot + hyphen
         value = value.replace(/[^A-Za-z.\-\s]/g, '');
@@ -344,57 +355,84 @@ export default function EditProfile(props: any) {
         // Remove leading spaces
         value = value.replace(/^\s+/, '');
 
-        // Replace multiple spaces with single space
+        // Replace multiple spaces with single
         value = value.replace(/\s{2,}/g, ' ');
 
-        // Hard limit 50
+        // Remove trailing spaces
+        value = value.replace(/\s+$/, '');
+
+        // Hard limit
         if (value.length > 50) {
             value = value.slice(0, 50);
         }
 
         return value;
     };
-
     const validateMobile = (value: string) => {
         const trimmed = value.trim();
 
-        if (!trimmed) return "Mobile number required";
+        if (!trimmed) return STRING.mobile_number_required;
 
         if (!/^[0-9]{10}$/.test(trimmed))
-            return "Enter valid 10 digit number";
+            return STRING.enter_valid_ten_digit_number
 
         return "";
     };
 
+    const sanitizeAddressInput = (text: string) => {
+        if (!text) return '';
+
+        let value = text;
+
+        // Remove emojis
+        value = value.replace(/([\u{1F000}-\u{1FFFF}]|[\u{2600}-\u{27BF}])/gu, '');
+
+        // Remove leading spaces
+        value = value.replace(/^\s+/, '');
+
+        // Replace multiple spaces with single
+        value = value.replace(/\s{2,}/g, ' ');
+
+        // Remove trailing spaces
+        value = value.replace(/\s+$/, '');
+
+        // Hard limit
+        if (value.length > 250) {
+            value = value.slice(0, 250);
+        }
+
+        return value;
+    };
+
     const validateAddress = (value: string) => {
         if (!value) {
-            return "Address is required.";
+            return STRING.address_is_required
         }
 
         const trimmed = value.trim();
 
         if (!trimmed) {
-            return "Address is required.";
+            return STRING.address_is_required;
         }
 
         if (trimmed.length < 5) {
-            return "Address must be at least 05 characters long.";
+            return STRING.address_must_be_at_least_05_characters_long;
         }
 
         if (trimmed.length > 250) {
-            return "Address cannot exceed 250 characters.";
+            return STRING.address_cannot_exceed_250_characters;
         }
 
         // Allow only approved characters
         const allowedRegex = /^[A-Za-z0-9\s,.\-/#]+$/;
 
         if (!allowedRegex.test(trimmed)) {
-            return "Special characters are not allowed except , . - / #.";
+            return STRING.special_characters_not_allowed;
         }
 
         // Must contain at least one letter (not only numbers or special chars)
         if (!/[A-Za-z]/.test(trimmed)) {
-            return "Please enter a valid address.";
+            return STRING.please_enter_valid_address
         }
 
         return "";
@@ -555,8 +593,9 @@ export default function EditProfile(props: any) {
                         }}
                         continerStyle={{ marginBottom: getScaleSize(20) }}
                         onChangeText={text => {
-                            setAddress(text);
-                            setAddressError('');
+                            const clean = sanitizeAddressInput(text);
+                            setAddress(clean);
+                            setAddressError(validateAddress(clean));
                         }}
                         isError={addressError}
                     />

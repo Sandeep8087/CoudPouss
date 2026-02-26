@@ -57,11 +57,8 @@ import {
   negotiationMessage,
   userMessage,
 } from '../../services/chat';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 export default function RequestDetails(props: any) {
-
-  const insets = useSafeAreaInsets();
 
   const STRING = useString();
   const { theme } = useContext<any>(ThemeContext);
@@ -1002,12 +999,7 @@ export default function RequestDetails(props: any) {
         {/* <View style={{ height: getScaleSize(50) }} /> */}
       </ScrollView>
       {status === 'pending' && (
-        <View style={[
-          styles(theme).buttonContainer,
-          {
-            paddingBottom: Math.max(insets.bottom, getScaleSize(16)),
-          },
-        ]}>
+        <View style={styles(theme).buttonContainer}>
           <TouchableOpacity
             style={styles(theme).backButtonContainer}
             activeOpacity={1}
@@ -1090,9 +1082,7 @@ export default function RequestDetails(props: any) {
         />
       )}
       {status === 'accepted' && (
-        <View style={[styles(theme).buttonContainer,
-        { paddingBottom: Math.max(insets.bottom, getScaleSize(16)), }
-        ]}>
+        <View style={styles(theme).buttonContainer}>
           <TouchableOpacity
             style={styles(theme).backButtonContainer}
             activeOpacity={1}

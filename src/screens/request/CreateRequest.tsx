@@ -51,14 +51,15 @@ import moment from 'moment';
 import { createThumbnail } from 'react-native-create-thumbnail';
 import Geolocation from 'react-native-geolocation-service';
 import { PERMISSIONS, request, RESULTS } from 'react-native-permissions';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 const { width } = Dimensions.get('window');
 const cellSize = (width - 30) / 7;
 
-export default function CreateRequest(props: any) {
+type ProductValidationResult =
+  | { valid: true; value: string }
+  | { valid: false; message: string };
 
-  const insets = useSafeAreaInsets();
+export default function CreateRequest(props: any) {
 
   const STRING = useString();
   const { theme } = useContext<any>(ThemeContext);
@@ -195,7 +196,6 @@ export default function CreateRequest(props: any) {
   }
 
   const pickImage = async (type: string) => {
-    setLoading(true);
     launchImageLibrary(
       {
         mediaType: 'mixed', // 👈 image + video
@@ -302,51 +302,51 @@ export default function CreateRequest(props: any) {
   function onNextProfessional() {
     if (selectedProgress === 1) {
       if (!selectedCategoryItem) {
-        SHOW_TOAST('Please select a category', 'error');
+        SHOW_TOAST(STRING.please_select_category, 'error');
         return;
       } else {
         setSelectedProgress(2);
       }
     } else if (selectedProgress === 2) {
       if (!selectSubCategoryItem) {
-        SHOW_TOAST('Please select a service', 'error');
+        SHOW_TOAST(STRING.please_select_service, 'error');
         return;
       } else {
         setSelectedProgress(3);
       }
     } else if (selectedProgress === 3) {
       if (!selectedCategory) {
-        SHOW_TOAST('Please select a service provider', 'error');
+        SHOW_TOAST(STRING.please_select_service_provider, 'error');
         return;
       } else {
         setSelectedProgress(4);
       }
     } else if (selectedProgress === 4) {
-      if (!selectedAddress && !firstImageURL && !description) {
-        setDescriptionError('Please enter a description');
-        setFirstImageError('Please upload a photo');
-        setAddressError('Please Select an address');
+      if (!selectedAddress && !firstImageURL && !description.trim()) {
+        setDescriptionError(STRING.please_enter_description);
+        setFirstImageError(STRING.please_upload_photo);
+        setAddressError(STRING.please_select_address);
         return;
       } else if (!validateDescription()) {
         return;
       } else if (!firstImageURL) {
-        SHOW_TOAST('Please upload a photo', 'error');
+        SHOW_TOAST(STRING.please_upload_photo, 'error');
         return;
       } else if (!selectedAddress) {
-        setAddressError('Please Select an address');
+        setAddressError(STRING.please_select_address);
         return;
       } else {
         setSelectedProgress(5);
       }
     } else if (selectedProgress == 5) {
       if (!valuation) {
-        SHOW_TOAST('Please enter a valuation', 'error');
+        SHOW_TOAST(STRING.please_enter_valuation, 'error');
         return;
       } else if (!selectedDate) {
-        SHOW_TOAST('Please select a date', 'error');
+        SHOW_TOAST(STRING.please_select_date, 'error');
         return;
       } else if (!selectedTime) {
-        SHOW_TOAST('Please select a time', 'error');
+        SHOW_TOAST(STRING.please_select_time, 'error');
         return;
       } else {
         setSelectedProgress(6);
@@ -361,48 +361,48 @@ export default function CreateRequest(props: any) {
   function onNextNonProfessional() {
     if (selectedProgress === 1) {
       if (!selectedCategoryItem) {
-        SHOW_TOAST('Please select a category', 'error');
+        SHOW_TOAST(STRING.please_select_category, 'error');
         return;
       } else {
         setSelectedProgress(2);
       }
     } else if (selectedProgress === 2) {
       if (!selectSubCategoryItem) {
-        SHOW_TOAST('Please select a service', 'error');
+        SHOW_TOAST(STRING.please_select_service, 'error');
         return;
       } else {
         setSelectedProgress(3);
       }
     } else if (selectedProgress === 3) {
       if (!selectedCategory) {
-        SHOW_TOAST('Please select a service provider', 'error');
+        SHOW_TOAST(STRING.please_select_service_provider, 'error');
         return;
       } else {
         setSelectedProgress(4);
       }
     } else if (selectedProgress === 4) {
-      if (!description && !firstImageURL && !selectedAddress) {
-        setDescriptionError('Please enter a description');
-        setFirstImageError('Please upload a photo');
-        setAddressError('Please Select an address');
+      if (!selectedAddress && !firstImageURL && !description.trim()) {
+        setDescriptionError(STRING.please_enter_description);
+        setFirstImageError(STRING.please_upload_photo);
+        setAddressError(STRING.please_select_address);
         return;
       } else if (!validateDescription()) {
         return;
       } else if (!firstImageURL) {
-        SHOW_TOAST('Please upload a photo', 'error');
+        SHOW_TOAST(STRING.please_upload_photo, 'error');
         return;
       } else if (!selectedAddress) {
-        setAddressError('Please Select an address');
+        setAddressError(STRING.please_select_address);
         return;
       } else {
         setSelectedProgress(5);
       }
     } else if (selectedProgress == 5) {
       if (!selectedDate) {
-        SHOW_TOAST('Please select a date', 'error');
+        SHOW_TOAST(STRING.please_select_date, 'error');
         return;
       } else if (!selectedTime) {
-        SHOW_TOAST('Please select a time', 'error');
+        SHOW_TOAST(STRING.please_select_time, 'error');
         return;
       } else {
         setSelectedProgress(6);
@@ -417,11 +417,11 @@ export default function CreateRequest(props: any) {
         }
       }
       else if (!quantity.trim()) {
-        setQuantityError('Quantity is required.');
+        setQuantityError(STRING.quantity_required);
         return;
       }
       else if (!firstProductImageURL) {
-        SHOW_TOAST('Please upload a photo', 'error');
+        SHOW_TOAST(STRING.please_upload_photo, 'error');
         return;
       } else {
         setSelectedProgress(7);
@@ -557,84 +557,94 @@ export default function CreateRequest(props: any) {
   const validateDescription = () => {
     const clean = description.trim();
 
-    if (!clean) {
-      setDescriptionError('Description cannot be empty');
+    if (clean.length === 0) {
+      setDescriptionError(STRING.des_cannot_be_empty);
       return false;
     }
 
     if (clean.length < 10) {
-      setDescriptionError('Minimum 10 characters required');
+      setDescriptionError(STRING.minimum_10_char_required);
       return false;
     }
 
     if (clean.length > 500) {
-      setDescriptionError('Maximum 500 characters allowed');
+      setDescriptionError(STRING.maximum_500_char_allowed);
       return false;
     }
 
-    // first character cannot be special char
     if (/^[^a-zA-Z0-9]/.test(clean)) {
-      setDescriptionError(
-        'Description cannot start with special character'
-      );
+      setDescriptionError(STRING.description_cannot_start_with_special_character);
       return false;
     }
 
-    // only special characters check
     if (/^[^a-zA-Z0-9]+$/.test(clean)) {
-      setDescriptionError(
-        'Description cannot contain only special characters'
-      );
+      setDescriptionError(STRING.description_cannot_contain_only_special_characters);
       return false;
     }
 
-    // save trimmed value back
     setDescription(clean);
-
+    setDescriptionError('');
     return true;
   };
 
-  const validateProductName = (text: any) => {
+  const validateProductName = (text: string): ProductValidationResult => {
     let value = text.trim();
 
-    if (!productName) {
-      return {
-        valid: false,
-        message: 'Enter Product Name',
-      }
+    // 1️⃣ Required
+    if (!value) {
+      return { valid: false, message: STRING.product_name_required };
     }
 
-    // block HTML/script tags
-    if (/<[^>]*>|script|select|insert|delete|drop|update|--|;/i.test(value)) {
-      return { valid: false, message: 'Invalid characters detected' };
-    }
-
-    // remove emojis
-    value = value.replace(/[\p{Extended_Pictographic}]/gu, '');
-
-    // allow only approved characters
-    if (!/^[a-zA-Z0-9\s\-&.()]+$/.test(value)) {
-      return {
-        valid: false,
-        message: 'Only letters, numbers and - & . ( ) allowed',
-      };
-    }
-
-    // block consecutive special characters
-    if (/[\-&.()]{2,}/.test(value)) {
-      return {
-        valid: false,
-        message: 'Consecutive special characters not allowed',
-      };
-    }
-
-    // length validation
+    // 2️⃣ Length check
     if (value.length < 2) {
-      return { valid: false, message: 'Minimum 2 characters required' };
+      return { valid: false, message: STRING.minimum_2_char_required };
     }
 
     if (value.length > 50) {
-      return { valid: false, message: 'Maximum 50 characters allowed' };
+      return { valid: false, message: STRING.maximum_50_char_allowed };
+    }
+
+    // 3️⃣ Block emojis
+    const emojiRegex = /[\p{Extended_Pictographic}]/gu;
+    if (emojiRegex.test(value)) {
+      return { valid: false, message: STRING.emojis_not_allowed };
+    }
+
+    // 4️⃣ Block HTML tags
+    if (/<[^>]*>/g.test(value)) {
+      return { valid: false, message: STRING.html_tags_not_allowed };
+    }
+
+    // 5️⃣ Block SQL injection patterns
+    const sqlRegex = /(script|select|insert|delete|drop|update|--|;|\/\*|\*\/)/i;
+    if (sqlRegex.test(value)) {
+      return { valid: false, message: STRING.sql_injection_detected };
+    }
+
+    // 6️⃣ Allow only specific characters
+    const allowedRegex = /^[a-zA-Z0-9\s\-&.()]+$/;
+    if (!allowedRegex.test(value)) {
+      return {
+        valid: false,
+        message: STRING.only_letters_numbers_special_characters_allowed,
+      };
+    }
+
+    // 7️⃣ Block consecutive special characters
+    const consecutiveSpecial = /[\-&.()]{2,}/;
+    if (consecutiveSpecial.test(value)) {
+      return {
+        valid: false,
+        message: STRING.consecutive_special_characters_not_allowed,
+      };
+    }
+
+    // 8️⃣ Block only numbers
+    if (/^\d+$/.test(value)) {
+      return {
+        valid: false,
+        message: STRING.only_numbers_not_allowed,
+      };
     }
 
     return { valid: true, value };
@@ -1126,6 +1136,7 @@ export default function CreateRequest(props: any) {
             value={productName}
             maxLength={50}
             onChangeText={(text: any) => {
+
               const result = validateProductName(text);
 
               if (result.valid) {
@@ -1417,9 +1428,7 @@ export default function CreateRequest(props: any) {
   }
 
   return (
-    <View style={[styles(theme).container,
-    { paddingBottom: Platform.OS === 'android' ? insets.bottom : 0 }
-    ]}>
+    <View style={styles(theme).container}>
       <Header
       />
       <View style={{ flexDirection: 'row', alignItems: 'center', marginRight: getScaleSize(22), marginBottom: getScaleSize(40) }}>
@@ -1465,6 +1474,7 @@ export default function CreateRequest(props: any) {
           style={styles(theme).nextButtonContainer}
           activeOpacity={1}
           onPress={() => {
+            if (isLoading) return;
             if (selectedCategory == 'professional') {
               onNextProfessional();
             } else {

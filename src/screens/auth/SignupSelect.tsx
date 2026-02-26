@@ -14,12 +14,7 @@ import { SCREENS } from '..';
 //COMPONENTS
 import { Header, Input, Text, Button } from '../../components';
 
-//PACKAGES
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
-
 export default function SignupSelect(props: any) {
-
-    const insets = useSafeAreaInsets();
 
     const STRING = useString();
     const { setUserType } = useContext<any>(AuthContext);

@@ -15,12 +15,9 @@ import { SCREENS } from '..';
 import { Header, Input, Text, Button, SelectCountrySheet } from '../../components';
 import { CommonActions } from '@react-navigation/native';
 import { API } from '../../api';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 
 export default function Signup(props: any) {
-
-    const insets = useSafeAreaInsets();
 
     const STRING = useString();
 
@@ -121,10 +118,11 @@ export default function Signup(props: any) {
             <KeyboardAwareScrollView
                 showsVerticalScrollIndicator={false}
                 enableOnAndroid={true}
-                extraScrollHeight={20}
+                // extraScrollHeight={20}
                 keyboardShouldPersistTaps="handled"
                 contentContainerStyle={{
                     paddingBottom: 20,
+                     flexGrow: 1,
                 }}
             >
                 <View style={styles(theme).mainContainer}>

@@ -66,8 +66,6 @@ export default function ProfessionalHome(props: any) {
 
   const skipSubscription = props?.route?.params?.skipSubscription;
 
-  console.log('skipSubscription', skipSubscription)
-
   const STRING = useString();
 
   const { theme } = useContext<any>(ThemeContext);

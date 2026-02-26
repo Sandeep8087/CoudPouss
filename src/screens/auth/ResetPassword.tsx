@@ -15,12 +15,7 @@ import { SCREENS } from '..';
 import { Header, Input, Text, Button, SelectCountrySheet } from '../../components';
 import { API } from '../../api';
 
-//PACKAGES
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
-
 export default function ResetPassword(props: any) {
-
-    const insets = useSafeAreaInsets();
 
     const STRING = useString();
 
@@ -97,9 +92,7 @@ export default function ResetPassword(props: any) {
 
 
     return (
-        <View style={[styles(theme).container,
-        { paddingBottom: Platform.OS === 'android' ? insets.bottom : 0 }
-        ]}>
+        <View style={styles(theme).container}>
             <Header
                 onBack={() => {
                     props.navigation.goBack();

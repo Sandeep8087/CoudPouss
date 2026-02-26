@@ -15,12 +15,7 @@ import { SCREENS } from '..';
 import { Header, Input, Text, Button } from '../../components';
 import { API } from '../../api';
 
-//PACKAGES
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
-
 export default function CreatePassword(props: any) {
-
-    const insets = useSafeAreaInsets();
 
     const STRING = useString();
 
@@ -43,10 +38,10 @@ export default function CreatePassword(props: any) {
             setPasswordError(STRING.password_required);
         }
         else if (/\s/.test(password)) {
-            setPasswordError('Whitespace is not allowed');
+            setPasswordError(STRING.white_space_not_allowed);
         }
         else if (password.length > 12) {
-            setPasswordError('Maximum 12 characters allowed');
+            setPasswordError(STRING.maximum_12_characters_allowed);
         }
         else if (!REGEX.password.test(password)) {
             setPasswordError(STRING.password_validation_message);
@@ -109,8 +104,7 @@ export default function CreatePassword(props: any) {
     }
 
     return (
-        <View style={[styles(theme).container,
-        { paddingBottom: Platform.OS === 'android' ? insets.bottom : 0 }
+        <View style={[styles(theme).container
         ]}>
             <Header
                 onBack={() => {

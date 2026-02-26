@@ -39,13 +39,8 @@ import BottomBar from '../Bottombar';
 import Geolocation from 'react-native-geolocation-service';
 import { } from '../../constant';
 import { SCREENS } from '..';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
-
-
 
 export default function TaskStatus(props: any) {
-
-  const insets = useSafeAreaInsets();
 
   const STRING = useString();
   const { theme } = useContext<any>(ThemeContext);
@@ -338,9 +333,7 @@ export default function TaskStatus(props: any) {
   console.log('serviceFlags.isServiceFinalized==>', serviceFlags.isServiceFinalized, taskStatusData?.is_otp_verifed?.status == 'false');
 
   return (
-    <View style={[styles(theme).container,
-    { paddingBottom: Platform.OS === 'android' ? insets.bottom : 0 }
-    ]}>
+    <View style={styles(theme).container}>
       <Header
         onBack={() => {
           props.navigation.goBack();

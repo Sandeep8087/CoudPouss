@@ -25,7 +25,6 @@ import {
   // PACKAGES
   import Tooltip from 'react-native-walkthrough-tooltip';
   import moment from 'moment';
-  import { useSafeAreaInsets } from 'react-native-safe-area-context';
   
   const PAGE_SIZE = 10;
   
@@ -68,7 +67,7 @@ import {
   };
   
   export default function Transactions(props: any) {
-    const insets = useSafeAreaInsets();
+
     const { theme } = useContext<any>(ThemeContext);
     const STRING = useString();
   
@@ -220,7 +219,7 @@ import {
     /* ================= UI ================= */
   
     return (
-      <View style={[styles(theme).container, { paddingBottom: Platform.OS === 'android' ? insets.bottom : 0 }]}>
+      <View style={styles(theme).container}>
         <Header
           onBack={() => props.navigation.goBack()}
           screenName={STRING.transactions}

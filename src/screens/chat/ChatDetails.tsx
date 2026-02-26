@@ -39,11 +39,8 @@ import {
 } from '../../services/chat';
 import {FirebaseFirestoreTypes} from '@react-native-firebase/firestore';
 import {Screen} from 'react-native-screens';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 export default function ChatDetails(props: any) {
-
-  const insets = useSafeAreaInsets();
 
   const STRING = useString();
   const {theme} = useContext<any>(ThemeContext);
@@ -294,12 +291,7 @@ export default function ChatDetails(props: any) {
   return (
     <KeyboardAvoidingView
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-      style={[styles(theme).container,
-      {
-        paddingBottom: Platform.OS === 'android' ? insets.bottom : 0,
-        paddingTop: Platform.OS === 'android' ? insets.top : 0,
-      }
-      ]}>
+      style={styles(theme).container}>
       <StatusBar
         barStyle="dark-content"
         backgroundColor={theme.white}

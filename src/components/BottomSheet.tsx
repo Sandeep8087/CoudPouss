@@ -7,7 +7,6 @@ import { FONTS, IMAGES } from '../assets';
 import Text from './Text';
 import Button from './Button';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-
 interface BottomSheetProps {
     bottomSheetRef: any;
     height: number;

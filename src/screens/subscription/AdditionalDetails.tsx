@@ -69,15 +69,15 @@ export default function AdditionalDetails(props: any) {
         const errors: string[] = [];
 
         if (!copyOfId?.length) {
-            errors.push('ID document is required');
+            errors.push(STRING.id_docuement_required);
         }
 
         if (!kbisExtract?.length) {
-            errors.push('KBIS extract is required');
+            errors.push(STRING.kbis_extract_required);
         }
 
         if (!proofOfResidence?.length) {
-            errors.push('Proof of residence is required');
+            errors.push(STRING.proof_of_residence_required);
         }
 
         // If there are errors, show them all at once
@@ -121,7 +121,7 @@ export default function AdditionalDetails(props: any) {
 
             if (result?.data?.status) {
 
-                SHOW_SUCCESS_TOAST('All documents uploaded successfully');
+                SHOW_SUCCESS_TOAST(STRING.docuement_uploaded_successfully);
 
                 if (isFromApplicationStatus) {
                     props.navigation.navigate(SCREENS.ApplicationStatus.identifier);

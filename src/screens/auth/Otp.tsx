@@ -16,13 +16,10 @@ import { Header, Input, Text, Button } from '../../components';
 
 //PACKAGES
 import OTPTextInput from 'react-native-otp-textinput';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { API } from '../../api';
 
 export default function Otp(props: any) {
-
-    const insets = useSafeAreaInsets();
 
     const STRING = useString();
     const isFromSignup = props?.route?.params?.isFromSignup || false;
@@ -205,9 +202,7 @@ export default function Otp(props: any) {
     }
 
     return (
-        <View style={[styles(theme).container,
-        { paddingBottom: Platform.OS === 'android' ? insets.bottom : 0 }
-        ]}>
+        <View style={styles(theme).container}>
             <Header
                 onBack={() => {
                     props.navigation.goBack();

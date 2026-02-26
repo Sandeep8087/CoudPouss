@@ -45,11 +45,8 @@ import { useFocusEffect } from '@react-navigation/native'; import moment from 'm
 
 //SCREENS
 import { SCREENS } from '..';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 export default function ServicePreview(props: any) {
-
-  const insets = useSafeAreaInsets();
 
   const STRING = useString();
 
@@ -98,9 +95,7 @@ export default function ServicePreview(props: any) {
   );
 
   return (
-    <View style={[styles(theme).container,
-    { paddingBottom: Platform.OS === 'android' ? insets.bottom : 0 }
-    ]}>
+    <View style={styles(theme).container}>
       <Header
         onBack={() => {
           props.navigation.goBack();

@@ -31,11 +31,8 @@ import {
 import { SCREENS } from '..';
 import { API } from '../../api';
 import { CommonActions, useIsFocused } from '@react-navigation/native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 export default function ManageServices(props: any) {
-
-    const insets = useSafeAreaInsets();
 
     const isFromSelectServices: boolean = props?.route?.params?.isFromSelectServices ?? false;
     const { theme } = useContext<any>(ThemeContext);
@@ -160,7 +157,7 @@ export default function ManageServices(props: any) {
     }
 
     return (
-        <View style={[styles(theme).container, { paddingBottom: Platform.OS === 'android' ? insets.bottom : 0 }]}>
+        <View style={styles(theme).container}>
             <Header
                 onBack={() => {
                     if (isFromSelectServices) {

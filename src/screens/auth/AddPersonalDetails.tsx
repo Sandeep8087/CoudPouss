@@ -32,12 +32,9 @@ import {
 import { CommonActions } from '@react-navigation/native';
 import { API } from '../../api';
 import { launchImageLibrary } from 'react-native-image-picker';
-import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 
 export default function AddPersonalDetails(props: any) {
-
-  const insets = useSafeAreaInsets();
 
   const STRING = useString();
 
@@ -359,13 +356,10 @@ export default function AddPersonalDetails(props: any) {
                 ''
               );
 
-              // Allow only letters + space
-              const clean = noEmoji.replace(/[^A-Za-z ]/g, '');
+              // Allow only letters (NO space)
+              const clean = noEmoji.replace(/[^A-Za-z]/g, '');
 
-              // Allow single space only
-              const singleSpace = clean.replace(/\s+/g, ' ');
-
-              setName(singleSpace);
+              setName(clean);
               setNameError('');
             }}
             isError={nameError}
@@ -424,9 +418,10 @@ export default function AddPersonalDetails(props: any) {
                 ''
               );
 
-              const singleSpace = noEmoji.replace(/\s+/g, ' ');
+              // Remove spaces completely
+              const noSpaces = noEmoji.replace(/\s/g, '');
 
-              setAddress(singleSpace);
+              setAddress(noSpaces);
               setAddressError('');
             }}
             isError={addressError}
@@ -436,7 +431,6 @@ export default function AddPersonalDetails(props: any) {
             style={{
               marginVertical: getScaleSize(24),
               // marginHorizontal: getScaleSize(24),
-              marginBottom: insets.bottom > 0 ? insets.bottom : 16,
             }}
             onPress={() => {
               onSignup();

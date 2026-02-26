@@ -30,11 +30,9 @@ import {
     ProgressView,
 } from '../../components';
 import { API } from '../../api';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 export default function EditAddress(props: any) {
 
-    const insets = useSafeAreaInsets();
     const STRING = useString();
     const { theme } = useContext<any>(ThemeContext);
   
@@ -249,8 +247,7 @@ export default function EditAddress(props: any) {
                 title={STRING.save_address}
                 style={{
                     marginVertical: getScaleSize(24),
-                    marginHorizontal: getScaleSize(24),
-                    marginBottom: insets.bottom > 0 ? insets.bottom : 16,
+                    marginHorizontal: getScaleSize(24),  
                 }}
                 onPress={() => {
                     if (addressData) {
