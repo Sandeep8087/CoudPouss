@@ -25,7 +25,7 @@ import RequestDetails from './request/RequestDetails';
 import OtherUserProfile from './profile/OtherUserProfile';
 import ServiceConfirmed from './request/ServiceConfirmed';
 import Notification from './notification/Notification';
-import CompletedTaskDetails from './task/CompletedTaskDetails';  
+import CompletedTaskDetails from './task/CompletedTaskDetails';
 import WriteReview from './review/WriteReview';
 import TaskStatus from './task/TaskStatus';
 import Assistance from './houseAssistance/Assistance';
@@ -65,6 +65,7 @@ import ServiceCancelled from './request/ServiceCancelled';
 import Search from './home/Search';
 import WebViewScreen from './WebViewScreen';
 import MapView from './task/MapView';
+import NegotiationDetails from './chat/NegotiationDetails';
 
 export const SCREENS = {
   Splash: {
@@ -296,6 +297,10 @@ export const SCREENS = {
     identifier: 'MapView',
     component: MapView,
   },
+  NegotiationDetails: {
+    identifier: 'NegotiationDetails',
+    component: NegotiationDetails,
+  },
 };
 
 export const TABS = {
@@ -324,5 +329,4 @@ export const TABS = {
     identifier: 'Task',
     component: Task,
   },
-
 };

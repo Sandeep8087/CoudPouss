@@ -42,6 +42,7 @@ import {SCREENS} from '..';
 import {API} from '../../api';
 import moment from 'moment';
 import Video from 'react-native-video';
+import {buildThreadId} from '../../services/chat';
 
 export default function ProfessionalTaskDetails(props: any) {
   const STRING = useString();
@@ -397,14 +398,17 @@ export default function ProfessionalTaskDetails(props: any) {
                   {marginRight: getScaleSize(6)},
                 ]}
                 onPress={() => {
+                  const conversationId = buildThreadId(
+                    taskDetails?.elderly_user?.id,
+                    taskDetails?.service_request_id,
+                  );
                   props.navigation.navigate(SCREENS.ChatDetails.identifier, {
-                    conversationId: taskDetails?.elderly_user?.id ?? '',
+                    conversationId: conversationId,
                     peerUser: {
-                      user_id: taskDetails?.elderly_user?.id ?? '',
-                      name: taskDetails?.elderly_user?.first_name ?? '',
-                      email: taskDetails?.elderly_user?.email ?? '',
-                      avatarUrl:
-                        taskDetails?.elderly_user?.profile_photo_url ?? '',
+                      user_id: taskDetails?.provider?.id,
+                      name: taskDetails?.provider?.full_name,
+                      email: taskDetails?.provider?.email,
+                      avatarUrl: taskDetails?.provider?.profile_photo_url,
                     },
                   });
                 }}>

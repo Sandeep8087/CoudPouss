@@ -8,30 +8,30 @@ import firestore from '@react-native-firebase/firestore';
 export const buildThreadId = (first: string, second: string) =>
   [first, second].sort().join('_');
 
-export const createNewThread = (
-  userId: string,
-  userName: string,
-  userEmail: string,
-  userMobile: string,
-  userRole: string,
-  userAddress: string,
-  userImage: string,
-): Promise<void> => {
-  return firestore()
-    .collection('Users')
-    .doc(userId)
-    .set({
-      name: userName,
-      userId: userId,
-      email: userEmail,
-      mobile: userMobile,
-      role: userRole,
-      address: userAddress,
-      avatarUrl: userImage,
-      text: `${userName} created.`,
-      createdAt: new Date().getTime(),
-    });
-};
+// export const createNewThread = (
+//   userId: string,
+//   userName: string,
+//   userEmail: string,
+//   userMobile: string,
+//   userRole: string,
+//   userAddress: string,
+//   userImage: string,
+// ): Promise<void> => {
+//   return firestore()
+//     .collection('Users')
+//     .doc(userId)
+//     .set({
+//       name: userName,
+//       userId: userId,
+//       email: userEmail,
+//       mobile: userMobile,
+//       role: userRole,
+//       address: userAddress,
+//       avatarUrl: userImage,
+//       text: `${userName} created.`,
+//       createdAt: new Date().getTime(),
+//     });
+// };
 
 // /* =========================
 //    Single negotiation User Message
@@ -72,7 +72,7 @@ export const createNewThread = (
 //       return firestore()
 //         .collection('NEGOTIATION_MESSAGES')
 //         .doc(conversationId)
-//         .collection('MESSAGE_THREADS')
+//         .collection('NEGOTIATION_MESSAGE_THREADS')
 //         .add({
 //           serviceName: serviceName,
 //           title: title,
@@ -88,8 +88,10 @@ export const createNewThread = (
 /* =========================
    Single User Message
 ========================= */
-export const userMessage = async (
+export const userNegotiationMessage = async (
   serviceId: string,
+  serviceName: string,
+  servicePhoto: string,
   userId: string,
   userName: string,
   recipientId: string,
@@ -103,6 +105,7 @@ export const userMessage = async (
   userPhoto: string,
   recipientPhoto: string,
 ): Promise<any> => {
+
   const previewMessage =
     payload.type === 'TEXT'
       ? payload.text
@@ -111,7 +114,7 @@ export const userMessage = async (
   return await firestore()
     .collection('Users')
     .doc(userId)
-    .collection('MESSAGES')
+    .collection('NEGOTIATION_MESSAGES')
     .doc(conversationId)
     .set(
       {
@@ -123,6 +126,9 @@ export const userMessage = async (
           name: recipientName,
           recipientId: recipientId,
           recipientPhoto: recipientPhoto,
+          serviceId: serviceId,
+          serviceName: serviceName,
+          servicePhoto: servicePhoto,
           chatVisible: 'single',
         },
       },
@@ -132,7 +138,7 @@ export const userMessage = async (
       return firestore()
         .collection('Users')
         .doc(recipientId)
-        .collection('MESSAGES')
+        .collection('NEGOTIATION_MESSAGES')
         .doc(conversationId)
         .set(
           {
@@ -144,6 +150,9 @@ export const userMessage = async (
               name: userName,
               recipientId: userId,
               recipientPhoto: userPhoto,
+              serviceId: serviceId,
+              serviceName: serviceName,
+              servicePhoto: servicePhoto,
               chatVisible: 'single',
             },
           },
@@ -153,7 +162,7 @@ export const userMessage = async (
     .then(() => {
       if (payload.type === 'NEGOTIATION') {
         return firestore()
-          .collection('MESSAGES')
+          .collection('NEGOTIATION_MESSAGES')
           .doc(conversationId)
           .set({
             latestMessageId: '1',
@@ -161,14 +170,16 @@ export const userMessage = async (
           }, { merge: true },)
           .then(() => {
             return firestore()
-              .collection('MESSAGES')
+              .collection('NEGOTIATION_MESSAGES')
               .doc(conversationId)
-              .collection('MESSAGE_THREADS')
+              .collection('NEGOTIATION_MESSAGE_THREADS')
               .add({
                 senderId: userId || '',
                 receiverId: recipientId || '',
                 text: payload.text || '',
                 serviceId: serviceId,
+                serviceName: serviceName,
+                servicePhoto: servicePhoto,
                 negotiation: payload.negotiation || null,
                 createdAt: new Date().getTime(),
                 type: payload.type || '',
@@ -176,9 +187,9 @@ export const userMessage = async (
           });
       } else {
         return firestore()
-          .collection('MESSAGES')
+          .collection('NEGOTIATION_MESSAGES')
           .doc(conversationId)
-          .collection('MESSAGE_THREADS')
+          .collection('NEGOTIATION_MESSAGE_THREADS')
           .add({
             senderId: userId || '',
             receiverId: recipientId || '',
@@ -194,7 +205,6 @@ export const userMessage = async (
 
 
 type NegotiationPayload = {
-  serviceId: string;
   serviceName: string;
   status: "PENDING" | "ACCEPTED" | "REJECTED";
   currentTurn: string;
@@ -215,7 +225,7 @@ type NegotiationPayload = {
 
 export const getNegotiationFieldData = async (conversationId: string) => {
   const docSnap = await firestore()
-    .collection('MESSAGES')
+    .collection('NEGOTIATION_MESSAGES')
     .doc(conversationId)
     .get();
 
@@ -229,25 +239,25 @@ export const getNegotiationFieldData = async (conversationId: string) => {
 
 // export const updateMessage = async (conversationId: string, messageId: string, data: any) => {
 //   return await firestore()
-//     .collection('MESSAGES')
+//     .collection('NEGOTIATION_MESSAGES')
 //     .doc(conversationId)
-//     .collection('MESSAGE_THREADS')
+//     .collection('NEGOTIATION_MESSAGE_THREADS')
 //     .doc(messageId)
 //     .update(data);
 // };
-export const listenToThreads = (UserID: string) => {
+export const listenToNegotiationThreads = (UserID: string) => {
   return firestore()
     .collection('Users')
     .doc(UserID)
-    .collection('MESSAGES')
+    .collection('NEGOTIATION_MESSAGES')
     .orderBy('createdAt', 'desc');
 };
 
 export const isThreadExists = async (threadId: string) => {
   const docSnap = await firestore()
-    .collection('MESSAGES')
+    .collection('NEGOTIATION_MESSAGES')
     .doc(threadId)
-    .collection('MESSAGE_THREADS')
+    .collection('NEGOTIATION_MESSAGE_THREADS')
     .get();
 
   return docSnap.docs.length > 0 ? '1' : '0';
@@ -261,9 +271,9 @@ export const isThreadExists = async (threadId: string) => {
 
 export const messagesListThread = (threadId: string) => {
   return firestore()
-    .collection('MESSAGES')
+    .collection('NEGOTIATION_MESSAGES')
     .doc(threadId)
-    .collection('MESSAGE_THREADS')
+    .collection('NEGOTIATION_MESSAGE_THREADS')
     .orderBy('createdAt', 'desc');
 };
 
@@ -271,7 +281,7 @@ export const messagesNegotiationListThread = (threadId: string) => {
   return firestore()
     .collection('NEGOTIATION_MESSAGES')
     .doc(threadId)
-    .collection('MESSAGE_THREADS')
+    .collection('NEGOTIATION_MESSAGE_THREADS')
     .orderBy('createdAt', 'desc');
 };
 
@@ -286,7 +296,7 @@ export const messagesNegotiationListThread = (threadId: string) => {
 //   return firestore()
 //     .collection('Users')
 //     .doc(userId)
-//     .collection('MESSAGES')
+//     .collection('NEGOTIATION_MESSAGES')
 //     .doc(conversationId)
 //     .delete();
 // };
@@ -311,9 +321,9 @@ export const messagesNegotiationListThread = (threadId: string) => {
 //   userName: string;
 // }): Promise<void> => {
 //   const messageRef = firestore()
-//     .collection('MESSAGES')
+//     .collection('NEGOTIATION_MESSAGES')
 //     .doc(conversationId)
-//     .collection('MESSAGE_THREADS')
+//     .collection('NEGOTIATION_MESSAGE_THREADS')
 //     .doc(messageId);
 
 //   await firestore().runTransaction(async transaction => {
@@ -364,60 +374,60 @@ export const messagesNegotiationListThread = (threadId: string) => {
    Accept Negotiation
 ========================= */
 
-// export const acceptNegotiation = async ({
-//   conversationId,
-//   messageId,
-//   userId,
-//   userName,
-// }: {
-//   conversationId: string;
-//   messageId: string;
-//   userId: string;
-//   userName: string;
-// }): Promise<void> => {
-//   const messageRef = firestore()
-//     .collection('MESSAGES')
-//     .doc(conversationId)
-//     .collection('MESSAGE_THREADS')
-//     .doc(messageId);
+export const acceptNegotiation = async ({
+  conversationId,
+  messageId,
+  userId,
+  userName,
+}: {
+  conversationId: string;
+  messageId: string;
+  userId: string;
+  userName: string;
+}): Promise<void> => {
+  const messageRef = firestore()
+    .collection('NEGOTIATION_MESSAGES')
+    .doc(conversationId)
+    .collection('NEGOTIATION_MESSAGE_THREADS')
+    .doc(messageId);
 
-//   await firestore().runTransaction(async transaction => {
-//     const snap = await transaction.get(messageRef);
+  await firestore().runTransaction(async transaction => {
+    const snap = await transaction.get(messageRef);
 
-//     if (!snap.exists) {
-//       throw new Error('Negotiation message not found');
-//     }
+    if (!snap.exists) {
+      throw new Error('Negotiation message not found');
+    }
 
-//     const data = snap.data();
-//     const existingNegotiation: NegotiationPayload = data?.negotiation;
+    const data = snap.data();
+    const existingNegotiation: NegotiationPayload = data?.negotiation;
 
-//     if (existingNegotiation.status === 'ACCEPTED') {
-//       throw new Error('Negotiation already finalized');
-//     }
+    if (existingNegotiation.status === 'ACCEPTED') {
+      throw new Error('Negotiation already finalized');
+    }
 
-//     const lastOffer =
-//       existingNegotiation.offers?.[
-//       existingNegotiation.offers.length - 1
-//       ];
+    const lastOffer =
+      existingNegotiation.offers?.[
+      existingNegotiation.offers.length - 1
+      ];
 
-//     const updatedNegotiation: NegotiationPayload = {
-//       ...existingNegotiation,
-//       status: 'ACCEPTED',
-//       currentAmount: lastOffer?.amount,
-//       offers: [
-//         ...(existingNegotiation.offers || []),
-//         {
-//           amount: lastOffer?.amount,
-//           by: userId,
-//           label: 'ACCEPT',
-//           userName: userName,
-//           createdAt: new Date().getTime(),
-//         },
-//       ],
-//     };
+    const updatedNegotiation: NegotiationPayload = {
+      ...existingNegotiation,
+      status: 'ACCEPTED',
+      currentAmount: lastOffer?.amount,
+      offers: [
+        ...(existingNegotiation.offers || []),
+        {
+          amount: lastOffer?.amount,
+          by: userId,
+          label: 'ACCEPT',
+          userName: userName,
+          createdAt: new Date().getTime(),
+        },
+      ],
+    };
 
-//     transaction.set(messageRef, {
-//       negotiation: updatedNegotiation,
-//     });
-//   });
-// };
+    transaction.set(messageRef, {
+      negotiation: updatedNegotiation,
+    });
+  });
+};
