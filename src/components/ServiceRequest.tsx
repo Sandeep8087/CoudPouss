@@ -126,7 +126,6 @@ export default function ServiceRequest(props: any) {
             <Text
               style={{
                 marginHorizontal: getScaleSize(8),
-
                 flex: 1.0,
               }}
               size={getScaleSize(14)}

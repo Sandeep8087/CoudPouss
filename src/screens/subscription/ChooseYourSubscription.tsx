@@ -15,12 +15,8 @@ import { SCREENS } from '..';
 import { Header, Input, Text, Button } from '../../components';
 import { API } from '../../api';
 import { CommonActions } from '@react-navigation/native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
-
 
 export default function ChooseYourSubscription(props: any) {
-
-    const insets = useSafeAreaInsets();
 
     const STRING = useString();
 
@@ -34,6 +30,28 @@ export default function ChooseYourSubscription(props: any) {
     useEffect(() => {
         getAllPlans();
     }, []);
+
+    useEffect(() => {
+        const unsubscribe = props.navigation.addListener('beforeRemove', (e: any) => {
+            // If this is already a reset action, allow it
+            if (e.data.action.type === 'RESET') {
+                return;
+            }
+
+            // Prevent default back behavior
+            e.preventDefault();
+
+            // Redirect to Home (BottomBar)
+            props.navigation.dispatch(
+                CommonActions.reset({
+                    index: 0,
+                    routes: [{ name: SCREENS.BottomBar.identifier }],
+                }),
+            );
+        });
+
+        return unsubscribe;
+    }, [props.navigation]);
 
     async function getAllPlans() {
         try {
@@ -57,10 +75,8 @@ export default function ChooseYourSubscription(props: any) {
         }
     }
 
-
     return (
-        <View style={[styles(theme).container,
-        { paddingBottom: Platform.OS === 'android' ? insets.bottom : 0 }]}>
+        <View style={styles(theme).container}>
             <Header
                 onBack={() => {
                     if (isFromSubscriptionButton) {

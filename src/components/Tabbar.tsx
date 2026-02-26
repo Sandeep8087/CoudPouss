@@ -233,7 +233,7 @@ function Tabbar(props: any) {
         userType === 'service_provider'
           ? styles(theme).tabContainer
           : styles(theme).tabContainerServiceProvider,
-        { paddingBottom: insets.bottom }
+        // { paddingBottom: insets.bottom }
       ]}>
         {props.state.routes.map((route: any, index: number) => {
           return (
@@ -253,26 +253,24 @@ function Tabbar(props: any) {
 
   if (userType === 'service_provider') {
     return (
-      <SafeAreaView style={{ backgroundColor: 'transparent' }}>
+      // <SafeAreaView style={{ backgroundColor: 'transparent' }}>
         <View style={[styles(theme).mainContainer]}>
           {renderView()}
         </View>
-      </SafeAreaView>
+      // </SafeAreaView>
     )
   }
   else {
     return (
-      <View>
         <ImageBackground style={[styles(theme).mainView,
-        { height: TABBAR_HEIGHT + insets.bottom }
+        { height: TABBAR_HEIGHT  }
         ]}
           resizeMode='cover'
           source={IMAGES.ic_tab_bar}>
-          <SafeAreaView edges={['bottom']}>
+          {/* <SafeAreaView edges={['bottom']}> */}
             {renderView()}
-          </SafeAreaView>
+          {/* </SafeAreaView> */}
         </ImageBackground>
-      </View>
     )
   }
   // return (
@@ -469,6 +467,7 @@ const styles = (theme: ThemeContextType['theme']) =>
     },
     mainView: {
       width: SCREEN_WIDTH,
+      backgroundColor: theme.white,
       // position: 'absolute',
       // bottom: 0,
       // left: 0,
@@ -495,13 +494,13 @@ const styles = (theme: ThemeContextType['theme']) =>
       height: getScaleSize(32),
       width: getScaleSize(32),
       alignSelf: 'center',
-      marginTop: getScaleSize(45)
+      // marginTop: getScaleSize(45)
     },
     itemImage: {
       height: getScaleSize(32),
       width: getScaleSize(32),
       alignSelf: 'center',
-      marginTop: getScaleSize(45)
+      // marginTop: getScaleSize(45)
     },
     tabText: {
       marginTop: getScaleSize(7),

@@ -128,7 +128,7 @@ export default function AddressMapScreen(props: any) {
                 type='address_map_view'
                 icon={IMAGES.pinIcon}
                 bottomSheetRef={mapViewRef}
-                height={getScaleSize(350)}
+                height={getScaleSize(380)}
                 description={'4517 Washington Ave. Manchester, Kentucky 39495'}
                 title={STRING.confirm_your_address}
                 buttonTitle={STRING.confirm_and_proceed}

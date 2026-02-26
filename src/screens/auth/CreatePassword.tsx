@@ -1,4 +1,4 @@
-import { Dimensions, Image, Platform, ScrollView, StyleSheet, View } from 'react-native';
+import { Dimensions, Image, KeyboardAvoidingView, Platform, ScrollView, StyleSheet, View } from 'react-native';
 import React, { useContext, useEffect, useState } from 'react';
 
 //CONTEXT
@@ -15,12 +15,7 @@ import { SCREENS } from '..';
 import { Header, Input, Text, Button } from '../../components';
 import { API } from '../../api';
 
-//PACKAGES
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
-
 export default function CreatePassword(props: any) {
-
-    const insets = useSafeAreaInsets();
 
     const STRING = useString();
 
@@ -43,10 +38,10 @@ export default function CreatePassword(props: any) {
             setPasswordError(STRING.password_required);
         }
         else if (/\s/.test(password)) {
-            setPasswordError('Whitespace is not allowed');
+            setPasswordError(STRING.white_space_not_allowed);
         }
         else if (password.length > 12) {
-            setPasswordError('Maximum 12 characters allowed');
+            setPasswordError(STRING.maximum_12_characters_allowed);
         }
         else if (!REGEX.password.test(password)) {
             setPasswordError(STRING.password_validation_message);
@@ -109,78 +104,83 @@ export default function CreatePassword(props: any) {
     }
 
     return (
-        <View style={[styles(theme).container,
-        { paddingBottom: Platform.OS === 'android' ? insets.bottom : 0 }
-        ]}>
-            <Header
-                onBack={() => {
-                    props.navigation.goBack();
-                }}
-                screenName={STRING.create_password}
-            />
-            <ScrollView showsVerticalScrollIndicator={false}>
-                <View style={styles(theme).mainContainer}>
-                    <Text
-                        size={getScaleSize(18)}
-                        font={FONTS.Lato.SemiBold}
-                        color={theme._565656}
-                        style={{ marginBottom: getScaleSize(20) }}>
-                        {STRING.create_a_strong_password}
-                    </Text>
-                    <Input
-                        placeholder={STRING.enter_new_password}
-                        placeholderTextColor={theme._939393}
-                        inputTitle={STRING.password}
-                        inputColor={true}
-                        value={password}
-                        passwordIcon={true}
-                        secureTextEntry={show}
-                        onChnageIcon={() => {
-                            setShow(!show);
-                        }}
-                        onChangeText={text => {
-                            // Remove all whitespace
-                            const cleaned = text.replace(/\s/g, '');
+        <KeyboardAvoidingView
+            style={{ flex: 1 }}
+            behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+            keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 20}
+        >
+            <View style={[styles(theme).container
+            ]}>
+                <Header
+                    onBack={() => {
+                        props.navigation.goBack();
+                    }}
+                    screenName={STRING.create_password}
+                />
+                <ScrollView showsVerticalScrollIndicator={false}>
+                    <View style={styles(theme).mainContainer}>
+                        <Text
+                            size={getScaleSize(18)}
+                            font={FONTS.Lato.SemiBold}
+                            color={theme._565656}
+                            style={{ marginBottom: getScaleSize(20) }}>
+                            {STRING.create_a_strong_password}
+                        </Text>
+                        <Input
+                            placeholder={STRING.enter_new_password}
+                            placeholderTextColor={theme._939393}
+                            inputTitle={STRING.password}
+                            inputColor={true}
+                            value={password}
+                            passwordIcon={true}
+                            secureTextEntry={show}
+                            onChnageIcon={() => {
+                                setShow(!show);
+                            }}
+                            onChangeText={text => {
+                                // Remove all whitespace
+                                const cleaned = text.replace(/\s/g, '');
 
-                            // Limit to 12 characters
-                            const trimmed = cleaned.slice(0, 12);
+                                // Limit to 12 characters
+                                const trimmed = cleaned.slice(0, 12);
 
-                            setPassword(trimmed);
-                            setPasswordError('');
-                        }}
-                        isError={passwordError}
-                    />
-                    <Input
-                        placeholder={STRING.re_enter_new_password}
-                        placeholderTextColor={theme._939393}
-                        inputTitle={STRING.confirm_password}
-                        inputColor={true}
-                        value={confirmPassword}
-                        passwordIcon={true}
-                        secureTextEntry={confirmShow}
-                        continerStyle={{ marginTop: getScaleSize(16) }}
-                        onChnageIcon={() => {
-                            setConfirmShow(!confirmShow);
-                        }}
-                        onChangeText={text => {
-                            const cleaned = text.replace(/\s/g, '');
-                            const trimmed = cleaned.slice(0, 12);
+                                setPassword(trimmed);
+                                setPasswordError('');
+                            }}
+                            isError={passwordError}
+                        />
+                        <Input
+                            placeholder={STRING.re_enter_new_password}
+                            placeholderTextColor={theme._939393}
+                            inputTitle={STRING.confirm_password}
+                            inputColor={true}
+                            value={confirmPassword}
+                            passwordIcon={true}
+                            secureTextEntry={confirmShow}
+                            continerStyle={{ marginTop: getScaleSize(16) }}
+                            onChnageIcon={() => {
+                                setConfirmShow(!confirmShow);
+                            }}
+                            onChangeText={text => {
+                                const cleaned = text.replace(/\s/g, '');
+                                const trimmed = cleaned.slice(0, 12);
 
-                            setConfirmPassword(trimmed);
-                            setConfirmPasswordError('');
-                        }}
-                        isError={confirmPasswordError}
-                    />
-                </View>
-            </ScrollView>
-            <Button
-                title={STRING.next}
-                style={{ marginVertical: getScaleSize(24), marginHorizontal: getScaleSize(24) }}
-                onPress={() => {
-                    onSignup();
-                }}
-            />
-        </View>
+                                setConfirmPassword(trimmed);
+                                setConfirmPasswordError('');
+                            }}
+                            isError={confirmPasswordError}
+                        />
+                    </View>
+                </ScrollView>
+                <Button
+                    title={STRING.next}
+                    style={{ marginVertical: getScaleSize(24), marginHorizontal: getScaleSize(24) }}
+                    onPress={() => {
+                        onSignup();
+                    }}
+                />
+            </View>
+        </KeyboardAvoidingView>
     );
 }
 

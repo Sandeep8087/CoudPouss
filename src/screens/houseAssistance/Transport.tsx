@@ -66,8 +66,8 @@ export default function Transport(props: any) {
   useFocusEffect(
     React.useCallback(() => {
       if (Platform.OS === 'android') {
-        StatusBar.setBackgroundColor(theme.white);
-        StatusBar.setBarStyle('dark-content');
+        // StatusBar.setBackgroundColor(theme.white);
+        // StatusBar.setBarStyle('dark-content');
       }
     }, []),
   );

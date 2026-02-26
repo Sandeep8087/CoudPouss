@@ -38,11 +38,8 @@ import { createThumbnail } from 'react-native-create-thumbnail';
 
 //SCREENS
 import { SCREENS } from '..';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 export default function AddQuote(props: any) {
-
-  const insets = useSafeAreaInsets();
 
   const serviceDetails = props?.route?.params?.item
   const isItem = props?.route?.params?.isItem
@@ -314,9 +311,7 @@ export default function AddQuote(props: any) {
   }
 
   return (
-    <View style={[styles(theme).container,
-    { paddingBottom: Platform.OS === 'android' ? insets.bottom : 0 }
-    ]}>
+    <View style={styles(theme).container}>
       <Header
         onBack={() => {
           props.navigation.goBack();

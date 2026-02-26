@@ -16,12 +16,8 @@ import { Header, Input, Text, Button } from '../../components';
 import { EventRegister } from 'react-native-event-listeners';
 import { API } from '../../api';
 import { CommonActions } from '@react-navigation/native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
-
 
 export default function PaymentMethod(props: any) {
-
-    const insets = useSafeAreaInsets();
 
     const STRING = useString();
 
@@ -172,9 +168,7 @@ export default function PaymentMethod(props: any) {
     }
 
     return (
-        <View style={[styles(theme).container,
-        { paddingBottom: Platform.OS === 'android' ? insets.bottom : 0 }
-        ]}>
+        <View style={styles(theme).container}>
             <Header
                 onBack={() => {
                     props.navigation.goBack();

@@ -1,4 +1,4 @@
-import { Dimensions, Image, Platform, ScrollView, StyleSheet, TouchableOpacity, View } from 'react-native';
+import { Dimensions, Image, KeyboardAvoidingView, Platform, ScrollView, StyleSheet, TouchableOpacity, View } from 'react-native';
 import React, { useContext, useEffect, useRef, useState } from 'react';
 
 //CONTEXT
@@ -16,13 +16,10 @@ import { Header, Input, Text, Button } from '../../components';
 
 //PACKAGES
 import OTPTextInput from 'react-native-otp-textinput';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { API } from '../../api';
 
 export default function Otp(props: any) {
-
-    const insets = useSafeAreaInsets();
 
     const STRING = useString();
     const isFromSignup = props?.route?.params?.isFromSignup || false;
@@ -205,89 +202,93 @@ export default function Otp(props: any) {
     }
 
     return (
-        <View style={[styles(theme).container,
-        { paddingBottom: Platform.OS === 'android' ? insets.bottom : 0 }
-        ]}>
-            <Header
-                onBack={() => {
-                    props.navigation.goBack();
-                }}
-                screenName={STRING.enter_OTP}
-            />
-            <ScrollView showsVerticalScrollIndicator={false}>
-                <View style={styles(theme).mainContainer}>
-                    <Text
-                        size={getScaleSize(18)}
-                        font={FONTS.Lato.SemiBold}
-                        color={theme._939393}
-                        style={{ marginBottom: getScaleSize(32) }}>
-                        {STRING.please_enter_four_digit_pin_sent_on_email}
-                    </Text>
-                    <View style={styles(theme).inputContainer}>
+        <KeyboardAvoidingView
+            style={{ flex: 1 }}
+            behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+            keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 20}
+        >
+            <View style={styles(theme).container}>
+                <Header
+                    onBack={() => {
+                        props.navigation.goBack();
+                    }}
+                    screenName={STRING.enter_OTP}
+                />
+                <ScrollView showsVerticalScrollIndicator={false}>
+                    <View style={styles(theme).mainContainer}>
                         <Text
                             size={getScaleSize(18)}
-                            font={FONTS.Lato.Medium}
-                            color={theme._555555}
-                            style={{ marginBottom: getScaleSize(8) }}>
-                            {STRING.code}
+                            font={FONTS.Lato.SemiBold}
+                            color={theme._939393}
+                            style={{ marginBottom: getScaleSize(32) }}>
+                            {STRING.please_enter_four_digit_pin_sent_on_email}
                         </Text>
-                        <OTPTextInput
-                            ref={otpInput}
-                            inputCount={4}
-                            handleTextChange={(val: string) => {
-                                setOtp(val);
-                                setOtpError('');
-                            }}
-                            tintColor={otpError ? theme._EF5350 : theme.primary} // border color when active
-                            offTintColor={otpError ? theme._EF5350 : theme._BFBFBF} // border color when inactive
-                            textInputStyle={styles(theme).textInput}
-                        />
-                        {otpError &&
+                        <View style={styles(theme).inputContainer}>
                             <Text
-                                style={{ marginTop: getScaleSize(8) }}
-                                size={getScaleSize(16)}
-                                font={FONTS.Lato.Regular}
-                                color={theme._EF5350}>
-                                {otpError}
+                                size={getScaleSize(18)}
+                                font={FONTS.Lato.Medium}
+                                color={theme._555555}
+                                style={{ marginBottom: getScaleSize(8) }}>
+                                {STRING.code}
                             </Text>
-                        }
+                            <OTPTextInput
+                                ref={otpInput}
+                                inputCount={4}
+                                handleTextChange={(val: string) => {
+                                    setOtp(val);
+                                    setOtpError('');
+                                }}
+                                tintColor={otpError ? theme._EF5350 : theme.primary} // border color when active
+                                offTintColor={otpError ? theme._EF5350 : theme._BFBFBF} // border color when inactive
+                                textInputStyle={styles(theme).textInput}
+                            />
+                            {otpError &&
+                                <Text
+                                    style={{ marginTop: getScaleSize(8) }}
+                                    size={getScaleSize(16)}
+                                    font={FONTS.Lato.Regular}
+                                    color={theme._EF5350}>
+                                    {otpError}
+                                </Text>
+                            }
+                        </View>
                     </View>
-                </View>
-            </ScrollView>
-            <View style={styles(theme).resendOtpView}>
-                {isResendDisabled ? (
-                    <Text
-                        font={FONTS.Lato.SemiBold}
-                        color={theme._2C6587}
-                        size={getScaleSize(18)}
-                        align="center">
-                        {`Resend code in ${timer} seconds`}
-                    </Text>
-                ) : (
-                    <TouchableOpacity
-                        onPress={() => {
-                            onResendOtp();
-                        }}>
+                </ScrollView>
+                <View style={styles(theme).resendOtpView}>
+                    {isResendDisabled ? (
                         <Text
-                            size={getScaleSize(20)}
                             font={FONTS.Lato.SemiBold}
                             color={theme._2C6587}
-                            align="center"
-                            style={{ marginBottom: getScaleSize(16) }}>
-                            {STRING.resend_code}
+                            size={getScaleSize(18)}
+                            align="center">
+                            {`Resend code in ${timer} seconds`}
                         </Text>
-                    </TouchableOpacity>
-                )}
+                    ) : (
+                        <TouchableOpacity
+                            onPress={() => {
+                                onResendOtp();
+                            }}>
+                            <Text
+                                size={getScaleSize(20)}
+                                font={FONTS.Lato.SemiBold}
+                                color={theme._2C6587}
+                                align="center"
+                                style={{ marginBottom: getScaleSize(16) }}>
+                                {STRING.resend_code}
+                            </Text>
+                        </TouchableOpacity>
+                    )}
+                </View>
+                <Button
+                    title={isFromSignup ? STRING.verify_OTP : STRING.continue}
+                    disabled={!otp}
+                    style={{ marginBottom: getScaleSize(24), marginHorizontal: getScaleSize(24) }}
+                    onPress={() => {
+                        onOtp();
+                    }}
+                />
             </View>
-            <Button
-                title={isFromSignup ? STRING.verify_OTP : STRING.continue}
-                disabled={!otp}
-                style={{ marginBottom: getScaleSize(24), marginHorizontal: getScaleSize(24) }}
-                onPress={() => {
-                    onOtp();
-                }}
-            />
-        </View>
+        </KeyboardAvoidingView>
     );
 }
 

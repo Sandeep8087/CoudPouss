@@ -271,7 +271,7 @@ export default function WriteReview(props: any) {
       />
       <BottomSheet
         bottomSheetRef={successBottomSheetRef}
-        height={300}
+        height={330}
         type="review"
         title={STRING.thank_you_for_your_review}
         description={STRING.we_appreciated_you_taking_the_time_to_reflect_on_your_experience}

@@ -62,7 +62,7 @@ export default function EnterSecurityCodeSheet(props: EnterSecurityCodeProps) {
                     backgroundColor: theme._77777733,
                 },
                 container: {
-                    height: getScaleSize(500),
+                    height: getScaleSize(530),
                     borderTopLeftRadius: getScaleSize(24),
                     borderTopRightRadius: getScaleSize(24),
                     backgroundColor: theme.white,

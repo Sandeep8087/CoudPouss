@@ -160,11 +160,11 @@ function App(): any {
   // };
 
   return (
-    <View style={{flex: 1.0}}>
+    <SafeAreaView style={{flex: 1.0}}>
       <ThemeProvider>
         <AuthProvider>{AppWrraper()}</AuthProvider>
       </ThemeProvider>
-    </View>
+    </SafeAreaView>
   );
 }
 

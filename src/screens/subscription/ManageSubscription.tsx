@@ -11,11 +11,8 @@ import { Button, EmptyView, Header, ProgressView, Text } from '../../components'
 import { SCREENS } from '..';
 import { API } from '../../api';
 import moment from 'moment';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 export default function ManageSubscription(props: any) {
-
-    const insets = useSafeAreaInsets();
 
     const STRING = useString();
     const { theme } = useContext<any>(ThemeContext);
@@ -159,7 +156,7 @@ export default function ManageSubscription(props: any) {
     }
 
     return (
-        <View style={[styles(theme).container, { paddingBottom: Platform.OS === 'android' ? insets.bottom : 0 }]}>
+        <View style={[styles(theme).container]}>
             <Header
                 onBack={() => {
                     props.navigation.goBack();

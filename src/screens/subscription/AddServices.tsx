@@ -16,12 +16,8 @@ import { Header, Input, Text, Button, CategoryDropdown, ServiceItem, BottomSheet
 import { API } from '../../api';
 import { EventRegister } from 'react-native-event-listeners';
 import { CommonActions } from '@react-navigation/native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
-
 
 export default function AddServices(props: any) {
-
-    const insets = useSafeAreaInsets();
 
     const STRING = useString();
 
@@ -353,9 +349,7 @@ export default function AddServices(props: any) {
     }
 
     return (
-        <View style={[styles(theme).container,
-        { paddingBottom: Platform.OS === 'android' ? insets.bottom : 0 }
-        ]}>
+        <View style={styles(theme).container}>
             <Header
                 onBack={() => {
                     props.navigation.goBack();
@@ -479,7 +473,7 @@ export default function AddServices(props: any) {
             </View>
             <BottomSheet
                 bottomSheetRef={bottomSheetRef}
-                height={getScaleSize(350)}
+                height={getScaleSize(380)}
                 type="payment"
                 title={STRING.want_to_add_more_service_categories}
                 description={STRING.additional_category_you_add_will_incur_a_monthly_fee_of}

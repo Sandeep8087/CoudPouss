@@ -311,7 +311,7 @@ export default function ProfessionalTaskDetails(props: any) {
               color={theme._323232}>
               {STRING.SecurityCode}
             </Text>
-            <FlatList
+            {/* <FlatList
               data={taskDetails?.task?.displayed_service_code?.split('') ?? []}
               horizontal
               showsHorizontalScrollIndicator={false}
@@ -332,7 +332,27 @@ export default function ProfessionalTaskDetails(props: any) {
                   </View>
                 );
               }}
-            />
+            /> */}
+            <View style={styles(theme).codeViewDirection}>
+              {taskDetails?.task?.displayed_service_code
+                ?.toString()
+                ?.split('')
+                ?.map((digit: string, index: number) => (
+                  <View
+                    key={index}
+                    style={[
+                      styles(theme).securityItemContainer,
+                      { marginLeft: index === 0 ? 0 : 3 },
+                    ]}>
+                    <Text
+                      size={getScaleSize(18)}
+                      font={FONTS.Lato.Medium}
+                      color={theme._323232}>
+                      {digit}
+                    </Text>
+                  </View>
+                ))}
+            </View>
             <Text
               style={{ flex: 1.0, marginTop: getScaleSize(12) }}
               size={getScaleSize(11)}
@@ -377,18 +397,16 @@ export default function ProfessionalTaskDetails(props: any) {
                 size={getScaleSize(20)}
                 font={FONTS.Lato.SemiBold}
                 color={'#0F232F'}>
-                {`${taskDetails?.elderly_user?.first_name ?? ''} ${
-                  taskDetails?.elderly_user?.last_name ?? ''
-                }`}
+                {`${taskDetails?.elderly_user?.first_name ?? ''} ${taskDetails?.elderly_user?.last_name ?? ''
+                  }`}
               </Text>
               <Text
                 style={{ marginLeft: getScaleSize(16) }}
                 size={getScaleSize(12)}
                 font={FONTS.Lato.Medium}
                 color={'#595959'}>
-                {`${taskDetails?.elderly_user?.phone_country_code ?? ''}${
-                  taskDetails?.elderly_user?.phone_number ?? ''
-                }`}
+                {`${taskDetails?.elderly_user?.phone_country_code ?? ''}${taskDetails?.elderly_user?.phone_number ?? ''
+                  }`}
               </Text>
             </View>
             {item?.task_status !== 'completed' && (
@@ -810,4 +828,8 @@ const styles = (theme: ThemeContextType['theme']) =>
       flexDirection: 'row',
       marginTop: getScaleSize(8),
     },
+    codeViewDirection: {
+      flexDirection: 'row',
+      marginTop: getScaleSize(16)
+    }
   });

@@ -103,32 +103,36 @@ export default function ExploreServiceRequest(props: any) {
       setLoading(true);
 
       const trimmedText = searchText.trim();
+      const formattedText = trimmedText.replace(/\s+/g, '%');
 
       let params: any = {
         page: String(currentPage),
         limit: String(PAGE_SIZE),
       };
 
-      // Filter
-      if (selectedFilterType === "category" && trimmedText) {
-        params.category_name = trimmedText;
-      }
-      else if (selectedFilterType === "location" && trimmedText) {
-        params.location = trimmedText;
-      }
-      else if (trimmedText) {
-        params.search = trimmedText;
+      if (formattedText) {
+        if (selectedFilterType === "category") {
+          params.category_name = formattedText;
+        }
+        else if (selectedFilterType === "location") {
+          params.location = formattedText;
+        }
+        else {
+          params.search = formattedText;
+        }
       }
 
       const queryParams = new URLSearchParams(params).toString();
 
-      console.log('PRMS',queryParams)
+      console.log('PRMS', queryParams)
 
       const url = `${API.API_ROUTES.getProfessionalAllServices}?${queryParams}`;
 
       console.log("API URL =>", url);
 
       const result: any = await API.Instance.get(url);
+
+      console.log('SEARCH RES', JSON.stringify(result))
 
       if (result?.status) {
 

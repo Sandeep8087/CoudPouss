@@ -26,14 +26,11 @@ import { API } from '../../api';
 import { launchImageLibrary } from 'react-native-image-picker';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { CommonActions } from '@react-navigation/native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 //SCREENS
 import { SCREENS } from '..';
 
 export default function MyProfile(props: any) {
-
-    const insets = useSafeAreaInsets();
 
     const STRING = useString();
 
@@ -293,15 +290,15 @@ export default function MyProfile(props: any) {
     }
 
     return (
-        <View style={[styles(theme).container,
-        { paddingBottom: Platform.OS === 'android' ? insets.bottom : 0 }
-        ]}>
-            <Header
-                rightIcon={{ icon: IMAGES.ic_delete_profile, title: STRING.delete_profile }}
-                onPress={() => { bottomSheetRef.current.open() }}
-                onBack={() => { props.navigation.goBack() }}
-                screenName={STRING.my_profile}
-            />
+        <View style={styles(theme).container}>
+            <View style={{ marginTop: getScaleSize(10) }}>
+                <Header
+                    rightIcon={{ icon: IMAGES.ic_delete_profile, title: STRING.delete_profile }}
+                    onPress={() => { bottomSheetRef.current.open() }}
+                    onBack={() => { props.navigation.goBack() }}
+                    screenName={STRING.my_profile}
+                />
+            </View>
             <ScrollView showsVerticalScrollIndicator={false}>
                 <View style={styles(theme).mainContainer}>
                     {profile?.user?.profile_photo_url ? (

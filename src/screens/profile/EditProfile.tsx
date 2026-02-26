@@ -7,6 +7,7 @@ import {
     Image,
     Dimensions,
     Platform,
+    KeyboardAvoidingView,
 } from 'react-native';
 
 //ASSETS
@@ -269,16 +270,26 @@ export default function EditProfile(props: any) {
     const sanitizeOptionalText = (text: string) => {
         if (!text) return '';
 
-        // Remove emojis & extended unicode (strict emoji block)
-        let value = text.replace(
-            /([\u{1F600}-\u{1F6FF}]|[\u{1F300}-\u{1F5FF}]|[\u{1F700}-\u{1F77F}]|[\u{2600}-\u{26FF}])/gu,
+        let value = text;
+
+        // Remove emojis
+        value = value.replace(
+            /([\u{1F000}-\u{1FFFF}]|[\u{2600}-\u{27BF}])/gu,
             ''
         );
 
-        // Allow only: alphabets, numbers, space, . , ' - _ @
+        // Allow characters
         value = value.replace(/[^a-zA-Z0-9\s.,'@_-]/g, '');
 
-        // HARD limit to 300 chars
+        // Remove leading spaces
+        value = value.replace(/^\s+/, '');
+
+        // Replace multiple spaces
+        value = value.replace(/\s{2,}/g, ' ');
+
+        // Remove trailing spaces
+        value = value.replace(/\s+$/, '');
+
         if (value.length > 300) {
             value = value.slice(0, 300);
         }
@@ -289,20 +300,23 @@ export default function EditProfile(props: any) {
     const validateOptionalText = (value: string) => {
         const trimmed = value.trim();
 
-        // Optional field
+        // If only whitespace → invalid
+        if (value && !trimmed) {
+            return STRING.enter_valid_text;
+        }
+
         if (!trimmed) return '';
 
-        // Must contain at least one letter or number
         if (!/[a-zA-Z0-9]/.test(trimmed)) {
-            return 'Enter valid text';
+            return STRING.enter_valid_text;
         }
 
         if (trimmed.length < 5) {
-            return 'Minimum 5 characters required';
+            return STRING.minimum_five_char_required;
         }
 
         if (trimmed.length > 300) {
-            return 'Maximum 300 characters allowed';
+            return STRING.maximum_three_hundred_char_allowed;
         }
 
         return '';
@@ -311,18 +325,19 @@ export default function EditProfile(props: any) {
     const validateName = (value: string) => {
         const trimmed = value.trim();
 
-        if (!trimmed) return 'Name is required';
+        if (!trimmed)
+            return STRING.name_is_rqequired;
 
         if (trimmed.length < 2)
-            return 'Minimum 2 characters required';
+            return STRING.minimum_two_char_required;
 
         if (trimmed.length > 50)
-            return 'Maximum 50 characters allowed';
+            return STRING.maximum_fifty_char_allowed;
 
         const nameRegex = /^[A-Za-z.\-\s]+$/;
 
         if (!nameRegex.test(trimmed))
-            return 'Only alphabets, space, dot (.), hyphen (-) allowed';
+            return STRING.only_alphabets_space_dot_hyphen_allowed;
 
         return '';
     };
@@ -333,10 +348,7 @@ export default function EditProfile(props: any) {
         let value = text;
 
         // Remove emojis
-        value = value.replace(
-            /([\u{1F600}-\u{1F6FF}]|[\u{1F300}-\u{1F5FF}]|[\u{2600}-\u{26FF}])/gu,
-            ''
-        );
+        value = value.replace(/([\u{1F000}-\u{1FFFF}]|[\u{2600}-\u{27BF}])/gu, '');
 
         // Allow only alphabets + space + dot + hyphen
         value = value.replace(/[^A-Za-z.\-\s]/g, '');
@@ -344,57 +356,84 @@ export default function EditProfile(props: any) {
         // Remove leading spaces
         value = value.replace(/^\s+/, '');
 
-        // Replace multiple spaces with single space
+        // Replace multiple spaces with single
         value = value.replace(/\s{2,}/g, ' ');
 
-        // Hard limit 50
+        // Remove trailing spaces
+        value = value.replace(/\s+$/, '');
+
+        // Hard limit
         if (value.length > 50) {
             value = value.slice(0, 50);
         }
 
         return value;
     };
-
     const validateMobile = (value: string) => {
         const trimmed = value.trim();
 
-        if (!trimmed) return "Mobile number required";
+        if (!trimmed) return STRING.mobile_number_required;
 
         if (!/^[0-9]{10}$/.test(trimmed))
-            return "Enter valid 10 digit number";
+            return STRING.enter_valid_ten_digit_number
 
         return "";
     };
 
+    const sanitizeAddressInput = (text: string) => {
+        if (!text) return '';
+
+        let value = text;
+
+        // Remove emojis
+        value = value.replace(/([\u{1F000}-\u{1FFFF}]|[\u{2600}-\u{27BF}])/gu, '');
+
+        // Remove leading spaces
+        value = value.replace(/^\s+/, '');
+
+        // Replace multiple spaces with single
+        value = value.replace(/\s{2,}/g, ' ');
+
+        // Remove trailing spaces
+        value = value.replace(/\s+$/, '');
+
+        // Hard limit
+        if (value.length > 250) {
+            value = value.slice(0, 250);
+        }
+
+        return value;
+    };
+
     const validateAddress = (value: string) => {
         if (!value) {
-            return "Address is required.";
+            return STRING.address_is_required
         }
 
         const trimmed = value.trim();
 
         if (!trimmed) {
-            return "Address is required.";
+            return STRING.address_is_required;
         }
 
         if (trimmed.length < 5) {
-            return "Address must be at least 05 characters long.";
+            return STRING.address_must_be_at_least_05_characters_long;
         }
 
         if (trimmed.length > 250) {
-            return "Address cannot exceed 250 characters.";
+            return STRING.address_cannot_exceed_250_characters;
         }
 
         // Allow only approved characters
         const allowedRegex = /^[A-Za-z0-9\s,.\-/#]+$/;
 
         if (!allowedRegex.test(trimmed)) {
-            return "Special characters are not allowed except , . - / #.";
+            return STRING.special_characters_not_allowed;
         }
 
         // Must contain at least one letter (not only numbers or special chars)
         if (!/[A-Za-z]/.test(trimmed)) {
-            return "Please enter a valid address.";
+            return STRING.please_enter_valid_address
         }
 
         return "";
@@ -430,306 +469,314 @@ export default function EditProfile(props: any) {
     }
 
     return (
-        <View style={styles(theme).container}>
-            <Header
-                onBack={() => {
-                    props.navigation.goBack();
-                }}
-                rightIcon={{ icon: IMAGES.ic_delete_profile, title: STRING.delete_profile }}
-                onPress={() => { bottomSheetRef.current.open() }}
-                screenName={STRING.edit_profile}
-            />
-            <ScrollView
-                style={styles(theme).scrolledContainer}
-                showsVerticalScrollIndicator={false}>
-                {profile?.user?.profile_photo_url ?
-                    <Image source={{ uri: profile?.user?.profile_photo_url }}
-                        resizeMode='cover' style={styles(theme).profileContainer} />
-                    :
-                    <View style={styles(theme).EmptyProfileContainer}>
+        <KeyboardAvoidingView
+            style={{ flex: 1 }}
+            behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+            keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 20}
+        >
+            <View style={styles(theme).container}>
+                <Header
+                    onBack={() => {
+                        props.navigation.goBack();
+                    }}
+                    rightIcon={{ icon: IMAGES.ic_delete_profile, title: STRING.delete_profile }}
+                    onPress={() => { bottomSheetRef.current.open() }}
+                    screenName={STRING.edit_profile}
+                />
+                <ScrollView
+                    style={styles(theme).scrolledContainer}
+                    showsVerticalScrollIndicator={false}>
+                    {profile?.user?.profile_photo_url ?
+                        <Image source={{ uri: profile?.user?.profile_photo_url }}
+                            resizeMode='cover' style={styles(theme).profileContainer} />
+                        :
+                        <View style={styles(theme).EmptyProfileContainer}>
+                            <Text
+                                size={getScaleSize(24)}
+                                font={FONTS.Lato.Regular}
+                                align="center"
+                                color={theme._262B43E5}>
+                                {(profile?.user?.first_name?.charAt(0) ?? '').toUpperCase() +
+                                    (profile?.user?.last_name?.charAt(0) ?? '').toUpperCase()}
+                            </Text>
+                        </View>
+                    }
+                    <TouchableOpacity onPress={() => {
+                        pickImage("profile")
+                    }}>
                         <Text
-                            size={getScaleSize(24)}
-                            font={FONTS.Lato.Regular}
+                            size={getScaleSize(16)}
+                            font={FONTS.Lato.SemiBold}
                             align="center"
-                            color={theme._262B43E5}>
-                            {(profile?.user?.first_name?.charAt(0) ?? '').toUpperCase() +
-                                (profile?.user?.last_name?.charAt(0) ?? '').toUpperCase()}
+                            color={theme._2C6587}
+                            style={{ marginBottom: getScaleSize(24) }}>
+                            {STRING.edit_picture_or_avatar}
                         </Text>
-                    </View>
-                }
-                <TouchableOpacity onPress={() => {
-                    pickImage("profile")
-                }}>
+                    </TouchableOpacity>
                     <Text
-                        size={getScaleSize(16)}
-                        font={FONTS.Lato.SemiBold}
-                        align="center"
-                        color={theme._2C6587}
-                        style={{ marginBottom: getScaleSize(24) }}>
-                        {STRING.edit_picture_or_avatar}
-                    </Text>
-                </TouchableOpacity>
-                <Text
-                    size={getScaleSize(18)}
-                    font={FONTS.Lato.Medium}
-                    color={theme._2C6587}
-                    style={{ marginBottom: getScaleSize(16) }}>
-                    {STRING.personal_information}
-                </Text>
-                <View style={styles(theme).mainContainer}>
-                    <Input
-                        placeholder={STRING.enter_name}
-                        placeholderTextColor={theme._939393}
-                        inputTitle={STRING.full_name}
-                        inputColor={true}
-                        value={name}
-                        maxLength={50}
-                        continerStyle={{ marginBottom: getScaleSize(20) }}
-                        onChangeText={text => {
-                            const clean = sanitizeNameInput(text);
-                            setName(clean);
-                            setNameError(validateName(clean));
-                        }}
-                        isError={nameError}
-                    />
-                    <Input
-                        placeholder={STRING.enter_email}
-                        placeholderTextColor={theme._939393}
-                        inputTitle={STRING.e_mail_id}
-                        inputColor={true}
-                        value={email}
-                        editable={false}
-                        onChangeText={text => {
-                            setEmail(text);
-                            setEmailError('');
-                        }}
-                        inputContainer={{
-                            backgroundColor: theme._F0EFF0,
-                            opacity: 0.7,
-                        }}
-                        containerStyle={{
-                            paddingHorizontal: 0,
-                            marginBottom: getScaleSize(20)
-                        }}
-                        isError={emailError}
-                    />
-                    <Input
-                        placeholder={STRING.enter_mobile_number}
-                        placeholderTextColor={theme._939393}
-                        inputTitle={STRING.mobile_number}
-                        inputColor={true}
-                        keyboardType="numeric"
-                        continerStyle={{ marginBottom: getScaleSize(20) }}
-                        value={mobileNumber}
-                        maxLength={10}
-                        countryCode={`${countryFlag} ${countryCode}`}
-                        onPressCountryCode={() => {
-                            setVisibleCountry(true);
-                        }}
-                        onChangeText={text => {
-                            const cleaned = text.replace(/[^0-9]/g, '');
-                            setMobileNumber(cleaned);
-                            setMobileNumberError('');
-                        }}
-                        isError={mobileNumberError}
-                    />
-                    <Input
-                        placeholder={STRING.enter_address}
-                        placeholderTextColor={theme._939393}
-                        inputTitle={STRING.address}
-                        inputColor={true}
-                        value={address}
-                        maxLength={250}
-                        multiline={true}
-                        numberOfLines={10}
-                        onContentSizeChange={(e) => {
-                            const newHeight = e.nativeEvent.contentSize.height;
-                            setAddressHeight(
-                                Math.min(getScaleSize(200), Math.max(inputHeight, newHeight))
-                            );
-                        }}
-                        inputContainer={{
-                            maxHeight: getScaleSize(200),
-                            height: addressHeight,
-                            minHeight: inputHeight,
-                        }}
-                        continerStyle={{ marginBottom: getScaleSize(20) }}
-                        onChangeText={text => {
-                            setAddress(text);
-                            setAddressError('');
-                        }}
-                        isError={addressError}
-                    />
-                    <Input
-                        placeholder={STRING.experience}
-                        inputTitle={STRING.years_of_experience}
-                        inputColor={true}
-                        keyboardType='number-pad'
-                        value={yearsOfExperience}
-                        onChangeText={(text: any) => {
-                            const cleanedValue = validateExperienceInput(text);
-                            setYearsOfExperience(cleanedValue);
-                        }}
-                    />
-                </View>
-                <Text
-                    size={getScaleSize(18)}
-                    font={FONTS.Lato.Medium}
-                    color={theme._2C6587}
-                    style={{ marginBottom: getScaleSize(16) }}>
-                    {STRING.public_profile_details}
-                </Text>
-                <View style={styles(theme).mainContainer}>
-                    <Input
-                        inputTitle={STRING.Bio}
-                        inputColor={true}
-                        value={bio}
-                        inputContainer={styles(theme).inputContainerHeight}
-                        multiline={true}
-                        numberOfLines={8}
-                        continerStyle={{ marginBottom: getScaleSize(20) }}
-                        onChangeText={text => {
-                            const clean = sanitizeOptionalText(text);
-                            setBio(clean);
-                            setBioError(validateOptionalText(clean));
-                        }}
-                        maxLength={300}
-                        isError={bioError}
-                    />
-                    <Input
-                        inputTitle={STRING.ExperienceSpecialities}
-                        inputColor={true}
-                        value={experienceSpecialities}
-                        inputContainer={styles(theme).inputContainerHeight}
-                        multiline={true}
-                        numberOfLines={8}
-                        continerStyle={{ marginBottom: getScaleSize(20) }}
-                        onChangeText={text => {
-                            const clean = sanitizeOptionalText(text);
-                            setExperienceSpecialities(clean);
-                            setExperienceSpecialitiesError(validateOptionalText(clean));
-                        }}
-                        maxLength={300}
-                        isError={experienceSpecialitiesError}
-                    />
-                    <Input
-                        inputTitle={STRING.Achievements}
-                        inputColor={true}
-                        value={achievements}
-                        inputContainer={styles(theme).inputContainerHeight}
-                        multiline={true}
-                        numberOfLines={8}
-                        continerStyle={{ marginBottom: getScaleSize(20) }}
-                        onChangeText={text => {
-                            const clean = sanitizeOptionalText(text);
-                            setAchievements(clean);
-                            setAchievementsError(validateOptionalText(clean));
-                        }}
-                        maxLength={300}
-                        isError={achievementsError}
-                    />
-                    <Text
-                        size={getScaleSize(17)}
+                        size={getScaleSize(18)}
                         font={FONTS.Lato.Medium}
-                        color={theme._858686}>
-                        {STRING.upload_images_of_past_works}
+                        color={theme._2C6587}
+                        style={{ marginBottom: getScaleSize(16) }}>
+                        {STRING.personal_information}
                     </Text>
-                    <View style={styles(theme).imageUploadContent}>
-                        <TouchableOpacity
-                            style={{ flex: 1, marginRight: getScaleSize(9) }}
-                            activeOpacity={1}
-                            onPress={() => {
-                                pickImage("first")
-                            }}>
-                            {firstImageURL ? (
-                                <Image
-                                    style={styles(theme).ImageStyle}
-                                    source={{ uri: firstImageURL }}
-                                />
-                            ) : (
-                                <View style={styles(theme).uploadButton}>
-                                    <Image
-                                        style={styles(theme).attachmentIcon}
-                                        source={IMAGES.upload_attachment}
-                                    />
-                                    <Text
-                                        style={{ marginTop: getScaleSize(8) }}
-                                        size={getScaleSize(15)}
-                                        font={FONTS.Lato.Regular}
-                                        color={theme._818285}>
-                                        {STRING.upload_from_device}
-                                    </Text>
-                                </View>
-                            )}
-                        </TouchableOpacity>
-                        <TouchableOpacity
-                            style={{ flex: 1, marginLeft: getScaleSize(9) }}
-                            activeOpacity={1}
-                            onPress={() => {
-                                pickImage("second")
-                            }}>
-                            {secondImageURL ? (
-                                <Image
-                                    style={styles(theme).ImageStyle}
-                                    source={{ uri: secondImageURL }}
-                                />
-                            ) : (
-                                <View style={[styles(theme).uploadButton]}>
-                                    <Image
-                                        style={styles(theme).attachmentIcon}
-                                        source={IMAGES.upload_attachment}
-                                    />
-                                    <Text
-                                        style={{ marginTop: getScaleSize(8) }}
-                                        size={getScaleSize(15)}
-                                        font={FONTS.Lato.Regular}
-                                        color={theme._818285}>
-                                        {STRING.upload_from_device}
-                                    </Text>
-                                </View>
-                            )}
-
-                        </TouchableOpacity>
+                    <View style={styles(theme).mainContainer}>
+                        <Input
+                            placeholder={STRING.enter_name}
+                            placeholderTextColor={theme._939393}
+                            inputTitle={STRING.full_name}
+                            inputColor={true}
+                            value={name}
+                            maxLength={50}
+                            continerStyle={{ marginBottom: getScaleSize(20) }}
+                            onChangeText={text => {
+                                const clean = sanitizeNameInput(text);
+                                setName(clean);
+                                setNameError(validateName(clean));
+                            }}
+                            isError={nameError}
+                        />
+                        <Input
+                            placeholder={STRING.enter_email}
+                            placeholderTextColor={theme._939393}
+                            inputTitle={STRING.e_mail_id}
+                            inputColor={true}
+                            value={email}
+                            editable={false}
+                            onChangeText={text => {
+                                setEmail(text);
+                                setEmailError('');
+                            }}
+                            inputContainer={{
+                                backgroundColor: theme._F0EFF0,
+                                opacity: 0.7,
+                            }}
+                            containerStyle={{
+                                paddingHorizontal: 0,
+                                marginBottom: getScaleSize(20)
+                            }}
+                            isError={emailError}
+                        />
+                        <Input
+                            placeholder={STRING.enter_mobile_number}
+                            placeholderTextColor={theme._939393}
+                            inputTitle={STRING.mobile_number}
+                            inputColor={true}
+                            keyboardType="numeric"
+                            continerStyle={{ marginBottom: getScaleSize(20) }}
+                            value={mobileNumber}
+                            maxLength={10}
+                            countryCode={`${countryFlag} ${countryCode}`}
+                            onPressCountryCode={() => {
+                                setVisibleCountry(true);
+                            }}
+                            onChangeText={text => {
+                                const cleaned = text.replace(/[^0-9]/g, '');
+                                setMobileNumber(cleaned);
+                                setMobileNumberError('');
+                            }}
+                            isError={mobileNumberError}
+                        />
+                        <Input
+                            placeholder={STRING.enter_address}
+                            placeholderTextColor={theme._939393}
+                            inputTitle={STRING.address}
+                            inputColor={true}
+                            value={address}
+                            maxLength={250}
+                            multiline={true}
+                            numberOfLines={10}
+                            onContentSizeChange={(e) => {
+                                const newHeight = e.nativeEvent.contentSize.height;
+                                setAddressHeight(
+                                    Math.min(getScaleSize(200), Math.max(inputHeight, newHeight))
+                                );
+                            }}
+                            inputContainer={{
+                                maxHeight: getScaleSize(200),
+                                height: addressHeight,
+                                minHeight: inputHeight,
+                            }}
+                            continerStyle={{ marginBottom: getScaleSize(20) }}
+                            onChangeText={text => {
+                                const clean = sanitizeAddressInput(text);
+                                setAddress(clean);
+                                setAddressError(validateAddress(clean));
+                            }}
+                            isError={addressError}
+                        />
+                        <Input
+                            placeholder={STRING.experience}
+                            inputTitle={STRING.years_of_experience}
+                            inputColor={true}
+                            keyboardType='number-pad'
+                            value={yearsOfExperience}
+                            onChangeText={(text: any) => {
+                                const cleanedValue = validateExperienceInput(text);
+                                setYearsOfExperience(cleanedValue);
+                            }}
+                        />
                     </View>
+                    <Text
+                        size={getScaleSize(18)}
+                        font={FONTS.Lato.Medium}
+                        color={theme._2C6587}
+                        style={{ marginBottom: getScaleSize(16) }}>
+                        {STRING.public_profile_details}
+                    </Text>
+                    <View style={styles(theme).mainContainer}>
+                        <Input
+                            inputTitle={STRING.Bio}
+                            inputColor={true}
+                            value={bio}
+                            inputContainer={styles(theme).inputContainerHeight}
+                            multiline={true}
+                            numberOfLines={8}
+                            continerStyle={{ marginBottom: getScaleSize(20) }}
+                            onChangeText={text => {
+                                const clean = sanitizeOptionalText(text);
+                                setBio(clean);
+                                setBioError(validateOptionalText(clean));
+                            }}
+                            maxLength={300}
+                            isError={bioError}
+                        />
+                        <Input
+                            inputTitle={STRING.ExperienceSpecialities}
+                            inputColor={true}
+                            value={experienceSpecialities}
+                            inputContainer={styles(theme).inputContainerHeight}
+                            multiline={true}
+                            numberOfLines={8}
+                            continerStyle={{ marginBottom: getScaleSize(20) }}
+                            onChangeText={text => {
+                                const clean = sanitizeOptionalText(text);
+                                setExperienceSpecialities(clean);
+                                setExperienceSpecialitiesError(validateOptionalText(clean));
+                            }}
+                            maxLength={300}
+                            isError={experienceSpecialitiesError}
+                        />
+                        <Input
+                            inputTitle={STRING.Achievements}
+                            inputColor={true}
+                            value={achievements}
+                            inputContainer={styles(theme).inputContainerHeight}
+                            multiline={true}
+                            numberOfLines={8}
+                            continerStyle={{ marginBottom: getScaleSize(20) }}
+                            onChangeText={text => {
+                                const clean = sanitizeOptionalText(text);
+                                setAchievements(clean);
+                                setAchievementsError(validateOptionalText(clean));
+                            }}
+                            maxLength={300}
+                            isError={achievementsError}
+                        />
+                        <Text
+                            size={getScaleSize(17)}
+                            font={FONTS.Lato.Medium}
+                            color={theme._858686}>
+                            {STRING.upload_images_of_past_works}
+                        </Text>
+                        <View style={styles(theme).imageUploadContent}>
+                            <TouchableOpacity
+                                style={{ flex: 1, marginRight: getScaleSize(9) }}
+                                activeOpacity={1}
+                                onPress={() => {
+                                    pickImage("first")
+                                }}>
+                                {firstImageURL ? (
+                                    <Image
+                                        style={styles(theme).ImageStyle}
+                                        source={{ uri: firstImageURL }}
+                                    />
+                                ) : (
+                                    <View style={styles(theme).uploadButton}>
+                                        <Image
+                                            style={styles(theme).attachmentIcon}
+                                            source={IMAGES.upload_attachment}
+                                        />
+                                        <Text
+                                            style={{ marginTop: getScaleSize(8) }}
+                                            size={getScaleSize(15)}
+                                            font={FONTS.Lato.Regular}
+                                            color={theme._818285}>
+                                            {STRING.upload_from_device}
+                                        </Text>
+                                    </View>
+                                )}
+                            </TouchableOpacity>
+                            <TouchableOpacity
+                                style={{ flex: 1, marginLeft: getScaleSize(9) }}
+                                activeOpacity={1}
+                                onPress={() => {
+                                    pickImage("second")
+                                }}>
+                                {secondImageURL ? (
+                                    <Image
+                                        style={styles(theme).ImageStyle}
+                                        source={{ uri: secondImageURL }}
+                                    />
+                                ) : (
+                                    <View style={[styles(theme).uploadButton]}>
+                                        <Image
+                                            style={styles(theme).attachmentIcon}
+                                            source={IMAGES.upload_attachment}
+                                        />
+                                        <Text
+                                            style={{ marginTop: getScaleSize(8) }}
+                                            size={getScaleSize(15)}
+                                            font={FONTS.Lato.Regular}
+                                            color={theme._818285}>
+                                            {STRING.upload_from_device}
+                                        </Text>
+                                    </View>
+                                )}
+
+                            </TouchableOpacity>
+                        </View>
+                    </View>
+                </ScrollView>
+                <View style={styles(theme).bottomButtonContainer}>
+                    <Button
+                        title={STRING.update}
+                        style={styles(theme).updateButton}
+                        onPress={() => {
+                            onEditUserProfile()
+                        }}
+                    />
                 </View>
-            </ScrollView>
-            <Button
-                title={STRING.update}
-                style={styles(theme).updateButton}
-                onPress={() => {
-                    onEditUserProfile()
-                }}
-            />
-            <BottomSheet
-                bottomSheetRef={bottomSheetRef}
-                height={getScaleSize(350)}
-                isInfo={true}
-                title={STRING.are_you_sure_you_want_to_delete_your_account}
-                description={STRING.delete_account_message}
-                buttonTitle={STRING.delete_profile}
-                secondButtonTitle={STRING.cancel}
-                onPressSecondButton={() => {
-                    bottomSheetRef.current.close();
-                }}
-                onPressButton={() => {
-                    onDeleteProfile()
-                }}
-            />
-            <SelectCountrySheet
-                height={getScaleSize(500)}
-                isVisible={visibleCountry}
-                onPress={(e: any) => {
-                    console.log('e', e)
-                    setCountryCode(e.dial_code);
-                    setCountryFlag(e.flag);
-                    setVisibleCountry(false);
-                }}
-                onClose={() => {
-                    setVisibleCountry(false);
-                }}
-            />
-            {/* <SafeAreaView /> */}
-        </View>
+                <BottomSheet
+                    bottomSheetRef={bottomSheetRef}
+                    height={getScaleSize(350)}
+                    isInfo={true}
+                    title={STRING.are_you_sure_you_want_to_delete_your_account}
+                    description={STRING.delete_account_message}
+                    buttonTitle={STRING.delete_profile}
+                    secondButtonTitle={STRING.cancel}
+                    onPressSecondButton={() => {
+                        bottomSheetRef.current.close();
+                    }}
+                    onPressButton={() => {
+                        onDeleteProfile()
+                    }}
+                />
+                <SelectCountrySheet
+                    height={getScaleSize(500)}
+                    isVisible={visibleCountry}
+                    onPress={(e: any) => {
+                        console.log('e', e)
+                        setCountryCode(e.dial_code);
+                        setCountryFlag(e.flag);
+                        setVisibleCountry(false);
+                    }}
+                    onClose={() => {
+                        setVisibleCountry(false);
+                    }}
+                />
+            </View>
+        </KeyboardAvoidingView>
     );
 }
 
@@ -801,5 +848,11 @@ const styles = (theme: ThemeContextType['theme']) =>
             width: (Dimensions.get('window').width - getScaleSize(108)) / 2,
             borderRadius: getScaleSize(8),
             resizeMode: 'cover',
-        }
+        },
+        bottomButtonContainer: {
+            position: 'absolute',
+            bottom: getScaleSize(20),
+            left: getScaleSize(24),
+            right: getScaleSize(24),
+        },
     });

@@ -57,11 +57,8 @@ import {
   negotiationMessage,
   userMessage,
 } from '../../services/chat';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 export default function RequestDetails(props: any) {
-
-  const insets = useSafeAreaInsets();
 
   const STRING = useString();
   const { theme } = useContext<any>(ThemeContext);
@@ -1003,12 +1000,7 @@ export default function RequestDetails(props: any) {
         {/* <View style={{ height: getScaleSize(50) }} /> */}
       </ScrollView>
       {status === 'pending' && (
-        <View style={[
-          styles(theme).buttonContainer,
-          {
-            paddingBottom: Math.max(insets.bottom, getScaleSize(16)),
-          },
-        ]}>
+        <View style={styles(theme).buttonContainer}>
           <TouchableOpacity
             style={styles(theme).backButtonContainer}
             activeOpacity={1}
@@ -1091,9 +1083,7 @@ export default function RequestDetails(props: any) {
         />
       )}
       {status === 'accepted' && (
-        <View style={[styles(theme).buttonContainer,
-        { paddingBottom: Math.max(insets.bottom, getScaleSize(16)), }
-        ]}>
+        <View style={styles(theme).buttonContainer}>
           <TouchableOpacity
             style={styles(theme).backButtonContainer}
             activeOpacity={1}
@@ -1112,7 +1102,15 @@ export default function RequestDetails(props: any) {
             style={styles(theme).nextButtonContainer}
             activeOpacity={1}
             onPress={() => {
-
+              props.navigation.navigate(SCREENS.ChatDetails.identifier, {
+                conversationId: profile?.user?.id,
+                peerUser: {
+                  user_id: serviceDetails?.provider?.id,
+                  name: serviceDetails?.provider?.full_name,
+                  email: serviceDetails?.provider?.email,
+                  avatarUrl: serviceDetails?.provider?.profile_photo_url,
+                },
+              });
             }}>
             <Text
               size={getScaleSize(19)}
@@ -1126,7 +1124,7 @@ export default function RequestDetails(props: any) {
       )}
       <CancelScheduledServicePopup
         onRef={cancelScheduledServicePopupRef}
-        height={getScaleSize(500)}
+        height={getScaleSize(530)}
         cancelServiceDetails={cancelServiceDetails}
         onClose={() => {
           cancelScheduledServicePopupRef.current.close();
@@ -1142,7 +1140,7 @@ export default function RequestDetails(props: any) {
       <AcceptBottomPopup
         onRef={acceptRef}
         title={`You are about to confirm a service at the rate of €${serviceDetails?.total_renegotiated ?? 0
-          } with the Provider Wade Warren, Are you sure you want to continue? `}
+          } with the Provider ${serviceDetails?.provider?.full_name ?? ''}, Are you sure you want to continue? `}
         onClose={() => {
           acceptRef.current.close();
         }}

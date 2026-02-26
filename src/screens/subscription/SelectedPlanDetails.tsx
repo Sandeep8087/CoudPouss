@@ -14,12 +14,8 @@ import { SCREENS } from '..';
 //COMPONENTS
 import { Header, Input, Text, Button } from '../../components';
 import { API } from '../../api';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
-
 
 export default function SelectedPlanDetails(props: any) {
-
-    const insets = useSafeAreaInsets();
 
     const STRING = useString();
     const { theme } = useContext<any>(ThemeContext);
@@ -55,9 +51,7 @@ export default function SelectedPlanDetails(props: any) {
     }
 
     return (
-        <View style={[styles(theme).container,
-        { paddingBottom: Platform.OS === 'android' ? insets.bottom : 0 }
-        ]}>
+        <View style={styles(theme).container}>
             <Header
                 onBack={() => {
                     props.navigation.goBack();
@@ -77,7 +71,7 @@ export default function SelectedPlanDetails(props: any) {
                         font={FONTS.Lato.SemiBold}
                         color={theme._939393}
                         style={{ marginBottom: getScaleSize(18) }}>
-                        {STRING.subscription_details_text}
+                        {STRING.subscription_content}
                     </Text>
                     <View style={styles(theme).subscriptionItem}>
                         <View style={[styles(theme).flexView]}>

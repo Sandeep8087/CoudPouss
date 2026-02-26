@@ -326,7 +326,7 @@ export default function MapViewScreen(props: any) {
             <BottomSheet
                 type='out_of_service'
                 bottomSheetRef={bottomSheetRef}
-                height={getScaleSize(300)}
+                height={getScaleSize(330)}
                 image={IMAGES.location_map}
                 title={STRING.we_have_detected_that_you_are_at_your_clients_address_do_you_confirm_the_start_of_the_service}
                 buttonTitle={STRING.proceed}
@@ -339,7 +339,7 @@ export default function MapViewScreen(props: any) {
                 // isNotCloseable={true}
                 image={IMAGES.ic_alart}
                 bottomSheetRef={rejectedBottomSheetRef}
-                height={getScaleSize(300)}
+                height={getScaleSize(330)}
                 title={STRING.the_client_has_rejected_your_initial_request_please_resend_it_or_check_your_map_for_accurate_location_detection}
                 secondButtonTitle={STRING.detect}
                 buttonTitle={STRING.resend_request}
@@ -355,7 +355,7 @@ export default function MapViewScreen(props: any) {
                 isNotCloseable={true}
                 image={IMAGES.ic_like}
                 bottomSheetRef={confirmStartBottomSheetRef}
-                height={getScaleSize(300)}
+                height={getScaleSize(330)}
                 title={STRING.the_client_has_confirmed_your_arrival_you_can_now_proceed_to_start_the_service_at_the_specified_location}
                 buttonTitle={STRING.proceed}
                 onPressButton={() => {
@@ -367,7 +367,7 @@ export default function MapViewScreen(props: any) {
                 icon={IMAGES.pinIcon}
                 isNotCloseable={true}
                 bottomSheetRef={mapViewRef}
-                height={getScaleSize(530)}
+                height={getScaleSize(560)}
                 description={STRING.security_code_text}
                 title={STRING.we_have_detected_that_you_are_at_your_clients_address_do_you_confirm_the_start_of_the_service}
                 buttonTitle={STRING.Yes}
