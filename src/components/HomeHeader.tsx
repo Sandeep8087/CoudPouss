@@ -131,7 +131,7 @@ const styles = (theme: ThemeContextType['theme']) =>
   StyleSheet.create({
     container: {
       backgroundColor: theme.primary,
-      paddingTop: StatusBar.currentHeight,
+      paddingTop: getScaleSize(10)
     },
     headerView: {
       // flex: 1.0,

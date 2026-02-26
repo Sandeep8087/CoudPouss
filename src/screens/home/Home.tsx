@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useState } from 'react';
+import React, { useContext, useEffect, useRef, useState } from 'react';
 import {
   View,
   StatusBar,
@@ -38,10 +38,11 @@ import { SCREENS, TABS } from '..';
 import { API } from '../../api';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-
 export default function Home(props: any) {
   const STRING = useString();
   const { theme } = useContext<any>(ThemeContext);
+
+  const acceptRef = useRef<any>(null)
 
   const [isLoading, setLoading] = useState(false);
   const [allServices, setAllServices] = useState([]);

@@ -262,7 +262,6 @@ function Tabbar(props: any) {
   }
   else {
     return (
-      <View>
         <ImageBackground style={[styles(theme).mainView,
         { height: TABBAR_HEIGHT  }
         ]}
@@ -272,7 +271,6 @@ function Tabbar(props: any) {
             {renderView()}
           {/* </SafeAreaView> */}
         </ImageBackground>
-      </View>
     )
   }
   // return (
@@ -469,6 +467,7 @@ const styles = (theme: ThemeContextType['theme']) =>
     },
     mainView: {
       width: SCREEN_WIDTH,
+      backgroundColor: theme.white,
       // position: 'absolute',
       // bottom: 0,
       // left: 0,

@@ -131,7 +131,7 @@ const styles = (theme: ThemeContextType['theme']) => StyleSheet.create({
         alignItems: 'center'
     },
     statusBar: {
-        height: StatusBar.currentHeight
+        // height: StatusBar.currentHeight
     },
     backIcon: {
         width: getScaleSize(40),

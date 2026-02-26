@@ -21,18 +21,21 @@ import { Text, HomeHeader, SearchComponent, Header, Button, BottomSheet, Progres
 import { SCREENS } from '..';
 import { CommonActions } from '@react-navigation/native';
 import { stubFalse } from 'lodash';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 
 export default function Profile(props: any) {
 
   const STRING = useString();
+  const insets = useSafeAreaInsets();
+
   const { theme } = useContext<any>(ThemeContext);
   const { userType, profile } = useContext<any>(AuthContext);
 
   const [isLoading, setLoading] = useState(false);
   const bottomSheetRef = useRef<any>(null);
 
-  console.log('user', profile)
+  console.log('user', insets.bottom)
 
   const profileItemsElder = [
     { id: 1, title: STRING.my_profile, icon: IMAGES.ic_my_profile, onPress: SCREENS.MyProfile.identifier },
@@ -185,7 +188,7 @@ export default function Profile(props: any) {
       </ScrollView>
       <BottomSheet
         bottomSheetRef={bottomSheetRef}
-        height={getScaleSize(300)}
+        height={getScaleSize(330)}
         isInfo={true}
         title={STRING.are_you_sure_you_want_to_logout}
         buttonTitle={STRING.logout}

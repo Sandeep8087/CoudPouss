@@ -130,19 +130,25 @@ export default function Search(props: any) {
                             }}
                             item={item} />
                     )}
-                    ListEmptyComponent={() =>
-                        !isLoading && searchDebouncedText ? (
-                            <View style={styles(theme).emptyContainer}>
-                                <Text
-                                    size={getScaleSize(16)}
-                                    font={FONTS.Lato.Regular}
-                                    color={theme._565656}
-                                >
-                                    {STRING.no_results_found}
-                                </Text>
-                            </View>
-                        ) : null
-                    }
+                    ListEmptyComponent={() => {
+                        if (isLoading) return null;
+
+                        if (searchData.length === 0) {
+                            return (
+                                <View style={styles(theme).emptyContainer}>
+                                    <Text
+                                        size={getScaleSize(16)}
+                                        font={FONTS.Lato.Regular}
+                                        color={theme._565656}
+                                    >
+                                        {STRING.no_results_found}
+                                    </Text>
+                                </View>
+                            );
+                        }
+
+                        return null;
+                    }}
                 />
             </View>
             {isLoading && <ProgressView />}

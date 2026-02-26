@@ -466,7 +466,7 @@ export default function TaskStatus(props: any) {
         type='out_of_service'
         bottomSheetRef={bottomSheetRef}
         image={IMAGES.location_map}
-        height={getScaleSize(300)}
+        height={getScaleSize(330)}
         title={STRING.out_for_service_message}
         secondButtonTitle={STRING.No}
         buttonTitle={STRING.Yes}
@@ -480,7 +480,7 @@ export default function TaskStatus(props: any) {
       <BottomSheet
         type='out_of_service'
         bottomSheetRef={mapViewRef}
-        height={getScaleSize(300)}
+        height={getScaleSize(330)}
         image={IMAGES.location_map}
         title={STRING.location_permission}
         secondButtonTitle={STRING.task_status}
@@ -546,7 +546,7 @@ export default function TaskStatus(props: any) {
         type='success'
         isNotCloseable={true}
         bottomSheetRef={successBottomSheetRef}
-        height={getScaleSize(200)}
+        height={getScaleSize(230)}
         image={IMAGES.ic_succes}
         title={STRING.security_code_validated_successfully}
         buttonTitle={STRING.proceed}

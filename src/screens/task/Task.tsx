@@ -19,7 +19,7 @@ import { ThemeContext, ThemeContextType } from '../../context';
 import { getScaleSize, SHOW_TOAST, useString } from '../../constant';
 
 //COMPONENT
-import { TaskItem, Text } from '../../components';
+import { Header, TaskItem, Text } from '../../components';
 
 //PACKAGES
 import { SCREENS } from '..';
@@ -246,6 +246,7 @@ export default function Task(props: any) {
 
   return (
     <View style={styles(theme).container}>
+      <Header />
       <Text
         size={getScaleSize(24)}
         font={FONTS.Lato.Bold}

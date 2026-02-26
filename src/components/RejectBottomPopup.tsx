@@ -95,7 +95,7 @@ const RejectBottomPopup = (props: any) => {
             backgroundColor: theme._77777733,
           },
           container: {
-            height: selectedCategory == 3 ? getScaleSize(700) : getScaleSize(550),
+            height: selectedCategory == 3 ? getScaleSize(760) : getScaleSize(580),
             borderTopLeftRadius: getScaleSize(24),
             borderTopRightRadius: getScaleSize(24),
             backgroundColor: theme.white,
@@ -104,7 +104,7 @@ const RejectBottomPopup = (props: any) => {
         draggable={false}
         closeOnPressMask={true}>
         <View style={[styles(theme).content,
-        { paddingBottom: Platform.OS === 'android' ? insets.bottom : 0 }
+        // { paddingBottom: Platform.OS === 'android' ? insets.bottom : 0 }
         ]}>
           <Image style={styles(theme).icon} source={IMAGES.reject_icon} />
           <Text

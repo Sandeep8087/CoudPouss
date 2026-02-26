@@ -448,7 +448,7 @@ export default function AddServices(props: any) {
             </View>
             <BottomSheet
                 bottomSheetRef={bottomSheetRef}
-                height={getScaleSize(350)}
+                height={getScaleSize(380)}
                 type="payment"
                 title={STRING.want_to_add_more_service_categories}
                 description={STRING.additional_category_you_add_will_incur_a_monthly_fee_of}

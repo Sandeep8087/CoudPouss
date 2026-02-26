@@ -728,7 +728,7 @@ export default function CompletedTaskDetails(props: any) {
       )}
       <CancelScheduledServicePopup
         onRef={cancelScheduledServicePopupRef}
-        height={getScaleSize(500)}
+        height={getScaleSize(530)}
         cancelServiceDetails={cancelServiceDetails}
         onClose={() => {
           cancelScheduledServicePopupRef.current.close();
