@@ -15,6 +15,7 @@ import { FONTS, IMAGES } from '../assets';
 import Text from './Text';
 import { constant } from 'lodash';
 import RBSheet from 'react-native-raw-bottom-sheet';
+import Button from './Button';
 
 
 interface CancelScheduledServicePopupProps {
@@ -52,7 +53,7 @@ export default function CancelScheduledServicePopup(props: CancelScheduledServic
                     backgroundColor: theme._77777733,
                 },
                 container: {
-                    height: getScaleSize(500),
+                    height: cancelServiceDetails?.cancellation_allowed == true ? getScaleSize(500) : getScaleSize(300),
                     borderTopLeftRadius: getScaleSize(24),
                     borderTopRightRadius: getScaleSize(24),
                     backgroundColor: theme.white,
@@ -99,7 +100,7 @@ export default function CancelScheduledServicePopup(props: CancelScheduledServic
                                 size={getScaleSize(14)}
                                 font={FONTS.Lato.SemiBold}
                                 color={'#595959'}>
-                                {STRING.service_fee}
+                                {STRING.service_fee_cancelled + ` (${cancelServiceDetails?.deduction_percentage ?? '0'}%)`}
                             </Text>
                             <Text
 
@@ -133,39 +134,60 @@ export default function CancelScheduledServicePopup(props: CancelScheduledServic
                         </View>
                     </View>
                 )}
-                <View style={{flex:1.0}}/>
-                <View style={styles(theme).buttonContainer}>
-                    <TouchableOpacity
-                        style={styles(theme).nextButtonContainer}
-                        activeOpacity={1}
-                        onPress={() => {
-                            onClose()
-                        }}>
-                        <Text
-                            size={getScaleSize(19)}
-                            font={FONTS.Lato.Bold}
-                            color={theme.white}
-                            style={{ alignSelf: 'center' }}>
-                            {STRING.keep_booking}
-                        </Text>
-                    </TouchableOpacity>
-                    <TouchableOpacity
-                        style={styles(theme).backButtonContainer}
-                        activeOpacity={1}
-                        onPress={() => {
-                            onCancel(cancelServiceDetails?.service_id ?? null)
-                        }}>
-                        <View style={styles(theme).confirmationButtomWrapper}>
+                {cancelServiceDetails?.cancellation_allowed == false && (
+                    <Text
+                        size={getScaleSize(12)}
+                        font={FONTS.Lato.Regular}
+                        color={theme._555555}
+                        align='center'
+                        style={{ marginTop: getScaleSize(16), marginHorizontal: getScaleSize(24) }}>
+                        {cancelServiceDetails?.message ?? ''}
+                    </Text>
+                )}
+                <View style={{ flex: 1.0 }} />
+                {cancelServiceDetails?.cancellation_allowed == true ? (
+                    <View style={styles(theme).buttonContainer}>
+                        <TouchableOpacity
+                            style={styles(theme).nextButtonContainer}
+                            activeOpacity={1}
+                            onPress={() => {
+                                onClose()
+                            }}>
                             <Text
                                 size={getScaleSize(19)}
                                 font={FONTS.Lato.Bold}
-                                color={theme._C62828}
+                                color={theme.white}
                                 style={{ alignSelf: 'center' }}>
-                                {STRING.confirm_cancellation}
+                                {STRING.keep_booking}
                             </Text>
-                        </View>
-                    </TouchableOpacity>
-                </View>
+                        </TouchableOpacity>
+                        <TouchableOpacity
+                            style={styles(theme).backButtonContainer}
+                            activeOpacity={1}
+                            onPress={() => {
+                                onCancel(cancelServiceDetails?.service_id ?? null)
+                            }}>
+                            <View style={styles(theme).confirmationButtomWrapper}>
+                                <Text
+                                    size={getScaleSize(19)}
+                                    font={FONTS.Lato.Bold}
+                                    color={theme._C62828}
+                                    style={{ alignSelf: 'center' }}>
+                                    {STRING.confirm_cancellation}
+                                </Text>
+                            </View>
+                        </TouchableOpacity>
+                    </View>
+                ) : (
+                    <Button
+                        title={STRING.back}
+                        style={{ marginHorizontal: getScaleSize(24) }}
+                        onPress={() => {
+                            onClose()
+                        }}
+                    />
+
+                )}
             </View>
         </RBSheet>
     )

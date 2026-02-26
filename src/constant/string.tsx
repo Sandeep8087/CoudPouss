@@ -375,6 +375,7 @@ export const useString = () => {
     cancelled_message: "This cancellation is happened in less than 48 hours before the scheduled service time. According to policy, your payment will not be fully refunded. A 5% service fee is charged.",
     service_cancelled_message: "Your service has been successfully cancelled. Here are the details regarding your payment and the cancellation policy.",
     service_fee: "Service Fee (5%)",
+    service_fee_cancelled: "Service Fee",
     cancel_scheduled_service: "Cancel Scheduled Service",
     are_you_sure_you_want_to_cancel_your_scheduled_service_with_the_expert: "Are you sure you want to cancel your scheduled service with the expert?",
     payment_breakdown: "Payment Breakdown",
@@ -520,6 +521,7 @@ export const useString = () => {
     only_letters_numbers_special_characters_allowed:'Only letters, numbers and - & . ( ) allowed',
     only_numbers_not_allowed:'Only numbers are not allowed',
     product_name_required:'Product name is required',
+    all_service_categories_are_included_in_your_plan_Add_as_many_as_you_need_all_included_in_subscription_plan: "All service categories are included in your plan. Add as many as you need, all included in subscription plan."
   };
 };
 

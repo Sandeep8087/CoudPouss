@@ -53,24 +53,24 @@ export default function ServiceCancelled(props: any) {
         }
     }, [item]);
 
-    async function cancelService(serviceId: any) {
-        try {
-            setLoading(true);
-            const result = await API.Instance.post(API.API_ROUTES.onCancelService + `/${serviceId}`);
-            if (result.status) {
-                SHOW_TOAST(result?.data?.message ?? '', 'success')
-                // props?.navigation.navigate(SCREENS.ServiceCancelled.identifier, {
-                //     item: result?.data?.data
-                // });
-            } else {
-                SHOW_TOAST(result?.data?.message ?? '', 'error')
-            }
-        } catch (error: any) {
-            SHOW_TOAST(error?.message ?? '', 'error');
-        } finally {
-            setLoading(false);
-        }
-    }
+    // async function cancelService(serviceId: any) {
+    //     try {
+    //         setLoading(true);
+    //         const result = await API.Instance.post(API.API_ROUTES.onCancelService + `/${serviceId}`);
+    //         if (result.status) {
+    //             SHOW_TOAST(result?.data?.message ?? '', 'success')
+    //             // props?.navigation.navigate(SCREENS.ServiceCancelled.identifier, {
+    //             //     item: result?.data?.data
+    //             // });
+    //         } else {
+    //             SHOW_TOAST(result?.data?.message ?? '', 'error')
+    //         }
+    //     } catch (error: any) {
+    //         SHOW_TOAST(error?.message ?? '', 'error');
+    //     } finally {
+    //         setLoading(false);
+    //     }
+    // }
 
     return (
         <View style={styles(theme).container}>
@@ -222,7 +222,7 @@ export default function ServiceCancelled(props: any) {
                             size={getScaleSize(14)}
                             font={FONTS.Lato.SemiBold}
                             color={'#595959'}>
-                            {STRING.service_fee}
+                            {STRING.service_fee_cancelled + ' (5%)'}
                         </Text>
                         <Text
                             size={getScaleSize(14)}

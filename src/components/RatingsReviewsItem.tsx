@@ -48,21 +48,14 @@ export default function RatingsReviewsItem(props: any) {
                         color={theme._2B2B2B}>
                         {isFromProfessionalProfile ? item?.name : item?.full_name ?? ''}
                     </Text>
-                    {isFromProfessionalProfile ?
-                        <Text
-                            size={getScaleSize(14)}
-                            font={FONTS.Lato.Medium}
-                            color={theme._6D6D6D}
-                        >
-                            {formatDaysAgo(item?.days_ago)}
-                        </Text>
-                        :
-                        <Text size={getScaleSize(14)}
-                            font={FONTS.Lato.Medium}
-                            color={theme._6D6D6D}>
-                            {item?.created_at ? moment.utc(item?.created_at).local().fromNow() : '0 days ago'}
-                        </Text>
-                    }
+                    <Text
+                        size={getScaleSize(14)}
+                        font={FONTS.Lato.Medium}
+                        color={theme._6D6D6D}
+                    >
+                        {formatDaysAgo(item?.days_ago)}
+                    </Text>
+
                 </View>
                 <View style={styles(theme).flexView}>
                     <Rating
@@ -71,7 +64,7 @@ export default function RatingsReviewsItem(props: any) {
                         tintColor="#fff" // background color, useful for layout
                         ratingCount={5}
                         ratingColor={'#F0B52C'} // grey color
-                        startingValue={isFromProfessionalProfile ? item?.rating : item?.average_rating ?? 0}
+                        startingValue={item?.rating ?? 0}
                         imageSize={18}
                         readonly
                     />
@@ -83,18 +76,9 @@ export default function RatingsReviewsItem(props: any) {
                 font={FONTS.Lato.Medium}
                 color={theme._131313}
                 numberOfLines={showMore ? undefined : 3}>
-                {isFromProfessionalProfile ? item?.review : item?.review_description ?? ''}
+                {item?.review ?? ''}
             </Text>
-            {isFromProfessionalProfile && item?.review?.length > 100 &&
-                <Text size={getScaleSize(11)}
-                    font={FONTS.Lato.Regular}
-                    color={theme._436A00}
-                    style={{ marginTop: getScaleSize(4) }}
-                    onPress={onPressShowMore}>
-                    {showMore ? STRING.show_less : STRING.read_more}
-                </Text>
-            }
-            {item?.review_description?.length > 100 &&
+            {item?.review?.length > 100 &&
                 <Text size={getScaleSize(11)}
                     font={FONTS.Lato.Regular}
                     color={theme._436A00}

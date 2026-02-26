@@ -20,6 +20,7 @@ export default function ServiceItem(props: any) {
     item,
     itemContainer,
     isSelected,
+    isDisabled,
     onPress,
     isReview,
     isSelectedBox,
@@ -34,10 +35,17 @@ export default function ServiceItem(props: any) {
     return (
         <TouchableOpacity
             activeOpacity={0.9}
+            disabled={isDisabled || isManage}
             onPress={() => {
+                if (isDisabled) {
+                    return;
+                }
+                if (isManage) {
+                    return;
+                }
                 onPress(item);
             }}
-            style={[styles(theme).container, itemContainer]}>
+            style={[styles(theme).container, itemContainer, { opacity: isDisabled ? 0.5 : 1 }]}>
             {isSelectedBox &&
                 <Image
                     source={{ uri: item.image }}
@@ -73,7 +81,7 @@ export default function ServiceItem(props: any) {
             }
             {isSelectedBox &&
                 <>
-                    {isSelected ? (
+                    {isSelected || isDisabled ? (
                         <Image
                             source={IMAGES.ic_checkbox_select}
                             style={styles(theme).icon}
@@ -98,7 +106,7 @@ export default function ServiceItem(props: any) {
                         onClose={() => setVisible(false)}
                         content={
                             <View style={{}}>
-                                {[{ title: 'Remove', icon: IMAGES.trash2 }, { title: 'Edit', icon: IMAGES.edit }].map((type, i) => (
+                                {[{ title: 'Remove', icon: IMAGES.trash2 }, { title: 'Add More', icon: IMAGES.edit }].map((type, i) => (
                                     <TouchableOpacity
                                         key={i}
                                         style={styles(theme).dropdownItem}

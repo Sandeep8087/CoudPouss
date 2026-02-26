@@ -6,7 +6,7 @@ import { ThemeContext, ThemeContextType } from '../../context';
 
 //CONSTANT & ASSETS
 import { FONTS, IMAGES } from '../../assets';
-import { getScaleSize, useString, SHOW_TOAST, SHOW_SUCCESS_TOAST } from '../../constant';
+import { getScaleSize, useString, SHOW_TOAST, isImageFile, SHOW_SUCCESS_TOAST } from '../../constant';
 
 //SCREENS
 import { SCREENS } from '..';
@@ -25,11 +25,16 @@ export default function AdditionalDetails(props: any) {
     const { theme } = useContext<any>(ThemeContext);
 
     const planDetails: any = props?.route?.params?.planDetails ?? {};
-    const isFromApplicationStatus: any = props?.route?.params?.isFromApplicationStatus ?? false;
     const [copyOfId, setCopyOfId] = useState<any>([]);
     const [kbisExtract, setKbisExtract] = useState<any>([]);
     const [proofOfResidence, setProofOfResidence] = useState<any>([]);
     const [loading, setLoading] = useState<boolean>(false);
+
+
+
+    console.log('copyOfId', copyOfId)
+    console.log('kbisExtract', kbisExtract)
+    console.log('proofOfResidence', proofOfResidence)
 
     const pickDocument = async (type: string) => {
         try {
@@ -65,7 +70,10 @@ export default function AdditionalDetails(props: any) {
     };
 
     async function uploadDocuments() {
-
+        if (copyOfId?.length === 0 || kbisExtract?.length === 0 || proofOfResidence?.length === 0) {
+            SHOW_TOAST('Please upload all the required documents', 'error')
+            return;
+        }
         const errors: string[] = [];
 
         if (!copyOfId?.length) {
@@ -83,7 +91,7 @@ export default function AdditionalDetails(props: any) {
         // If there are errors, show them all at once
         if (errors.length > 0) {
             SHOW_TOAST(errors.join('\n'), 'error');
-            return;
+            return
         }
 
         try {
@@ -118,20 +126,12 @@ export default function AdditionalDetails(props: any) {
                     },
                 }
             );
-
             if (result?.data?.status) {
-
-                SHOW_SUCCESS_TOAST(STRING.docuement_uploaded_successfully);
-
-                if (isFromApplicationStatus) {
-                    props.navigation.navigate(SCREENS.ApplicationStatus.identifier);
-                } else {
-                    props.navigation.navigate(
-                        SCREENS.YearsOfExperience.identifier,
-                        { planDetails }
-                    );
-                }
-
+                SHOW_SUCCESS_TOAST('All documents uploaded successfully');
+                props.navigation.navigate(
+                    SCREENS.YearsOfExperience.identifier,
+                    { planDetails }
+                );
             } else {
                 SHOW_TOAST(result?.data?.message || 'Upload failed', 'error');
             }
@@ -169,30 +169,19 @@ export default function AdditionalDetails(props: any) {
                         onPress={() => {
                             pickDocument('id')
                         }}
-                        style={[styles(theme).itemContainer, { paddingVertical: copyOfId?.[0]?.uri ? getScaleSize(24) : getScaleSize(47), }]}>
-                        {/* {copyOfId?.length > 0 ? (
-                            <Image source={{ uri: copyOfId?.[0]?.uri }} style={styles(theme).imageIcon} />
-                        ) : (
-                            <>
-                                <Image source={IMAGES.ic_file_uplord} style={styles(theme).fileIcon} />
-                                <Text size={getScaleSize(12)}
-                                    font={FONTS.Lato.Regular}
-                                    color={theme._818285}>
-                                    {STRING.upload_from_device}
-                                </Text>
-                            </>
-                        )} */}
+                        style={[styles(theme).itemContainer, { paddingVertical: isImageFile(copyOfId?.[0]) ? getScaleSize(24) : getScaleSize(47), }]}>
                         {copyOfId?.length > 0 ? (
-                            copyOfId?.[0]?.type === 'application/pdf' ? (
-                                <>
-                                    <Image source={{ uri: copyOfId?.[0]?.uri }} style={styles(theme).fileIcon} />
-                                    <Text>{copyOfId?.[0]?.name}</Text>
-                                </>
+                            isImageFile(copyOfId?.[0]) ? (
+                                <Image source={{ uri: copyOfId?.[0]?.uri }} style={styles(theme).imageIcon} />
                             ) : (
-                                <Image
-                                    source={{ uri: copyOfId?.[0]?.uri }}
-                                    style={styles(theme).imageIcon}
-                                />
+                                <>
+                                    <Image source={IMAGES.ic_file} style={[styles(theme).fileIcon, { tintColor: theme.primary }]} />
+                                    <Text size={getScaleSize(12)}
+                                        font={FONTS.Lato.Regular}
+                                        color={theme._818285}>
+                                        {copyOfId?.[0]?.name}
+                                    </Text>
+                                </>
                             )
                         ) : (
                             <>
@@ -203,7 +192,7 @@ export default function AdditionalDetails(props: any) {
                                     {STRING.upload_from_device}
                                 </Text>
                             </>
-                        )}
+                        )} 
                     </TouchableOpacity>
                     <Text size={getScaleSize(17)}
                         font={FONTS.Lato.Medium}
@@ -215,9 +204,20 @@ export default function AdditionalDetails(props: any) {
                         onPress={() => {
                             pickDocument('kbis')
                         }}
-                        style={[styles(theme).itemContainer, { paddingVertical: kbisExtract?.[0]?.uri ? getScaleSize(24) : getScaleSize(47), }]}>
+                        style={[styles(theme).itemContainer, { paddingVertical: isImageFile(kbisExtract?.[0]) ? getScaleSize(24) : getScaleSize(47), }]}>
                         {kbisExtract?.length > 0 ? (
-                            <Image source={{ uri: kbisExtract?.[0]?.uri }} style={styles(theme).imageIcon} />
+                            isImageFile(kbisExtract?.[0]) ? (
+                                <Image source={{ uri: kbisExtract?.[0]?.uri }} style={styles(theme).imageIcon} />
+                            ) : (
+                                <>
+                                    <Image source={IMAGES.ic_file} style={[styles(theme).fileIcon, { tintColor: theme.primary }]} />
+                                    <Text size={getScaleSize(12)}
+                                        font={FONTS.Lato.Regular}
+                                        color={theme._818285}>
+                                        {kbisExtract?.[0]?.name}
+                                    </Text>
+                                </>
+                            )
                         ) : (
                             <>
                                 <Image source={IMAGES.ic_file_uplord} style={styles(theme).fileIcon} />
@@ -245,9 +245,20 @@ export default function AdditionalDetails(props: any) {
                         onPress={() => {
                             pickDocument('address_proof')
                         }}
-                        style={[styles(theme).itemContainer, { paddingVertical: proofOfResidence?.[0]?.uri ? getScaleSize(24) : getScaleSize(47), }]}>
+                        style={[styles(theme).itemContainer, { paddingVertical: isImageFile(proofOfResidence?.[0]) ? getScaleSize(24) : getScaleSize(47), }]}>
                         {proofOfResidence?.length > 0 ? (
-                            <Image source={{ uri: proofOfResidence?.[0]?.uri }} style={styles(theme).imageIcon} />
+                            isImageFile(proofOfResidence?.[0]) ? (
+                                <Image source={{ uri: proofOfResidence?.[0]?.uri }} style={styles(theme).imageIcon} />
+                            ) : (
+                                <>
+                                    <Image source={IMAGES.ic_file} style={[styles(theme).fileIcon, { tintColor: theme.primary }]} />
+                                    <Text size={getScaleSize(12)}
+                                        font={FONTS.Lato.Regular}
+                                        color={theme._818285}>
+                                        {proofOfResidence?.[0]?.name}
+                                    </Text>
+                                </>
+                            )
                         ) : (
                             <>
                                 <Image source={IMAGES.ic_file_uplord} style={styles(theme).fileIcon} />

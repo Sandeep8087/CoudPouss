@@ -24,6 +24,7 @@ export default function AddServices(props: any) {
     const isFromManageServices: boolean = props?.route?.params?.isFromManageServices ?? false;
     const isEdit: boolean = props?.route?.params?.isEdit ?? false;
     const categoryId: string = props?.route?.params?.categoryId ?? '';
+    const disableServicesIds: string[] = props?.route?.params?.disableServicesIds ?? [];
 
     const { setSelectedServices, selectedServices, profile } = useContext<any>(AuthContext);
     const { theme } = useContext<any>(ThemeContext);
@@ -35,11 +36,14 @@ export default function AddServices(props: any) {
     const [subCategoryList, setSubCategoryList] = useState([]);
     const [paymentPopup, setPaymentPopup] = useState(false);
 
+
     useEffect(() => {
         if (isEdit) {
             setSelectedCategory(allCategories?.find((item: any) => item.id === categoryId));
+            getSubCategoryData(categoryId);
         }
-    }, [isEdit, categoryId]);
+    }, [isEdit, categoryId, allCategories]);
+
 
     useEffect(() => {
         getAllCategories();
@@ -275,8 +279,6 @@ export default function AddServices(props: any) {
         ]);
     }
 
-
-    console.log('selectedServices==>', selectedServices)
     async function onSelectedCategoriesProfessional() {
         const output = selectedServices.map((item: any) => ({
             category_id: item.category.id,
@@ -304,6 +306,7 @@ export default function AddServices(props: any) {
     }
 
     async function onSelectedCategoriesNonProfessional() {
+        console.log('selectedServices==>', selectedServices)
         const output = selectedServices.map((item: any) => ({
             category_id: item.category.id,
             sub_category_ids: item.service.map((e: any) => e.id),
@@ -311,14 +314,29 @@ export default function AddServices(props: any) {
         const params = {
             categories_subcategory_ids: output
         }
+        console.log('params==>', params)
         try {
             setLoading(true);
             const result = await API.Instance.post(API.API_ROUTES.onSelectedCategoriesNonProfessional + `?platform=app&action=update`, params);
             if (result.status) {
-                const STRIPE_URL = result?.data?.data?.checkout_url ?? '';
-                openStripeCheckout(STRIPE_URL);
-                setSelectedServices([]);
-                bottomSheetRef.current.close();
+                if (result?.data?.data?.checkout_url) {
+                    const STRIPE_URL = result?.data?.data?.checkout_url ?? '';
+                    openStripeCheckout(STRIPE_URL);
+                    setSelectedServices([]);
+                    bottomSheetRef.current.close();
+                } else {
+                    props?.navigation?.dispatch(
+                        CommonActions.reset({
+                            index: 0,
+                            routes: [{
+                                name: SCREENS.ManageServices.identifier,
+                                params: {
+                                    isFromSelectServices: true,
+                                },
+                            }],
+                        }),
+                    );
+                }
             } else {
                 SHOW_TOAST(result?.data?.message, 'error')
             }
@@ -389,12 +407,14 @@ export default function AddServices(props: any) {
                             keyExtractor={(item: any, index: number) => index.toString()}
                             renderItem={({ item, index }) => {
                                 const isSelected = isServiceSelected(item);
+                                const isDisabled = disableServicesIds.includes(item?.id);
                                 return (
                                     <ServiceItem
                                         item={item}
                                         itemContainer={styles(theme).itemContainer}
                                         isSelectedBox={true}
                                         isSelected={isSelected}
+                                        isDisabled={isDisabled}
                                         onPress={(e: any) => {
                                             if (isFromManageServices) {
                                                 onSelectServicesForManageServices(e);
@@ -429,7 +449,12 @@ export default function AddServices(props: any) {
                 <Button
                     title={STRING.next}
                     style={{ flex: 1.0 }}
+                    disabled={selectedServices?.length == 0}
                     onPress={() => {
+                        console.log('selectedServices==>', selectedServices)
+                        if (selectedServices?.length == 0) {
+                            return
+                        }
                         if (isFromManageServices) {
                             if (profile?.user?.service_provider_type === 'professional') {
                                 onSelectedCategoriesProfessional();

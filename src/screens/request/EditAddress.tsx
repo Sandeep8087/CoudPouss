@@ -35,7 +35,7 @@ export default function EditAddress(props: any) {
 
     const STRING = useString();
     const { theme } = useContext<any>(ThemeContext);
-  
+
     const addressData = props?.route?.params?.addressData || {};
     const myLocationData = props?.route?.params?.myLocation ?? ''
     const isFromAddressMap = props?.route?.params?.isFromAddressMap ?? false;
@@ -75,7 +75,7 @@ export default function EditAddress(props: any) {
             setState('Gujrat')
             setCountry('India')
             setPostalCode('123456')
-            setMyLocation({latitude: myLocationData.latitude, longitude: myLocationData.longitude});
+            setMyLocation({ latitude: myLocationData.latitude, longitude: myLocationData.longitude });
         }
     }, [isFromAddressMap]);
 
@@ -100,7 +100,7 @@ export default function EditAddress(props: any) {
                 SHOW_TOAST(result?.data?.message, 'success');
                 console.log('result', result);
                 props.navigation.goBack();
-            }else{
+            } else {
                 SHOW_TOAST(result?.data?.message, 'error');
             }
         } catch (error: any) {
@@ -250,11 +250,11 @@ export default function EditAddress(props: any) {
                     marginHorizontal: getScaleSize(24),  
                 }}
                 onPress={() => {
-                    if (addressData) {
-                        onUpdateAddress();
+                    if (isFromAddressMap) {
+                        onEditAddress();
                     }
                     else {
-                        onEditAddress();
+                        onUpdateAddress();
                     }
                 }}
             />

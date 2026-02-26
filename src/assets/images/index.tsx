@@ -129,5 +129,6 @@ export const IMAGES = {
   ic_unselect_blue: require('./ic_unselect_blue.png'),
   ic_tab_bar: require('./ic_tab_bar.png'),
   ic_code: require('./ic_code.png'),
-  ic_reNegotiation: require('./ic_reNegotiation.png')
+  ic_reNegotiation: require('./ic_reNegotiation.png'),
+  ic_file: require('./approve.png'),
 };

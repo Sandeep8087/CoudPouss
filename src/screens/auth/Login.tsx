@@ -314,7 +314,7 @@ export default function Login(props: any) {
               font={FONTS.Lato.SemiBold}
               color={theme._2C6587}
               onPress={() => {
-                props.navigation.navigate(SCREENS.SignupSelect.identifier);
+                props.navigation.navigate(SCREENS.AdditionalDetails.identifier);
               }}>
               {STRING.sign_up}
             </Text>
