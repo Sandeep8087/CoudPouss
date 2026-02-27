@@ -116,12 +116,12 @@ const HomeHeader = (props: any) => {
             />
           </Pressable>
         </View>
-        <TouchableOpacity style={styles(theme).microPhoneContainer}>
+        {/* <TouchableOpacity style={styles(theme).microPhoneContainer}>
           <Image
             style={styles(theme).microPhoneImage}
             source={IMAGES.microphone}
           />
-        </TouchableOpacity>
+        </TouchableOpacity> */}
       </View>
     </View>
   );

@@ -738,7 +738,7 @@ export default function EditProfile(props: any) {
                         </View>
                     </View>
                 </ScrollView>
-                <View style={styles(theme).bottomButtonContainer}>
+                <View>
                     <Button
                         title={STRING.update}
                         style={styles(theme).updateButton}
@@ -848,11 +848,5 @@ const styles = (theme: ThemeContextType['theme']) =>
             width: (Dimensions.get('window').width - getScaleSize(108)) / 2,
             borderRadius: getScaleSize(8),
             resizeMode: 'cover',
-        },
-        bottomButtonContainer: {
-            position: 'absolute',
-            bottom: getScaleSize(20),
-            left: getScaleSize(24),
-            right: getScaleSize(24),
         },
     });
