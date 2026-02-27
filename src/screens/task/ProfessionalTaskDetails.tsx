@@ -1,12 +1,9 @@
-import React, { useContext, useEffect, useRef, useState } from 'react';
+import React, {useContext, useEffect, useState} from 'react';
 import {
   View,
   StatusBar,
   StyleSheet,
   Dimensions,
-  NativeScrollEvent,
-  NativeSyntheticEvent,
-  Alert,
   ScrollView,
   FlatList,
   TouchableOpacity,
@@ -15,43 +12,32 @@ import {
 } from 'react-native';
 
 //ASSETS
-import { FONTS, IMAGES } from '../../assets';
+import {FONTS, IMAGES} from '../../assets';
 
 //CONTEXT
-import { ThemeContext, ThemeContextType } from '../../context';
+import {AuthContext, ThemeContext, ThemeContextType} from '../../context';
 
 //CONSTANT
-import { arrayIcons, getScaleSize, SHOW_TOAST, useString } from '../../constant';
+import {arrayIcons, getScaleSize, SHOW_TOAST, useString} from '../../constant';
 
 //COMPONENT
-import {
-  AcceptBottomPopup,
-  Button,
-  Header,
-  PaymentBottomPopup,
-  ProgressView,
-  RejectBottomPopup,
-  RequestItem,
-  SearchComponent,
-  StatusItem,
-  Text,
-} from '../../components';
+import {Header, ProgressView, StatusItem, Text} from '../../components';
 
 //PACKAGES
-import { useFocusEffect } from '@react-navigation/native';
-import { SCREENS } from '..';
-import { API } from '../../api';
+import {useFocusEffect} from '@react-navigation/native';
+import {SCREENS} from '..';
+import {API} from '../../api';
 import moment from 'moment';
 import Video from 'react-native-video';
 import {buildThreadId} from '../../services/chat';
 
 export default function ProfessionalTaskDetails(props: any) {
   const STRING = useString();
-  const { theme } = useContext<any>(ThemeContext);
+  const {theme} = useContext<any>(ThemeContext);
 
   const item = props?.route?.params?.item ?? {};
   const serviceId = props?.route?.params?.serviceId ?? '';
-
+  const {profile} = useContext<any>(AuthContext);
   const [isStatus, setIsStatus] = useState(false);
   const [visibleTaskDetails, setVisibleTaskDetails] = useState(false);
   const [isLoading, setLoading] = useState(false);
@@ -78,10 +64,10 @@ export default function ProfessionalTaskDetails(props: any) {
     try {
       setLoading(true);
       const result = await API.Instance.get(
-        API.API_ROUTES.getTsakDetails + `/quotes/${serviceId ? serviceId : item?.service_request_id}`,
+        API.API_ROUTES.getTsakDetails +
+          `/quotes/${serviceId ? serviceId : item?.service_request_id}`,
       );
       if (result.status) {
-        console.log('result==>', result?.data?.data);
         setTaskDetails(result?.data?.data ?? {});
         setAttachments(normalizeAttachments(result?.data?.data?.task));
       } else {
@@ -116,14 +102,11 @@ export default function ProfessionalTaskDetails(props: any) {
       type: 'video',
       url,
     }));
-    console.log('photos==>', photos);
-    console.log('videos==>', videos);
+
     return [...photos, ...videos];
-
-
   };
 
-  const AttachmentItem = ({ item }: any) => {
+  const AttachmentItem = ({item}: any) => {
     switch (item.type) {
       case 'photo':
         return (
@@ -135,7 +118,7 @@ export default function ProfessionalTaskDetails(props: any) {
             }}>
             <Image
               style={[styles(theme).photosView]}
-              source={{ uri: item?.url ?? '' }}
+              source={{uri: item?.url ?? ''}}
             />
           </TouchableOpacity>
         );
@@ -144,7 +127,7 @@ export default function ProfessionalTaskDetails(props: any) {
         return (
           <View style={styles(theme).photosView}>
             <Video
-              source={{ uri: item.url }}
+              source={{uri: item.url}}
               resizeMode="cover"
               pointerEvents="none"
               controls
@@ -152,7 +135,7 @@ export default function ProfessionalTaskDetails(props: any) {
               fullscreen={false}
               playInBackground={false}
               playWhenInactive={false}
-              style={{ width: '100%', height: '100%' }}
+              style={{width: '100%', height: '100%'}}
             />
           </View>
         );
@@ -176,13 +159,13 @@ export default function ProfessionalTaskDetails(props: any) {
           {taskDetails?.task?.subcategory?.icon ? (
             <Image
               style={styles(theme).imageView}
-              source={{ uri: taskDetails?.task?.subcategory?.icon }}
+              source={{uri: taskDetails?.task?.subcategory?.icon}}
             />
           ) : (
             <View
               style={[
                 styles(theme).imageView,
-                { backgroundColor: theme._D5D5D5 },
+                {backgroundColor: theme._D5D5D5},
               ]}
             />
           )}
@@ -212,9 +195,10 @@ export default function ProfessionalTaskDetails(props: any) {
                   font={FONTS.Lato.Medium}
                   color={theme.primary}>
                   {taskDetails?.task?.chosen_date_time
-                    ? moment.utc(taskDetails?.task?.chosen_date_time).local().format(
-                      'DD MMM, YYYY',
-                    )
+                    ? moment
+                        .utc(taskDetails?.task?.chosen_date_time)
+                        .local()
+                        .format('DD MMM, YYYY')
                     : '-'}
                 </Text>
               </View>
@@ -232,9 +216,10 @@ export default function ProfessionalTaskDetails(props: any) {
                   font={FONTS.Lato.Medium}
                   color={theme.primary}>
                   {taskDetails?.task?.chosen_date_time
-                    ? moment.utc(taskDetails?.task?.chosen_date_time).local().format(
-                      'hh:mm A',
-                    )
+                    ? moment
+                        .utc(taskDetails?.task?.chosen_date_time)
+                        .local()
+                        .format('hh:mm A')
                     : '-'}
                 </Text>
               </View>
@@ -242,13 +227,20 @@ export default function ProfessionalTaskDetails(props: any) {
             <View
               style={[
                 styles(theme).horizontalView,
-                { marginTop: getScaleSize(12) },
+                {marginTop: getScaleSize(12)},
               ]}>
               <View style={styles(theme).itemView}>
                 {taskDetails?.task?.category?.name ? (
                   <Image
-                    style={[styles(theme).informationIcon, { tintColor: theme._1A3D51 }]}
-                    source={arrayIcons[taskDetails?.task?.category?.name?.toLowerCase() as keyof typeof arrayIcons] ?? arrayIcons['diy'] as any}
+                    style={[
+                      styles(theme).informationIcon,
+                      {tintColor: theme._1A3D51},
+                    ]}
+                    source={
+                      arrayIcons[
+                        taskDetails?.task?.category?.name?.toLowerCase() as keyof typeof arrayIcons
+                      ] ?? (arrayIcons['diy'] as any)
+                    }
                     resizeMode="cover"
                   />
                 ) : (
@@ -288,14 +280,14 @@ export default function ProfessionalTaskDetails(props: any) {
         {item?.quote_status === 'accepted' && (
           <View style={styles(theme).amountContainer}>
             <Text
-              style={{ flex: 1.0 }}
+              style={{flex: 1.0}}
               size={getScaleSize(18)}
               font={FONTS.Lato.Medium}
               color={theme._323232}>
               {STRING.FinalizedQuoteAmount}
             </Text>
             <Text
-              style={{ flex: 1.0, marginTop: getScaleSize(8) }}
+              style={{flex: 1.0, marginTop: getScaleSize(8)}}
               size={getScaleSize(27)}
               font={FONTS.Lato.Bold}
               color={theme._323232}>
@@ -306,7 +298,7 @@ export default function ProfessionalTaskDetails(props: any) {
         {item?.quote_status === 'accepted' && (
           <View style={styles(theme).amountContainer}>
             <Text
-              style={{ flex: 1.0 }}
+              style={{flex: 1.0}}
               size={getScaleSize(18)}
               font={FONTS.Lato.Medium}
               color={theme._323232}>
@@ -343,7 +335,7 @@ export default function ProfessionalTaskDetails(props: any) {
                     key={index}
                     style={[
                       styles(theme).securityItemContainer,
-                      { marginLeft: index === 0 ? 0 : 3 },
+                      {marginLeft: index === 0 ? 0 : 3},
                     ]}>
                     <Text
                       size={getScaleSize(18)}
@@ -355,7 +347,7 @@ export default function ProfessionalTaskDetails(props: any) {
                 ))}
             </View>
             <Text
-              style={{ flex: 1.0, marginTop: getScaleSize(12) }}
+              style={{flex: 1.0, marginTop: getScaleSize(12)}}
               size={getScaleSize(11)}
               font={FONTS.Lato.Regular}
               color={'#424242'}>
@@ -366,7 +358,7 @@ export default function ProfessionalTaskDetails(props: any) {
         <View style={styles(theme).profileContainer}>
           <View style={styles(theme).horizontalView}>
             <Text
-              style={{ flex: 1.0 }}
+              style={{flex: 1.0}}
               size={getScaleSize(18)}
               font={FONTS.Lato.SemiBold}
               color={theme._323232}>
@@ -376,15 +368,15 @@ export default function ProfessionalTaskDetails(props: any) {
           <View
             style={[
               styles(theme).horizontalView,
-              { marginTop: getScaleSize(16) },
+              {marginTop: getScaleSize(16)},
             ]}>
             {taskDetails?.elderly_user?.profile_photo_url ? (
               <Image
                 style={[
                   styles(theme).profilePicView,
-                  { backgroundColor: theme._D5D5D5 },
+                  {backgroundColor: theme._D5D5D5},
                 ]}
-                source={{ uri: taskDetails?.elderly_user?.profile_photo_url }}
+                source={{uri: taskDetails?.elderly_user?.profile_photo_url}}
               />
             ) : (
               <Image
@@ -392,22 +384,24 @@ export default function ProfessionalTaskDetails(props: any) {
                 source={IMAGES.user_placeholder}
               />
             )}
-            <View style={{ flex: 1.0 }}>
+            <View style={{flex: 1.0}}>
               <Text
-                style={{ marginLeft: getScaleSize(16) }}
+                style={{marginLeft: getScaleSize(16)}}
                 size={getScaleSize(20)}
                 font={FONTS.Lato.SemiBold}
                 color={'#0F232F'}>
-                {`${taskDetails?.elderly_user?.first_name ?? ''} ${taskDetails?.elderly_user?.last_name ?? ''
-                  }`}
+                {`${taskDetails?.elderly_user?.first_name ?? ''} ${
+                  taskDetails?.elderly_user?.last_name ?? ''
+                }`}
               </Text>
               <Text
-                style={{ marginLeft: getScaleSize(16) }}
+                style={{marginLeft: getScaleSize(16)}}
                 size={getScaleSize(12)}
                 font={FONTS.Lato.Medium}
                 color={'#595959'}>
-                {`${taskDetails?.elderly_user?.phone_country_code ?? ''}${taskDetails?.elderly_user?.phone_number ?? ''
-                  }`}
+                {`${taskDetails?.elderly_user?.phone_country_code ?? ''}${
+                  taskDetails?.elderly_user?.phone_number ?? ''
+                }`}
               </Text>
             </View>
             {item?.task_status !== 'completed' && (
@@ -415,20 +409,20 @@ export default function ProfessionalTaskDetails(props: any) {
                 activeOpacity={1}
                 style={[
                   styles(theme).newButton,
-                  { marginRight: getScaleSize(6) },
+                  {marginRight: getScaleSize(6)},
                 ]}
                 onPress={() => {
                   const conversationId = buildThreadId(
                     taskDetails?.elderly_user?.id,
-                    taskDetails?.service_request_id,
+                    profile?.user?.id,
                   );
                   props.navigation.navigate(SCREENS.ChatDetails.identifier, {
                     conversationId: conversationId,
                     peerUser: {
-                      user_id: taskDetails?.provider?.id,
-                      name: taskDetails?.provider?.full_name,
-                      email: taskDetails?.provider?.email,
-                      avatarUrl: taskDetails?.provider?.profile_photo_url,
+                      user_id: taskDetails?.elderly_user?.id,
+                      name: taskDetails?.elderly_user?.first_name,
+                      email: taskDetails?.elderly_user?.email,
+                      avatarUrl: taskDetails?.elderly_user?.profile_photo_url,
                     },
                   });
                 }}>
@@ -445,19 +439,19 @@ export default function ProfessionalTaskDetails(props: any) {
         {item?.quote_status === 'accepted' && (
           <View style={styles(theme).profileContainer}>
             <Text
-              style={{ flex: 1.0 }}
+              style={{flex: 1.0}}
               size={getScaleSize(18)}
               font={FONTS.Lato.Medium}
               color={theme._323232}>
               {'Address'}
             </Text>
-            <View style={{ flexDirection: 'row', marginTop: getScaleSize(12) }}>
+            <View style={{flexDirection: 'row', marginTop: getScaleSize(12)}}>
               <Image
-                style={{ height: getScaleSize(24), width: getScaleSize(24) }}
+                style={{height: getScaleSize(24), width: getScaleSize(24)}}
                 source={IMAGES.map_pin}
               />
               <Text
-                style={{ flex: 1.0, marginLeft: getScaleSize(4) }}
+                style={{flex: 1.0, marginLeft: getScaleSize(4)}}
                 size={getScaleSize(14)}
                 font={FONTS.Lato.SemiBold}
                 color={'#595959'}>
@@ -469,29 +463,29 @@ export default function ProfessionalTaskDetails(props: any) {
         <View
           style={[
             styles(theme).profileContainer,
-            { paddingVertical: getScaleSize(26) },
+            {paddingVertical: getScaleSize(26)},
           ]}>
           <TouchableOpacity
-            style={{ flexDirection: 'row' }}
+            style={{flexDirection: 'row'}}
             activeOpacity={1}
             onPress={() => {
               setIsStatus(!isStatus);
             }}>
             <Text
-              style={{ flex: 1.0 }}
+              style={{flex: 1.0}}
               size={getScaleSize(18)}
               font={FONTS.Lato.Medium}
               color={theme._323232}>
               {STRING.CheckStatus}
             </Text>
             <TouchableOpacity
-              style={{ height: getScaleSize(25), width: getScaleSize(24) }}
+              style={{height: getScaleSize(25), width: getScaleSize(24)}}
               activeOpacity={1}
               onPress={() => {
                 setIsStatus(!isStatus);
               }}>
               <Image
-                style={{ height: getScaleSize(25), width: getScaleSize(24) }}
+                style={{height: getScaleSize(25), width: getScaleSize(24)}}
                 source={isStatus ? IMAGES.up : IMAGES.down}
               />
             </TouchableOpacity>
@@ -501,7 +495,7 @@ export default function ProfessionalTaskDetails(props: any) {
               {taskDetails?.task_lifecycle?.length > 0 && (
                 <>
                   <View style={styles(theme).devider}></View>
-                  <View style={{ marginTop: getScaleSize(32) }}>
+                  <View style={{marginTop: getScaleSize(32)}}>
                     {taskDetails?.task_lifecycle?.map(
                       (item: any, index: number) => (
                         <StatusItem
@@ -523,29 +517,29 @@ export default function ProfessionalTaskDetails(props: any) {
         <View
           style={[
             styles(theme).profileContainer,
-            { paddingVertical: getScaleSize(26) },
+            {paddingVertical: getScaleSize(26)},
           ]}>
           <TouchableOpacity
-            style={{ flexDirection: 'row' }}
+            style={{flexDirection: 'row'}}
             activeOpacity={1}
             onPress={() => {
               setVisibleTaskDetails(!visibleTaskDetails);
             }}>
             <Text
-              style={{ flex: 1.0 }}
+              style={{flex: 1.0}}
               size={getScaleSize(18)}
               font={FONTS.Lato.SemiBold}
               color={theme._323232}>
               {STRING.TaskDetails}
             </Text>
             <TouchableOpacity
-              style={{ height: getScaleSize(25), width: getScaleSize(24) }}
+              style={{height: getScaleSize(25), width: getScaleSize(24)}}
               activeOpacity={1}
               onPress={() => {
                 setVisibleTaskDetails(!visibleTaskDetails);
               }}>
               <Image
-                style={{ height: getScaleSize(25), width: getScaleSize(24) }}
+                style={{height: getScaleSize(25), width: getScaleSize(24)}}
                 source={visibleTaskDetails ? IMAGES.up : IMAGES.down}
               />
             </TouchableOpacity>
@@ -554,21 +548,21 @@ export default function ProfessionalTaskDetails(props: any) {
             <>
               <View style={styles(theme).devider}></View>
               <Text
-                style={{ flex: 1.0, marginTop: getScaleSize(20) }}
+                style={{flex: 1.0, marginTop: getScaleSize(20)}}
                 size={getScaleSize(18)}
                 font={FONTS.Lato.SemiBold}
                 color={'#424242'}>
                 {STRING.Servicedescription}
               </Text>
               <Text
-                style={{ flex: 1.0, marginTop: getScaleSize(16) }}
+                style={{flex: 1.0, marginTop: getScaleSize(16)}}
                 size={getScaleSize(14)}
                 font={FONTS.Lato.Medium}
                 color={theme._939393}>
                 {taskDetails?.task?.description ?? '-'}
               </Text>
               <Text
-                style={{ flex: 1.0, marginVertical: getScaleSize(20) }}
+                style={{flex: 1.0, marginVertical: getScaleSize(20)}}
                 size={getScaleSize(18)}
                 font={FONTS.Lato.SemiBold}
                 color={'#424242'}>
@@ -577,11 +571,11 @@ export default function ProfessionalTaskDetails(props: any) {
               <FlatList
                 data={attachments ?? []}
                 numColumns={2}
-                columnWrapperStyle={{ gap: getScaleSize(12) }}
-                contentContainerStyle={{ gap: getScaleSize(12) }}
+                columnWrapperStyle={{gap: getScaleSize(12)}}
+                contentContainerStyle={{gap: getScaleSize(12)}}
                 keyExtractor={(item: any, index: number) => index.toString()}
                 showsHorizontalScrollIndicator={false}
-                renderItem={({ item }) => <AttachmentItem item={item} />}
+                renderItem={({item}) => <AttachmentItem item={item} />}
               />
             </>
           )}
@@ -596,7 +590,7 @@ export default function ProfessionalTaskDetails(props: any) {
             </Text>
             <View style={styles(theme).newHorizontalView}>
               <Text
-                style={{ flex: 1.0 }}
+                style={{flex: 1.0}}
                 size={getScaleSize(14)}
                 font={FONTS.Lato.SemiBold}
                 color={'#595959'}>
@@ -611,7 +605,7 @@ export default function ProfessionalTaskDetails(props: any) {
             </View>
             <View style={styles(theme).newHorizontalView}>
               <Text
-                style={{ flex: 1.0 }}
+                style={{flex: 1.0}}
                 size={getScaleSize(14)}
                 font={FONTS.Lato.SemiBold}
                 color={'#595959'}>
@@ -626,7 +620,7 @@ export default function ProfessionalTaskDetails(props: any) {
             </View>
             <View style={styles(theme).newHorizontalView}>
               <Text
-                style={{ flex: 1.0 }}
+                style={{flex: 1.0}}
                 size={getScaleSize(14)}
                 font={FONTS.Lato.SemiBold}
                 color={'#595959'}>
@@ -642,7 +636,7 @@ export default function ProfessionalTaskDetails(props: any) {
             <View style={styles(theme).dotView} />
             <View style={styles(theme).newHorizontalView}>
               <Text
-                style={{ flex: 1.0 }}
+                style={{flex: 1.0}}
                 size={getScaleSize(20)}
                 font={FONTS.Lato.SemiBold}
                 color={'#0F232F'}>
@@ -657,7 +651,7 @@ export default function ProfessionalTaskDetails(props: any) {
             </View>
           </View>
         )}
-        <View style={{ height: getScaleSize(100) }} />
+        <View style={{height: getScaleSize(100)}} />
       </ScrollView>
       {isLoading && <ProgressView />}
     </View>
@@ -666,7 +660,7 @@ export default function ProfessionalTaskDetails(props: any) {
 
 const styles = (theme: ThemeContextType['theme']) =>
   StyleSheet.create({
-    container: { flex: 1, backgroundColor: theme.white },
+    container: {flex: 1, backgroundColor: theme.white},
     scrolledContainer: {
       marginTop: getScaleSize(19),
       marginHorizontal: getScaleSize(24),
@@ -834,6 +828,6 @@ const styles = (theme: ThemeContextType['theme']) =>
     },
     codeViewDirection: {
       flexDirection: 'row',
-      marginTop: getScaleSize(16)
-    }
+      marginTop: getScaleSize(16),
+    },
   });

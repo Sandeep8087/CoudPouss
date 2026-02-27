@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useRef, useState } from 'react';
+import React, {useContext, useEffect, useRef, useState} from 'react';
 import {
   View,
   StatusBar,
@@ -20,13 +20,13 @@ import {
 } from 'react-native';
 
 //ASSETS
-import { FONTS, IMAGES } from '../../assets';
+import {FONTS, IMAGES} from '../../assets';
 
 //API
-import { API } from '../../api';
+import {API} from '../../api';
 
 //CONTEXT
-import { AuthContext, ThemeContext, ThemeContextType } from '../../context';
+import {AuthContext, ThemeContext, ThemeContextType} from '../../context';
 
 //CONSTANT
 import {
@@ -57,27 +57,26 @@ import {
 } from '@react-navigation/native';
 
 //SCREENS
-import { SCREENS } from '..';
+import {SCREENS} from '..';
 import Geolocation from 'react-native-geolocation-service';
-import { PERMISSIONS, request, RESULTS } from 'react-native-permissions';
-import { EventRegister } from 'react-native-event-listeners';
+import {PERMISSIONS, request, RESULTS} from 'react-native-permissions';
+import {EventRegister} from 'react-native-event-listeners';
+import {buildThreadId} from '../../services/chat';
 
 export default function ProfessionalHome(props: any) {
-
   const skipSubscription = props?.route?.params?.skipSubscription;
 
   const STRING = useString();
 
-  const { theme } = useContext<any>(ThemeContext);
+  const {theme} = useContext<any>(ThemeContext);
 
-  const { profile, fetchProfile, userType } = useContext(AuthContext);
+  const {profile, fetchProfile, userType} = useContext(AuthContext);
 
   const [isLoading, setLoading] = useState(false);
   const [serviceList, setServiceList] = useState<any>([]);
   const [locationDenied, setLocationDenied] = useState(false);
 
   const isFocused = useIsFocused();
-
 
   let currentState = AppState.currentState;
 
@@ -107,7 +106,7 @@ export default function ProfessionalHome(props: any) {
     setLoading(true);
     await fetchProfile();
     setLoading(false);
-  }
+  };
 
   useEffect(() => {
     console.log('onAccountCancel');
@@ -120,7 +119,7 @@ export default function ProfessionalHome(props: any) {
     if (isFocused) {
       onUpdateProfile();
       requestPermissions();
-      getLocation()
+      getLocation();
     }
   }, [isFocused]);
 
@@ -140,33 +139,56 @@ export default function ProfessionalHome(props: any) {
     return granted === PermissionsAndroid.RESULTS.GRANTED;
   };
 
-  const getLocation = () => {
-    let resolved = false;
+  async function getLocation() {
+    const permission = await hasLocationPermission();
+    if (!permission) return;
 
-    const watchId = Geolocation.watchPosition(
-      pos => {
-        if (!resolved) {
-          resolved = true;
-          Geolocation.clearWatch(watchId);
-          console.log('LOCATION 👉', pos);
-          const { latitude, longitude } = pos.coords;
-          setLoading(false);
-          getAllServices({ latitude, longitude });
-        }
+    Geolocation.getCurrentPosition(
+      position => {
+        const {latitude, longitude} = position.coords;
+        setLoading(false);
+        getAllServices({latitude, longitude});
       },
-      err => {
-        console.log('WATCH ERROR 👉', err);
+      error => {
+        setLoading(false);
+        console.log('Error:', error);
       },
-      { enableHighAccuracy: false }
+      {
+        enableHighAccuracy: true,
+        timeout: 15000,
+        maximumAge: 10000,
+      },
     );
+  }
 
-    setTimeout(() => {
-      if (!resolved) {
-        Geolocation.clearWatch(watchId);
-        console.log('Location timeout fallback');
-      }
-    }, 35000);
-  };
+  // const getLocation = () => {
+
+  //   let resolved = false;
+
+  //   const watchId = Geolocation.watchPosition(
+  //     pos => {
+  //       if (!resolved) {
+  //         resolved = true;
+  //         Geolocation.clearWatch(watchId);
+  //         console.log('LOCATION 👉', pos);
+  //         const { latitude, longitude } = pos.coords;
+  //         setLoading(false);
+  //         getAllServices({ latitude, longitude });
+  //       }
+  //     },
+  //     err => {
+  //       console.log('WATCH ERROR 👉', err);
+  //     },
+  //     { enableHighAccuracy: false }
+  //   );
+
+  //   setTimeout(() => {
+  //     if (!resolved) {
+  //       Geolocation.clearWatch(watchId);
+  //       console.log('Location timeout fallback');
+  //     }
+  //   }, 35000);
+  // };
 
   // async function getLocation() {
   //   const permission = await hasLocationPermission();
@@ -198,7 +220,6 @@ export default function ProfessionalHome(props: any) {
     }
   };
 
-
   async function getAllServices(location: any) {
     try {
       const page = 1;
@@ -207,19 +228,19 @@ export default function ProfessionalHome(props: any) {
       const result: any = await API.Instance.get(
         `${API.API_ROUTES.getProfessionalAllServices}?provider_lat=${location?.latitude}&provider_lon=${location?.longitude}&page=${page}&limit=${limit}&platform=app`,
       );
-      setLoading(false)
+      setLoading(false);
       if (result?.status) {
         console.log('result==>', result?.data?.data);
         setServiceList(result.data.data ?? []);
       } else {
-        setLoading(false)
+        setLoading(false);
         SHOW_TOAST(result?.data?.detail, 'error');
-        console.log('error==>', result?.data?.detail)
+        console.log('error==>', result?.data?.detail);
       }
     } catch (error: any) {
-      setLoading(false)
+      setLoading(false);
       SHOW_TOAST(error?.message ?? '', 'error');
-      console.log('error==>', error?.message)
+      console.log('error==>', error?.message);
     } finally {
       setLoading(false);
     }
@@ -233,13 +254,42 @@ export default function ProfessionalHome(props: any) {
     }
   };
 
+  async function getServiceDetails(serviceRequestId: string) {
+    try {
+      const result = await API.Instance.get(
+        API.API_ROUTES.getTsakDetails + `/quotes/${serviceRequestId}`,
+      );
+      if (result.status) {
+        const conversationId = buildThreadId(
+          result?.data?.data?.elderly_user?.id,
+          profile?.user?.id,
+        );
+        props.navigation.navigate(SCREENS.ChatDetails.identifier, {
+          conversationId: conversationId,
+          peerUser: {
+            user_id: result?.data?.data?.elderly_user?.id,
+            name: result?.data?.data?.elderly_user?.first_name,
+            email: result?.data?.data?.elderly_user?.email,
+            avatarUrl: result?.data?.data?.elderly_user?.profile_photo_url,
+          },
+        });
+      } else {
+        SHOW_TOAST(result?.data?.message ?? '', 'error');
+      }
+    } catch (error: any) {
+      SHOW_TOAST(error?.message ?? '', 'error');
+      console.log(error?.message);
+    } finally {
+    }
+  }
+
   const renderServiceRequestListView = () => {
     return (
       <View>
         <View
           style={[
             styles(theme).directionView,
-            { marginBottom: getScaleSize(24) },
+            {marginBottom: getScaleSize(24)},
           ]}>
           <Text
             size={getScaleSize(20)}
@@ -250,7 +300,7 @@ export default function ProfessionalHome(props: any) {
             }}>
             {STRING.ExploreServiceRequests}
           </Text>
-          <View style={{ flex: 1 }}></View>
+          <View style={{flex: 1}}></View>
           {serviceList?.open_services?.length > 0 && (
             <TouchableOpacity
               onPress={() => {
@@ -304,7 +354,7 @@ export default function ProfessionalHome(props: any) {
           </Text>
           {serviceList?.recent_tasks?.data?.length > 0 && (
             <TouchableOpacity
-              style={{ paddingVertical: getScaleSize(8) }}
+              style={{paddingVertical: getScaleSize(8)}}
               onPress={() => {
                 props.navigation.dispatch(
                   CommonActions.reset({
@@ -312,7 +362,7 @@ export default function ProfessionalHome(props: any) {
                     routes: [
                       {
                         name: SCREENS.BottomBar.identifier,
-                        params: { isTask: true },
+                        params: {isTask: true},
                       },
                     ],
                   }),
@@ -361,17 +411,12 @@ export default function ProfessionalHome(props: any) {
                     );
                   }}
                   onPressStatus={() => {
-                    props.navigation.navigate(
-                      SCREENS.TaskStatus.identifier,
-                      {
-                        item: item,
-                      },
-                    );
+                    props.navigation.navigate(SCREENS.TaskStatus.identifier, {
+                      item: item,
+                    });
                   }}
                   onPressChat={() => {
-                    props.navigation.navigate(
-                      SCREENS.ChatDetails.identifier,
-                    );
+                    getServiceDetails(item?.service_request_id);
                   }}
                 />
               );
@@ -388,36 +433,32 @@ export default function ProfessionalHome(props: any) {
               style={{
                 marginTop: getScaleSize(20),
               }}>
-              {
-                STRING.you_have_not_accepted_any_request_please_accept_a_request
-              }
+              {STRING.you_have_not_accepted_any_request_please_accept_a_request}
             </Text>
           </View>
         )}
       </View>
-    )
-  }
+    );
+  };
 
   const renderServiceRequestView = () => {
     if (profile?.has_purchased === true) {
       if (profile?.user?.service_provider_type === 'professional') {
         if (profile?.onboarding_status === true) {
           return renderServiceRequestListView();
-        }
-        else {
+        } else {
           return (
             <EmptyView
               title={STRING.you_have_not_completed_your_onboarding}
               style={styles(theme).emptyContainer}
               buttonTitle={STRING.onboarding_process}
               onPressButton={() => {
-                openStripeCheckout(profile?.onboarding_redirect_url ?? '')
+                openStripeCheckout(profile?.onboarding_redirect_url ?? '');
               }}
             />
-          )
+          );
         }
-      }
-      else {
+      } else {
         return renderServiceRequestListView();
       }
     } else {
@@ -426,14 +467,17 @@ export default function ProfessionalHome(props: any) {
           title={STRING.you_have_not_subscribed_to_any_plan}
           style={styles(theme).emptyContainer}
           onPressButton={() => {
-            props.navigation.navigate(SCREENS.ChooseYourSubscription.identifier, {
-              isFromSubscriptionButton: true,
-            });
+            props.navigation.navigate(
+              SCREENS.ChooseYourSubscription.identifier,
+              {
+                isFromSubscriptionButton: true,
+              },
+            );
           }}
         />
-      )
+      );
     }
-  }
+  };
 
   return (
     <View style={styles(theme).container}>
@@ -449,8 +493,9 @@ export default function ProfessionalHome(props: any) {
             font={FONTS.Lato.Medium}
             color={theme._6D6D6D}
             style={{}}>
-            {`Hello! ${profile?.user?.first_name + ' ' + profile?.user?.last_name
-              }`}
+            {`Hello! ${
+              profile?.user?.first_name + ' ' + profile?.user?.last_name
+            }`}
           </Text>
           <Text
             size={getScaleSize(24)}
@@ -463,7 +508,7 @@ export default function ProfessionalHome(props: any) {
         <TouchableOpacity
           style={[
             styles(theme).notifiationIcon,
-            { marginRight: getScaleSize(8) },
+            {marginRight: getScaleSize(8)},
           ]}
           activeOpacity={1}
           onPress={() => {
@@ -483,27 +528,31 @@ export default function ProfessionalHome(props: any) {
           {profile?.user?.profile_photo_url ? (
             <Image
               style={styles(theme).profilePic}
-              source={{ uri: profile?.user?.profile_photo_url }}
+              source={{uri: profile?.user?.profile_photo_url}}
             />
-          ) : <>
-            {profile?.user?.first_name && profile?.user?.last_name ? (
-              <View style={styles(theme).EmptyProfileContainer}>
-                <Text size={getScaleSize(12)}
-                  font={FONTS.Lato.Medium}
-                  align="center"
-                  color={theme._262B43E5}>
-                  {(profile?.user?.first_name?.charAt(0) ?? '').toUpperCase() +
-                    (profile?.user?.last_name?.charAt(0) ?? '').toUpperCase()}
-                </Text>
-              </View>
-            ) : (
-              <Image
-                style={styles(theme).profilePic}
-                source={IMAGES.user_placeholder}
-              />
-            )}
-          </>
-          }
+          ) : (
+            <>
+              {profile?.user?.first_name && profile?.user?.last_name ? (
+                <View style={styles(theme).EmptyProfileContainer}>
+                  <Text
+                    size={getScaleSize(12)}
+                    font={FONTS.Lato.Medium}
+                    align="center"
+                    color={theme._262B43E5}>
+                    {(
+                      profile?.user?.first_name?.charAt(0) ?? ''
+                    ).toUpperCase() +
+                      (profile?.user?.last_name?.charAt(0) ?? '').toUpperCase()}
+                  </Text>
+                </View>
+              ) : (
+                <Image
+                  style={styles(theme).profilePic}
+                  source={IMAGES.user_placeholder}
+                />
+              )}
+            </>
+          )}
         </TouchableOpacity>
       </View>
       {/* <View style={styles(theme).searchView}>
@@ -520,7 +569,7 @@ export default function ProfessionalHome(props: any) {
           title={STRING.location_permission_required}
           style={styles(theme).emptyContainer}
           onPressButton={() => {
-            openAppSettings()
+            openAppSettings();
           }}
           buttonTitle={STRING.open_settings}
         />
@@ -533,13 +582,12 @@ export default function ProfessionalHome(props: any) {
             resizeMode="cover"
             source={IMAGES.homeBanner}>
             <View style={styles(theme).textView}>
-              <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+              <View style={{flexDirection: 'row', alignItems: 'center'}}>
                 <Text
                   size={getScaleSize(40)}
                   font={FONTS.Lato.Bold}
                   color={theme.white}>
-                  {serviceList?.stats?.verified_providers_today?.count ??
-                    '0'}{' '}
+                  {serviceList?.stats?.verified_providers_today?.count ?? '0'}{' '}
                 </Text>
                 <Text
                   size={getScaleSize(16)}
@@ -549,7 +597,7 @@ export default function ProfessionalHome(props: any) {
                 </Text>
               </View>
               <Text
-                style={{ marginTop: getScaleSize(8) }}
+                style={{marginTop: getScaleSize(8)}}
                 size={getScaleSize(12)}
                 font={FONTS.Lato.Regular}
                 color={theme.white}>
@@ -559,7 +607,6 @@ export default function ProfessionalHome(props: any) {
           </ImageBackground>
           {renderServiceRequestView()}
         </ScrollView>
-
       )}
       {isLoading && <ProgressView />}
     </View>
@@ -568,7 +615,7 @@ export default function ProfessionalHome(props: any) {
 
 const styles = (theme: ThemeContextType['theme']) =>
   StyleSheet.create({
-    container: { flex: 1.0, backgroundColor: theme.white },
+    container: {flex: 1.0, backgroundColor: theme.white},
     headerContainer: {
       flexDirection: 'row',
       marginHorizontal: getScaleSize(22),
@@ -583,7 +630,7 @@ const styles = (theme: ThemeContextType['theme']) =>
       height: getScaleSize(24),
       width: getScaleSize(24),
       alignSelf: 'center',
-      tintColor: '#6D6D6D'
+      tintColor: '#6D6D6D',
     },
     profilePic: {
       height: getScaleSize(34),

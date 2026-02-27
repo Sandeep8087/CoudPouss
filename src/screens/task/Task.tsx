@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useRef, useState } from 'react';
+import React, {useContext, useEffect, useRef, useState} from 'react';
 import {
   View,
   StyleSheet,
@@ -10,27 +10,27 @@ import {
 } from 'react-native';
 
 //ASSETS
-import { FONTS, IMAGES } from '../../assets';
+import {FONTS, IMAGES} from '../../assets';
 
 //CONTEXT
-import { ThemeContext, ThemeContextType } from '../../context';
+import {AuthContext, ThemeContext, ThemeContextType} from '../../context';
 
 //CONSTANT
-import { getScaleSize, SHOW_TOAST, useString } from '../../constant';
+import {getScaleSize, SHOW_TOAST, useString} from '../../constant';
 
 //COMPONENT
-import { Header, TaskItem, Text } from '../../components';
+import {Header, TaskItem, Text} from '../../components';
 
 //PACKAGES
-import { SCREENS } from '..';
-import { API } from '../../api';
-import { useIsFocused } from '@react-navigation/native';
+import {SCREENS} from '..';
+import {API} from '../../api';
+import {useIsFocused} from '@react-navigation/native';
 import {buildThreadId} from '../../services/chat';
 
 export default function Task(props: any) {
-
   const STRING = useString();
-  const { theme } = useContext<any>(ThemeContext);
+  const {theme} = useContext<any>(ThemeContext);
+  const {profile} = useContext<any>(AuthContext);
   const requestIdRef = useRef(0);
   const PAGE_SIZE = 5;
 
@@ -75,13 +75,13 @@ export default function Task(props: any) {
       quateList.selectedIndex === 0
         ? 'send'
         : quateList.selectedIndex === 1
-          ? 'accepted'
-          : 'complete';
+        ? 'accepted'
+        : 'complete';
 
     try {
       const result = await API.Instance.get(
         API.API_ROUTES.getQuateList +
-        `?status=${status}&page=${quateList.page}&limit=${PAGE_SIZE}`,
+          `?status=${status}&page=${quateList.page}&limit=${PAGE_SIZE}`,
       );
 
       // ❌ Agar ye latest request nahi hai → ignore
@@ -110,7 +110,6 @@ export default function Task(props: any) {
       }
     }
   }
-
 
   const loadMore = () => {
     if (
@@ -147,17 +146,18 @@ export default function Task(props: any) {
         API.API_ROUTES.getTsakDetails + `/quotes/${serviceRequestId}`,
       );
       if (result.status) {
+        console.log(result?.data?.data);
         const conversationId = buildThreadId(
           result?.data?.data?.elderly_user?.id,
-          result?.data?.data?.provider?.id,
+          profile?.user?.id,
         );
         props.navigation.navigate(SCREENS.ChatDetails.identifier, {
           conversationId: conversationId,
           peerUser: {
-            user_id: result?.data?.data?.provider?.id,
-            name: result?.data?.data?.provider?.full_name,
-            email: result?.data?.data?.provider?.email,
-            avatarUrl: result?.data?.data?.provider?.profile_photo_url,
+            user_id: result?.data?.data?.elderly_user?.id,
+            name: result?.data?.data?.elderly_user?.first_name,
+            email: result?.data?.data?.elderly_user?.email,
+            avatarUrl: result?.data?.data?.elderly_user?.profile_photo_url,
           },
         });
       } else {
@@ -188,11 +188,11 @@ export default function Task(props: any) {
               <ActivityIndicator
                 size="large"
                 color={theme.primary}
-                style={{ margin: 20 }}
+                style={{margin: 20}}
               />
             ) : null
           }
-          renderItem={({ item, index }) => {
+          renderItem={({item, index}) => {
             return (
               <TaskItem
                 key={index}
@@ -223,7 +223,7 @@ export default function Task(props: any) {
         <ActivityIndicator
           size="large"
           color={theme.primary}
-          style={{ margin: 20 }}
+          style={{margin: 20}}
         />
       );
     } else {
@@ -270,7 +270,7 @@ export default function Task(props: any) {
           <View
             style={[
               styles(theme).tabItemContainer,
-              { borderBottomWidth: quateList?.selectedIndex === 0 ? 2 : 0 },
+              {borderBottomWidth: quateList?.selectedIndex === 0 ? 2 : 0},
             ]}>
             <Text
               size={getScaleSize(14)}
@@ -292,7 +292,7 @@ export default function Task(props: any) {
           <View
             style={[
               styles(theme).tabItemContainer,
-              { borderBottomWidth: quateList?.selectedIndex === 1 ? 2 : 0 },
+              {borderBottomWidth: quateList?.selectedIndex === 1 ? 2 : 0},
             ]}>
             <Text
               size={getScaleSize(14)}
@@ -314,7 +314,7 @@ export default function Task(props: any) {
           <View
             style={[
               styles(theme).tabItemContainer,
-              { borderBottomWidth: quateList?.selectedIndex === 2 ? 2 : 0 },
+              {borderBottomWidth: quateList?.selectedIndex === 2 ? 2 : 0},
             ]}>
             <Text
               size={getScaleSize(14)}
@@ -335,7 +335,7 @@ export default function Task(props: any) {
 
 const styles = (theme: ThemeContextType['theme']) =>
   StyleSheet.create({
-    container: { flex: 1, backgroundColor: theme.white },
+    container: {flex: 1, backgroundColor: theme.white},
     tabView: {
       marginTop: getScaleSize(24),
       flex: 1.0,
