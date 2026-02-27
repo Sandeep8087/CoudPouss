@@ -95,6 +95,7 @@ export const userMessage = async (
   recipientName: string,
   conversationId: string,
   text: string,
+  images: string[],
   userPhoto: string,
   recipientPhoto: string,
   type: string,
@@ -151,6 +152,7 @@ export const userMessage = async (
           senderId: userId || '',
           receiverId: recipientId || '',
           text: text || '',
+          images: images || [],
           type: type || '',
           createdAt: new Date().getTime(),
         });

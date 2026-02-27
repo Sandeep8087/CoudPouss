@@ -1,4 +1,4 @@
-import React, {useContext, useEffect, useMemo, useRef, useState} from 'react';
+import React, {useContext, useEffect, useMemo, useState} from 'react';
 import {
   View,
   StatusBar,
@@ -38,6 +38,8 @@ import {
 } from '../../services/chat';
 import {FirebaseFirestoreTypes} from '@react-native-firebase/firestore';
 import {launchImageLibrary} from 'react-native-image-picker';
+import {API} from '../../api';
+import {SCREENS} from '..';
 
 export default function ChatDetails(props: any) {
   const STRING = useString();
@@ -47,10 +49,11 @@ export default function ChatDetails(props: any) {
   const [message, setMessage] = useState('');
   const [messages, setMessages] = useState<any[]>([]);
   const [loadingMessages, setLoadingMessages] = useState(true);
-  const [isSending, setIsSending] = useState(false);
+  const [buttonDisabled, setButtonDisabled] = useState(false);
   const [editingForMessageId, setEditingForMessageId] = useState<
     boolean | null
   >(false);
+  const [loading, setLoading] = useState(false);
   const [offerInputValue, setOfferInputValue] = useState('');
 
   const [commanId, setCommanId] = useState<string | ''>(
@@ -88,7 +91,6 @@ export default function ChatDetails(props: any) {
         selectionLimit: 4,
       },
       response => {
-        console.log('response', response);
         if (response.didCancel) return;
 
         if (response.errorCode) {
@@ -96,13 +98,75 @@ export default function ChatDetails(props: any) {
           return;
         }
 
-        const asset = response.assets?.[0];
-        if (!asset?.uri) return;
+        const asset = response.assets;
+        if (!asset || asset.length === 0) return;
+        console.log('asset', asset);
 
-        // updatePhoto(asset.uri);
+        uploadProfileImage(asset);
       },
     );
   };
+
+  async function uploadProfileImage(assets: any) {
+    try {
+      const formData = new FormData();
+      assets.forEach((assets: any, index: number) => {
+        formData.append('file', {
+          uri: assets.uri,
+          name: assets?.fileName || `image_${index}.jpg`,
+          type: assets?.type || 'image/jpeg',
+        });
+      });
+
+      console.log('FORM DATA', formData);
+      setLoading(true);
+      const result = await API.Instance.post(
+        API.API_ROUTES.uploadServiceRequestImage,
+        formData,
+        {
+          headers: {
+            'Content-Type': 'multipart/form-data',
+          },
+        },
+      );
+      setLoading(false);
+
+      if (result.status) {
+        if (result?.data?.files && result?.data?.files?.length > 0) {
+          const imageUrls = result?.data?.files.map((item: any) => item.url);
+          const readCount = await getReadCount(peerUserId, commanId);
+
+          await userMessage(
+            profile?.user?.id,
+            profile?.user?.first_name || 'User',
+            peerUserId,
+            peerUserName,
+            commanId,
+            'Image',
+            imageUrls,
+            profile?.user?.profile_photo_url || '',
+            peerUserAvatar,
+            'IMAGE',
+            readCount + 1,
+          );
+
+          await updateReadCount(profile?.user?.id, commanId);
+          setMessage('');
+          setButtonDisabled(false);
+
+          SHOW_TOAST(result?.data?.message ?? '', 'success');
+        }
+      } else {
+        SHOW_TOAST(result?.data?.message ?? '', 'error');
+      }
+    } catch (error: any) {
+      setLoading(false);
+      SHOW_TOAST(error?.message ?? '', 'error');
+      console.log(error?.message);
+    } finally {
+      setLoading(false);
+    }
+  }
 
   useEffect(() => {
     // chat found, so we need to get the messages
@@ -136,7 +200,7 @@ export default function ChatDetails(props: any) {
       SHOW_TOAST('Please enter a message', 'error');
       return;
     }
-    setIsSending(true);
+    setButtonDisabled(true);
 
     if (!profile?.user?.id || !commanId) {
       throw new Error('Chat not initialized');
@@ -150,6 +214,7 @@ export default function ChatDetails(props: any) {
       peerUserName,
       commanId,
       message,
+      [],
       profile?.user?.profile_photo_url || '',
       peerUserAvatar,
       'TEXT',
@@ -158,13 +223,14 @@ export default function ChatDetails(props: any) {
 
     await updateReadCount(profile?.user?.id, commanId);
     setMessage('');
+    setButtonDisabled(false);
   };
 
   const renderMessage = ({item}: {item: any}) => {
+    const isMessageMe = item.senderId === profile?.user?.id;
+    const currentUserAvatar = profile?.user?.profile_photo_url;
     switch (item.type) {
       case 'TEXT':
-        const isMessageMe = item.senderId === profile?.user?.id;
-        const currentUserAvatar = profile?.user?.profile_photo_url;
         return (
           <View
             style={[
@@ -216,331 +282,510 @@ export default function ChatDetails(props: any) {
             )}
           </View>
         );
-      case 'NEGOTIATION':
-        const isMe = item.senderId === profile?.user?.id;
-        const latestNegotiationMessage = messages
-          ?.filter(msg => msg.type === 'NEGOTIATION')
-          ?.sort((a, b) => b.createdAt - a.createdAt)[0];
-        const isLatest = latestNegotiationMessage?._id === item._id;
-
+      case 'IMAGE':
         return (
           <View
             style={
-              !isMe
+              isMessageMe
                 ? styles(theme).quoteCardContainer
                 : styles(theme).negotiationCard
             }>
-            <Text
-              size={getScaleSize(16)}
-              font={FONTS.Lato.Bold}
-              color={theme._323232}>
-              {item.negotiation.serviceName}
-            </Text>
-            {item.negotiation?.offers.map((offer: any) => {
-              return (
-                <View style={styles(theme).pricingRow}>
-                  {offer.label === 'ORIGINAL_VALUATION' ? (
-                    <Text
-                      style={{flex: 1}}
-                      size={getScaleSize(14)}
-                      font={FONTS.Lato.Medium}
-                      color={theme._6D6D6D}>
-                      {'Original Valuation :'}
-                    </Text>
-                  ) : offer.label === 'PROVIDER_QUOTE' ? (
-                    <Text
-                      style={{flex: 1}}
-                      size={getScaleSize(14)}
-                      font={FONTS.Lato.Medium}
-                      color={theme._6D6D6D}>
-                      {'Initial Quote :'}
-                    </Text>
-                  ) : (
-                    <Text
-                      style={{flex: 1}}
-                      size={getScaleSize(14)}
-                      font={FONTS.Lato.Medium}
-                      color={theme._6D6D6D}>
-                      {offer.userName === profile?.user?.first_name
-                        ? 'Your Previous Offer'
-                        : offer.userName + ' Current Offer'}
-                    </Text>
-                  )}
-
-                  <Text
-                    size={getScaleSize(16)}
-                    font={FONTS.Lato.Bold}
-                    color={theme._424242}>
-                    €{offer.amount}
-                  </Text>
+            {item.images.length === 1 ? (
+              <Pressable
+                onPress={() => {
+                  props.navigation.navigate(
+                    SCREENS.ImageDetailsScreen.identifier,
+                    {
+                      itemData: item.images[0],
+                    },
+                  );
+                }}>
+                <Image
+                  source={{uri: item.images[0]}}
+                  style={styles(theme).image}
+                />
+              </Pressable>
+            ) : item.images.length === 2 ? (
+              <View
+                style={{
+                  flexDirection: 'row',
+                  gap: getScaleSize(10),
+                  backgroundColor: theme._F5F5F5,
+                  borderRadius: getScaleSize(10),
+                }}>
+                <Pressable
+                  onPress={() => {
+                    props.navigation.navigate(
+                      SCREENS.ImageDetailsScreen.identifier,
+                      {
+                        itemData: item.images[0],
+                      },
+                    );
+                  }}>
+                  <Image
+                    source={{uri: item.images[0]}}
+                    style={styles(theme).image}
+                  />
+                </Pressable>
+                <Pressable
+                  onPress={() => {
+                    props.navigation.navigate(
+                      SCREENS.ImageDetailsScreen.identifier,
+                      {
+                        itemData: item.images[1],
+                      },
+                    );
+                  }}>
+                  <Image
+                    source={{uri: item.images[1]}}
+                    style={styles(theme).image}
+                  />
+                </Pressable>
+              </View>
+            ) : item.images.length === 3 ? (
+              <View
+                style={{
+                  flexDirection: 'row',
+                  gap: getScaleSize(10),
+                  backgroundColor: theme._F5F5F5,
+                  padding: getScaleSize(10),
+                  borderRadius: getScaleSize(10),
+                }}>
+                <View style={{gap: getScaleSize(10)}}>
+                  <Pressable
+                    onPress={() => {
+                      props.navigation.navigate(
+                        SCREENS.ImageDetailsScreen.identifier,
+                        {
+                          itemData: item.images[0],
+                        },
+                      );
+                    }}>
+                    <Image
+                      source={{uri: item.images[0]}}
+                      style={styles(theme).image}
+                    />
+                  </Pressable>
+                  <Pressable
+                    onPress={() => {
+                      props.navigation.navigate(
+                        SCREENS.ImageDetailsScreen.identifier,
+                        {
+                          itemData: item.images[1],
+                        },
+                      );
+                    }}>
+                    <Image
+                      source={{uri: item.images[1]}}
+                      style={styles(theme).image}
+                    />
+                  </Pressable>
                 </View>
-              );
-            })}
-
-            {item.negotiation?.status === 'PENDING' &&
-              isLatest &&
-              (!isMe ? (
-                <View>
-                  {!editingForMessageId && (
-                    <TouchableOpacity
-                      style={styles(theme).editOfferButton}
-                      onPress={() => {
-                        setEditingForMessageId(!editingForMessageId);
-                      }}>
-                      <Text
-                        size={getScaleSize(14)}
-                        font={FONTS.Lato.SemiBold}
-                        color={theme.primary}>
-                        Edit Offer
-                      </Text>
-                    </TouchableOpacity>
-                  )}
-
-                  {editingForMessageId && (
-                    <View>
-                      <View style={styles(theme).offerInputWrapper}>
-                        <Text
-                          size={getScaleSize(16)}
-                          font={FONTS.Lato.Medium}
-                          color={theme._424242}>
-                          €
-                        </Text>
-                        <TextInput
-                          value={offerInputValue}
-                          onChangeText={setOfferInputValue}
-                          style={styles(theme).offerTextInput}
-                          placeholder="0.00"
-                          placeholderTextColor={theme._ACADAD}
-                          keyboardType="decimal-pad"
-                        />
-                      </View>
-                      <View style={styles(theme).actionRow}>
-                        <TouchableOpacity
-                          style={styles(theme).actionButtonPrimary}
-                          onPress={async () => {
-                            if (!offerInputValue.trim()) {
-                              SHOW_TOAST(
-                                'Please enter an offer amount',
-                                'error',
-                              );
-                              return;
-                            }
-
-                            // const updatedNegotiation = {
-                            //   ...item.negotiation,
-                            //   currentAmount: offerInputValue,
-                            //   latestMessageId: '1', // 👈 only new message has 1
-                            //   offers: [
-                            //     ...item.negotiation.offers,
-                            //     {
-                            //       amount: offerInputValue.toString(),
-                            //       by: profile?.user?.id,
-                            //       label: 'EDITED',
-                            //       createdAt: Date.now(),
-                            //       userName: profile?.user?.first_name,
-                            //     },
-                            //   ],
-                            // };
-
-                            // userMessage(
-                            //   item.negotiation.serviceId,
-                            //   peerUserId,
-                            //   profile?.user?.first_name,
-                            //   profile?.user?.id,
-                            //   peerUserName,
-                            //   commanId,
-                            //   {
-                            //     type: 'NEGOTIATION',
-                            //     text: `My revised offer is €${offerInputValue}`,
-                            //     negotiation: updatedNegotiation,
-                            //   },
-                            //   profile?.user?.profile_photo_url || '',
-                            //   peerUserAvatar ?? '',
-                            // );
-                            setEditingForMessageId(false);
-                            setOfferInputValue('');
-                          }}>
-                          <Text
-                            size={getScaleSize(14)}
-                            font={FONTS.Lato.SemiBold}
-                            color={theme.white}>
-                            Submit
-                          </Text>
-                        </TouchableOpacity>
-                        <View style={{width: getScaleSize(12)}} />
-                        <TouchableOpacity
-                          style={styles(theme).actionButtonSecondary}
-                          onPress={() => {
-                            setEditingForMessageId(false);
-                            setOfferInputValue('');
-                          }}>
-                          <Text
-                            size={getScaleSize(14)}
-                            font={FONTS.Lato.SemiBold}
-                            color={theme.primary}>
-                            Cancel
-                          </Text>
-                        </TouchableOpacity>
-                      </View>
-                    </View>
-                  )}
+                <View style={{gap: getScaleSize(10)}}>
+                  <Pressable
+                    onPress={() => {
+                      props.navigation.navigate(
+                        SCREENS.ImageDetailsScreen.identifier,
+                        {
+                          itemData: item.images[2],
+                        },
+                      );
+                    }}>
+                    <Image
+                      source={{uri: item.images[2]}}
+                      style={styles(theme).image}
+                    />
+                  </Pressable>
                 </View>
-              ) : isMe ? (
-                <View>
-                  {!editingForMessageId && (
-                    <View style={styles(theme).actionRow}>
-                      <TouchableOpacity
-                        style={styles(theme).actionButtonSecondary}
-                        onPress={() => {
-                          setEditingForMessageId(true);
-                        }}>
-                        <Text
-                          size={getScaleSize(14)}
-                          font={FONTS.Lato.SemiBold}
-                          color={theme.primary}>
-                          Counter Offer
-                        </Text>
-                      </TouchableOpacity>
-                      <TouchableOpacity
-                        style={styles(theme).actionButtonPrimary}
-                        onPress={async () => {
-                          // acceptNegotiation({
-                          //   conversationId: commanId,
-                          //   messageId: item._id,
-                          //   userId: profile?.user?.id,
-                          //   userName: profile?.user?.first_name,
-                          // });
-                          setEditingForMessageId(false);
-                          setOfferInputValue('');
-                        }}>
-                        <Text
-                          size={getScaleSize(14)}
-                          font={FONTS.Lato.SemiBold}
-                          color={theme.white}>
-                          Accept Offer
-                        </Text>
-                      </TouchableOpacity>
-                    </View>
-                  )}
-                  {editingForMessageId && (
-                    <View>
-                      <View style={styles(theme).offerInputWrapper}>
-                        <Text
-                          size={getScaleSize(16)}
-                          font={FONTS.Lato.Medium}
-                          color={theme._424242}>
-                          €
-                        </Text>
-                        <TextInput
-                          value={offerInputValue}
-                          onChangeText={setOfferInputValue}
-                          style={styles(theme).offerTextInput}
-                          placeholder="0.00"
-                          placeholderTextColor={theme._ACADAD}
-                          keyboardType="decimal-pad"
-                        />
-                      </View>
-                      <View style={styles(theme).actionRow}>
-                        <TouchableOpacity
-                          style={styles(theme).actionButtonPrimary}
-                          onPress={() => {
-                            if (!offerInputValue.trim()) {
-                              SHOW_TOAST(
-                                'Please enter an offer amount',
-                                'error',
-                              );
-                              return;
-                            }
-
-                            // const newOffer = {
-                            //   amount: offerInputValue.toString(),
-                            //   by: profile?.user?.id,
-                            //   label: 'COUNTER', // or ACCEPTED / REJECTED
-                            //   createdAt: Date.now(),
-                            //   userName: profile?.user?.first_name,
-                            // };
-
-                            // const updatedNegotiation = {
-                            //   ...item.negotiation,
-                            //   currentAmount: offerInputValue,
-                            //   currentTurn: item.senderId, // switch turn
-                            //   offers: [...item.negotiation.offers, newOffer],
-                            // };
-
-                            // userMessage(
-                            //   item.negotiation.serviceId,
-                            //   profile?.user?.id,
-                            //   profile?.user?.first_name,
-                            //   peerUserId,
-                            //   peerUserName,
-                            //   commanId,
-                            //   {
-                            //     type: 'NEGOTIATION',
-                            //     text: `My revised offer is €${offerInputValue}`,
-                            //     negotiation: updatedNegotiation,
-                            //   },
-                            //   profile?.user?.profile_photo_url || '',
-                            //   peerUserAvatar ?? '',
-                            // );
-
-                            // if (!offerInputValue.trim()) {
-                            //   SHOW_TOAST(
-                            //     'Please enter an offer amount',
-                            //     'error',
-                            //   );
-                            //   return;
-                            // }
-                            // counterNegotiation({
-                            //   conversationId: commanId,
-                            //   messageId: negotiationMessages[0]._id,
-                            //   userId: profile?.user?.id,
-                            //   amount: parseFloat(offerInputValue),
-                            //   label: 'COUNTER',
-                            //   userName: profile?.user?.first_name,
-                            // });
-                            setEditingForMessageId(false);
-                            setOfferInputValue('');
-                          }}>
-                          <Text
-                            size={getScaleSize(14)}
-                            font={FONTS.Lato.SemiBold}
-                            color={theme.white}>
-                            Submit
-                          </Text>
-                        </TouchableOpacity>
-                        <View style={{width: getScaleSize(12)}} />
-                        <TouchableOpacity
-                          style={styles(theme).actionButtonSecondary}
-                          onPress={() => {
-                            setEditingForMessageId(false);
-                            setOfferInputValue('');
-                          }}>
-                          <Text
-                            size={getScaleSize(14)}
-                            font={FONTS.Lato.SemiBold}
-                            color={theme.primary}>
-                            Cancel
-                          </Text>
-                        </TouchableOpacity>
-                      </View>
-                    </View>
-                  )}
+              </View>
+            ) : item.images.length === 4 ? (
+              <View
+                style={{
+                  flexDirection: 'row',
+                  gap: getScaleSize(10),
+                  backgroundColor: theme._F5F5F5,
+                  borderRadius: getScaleSize(10),
+                }}>
+                <View style={{gap: getScaleSize(10)}}>
+                  <Pressable
+                    onPress={() => {
+                      props.navigation.navigate(
+                        SCREENS.ImageDetailsScreen.identifier,
+                        {
+                          itemData: item.images[0],
+                        },
+                      );
+                    }}>
+                    <Image
+                      source={{uri: item.images[0]}}
+                      style={styles(theme).image}
+                    />
+                  </Pressable>
+                  <Pressable
+                    onPress={() => {
+                      props.navigation.navigate(
+                        SCREENS.ImageDetailsScreen.identifier,
+                        {
+                          itemData: item.images[1],
+                        },
+                      );
+                    }}>
+                    <Image
+                      source={{uri: item.images[1]}}
+                      style={styles(theme).image}
+                    />
+                  </Pressable>
                 </View>
-              ) : null)}
+                <View style={{gap: getScaleSize(10)}}>
+                  <Pressable
+                    onPress={() => {
+                      props.navigation.navigate(
+                        SCREENS.ImageDetailsScreen.identifier,
+                        {
+                          itemData: item.images[2],
+                        },
+                      );
+                    }}>
+                    <Image
+                      source={{uri: item.images[2]}}
+                      style={styles(theme).image}
+                    />
+                  </Pressable>
+                  <Pressable
+                    onPress={() => {
+                      props.navigation.navigate(
+                        SCREENS.ImageDetailsScreen.identifier,
+                        {
+                          itemData: item.images[3],
+                        },
+                      );
+                    }}>
+                    <Image
+                      source={{uri: item.images[3]}}
+                      style={styles(theme).image}
+                    />
+                  </Pressable>
+                </View>
+              </View>
+            ) : null}
           </View>
         );
+      // case 'NEGOTIATION':
+      //   const isMe = item.senderId === profile?.user?.id;
+      //   const latestNegotiationMessage = messages
+      //     ?.filter(msg => msg.type === 'NEGOTIATION')
+      //     ?.sort((a, b) => b.createdAt - a.createdAt)[0];
+      //   const isLatest = latestNegotiationMessage?._id === item._id;
+
+      //   return (
+      //     <View
+      //       style={
+      //         !isMe
+      //           ? styles(theme).quoteCardContainer
+      //           : styles(theme).negotiationCard
+      //       }>
+      //       <Text
+      //         size={getScaleSize(16)}
+      //         font={FONTS.Lato.Bold}
+      //         color={theme._323232}>
+      //         {item.negotiation.serviceName}
+      //       </Text>
+      //       {item.negotiation?.offers.map((offer: any) => {
+      //         return (
+      //           <View style={styles(theme).pricingRow}>
+      //             {offer.label === 'ORIGINAL_VALUATION' ? (
+      //               <Text
+      //                 style={{flex: 1}}
+      //                 size={getScaleSize(14)}
+      //                 font={FONTS.Lato.Medium}
+      //                 color={theme._6D6D6D}>
+      //                 {'Original Valuation :'}
+      //               </Text>
+      //             ) : offer.label === 'PROVIDER_QUOTE' ? (
+      //               <Text
+      //                 style={{flex: 1}}
+      //                 size={getScaleSize(14)}
+      //                 font={FONTS.Lato.Medium}
+      //                 color={theme._6D6D6D}>
+      //                 {'Initial Quote :'}
+      //               </Text>
+      //             ) : (
+      //               <Text
+      //                 style={{flex: 1}}
+      //                 size={getScaleSize(14)}
+      //                 font={FONTS.Lato.Medium}
+      //                 color={theme._6D6D6D}>
+      //                 {offer.userName === profile?.user?.first_name
+      //                   ? 'Your Previous Offer'
+      //                   : offer.userName + ' Current Offer'}
+      //               </Text>
+      //             )}
+
+      //             <Text
+      //               size={getScaleSize(16)}
+      //               font={FONTS.Lato.Bold}
+      //               color={theme._424242}>
+      //               €{offer.amount}
+      //             </Text>
+      //           </View>
+      //         );
+      //       })}
+
+      //       {item.negotiation?.status === 'PENDING' &&
+      //         isLatest &&
+      //         (!isMe ? (
+      //           <View>
+      //             {!editingForMessageId && (
+      //               <TouchableOpacity
+      //                 style={styles(theme).editOfferButton}
+      //                 onPress={() => {
+      //                   setEditingForMessageId(!editingForMessageId);
+      //                 }}>
+      //                 <Text
+      //                   size={getScaleSize(14)}
+      //                   font={FONTS.Lato.SemiBold}
+      //                   color={theme.primary}>
+      //                   Edit Offer
+      //                 </Text>
+      //               </TouchableOpacity>
+      //             )}
+
+      //             {editingForMessageId && (
+      //               <View>
+      //                 <View style={styles(theme).offerInputWrapper}>
+      //                   <Text
+      //                     size={getScaleSize(16)}
+      //                     font={FONTS.Lato.Medium}
+      //                     color={theme._424242}>
+      //                     €
+      //                   </Text>
+      //                   <TextInput
+      //                     value={offerInputValue}
+      //                     onChangeText={setOfferInputValue}
+      //                     style={styles(theme).offerTextInput}
+      //                     placeholder="0.00"
+      //                     placeholderTextColor={theme._ACADAD}
+      //                     keyboardType="decimal-pad"
+      //                   />
+      //                 </View>
+      //                 <View style={styles(theme).actionRow}>
+      //                   <TouchableOpacity
+      //                     style={styles(theme).actionButtonPrimary}
+      //                     onPress={async () => {
+      //                       if (!offerInputValue.trim()) {
+      //                         SHOW_TOAST(
+      //                           'Please enter an offer amount',
+      //                           'error',
+      //                         );
+      //                         return;
+      //                       }
+
+      //                       // const updatedNegotiation = {
+      //                       //   ...item.negotiation,
+      //                       //   currentAmount: offerInputValue,
+      //                       //   latestMessageId: '1', // 👈 only new message has 1
+      //                       //   offers: [
+      //                       //     ...item.negotiation.offers,
+      //                       //     {
+      //                       //       amount: offerInputValue.toString(),
+      //                       //       by: profile?.user?.id,
+      //                       //       label: 'EDITED',
+      //                       //       createdAt: Date.now(),
+      //                       //       userName: profile?.user?.first_name,
+      //                       //     },
+      //                       //   ],
+      //                       // };
+
+      //                       // userMessage(
+      //                       //   item.negotiation.serviceId,
+      //                       //   peerUserId,
+      //                       //   profile?.user?.first_name,
+      //                       //   profile?.user?.id,
+      //                       //   peerUserName,
+      //                       //   commanId,
+      //                       //   {
+      //                       //     type: 'NEGOTIATION',
+      //                       //     text: `My revised offer is €${offerInputValue}`,
+      //                       //     negotiation: updatedNegotiation,
+      //                       //   },
+      //                       //   profile?.user?.profile_photo_url || '',
+      //                       //   peerUserAvatar ?? '',
+      //                       // );
+      //                       setEditingForMessageId(false);
+      //                       setOfferInputValue('');
+      //                     }}>
+      //                     <Text
+      //                       size={getScaleSize(14)}
+      //                       font={FONTS.Lato.SemiBold}
+      //                       color={theme.white}>
+      //                       Submit
+      //                     </Text>
+      //                   </TouchableOpacity>
+      //                   <View style={{width: getScaleSize(12)}} />
+      //                   <TouchableOpacity
+      //                     style={styles(theme).actionButtonSecondary}
+      //                     onPress={() => {
+      //                       setEditingForMessageId(false);
+      //                       setOfferInputValue('');
+      //                     }}>
+      //                     <Text
+      //                       size={getScaleSize(14)}
+      //                       font={FONTS.Lato.SemiBold}
+      //                       color={theme.primary}>
+      //                       Cancel
+      //                     </Text>
+      //                   </TouchableOpacity>
+      //                 </View>
+      //               </View>
+      //             )}
+      //           </View>
+      //         ) : isMe ? (
+      //           <View>
+      //             {!editingForMessageId && (
+      //               <View style={styles(theme).actionRow}>
+      //                 <TouchableOpacity
+      //                   style={styles(theme).actionButtonSecondary}
+      //                   onPress={() => {
+      //                     setEditingForMessageId(true);
+      //                   }}>
+      //                   <Text
+      //                     size={getScaleSize(14)}
+      //                     font={FONTS.Lato.SemiBold}
+      //                     color={theme.primary}>
+      //                     Counter Offer
+      //                   </Text>
+      //                 </TouchableOpacity>
+      //                 <TouchableOpacity
+      //                   style={styles(theme).actionButtonPrimary}
+      //                   onPress={async () => {
+      //                     // acceptNegotiation({
+      //                     //   conversationId: commanId,
+      //                     //   messageId: item._id,
+      //                     //   userId: profile?.user?.id,
+      //                     //   userName: profile?.user?.first_name,
+      //                     // });
+      //                     setEditingForMessageId(false);
+      //                     setOfferInputValue('');
+      //                   }}>
+      //                   <Text
+      //                     size={getScaleSize(14)}
+      //                     font={FONTS.Lato.SemiBold}
+      //                     color={theme.white}>
+      //                     Accept Offer
+      //                   </Text>
+      //                 </TouchableOpacity>
+      //               </View>
+      //             )}
+      //             {editingForMessageId && (
+      //               <View>
+      //                 <View style={styles(theme).offerInputWrapper}>
+      //                   <Text
+      //                     size={getScaleSize(16)}
+      //                     font={FONTS.Lato.Medium}
+      //                     color={theme._424242}>
+      //                     €
+      //                   </Text>
+      //                   <TextInput
+      //                     value={offerInputValue}
+      //                     onChangeText={setOfferInputValue}
+      //                     style={styles(theme).offerTextInput}
+      //                     placeholder="0.00"
+      //                     placeholderTextColor={theme._ACADAD}
+      //                     keyboardType="decimal-pad"
+      //                   />
+      //                 </View>
+      //                 <View style={styles(theme).actionRow}>
+      //                   <TouchableOpacity
+      //                     style={styles(theme).actionButtonPrimary}
+      //                     onPress={() => {
+      //                       if (!offerInputValue.trim()) {
+      //                         SHOW_TOAST(
+      //                           'Please enter an offer amount',
+      //                           'error',
+      //                         );
+      //                         return;
+      //                       }
+
+      //                       // const newOffer = {
+      //                       //   amount: offerInputValue.toString(),
+      //                       //   by: profile?.user?.id,
+      //                       //   label: 'COUNTER', // or ACCEPTED / REJECTED
+      //                       //   createdAt: Date.now(),
+      //                       //   userName: profile?.user?.first_name,
+      //                       // };
+
+      //                       // const updatedNegotiation = {
+      //                       //   ...item.negotiation,
+      //                       //   currentAmount: offerInputValue,
+      //                       //   currentTurn: item.senderId, // switch turn
+      //                       //   offers: [...item.negotiation.offers, newOffer],
+      //                       // };
+
+      //                       // userMessage(
+      //                       //   item.negotiation.serviceId,
+      //                       //   profile?.user?.id,
+      //                       //   profile?.user?.first_name,
+      //                       //   peerUserId,
+      //                       //   peerUserName,
+      //                       //   commanId,
+      //                       //   {
+      //                       //     type: 'NEGOTIATION',
+      //                       //     text: `My revised offer is €${offerInputValue}`,
+      //                       //     negotiation: updatedNegotiation,
+      //                       //   },
+      //                       //   profile?.user?.profile_photo_url || '',
+      //                       //   peerUserAvatar ?? '',
+      //                       // );
+
+      //                       // if (!offerInputValue.trim()) {
+      //                       //   SHOW_TOAST(
+      //                       //     'Please enter an offer amount',
+      //                       //     'error',
+      //                       //   );
+      //                       //   return;
+      //                       // }
+      //                       // counterNegotiation({
+      //                       //   conversationId: commanId,
+      //                       //   messageId: negotiationMessages[0]._id,
+      //                       //   userId: profile?.user?.id,
+      //                       //   amount: parseFloat(offerInputValue),
+      //                       //   label: 'COUNTER',
+      //                       //   userName: profile?.user?.first_name,
+      //                       // });
+      //                       setEditingForMessageId(false);
+      //                       setOfferInputValue('');
+      //                     }}>
+      //                     <Text
+      //                       size={getScaleSize(14)}
+      //                       font={FONTS.Lato.SemiBold}
+      //                       color={theme.white}>
+      //                       Submit
+      //                     </Text>
+      //                   </TouchableOpacity>
+      //                   <View style={{width: getScaleSize(12)}} />
+      //                   <TouchableOpacity
+      //                     style={styles(theme).actionButtonSecondary}
+      //                     onPress={() => {
+      //                       setEditingForMessageId(false);
+      //                       setOfferInputValue('');
+      //                     }}>
+      //                     <Text
+      //                       size={getScaleSize(14)}
+      //                       font={FONTS.Lato.SemiBold}
+      //                       color={theme.primary}>
+      //                       Cancel
+      //                     </Text>
+      //                   </TouchableOpacity>
+      //                 </View>
+      //               </View>
+      //             )}
+      //           </View>
+      //         ) : null)}
+      //     </View>
+      //   );
       default:
         return null;
     }
-
-    // case 'NEGOTIATION':
-    //   const isMe = item.senderId === profile?.user?.id;
-    //   return (
-
-    //   );
-    // default:
-    //   return;
-    // }
   };
 
   // const renderNegotiationMessage = ({item}: {item: any}) => {
@@ -614,8 +859,7 @@ export default function ChatDetails(props: any) {
           <Text
             size={getScaleSize(16)}
             font={FONTS.Lato.Bold}
-            color={theme._2B2B2B}
-            style={{}}>
+            color={theme._2B2B2B}>
             {peerUserName || STRING.unknown_user}
           </Text>
           <Text
@@ -632,7 +876,6 @@ export default function ChatDetails(props: any) {
             <ActivityIndicator size="small" color={theme.primary} />
           </View>
         ) : (
-          // <ScrollView showsVerticalScrollIndicator={false}>
           <FlatList
             data={messages}
             renderItem={renderMessage}
@@ -640,8 +883,6 @@ export default function ChatDetails(props: any) {
             contentContainerStyle={messageListContentStyle}
             showsVerticalScrollIndicator={false}
           />
-
-          // </ScrollView>
         )}
       </View>
       <View style={styles(theme).sendMessageContainer}>
@@ -663,18 +904,23 @@ export default function ChatDetails(props: any) {
         </Pressable>
         <TouchableOpacity
           style={styles(theme).sendButtonWrapper}
-          // activeOpacity={0.7}
-          // disabled={isSending || !message.trim()}
+          disabled={buttonDisabled || !message.trim()}
           onPress={handleSendMessage}>
           <Image
             style={[
               styles(theme).microphoneImage,
-              (isSending || !message.trim()) && styles(theme).disabledSendIcon,
+              (buttonDisabled || !message.trim()) &&
+                styles(theme).disabledSendIcon,
             ]}
             source={IMAGES.message_send}
           />
         </TouchableOpacity>
       </View>
+      {loading && (
+        <View style={styles(theme).loaderContainer}>
+          <ActivityIndicator size="small" color={theme.primary} />
+        </View>
+      )}
     </KeyboardAvoidingView>
   );
 }
@@ -735,6 +981,11 @@ const styles = (theme: ThemeContextType['theme']) =>
       flex: 1,
       justifyContent: 'center',
       alignItems: 'center',
+      position: 'absolute',
+      bottom: 0,
+      left: 0,
+      right: 0,
+      top: 0,
     },
     sendMessageContainer: {
       marginHorizontal: getScaleSize(24),
@@ -744,6 +995,11 @@ const styles = (theme: ThemeContextType['theme']) =>
       paddingHorizontal: getScaleSize(20),
       borderRadius: getScaleSize(22),
       backgroundColor: theme._F6F7F7,
+    },
+    image: {
+      height: getScaleSize(100),
+      width: getScaleSize(100),
+      borderRadius: getScaleSize(10),
     },
     negotiateButton: {
       alignSelf: 'center',
@@ -820,20 +1076,19 @@ const styles = (theme: ThemeContextType['theme']) =>
       borderRadius: getScaleSize(12),
       backgroundColor: theme._F5F5F5,
     },
+
     quoteCardContainer: {
       width: '65%',
       alignSelf: 'flex-end',
-      paddingHorizontal: getScaleSize(16),
-      paddingVertical: getScaleSize(16),
       borderRadius: getScaleSize(16),
+      padding: getScaleSize(8),
       backgroundColor: theme._F5F5F5,
       marginBottom: getScaleSize(10),
     },
     negotiationCard: {
       width: '65%',
       alignSelf: 'flex-start',
-      paddingHorizontal: getScaleSize(16),
-      paddingVertical: getScaleSize(16),
+      padding: getScaleSize(8),
       borderRadius: getScaleSize(16),
       backgroundColor: theme._F5F5F5,
       marginBottom: getScaleSize(10),

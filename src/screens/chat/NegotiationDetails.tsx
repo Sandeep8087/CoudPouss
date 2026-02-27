@@ -44,6 +44,7 @@ export default function NegotiationDetails(props: any) {
   const [messages, setMessages] = useState<any[]>([]);
   const [loadingMessages, setLoadingMessages] = useState(true);
   // const [isSending, setIsSending] = useState(false);
+  const [buttonDisabled, setButtonDisabled] = useState(false);
   const [editingForMessageId, setEditingForMessageId] = useState<
     boolean | null
   >(false);
@@ -283,6 +284,7 @@ export default function NegotiationDetails(props: any) {
                       <View style={styles(theme).actionRow}>
                         <TouchableOpacity
                           style={styles(theme).actionButtonPrimary}
+                          disabled={buttonDisabled}
                           onPress={async () => {
                             if (!offerInputValue.trim()) {
                               SHOW_TOAST(
@@ -292,6 +294,7 @@ export default function NegotiationDetails(props: any) {
                               return;
                             }
 
+                            setButtonDisabled(true);
                             const updatedNegotiation = {
                               ...item.negotiation,
                               currentAmount: offerInputValue,
@@ -307,7 +310,7 @@ export default function NegotiationDetails(props: any) {
                               ],
                             };
 
-                            userNegotiationMessage(
+                            await userNegotiationMessage(
                               item.serviceId,
                               item.serviceName,
                               item.servicePhoto,
@@ -326,6 +329,7 @@ export default function NegotiationDetails(props: any) {
                             );
                             setEditingForMessageId(false);
                             setOfferInputValue('');
+                            setButtonDisabled(false);
                           }}>
                           <Text
                             size={getScaleSize(14)}
@@ -410,7 +414,8 @@ export default function NegotiationDetails(props: any) {
                       <View style={styles(theme).actionRow}>
                         <TouchableOpacity
                           style={styles(theme).actionButtonPrimary}
-                          onPress={() => {
+                          disabled={buttonDisabled}
+                          onPress={async () => {
                             if (!offerInputValue.trim()) {
                               SHOW_TOAST(
                                 'Please enter an offer amount',
@@ -419,6 +424,7 @@ export default function NegotiationDetails(props: any) {
                               return;
                             }
 
+                            setButtonDisabled(true);
                             const newOffer = {
                               amount: offerInputValue.toString(),
                               by: profile?.user?.id,
@@ -433,7 +439,7 @@ export default function NegotiationDetails(props: any) {
                               offers: [...item.negotiation.offers, newOffer],
                             };
 
-                            userNegotiationMessage(
+                            await userNegotiationMessage(
                               item.serviceId,
                               item.serviceName,
                               item.servicePhoto,
@@ -453,6 +459,7 @@ export default function NegotiationDetails(props: any) {
 
                             setEditingForMessageId(false);
                             setOfferInputValue('');
+                            setButtonDisabled(false);
                           }}>
                           <Text
                             size={getScaleSize(14)}
