@@ -628,8 +628,8 @@ export default function NegotiationDetails(props: any) {
           <Text
             size={getScaleSize(14)}
             font={FONTS.Lato.Medium}
-            color={theme.primary}>
-            {peerUser?.status || ''}
+            color={theme._2E7D32}>
+            {'Available'}
           </Text>
         </View>
       </SafeAreaView>

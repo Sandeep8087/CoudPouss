@@ -1,48 +1,37 @@
 import React, {useContext, useEffect, useRef, useState} from 'react';
 import {
   View,
-  StatusBar,
   StyleSheet,
-  Dimensions,
-  NativeScrollEvent,
-  NativeSyntheticEvent,
-  Alert,
   ScrollView,
   FlatList,
   TouchableOpacity,
   Image,
-  Platform,
 } from 'react-native';
 
 //ASSETS
 import {FONTS, IMAGES} from '../../assets';
 
 //CONTEXT
-import {ThemeContext, ThemeContextType} from '../../context';
+import {AuthContext, ThemeContext, ThemeContextType} from '../../context';
 
 //CONSTANT
 import {arrayIcons, getScaleSize, SHOW_TOAST, useString} from '../../constant';
 
 //COMPONENT
 import {
-  AcceptBottomPopup,
   Button,
   CancelScheduledServicePopup,
   Header,
-  PaymentBottomPopup,
   ProgressView,
-  RejectBottomPopup,
-  RequestItem,
-  SearchComponent,
   StatusItem,
   Text,
 } from '../../components';
 
 //PACKAGES
-import {useFocusEffect} from '@react-navigation/native';
 import {SCREENS} from '..';
 import {API} from '../../api';
 import moment from 'moment';
+import {buildThreadId} from '../../services/chat';
 
 export default function CompletedTaskDetails(props: any) {
   const STRING = useString();
@@ -53,7 +42,7 @@ export default function CompletedTaskDetails(props: any) {
   const [isLoading, setLoading] = useState(false);
   const [serviceDetails, setServiceDetails] = useState<any>({});
   const [cancelServiceDetails, setCancelServiceDetails] = useState<any>(null);
-
+  const {profile} = useContext<any>(AuthContext);
   const cancelScheduledServicePopupRef = useRef<any>(null);
 
   const item = props?.route?.params?.item ?? {};
@@ -229,9 +218,10 @@ export default function CompletedTaskDetails(props: any) {
                   font={FONTS.Lato.Medium}
                   color={theme.primary}>
                   {serviceDetails?.chosen_datetime
-                    ? moment.utc(serviceDetails?.chosen_datetime).local().format(
-                        'DD MMM, YYYY',
-                      )
+                    ? moment
+                        .utc(serviceDetails?.chosen_datetime)
+                        .local()
+                        .format('DD MMM, YYYY')
                     : '-'}
                 </Text>
               </View>
@@ -249,7 +239,10 @@ export default function CompletedTaskDetails(props: any) {
                   font={FONTS.Lato.Medium}
                   color={theme.primary}>
                   {serviceDetails?.chosen_datetime
-                    ? moment.utc(serviceDetails?.chosen_datetime).local().format('hh:mm A')
+                    ? moment
+                        .utc(serviceDetails?.chosen_datetime)
+                        .local()
+                        .format('hh:mm A')
                     : '-'}
                 </Text>
               </View>
@@ -438,11 +431,19 @@ export default function CompletedTaskDetails(props: any) {
               activeOpacity={1}
               style={[styles(theme).newButton, {marginRight: getScaleSize(6)}]}
               onPress={() => {
-                console.log(
-                  'completed task serviceDetails?.provider?.id==>',
-                  serviceDetails?.provider?.id,
+                const conversationId = buildThreadId(
+                  serviceDetails?.elderly_user?.id,
+                  profile?.user?.id,
                 );
-                // props.navigation.navigate(SCREENS.ChatDetails.identifier);
+                props.navigation.navigate(SCREENS.ChatDetails.identifier, {
+                  conversationId: conversationId,
+                  peerUser: {
+                    user_id: serviceDetails?.elderly_user?.id,
+                    name: serviceDetails?.elderly_user?.first_name,
+                    email: serviceDetails?.elderly_user?.email,
+                    avatarUrl: serviceDetails?.elderly_user?.profile_photo_url,
+                  },
+                });
               }}>
               <Text
                 size={getScaleSize(14)}

@@ -723,8 +723,9 @@ export default function RequestDetails(props: any) {
                     profile?.user?.id,
                     serviceDetails?.service_id,
                   );
-                  const negotiationFieldData =
-                    await getNegotiationFieldData(conversationId);
+                  const negotiationFieldData = await getNegotiationFieldData(
+                    conversationId,
+                  );
                   if (negotiationFieldData) {
                     props.navigation.navigate(
                       SCREENS.NegotiationDetails.identifier,
@@ -1103,7 +1104,9 @@ export default function RequestDetails(props: any) {
                 size={getScaleSize(14)}
                 font={FONTS.Lato.SemiBold}
                 color={'#595959'}>
-                {`€${serviceDetails?.payment_breakdown?.finalize_quote_amount ?? 0}`}
+                {`€${
+                  serviceDetails?.payment_breakdown?.finalize_quote_amount ?? 0
+                }`}
               </Text>
             </View>
             <View style={styles(theme).newHorizontalView}>
@@ -1149,7 +1152,9 @@ export default function RequestDetails(props: any) {
                 size={getScaleSize(20)}
                 font={FONTS.Lato.SemiBold}
                 color={theme.primary}>
-                {`€${serviceDetails?.payment_breakdown?.total_renegotiated ?? 0}`}
+                {`€${
+                  serviceDetails?.payment_breakdown?.total_renegotiated ?? 0
+                }`}
               </Text>
             </View>
           </View>
@@ -1206,7 +1211,11 @@ export default function RequestDetails(props: any) {
       {status === 'pending' && (
         <AcceptBottomPopup
           onRef={acceptRef}
-          title={`You are about to confirm a service at the rate of €${serviceDetails?.total_renegotiated ?? 0} with the Provider ${serviceDetails?.provider?.full_name ?? ''}, Are you sure you want to continue? `}
+          title={`You are about to confirm a service at the rate of €${
+            serviceDetails?.total_renegotiated ?? 0
+          } with the Provider ${
+            serviceDetails?.provider?.full_name ?? ''
+          }, Are you sure you want to continue? `}
           onClose={() => {
             acceptRef.current.close();
           }}
@@ -1261,8 +1270,12 @@ export default function RequestDetails(props: any) {
             style={styles(theme).nextButtonContainer}
             activeOpacity={1}
             onPress={() => {
+              const conversationId = buildThreadId(
+                profile?.user?.id,
+                serviceDetails?.provider?.id,
+              );
               props.navigation.navigate(SCREENS.ChatDetails.identifier, {
-                conversationId: profile?.user?.id,
+                conversationId: conversationId,
                 peerUser: {
                   user_id: serviceDetails?.provider?.id,
                   name: serviceDetails?.provider?.full_name,
@@ -1300,7 +1313,9 @@ export default function RequestDetails(props: any) {
         onRef={acceptRef}
         title={`You are about to confirm a service at the rate of €${
           serviceDetails?.total_renegotiated ?? 0
-        } with the Provider ${serviceDetails?.provider?.full_name ?? ''}, Are you sure you want to continue? `}
+        } with the Provider ${
+          serviceDetails?.provider?.full_name ?? ''
+        }, Are you sure you want to continue? `}
         onClose={() => {
           acceptRef.current.close();
         }}

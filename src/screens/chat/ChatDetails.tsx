@@ -80,7 +80,7 @@ export default function ChatDetails(props: any) {
   useEffect(() => {
     // chat found, so we need to get the messages
     setCommanId(props.route.params.conversationId);
-    updateReadCount(profile?.user?.id, commanId);
+
     const unsubscribe = messagesListThread(
       props.route.params.conversationId,
     ).onSnapshot(querySnapshot => {
@@ -93,6 +93,9 @@ export default function ChatDetails(props: any) {
         };
       });
       setLoadingMessages(false);
+      if (formattedMessages.length > 0) {
+        updateReadCount(profile?.user?.id, commanId);
+      }
       setMessages(formattedMessages.reverse());
     });
 
@@ -591,8 +594,8 @@ export default function ChatDetails(props: any) {
           <Text
             size={getScaleSize(14)}
             font={FONTS.Lato.Medium}
-            color={theme.primary}>
-            {peerUser?.status || ''}
+            color={theme._2E7D32}>
+            {'Available'}
           </Text>
         </View>
       </SafeAreaView>
@@ -665,6 +668,7 @@ const styles = (theme: ThemeContextType['theme']) =>
     headerDetails: {
       alignSelf: 'center',
       marginLeft: getScaleSize(12),
+      gap: getScaleSize(4),
     },
     backImage: {
       height: getScaleSize(32),

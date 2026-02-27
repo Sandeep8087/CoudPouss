@@ -13,7 +13,7 @@ import {
 import {FONTS, IMAGES} from '../../assets';
 
 //CONTEXT
-import {ThemeContext, ThemeContextType} from '../../context';
+import {AuthContext, ThemeContext, ThemeContextType} from '../../context';
 
 //CONSTANT
 import {getScaleSize, SHOW_TOAST, useString} from '../../constant';
@@ -30,6 +30,7 @@ import {buildThreadId} from '../../services/chat';
 export default function Task(props: any) {
   const STRING = useString();
   const {theme} = useContext<any>(ThemeContext);
+  const {profile} = useContext<any>(AuthContext);
   const requestIdRef = useRef(0);
   const PAGE_SIZE = 5;
 
@@ -74,8 +75,8 @@ export default function Task(props: any) {
       quateList.selectedIndex === 0
         ? 'send'
         : quateList.selectedIndex === 1
-          ? 'accepted'
-          : 'complete';
+        ? 'accepted'
+        : 'complete';
 
     try {
       const result = await API.Instance.get(
@@ -145,17 +146,18 @@ export default function Task(props: any) {
         API.API_ROUTES.getTsakDetails + `/quotes/${serviceRequestId}`,
       );
       if (result.status) {
+        console.log(result?.data?.data);
         const conversationId = buildThreadId(
           result?.data?.data?.elderly_user?.id,
-          result?.data?.data?.provider?.id,
+          profile?.user?.id,
         );
         props.navigation.navigate(SCREENS.ChatDetails.identifier, {
           conversationId: conversationId,
           peerUser: {
-            user_id: result?.data?.data?.provider?.id,
-            name: result?.data?.data?.provider?.full_name,
-            email: result?.data?.data?.provider?.email,
-            avatarUrl: result?.data?.data?.provider?.profile_photo_url,
+            user_id: result?.data?.data?.elderly_user?.id,
+            name: result?.data?.data?.elderly_user?.first_name,
+            email: result?.data?.data?.elderly_user?.email,
+            avatarUrl: result?.data?.data?.elderly_user?.profile_photo_url,
           },
         });
       } else {

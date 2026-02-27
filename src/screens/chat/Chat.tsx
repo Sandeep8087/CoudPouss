@@ -196,13 +196,55 @@ export default function Chat(props: any) {
     );
   };
 
+  const searchFilterFunction = (text: string) => {
+    // Check if searched text is not blank
+    if (text) {
+      // Inserted text is not blank
+      // Filter the masterDataSource and update FilteredDataSource
+      if (selectedTab === 'chat') {
+        const newData = masterDataSource.filter(function (item: any) {
+          // Applying filter for the inserted text in search bar
+          const itemData = item.user.name
+            ? item.user.name.toUpperCase()
+            : ''.toUpperCase();
+          const textData = text.toUpperCase();
+          return itemData.indexOf(textData) > -1;
+        });
+        setFilteredDataSource(newData);
+      } else {
+        const newData = masterNegotiationDataSource.filter(function (
+          item: any,
+        ) {
+          // Applying filter for the inserted text in search bar
+          const itemData = item.user.serviceName
+            ? item.user.serviceName.toUpperCase()
+            : ''.toUpperCase();
+          const textData = text.toUpperCase();
+          return itemData.indexOf(textData) > -1;
+        });
+        setFilteredNegotiationDataSource(newData);
+      }
+
+      setSearchQuery(text);
+    } else {
+      // Inserted text is blank
+      // Update FilteredDataSource with masterDataSource
+      if (selectedTab === 'chat') {
+        setFilteredDataSource(masterDataSource);
+      } else {
+        setFilteredNegotiationDataSource(masterNegotiationDataSource);
+      }
+      setSearchQuery(text);
+    }
+  };
+
   return (
     <View style={styles(theme).container}>
       <Header type="profile" screenName={STRING.Chat} />
       <View style={styles(theme).searchContainer}>
         <SearchComponent
           value={searchQuery}
-          onChangeText={setSearchQuery}
+          onChangeText={(text: string) => searchFilterFunction(text)}
           onPressMicrophone={() => {}}
         />
       </View>
@@ -272,96 +314,9 @@ export default function Chat(props: any) {
           />
         </View>
       )}
-
-      {/* <ScrollView
-        style={styles(theme).scrolledContainer}
-        showsVerticalScrollIndicator={false}>
-        {filteredThreads.length > 0
-          ? filteredThreads.map(item => renderThread({item}))
-          : ['', '', '', '', ''].map((_: any, index: number) => {
-              return (
-                <TouchableOpacity
-                  key={index}
-                  style={styles(theme).itemContainer}
-                  activeOpacity={1}
-                  onPress={() => {
-                    props.navigation.navigate(SCREENS.ChatDetails.identifier);
-                  }}>
-                  <Image
-                    style={styles(theme).userImage}
-                    source={IMAGES.user_placeholder}
-                  />
-                  <View style={styles(theme).threadContent}>
-                    <Text
-                      size={getScaleSize(16)}
-                      font={FONTS.Lato.Medium}
-                      color={theme._2B2B2B}>
-                      {'Emily Johnson'}
-                    </Text>
-                    <Text
-                      size={getScaleSize(12)}
-                      font={FONTS.Lato.Regular}
-                      color={theme._ACADAD}>
-                      {'I really appreciated your feedback on the project;'}
-                    </Text>
-                  </View>
-                  <View style={styles(theme).messageContainer}>
-                    <Text
-                      size={getScaleSize(12)}
-                      font={FONTS.Lato.Medium}
-                      color={theme.white}>
-                      {'1'}
-                    </Text>
-                  </View>
-                </TouchableOpacity>
-              );
-            })}
-      </ScrollView> */}
     </View>
   );
 }
-
-// const getPeerMeta = (thread: ChatThread, currentUserId?: string) => {
-//   const peerId =
-//     thread.participantIds.find(
-//       participantId => participantId !== currentUserId,
-//     ) ??
-//     thread.participantIds[0] ??
-//     '';
-
-//   const peerMeta = thread.participantsMeta?.[peerId] ?? {};
-
-//   return {
-//     id: peerId,
-//     name: peerMeta?.name || 'User',
-//     email: peerMeta?.email || '',
-//     avatarUrl: peerMeta?.avatarUrl || '',
-//   };
-// };
-
-// const formatTimestamp = (
-//   timestamp?: FirebaseFirestoreTypes.Timestamp | null,
-// ) => {
-//   if (!timestamp) {
-//     return '';
-//   }
-
-//   const date = timestamp.toDate
-//     ? timestamp.toDate()
-//     : new Date(timestamp as any);
-//   const now = new Date();
-
-//   const isSameDay =
-//     date.getDate() === now.getDate() &&
-//     date.getMonth() === now.getMonth() &&
-//     date.getFullYear() === now.getFullYear();
-
-//   if (isSameDay) {
-//     return date.toLocaleTimeString([], {hour: '2-digit', minute: '2-digit'});
-//   }
-
-//   return date.toLocaleDateString();
-// };
 
 const styles = (theme: ThemeContextType['theme']) =>
   StyleSheet.create({
