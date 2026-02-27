@@ -572,9 +572,7 @@ const styles = (theme: ThemeContextType['theme']) =>
     headerContainer: {
       flexDirection: 'row',
       marginHorizontal: getScaleSize(22),
-      marginTop: StatusBar.currentHeight
-        ? StatusBar.currentHeight + getScaleSize(10)
-        : getScaleSize(20),
+      marginTop: getScaleSize(20),
     },
     verticalView: {
       alignSelf: 'center',

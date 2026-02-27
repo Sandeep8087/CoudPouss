@@ -38,11 +38,13 @@ export default function ManageServices(props: any) {
     const { theme } = useContext<any>(ThemeContext);
     const STRING = useString();
     const bottomSheetRef = useRef<any>(null);
+    const deleteServicePopupRef = useRef<any>(null);
     const { profile } = useContext<any>(AuthContext);
 
     const [isLoading, setLoading] = useState(false);
     const [services, setServices] = useState<any>([]);
     const [selectedCategoryId, setSelectedCategoryId] = useState<any>(null);
+    const [selectedServiceId, setSelectedServiceId] = useState<any>(null);
 
     const isFocused = useIsFocused();
 
@@ -51,6 +53,12 @@ export default function ManageServices(props: any) {
             getServices(false);
         }
     }, [isFocused]);
+
+    useEffect(() => {
+        if (selectedServiceId) {
+            deleteServicePopupRef.current.open();
+        }
+    }, [selectedServiceId]);
 
     /* ================= GET SERVICES ================= */
     async function getServices(keepSelection = true) {
@@ -97,12 +105,18 @@ export default function ManageServices(props: any) {
 
             if (result.status) {
                 SHOW_TOAST(result?.data?.message ?? '', 'success');
-                getServices(true); // 🔥 KEEP SELECTED TAB
+                getServices(true); 
+                setSelectedServiceId(null);
+                deleteServicePopupRef.current.close();
             } else {
                 SHOW_TOAST(result?.data?.message ?? '', 'error');
+                setSelectedServiceId(null);
+                deleteServicePopupRef.current.close();
             }
         } catch (error: any) {
             SHOW_TOAST(error?.message ?? '', 'error');
+            setSelectedServiceId(null);
+            deleteServicePopupRef.current.close();
         } finally {
             setLoading(false);
         }
@@ -129,9 +143,10 @@ export default function ManageServices(props: any) {
                                 styles(theme).itemContainerStyle
                             }
                             isManage={true}
-                            onRemove={() =>
-                                removeService(item.sub_category_id)
-                            }
+                            onRemove={() => {
+                                setSelectedServiceId(item.sub_category_id)
+                            }}
+
                             onEdit={(item: any) => {
 
                                 const subCategoryIds = services?.services?.flatMap((service: any) =>
@@ -322,6 +337,18 @@ export default function ManageServices(props: any) {
                         { isFromManageServices: true, disableServicesIds: subCategoryIds }
                     );
                     bottomSheetRef.current.close();
+                }}
+            />
+            <BottomSheet
+                bottomSheetRef={deleteServicePopupRef}
+                isDelete={true}
+                height={getScaleSize(290)}
+                icon={IMAGES.ic_alart}
+                title={
+                    STRING.are_you_sure_to_delete_the_service
+                }
+                onPressDelete={() => { 
+                    removeService(selectedServiceId)
                 }}
             />
 

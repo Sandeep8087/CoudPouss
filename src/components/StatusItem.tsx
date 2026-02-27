@@ -32,7 +32,7 @@ const StatusItem = (props: any) => {
     }
 
     if (item?.name === 'Service Cancelled') {
-      return IMAGES.ic_rejected;
+      return IMAGES.ic_cancelled;
     }
 
     if (item?.serviceRunning) {
@@ -65,7 +65,7 @@ const StatusItem = (props: any) => {
           }}
           source={getImage()}
         />
-        {!item?.completed && item?.id && getImage() !== IMAGES.service_running && getImage() !== IMAGES.ic_rejected && (
+        {!item?.completed && item?.id && getImage() !== IMAGES.service_running && getImage() !== IMAGES.ic_cancelled && (
           <Text
             style={{ position: 'absolute', top: getScaleSize(3.2) }}
             size={getScaleSize(12)}

@@ -860,6 +860,26 @@ export default function CreateRequest(props: any) {
               />
             )}
           </View>
+          <Text
+            style={{ marginTop: getScaleSize(20) }}
+            size={getScaleSize(18)}
+            font={FONTS.Lato.SemiBold}
+            color={theme._939393}>
+            {STRING.address}
+          </Text>
+          <View style={[styles(theme).addressContainer, { borderColor: addressError ? theme._EF5350 : theme._D5D5D5, }]}>
+            <Image source={IMAGES.home_unselected} style={styles(theme).addressIcon} />
+            <View style={{ flex: 1, alignSelf: 'flex-start' }}>
+              <Text
+                size={getScaleSize(18)}
+                font={FONTS.Lato.Medium}
+                color={theme._2B2B2B}>
+                {selectedAddress ?
+                  `${selectedAddress.banglo}, ${selectedAddress.city}, ${selectedAddress.state}, ${selectedAddress.postal_code}`
+                  : addressError ? addressError : '-'}
+              </Text>
+            </View>
+          </View>
           <View style={{ height: 16 }} />
         </View>
       </ScrollView>
@@ -1076,6 +1096,13 @@ export default function CreateRequest(props: any) {
             font={FONTS.Lato.SemiBold}
             color={theme._939393}>
             {STRING.you_can_also_upload_a_video}
+          </Text>
+          <Text
+            style={{ marginTop: getScaleSize(20) }}
+            size={getScaleSize(18)}
+            font={FONTS.Lato.SemiBold}
+            color={theme._939393}>
+            {STRING.address}
           </Text>
           <View style={[styles(theme).addressContainer, { borderColor: addressError ? theme._EF5350 : theme._D5D5D5, }]}>
             <Image source={IMAGES.home_unselected} style={styles(theme).addressIcon} />
@@ -1678,6 +1705,7 @@ const styles = (theme: ThemeContextType['theme']) =>
       flexDirection: 'row',
       alignItems: 'flex-start',
       flex: 1,
+      marginBottom: getScaleSize(20),
     },
     addressIcon: {
       width: getScaleSize(24),

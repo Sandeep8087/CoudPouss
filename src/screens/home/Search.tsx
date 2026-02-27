@@ -124,9 +124,13 @@ export default function Search(props: any) {
                             key={index}
                             isFromSearch={true}
                             onPress={() => {
-                                props.navigation.navigate(SCREENS.RequestDetails.identifier, {
-                                    item: item
-                                })
+                                if (item?.task_status?.toLowerCase() === 'expired') {
+
+                                } else {
+                                    props.navigation.navigate(SCREENS.RequestDetails.identifier, {
+                                        item: item
+                                    })
+                                }
                             }}
                             item={item} />
                     )}

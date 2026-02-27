@@ -467,7 +467,7 @@ const styles = (theme: ThemeContextType['theme']) =>
     },
     mainView: {
       width: SCREEN_WIDTH,
-      backgroundColor: theme.white,
+      // backgroundColor: theme.white,
       // position: 'absolute',
       // bottom: 0,
       // left: 0,

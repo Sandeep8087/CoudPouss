@@ -11,6 +11,7 @@ import {
   TextInput,
   Linking,
   Platform,
+  Alert,
 } from 'react-native';
 
 //ASSETS & CONSTANT
@@ -50,7 +51,7 @@ import { API } from '../../api';
 //PACKAGES
 import moment from 'moment';
 import { EventRegister } from 'react-native-event-listeners';
-import { CommonActions } from '@react-navigation/native';
+import { CommonActions, useIsFocused } from '@react-navigation/native';
 import Video from 'react-native-video';
 import { buildThreadId } from '../../services/chat';
 import {
@@ -91,11 +92,14 @@ export default function RequestDetails(props: any) {
   const [newQuoteAmount, setNewQuoteAmount] = useState('');
   const [newQuoteAmountError, setNewQuoteAmountError] = useState('');
   const { profile } = useContext<any>(AuthContext);
+
+  const isFocused = useIsFocused();
+
   useEffect(() => {
-    if (item) {
+    if (item && isFocused) {
       getServiceDetails();
     }
-  }, []);
+  }, [item, isFocused]);
 
   useEffect(() => {
     if (cancelServiceDetails) {
@@ -294,16 +298,17 @@ export default function RequestDetails(props: any) {
     }
   }
 
-  async function cancelService(serviceId: any) {
+  async function onCancelService(serviceId: any) {
     try {
       setLoading(true);
       const result = await API.Instance.post(API.API_ROUTES.onCancelService + `/${serviceId}`);
       if (result.status) {
         SHOW_TOAST(result?.data?.message ?? '', 'success')
         setCancelServiceDetails(null);
+        console.log('serviceDetails==>', result?.data, result)
         cancelScheduledServicePopupRef.current.close();
         props?.navigation.navigate(SCREENS.ServiceCancelled.identifier, {
-          item: serviceDetails
+          item: result?.data
         });
       } else {
         SHOW_TOAST(result?.data?.detail ?? '', 'error')
@@ -1166,7 +1171,10 @@ export default function RequestDetails(props: any) {
       {status === 'pending' && (
         <AcceptBottomPopup
           onRef={acceptRef}
-          title={`You are about to confirm a service at the rate of €${serviceDetails?.total_renegotiated ?? 0} with the Provider ${serviceDetails?.provider?.full_name ?? ''}, Are you sure you want to continue? `}
+          title={`You are about to confirm a service at the rate of ${serviceDetails?.total_renegotiated ? serviceDetails?.total_renegotiated === 'Barter Product'
+            ? 'Barter Product'
+            : `€${serviceDetails?.total_renegotiated}`
+          : ''} with the Provider ${serviceDetails?.provider?.full_name ?? ''}, Are you sure you want to continue? `}
           onClose={() => {
             acceptRef.current.close();
           }}
@@ -1203,7 +1211,7 @@ export default function RequestDetails(props: any) {
         <View style={styles(theme).buttonContainer}>
           <TouchableOpacity
             style={styles(theme).backButtonContainer}
-            activeOpacity={1}
+            activeOpacity={0.9}
             onPress={() => {
               getCancelServiceDetails()
             }}>
@@ -1250,7 +1258,7 @@ export default function RequestDetails(props: any) {
         onCancel={(item: any) => {
           console.log('item==>', item)
           if (item) {
-            cancelService(item)
+            onCancelService(item)
           }
         }}
       />
@@ -1517,16 +1525,11 @@ const styles = (theme: ThemeContextType['theme']) =>
       backgroundColor: theme._EAF0F3,
     },
     buttonContainer: {
-      position: 'absolute',
-      bottom: 0,
-      left: 0,
-      right: 0,
       flexDirection: 'row',
       paddingHorizontal: getScaleSize(22),
       paddingTop: getScaleSize(12),
       backgroundColor: theme.white,
-      borderTopWidth: 1,
-      borderTopColor: '#E6E6E6',
+      marginBottom: getScaleSize(24)
     },
     backButtonContainer: {
       flex: 1.0,

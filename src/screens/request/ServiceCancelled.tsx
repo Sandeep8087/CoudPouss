@@ -43,16 +43,9 @@ export default function ServiceCancelled(props: any) {
 
     const item = props?.route?.params?.item ?? {};
 
-    console.log('ITEM', JSON.stringify(item))
+    console.log('ITEM==>', JSON.stringify(item))
 
     const [isLoading, setLoading] = useState(false);
-
-    useEffect(() => {
-        if (item) {
-
-        }
-    }, [item]);
-
     // async function cancelService(serviceId: any) {
     //     try {
     //         setLoading(true);
@@ -98,7 +91,7 @@ export default function ServiceCancelled(props: any) {
                         size={getScaleSize(16)}
                         font={FONTS.Lato.Bold}
                         color={theme.primary}>
-                        {item?.sub_category_name}
+                        {item?.service_details?.subcategory_info?.sub_category_name?.name ?? ''}
                     </Text>
                     <View style={styles(theme).informationView}>
                         <View style={styles(theme).horizontalView}>
@@ -115,8 +108,8 @@ export default function ServiceCancelled(props: any) {
                                     size={getScaleSize(12)}
                                     font={FONTS.Lato.Medium}
                                     color={theme.primary}>
-                                    {item?.chosen_datetime
-                                        ? moment.utc(item?.chosen_datetime).local().format(
+                                    {item?.service_details?.date
+                                        ? moment(item?.service_details?.date, 'YYYY-MM-DD').format(
                                             'DD MMM, YYYY',
                                         )
                                         : '-'}
@@ -135,8 +128,8 @@ export default function ServiceCancelled(props: any) {
                                     size={getScaleSize(12)}
                                     font={FONTS.Lato.Medium}
                                     color={theme.primary}>
-                                    {item?.chosen_datetime
-                                        ? moment.utc(item?.chosen_datetime).local().format('hh:mm A')
+                                    {item?.service_details?.time
+                                        ? moment(item?.service_details?.time, 'hh:mm').format('hh:mm A')
                                         : '-'}
                                 </Text>
                             </View>
@@ -147,7 +140,7 @@ export default function ServiceCancelled(props: any) {
                                 { marginTop: getScaleSize(12) },
                             ]}>
                             <View style={styles(theme).itemView}>
-                                {item?.category_name ? (
+                                {item?.service_details?.category_info?.category_name?.name ? (
                                     <Image
                                         style={[
                                             styles(theme).informationIcon,
@@ -155,7 +148,7 @@ export default function ServiceCancelled(props: any) {
                                         ]}
                                         source={
                                             arrayIcons[
-                                            item?.category_name?.toLowerCase() as keyof typeof arrayIcons
+                                            item?.service_details?.category_info?.category_name?.name?.toLowerCase() as keyof typeof arrayIcons
                                             ] ?? (arrayIcons['diy'] as any)
                                         }
                                         resizeMode="cover"
@@ -171,7 +164,7 @@ export default function ServiceCancelled(props: any) {
                                     size={getScaleSize(12)}
                                     font={FONTS.Lato.Medium}
                                     color={theme.primary}>
-                                    {item?.category_name}
+                                    {item?.service_details?.category_info?.category_name?.name ?? ''}
                                 </Text>
                             </View>
                             <View style={styles(theme).itemView}>
@@ -188,7 +181,7 @@ export default function ServiceCancelled(props: any) {
                                     numberOfLines={4}
                                     font={FONTS.Lato.Medium}
                                     color={theme.primary}>
-                                    {item?.service_address ?? '-'}
+                                    {item?.service_details?.location ?? '-'}
                                 </Text>
                             </View>
                         </View>
@@ -213,7 +206,7 @@ export default function ServiceCancelled(props: any) {
                             size={getScaleSize(14)}
                             font={FONTS.Lato.SemiBold}
                             color={'#595959'}>
-                            {`€${item?.total_amount ?? '0'}`}
+                            {`€${item?.payment_breakdown?.total_amount ?? '0'}`}
                         </Text>
                     </View>
                     <View style={styles(theme).newhorizontalView}>
@@ -222,13 +215,13 @@ export default function ServiceCancelled(props: any) {
                             size={getScaleSize(14)}
                             font={FONTS.Lato.SemiBold}
                             color={'#595959'}>
-                            {STRING.service_fee_cancelled + ' (5%)'}
+                            {STRING.service_fee_cancelled + ` (${item?.payment_breakdown?.deduction_percentage ?? '0'}%)`}
                         </Text>
                         <Text
                             size={getScaleSize(14)}
                             font={FONTS.Lato.SemiBold}
                             color={'#595959'}>
-                            {`€${item?.service_fee ?? '0'}`}
+                            {`€${item?.payment_breakdown?.service_fee ?? '0'}`}
                         </Text>
                     </View>
                     <View style={styles(theme).dotView} />
@@ -250,7 +243,7 @@ export default function ServiceCancelled(props: any) {
                             size={getScaleSize(20)}
                             font={FONTS.Lato.SemiBold}
                             color={theme.primary}>
-                            {`€${item?.total_refund ?? '0'}`}
+                            {`€${item?.payment_breakdown?.total_refund ?? '0'}`}
                         </Text>
                     </View>
                 </View>
@@ -259,15 +252,10 @@ export default function ServiceCancelled(props: any) {
                     size={getScaleSize(12)}
                     font={FONTS.Lato.Regular}
                     color={theme._555555}>
-                    {STRING.cancelled_message}
+                    {STRING.cancelled_message + ` ${item?.payment_breakdown?.deduction_percentage ?? '0'}% `+ STRING.cancellation_message_2}
                 </Text>
                 <View style={{ height: getScaleSize(32) }}></View>
-                <Button
-                    title={STRING.ProceedtoPay}
-                    style={{ marginHorizontal: getScaleSize(22), marginBottom: getScaleSize(16) }}
-                    onPress={() => {
-                    }}
-                />
+               
             </ScrollView>
             {isLoading && <ProgressView />}
         </View>
@@ -350,3 +338,4 @@ const styles = (theme: ThemeContextType['theme']) =>
             marginRight: getScaleSize(6),
         }
     });
+
