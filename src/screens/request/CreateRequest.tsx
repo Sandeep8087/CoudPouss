@@ -104,12 +104,13 @@ export default function CreateRequest(props: any) {
   const [firstImageError, setFirstImageError] = useState('')
   const [location, setLocation] = useState<any>(null);
 
+  const totalSteps = selectedCategory === 'professional' ? 6 : 7;
+  const progressPercent = Math.round((selectedProgress / totalSteps) * 100);
 
   useEffect(() => {
     getAllCategories();
     getLocation()
   }, []);
-
 
   const hasLocationPermission = async () => {
     if (Platform.OS === 'ios') {
@@ -282,6 +283,7 @@ export default function CreateRequest(props: any) {
         else if (type === 'firstProduct') setFirstProductImageURL(file);
         else if (type === 'secondProduct') setSecondProductImageURL(file);
       } else {
+        console.log('ERR', result?.data?.message)
         SHOW_TOAST(result?.data?.message ?? '', 'error');
         if (type === 'first') setFirstImage(null);
         else if (type === 'second') setSecondImage(null);
@@ -293,6 +295,7 @@ export default function CreateRequest(props: any) {
       else if (type === 'second') setSecondImage(null);
       else if (type === 'firstProduct') setFirstProductImage(null);
       else if (type === 'secondProduct') setSecondProductImage(null);
+      console.log('ERR CATCH', error?.message)
       SHOW_TOAST(error?.message ?? '', 'error');
     } finally {
       setLoading(false);
@@ -590,12 +593,12 @@ export default function CreateRequest(props: any) {
   const validateProductName = (text: string): ProductValidationResult => {
     let value = text.trim();
 
-    // 1️⃣ Required
+    // 1️ Required
     if (!value) {
       return { valid: false, message: STRING.product_name_required };
     }
 
-    // 2️⃣ Length check
+    // 2️ Length check
     if (value.length < 2) {
       return { valid: false, message: STRING.minimum_2_char_required };
     }
@@ -604,24 +607,24 @@ export default function CreateRequest(props: any) {
       return { valid: false, message: STRING.maximum_50_char_allowed };
     }
 
-    // 3️⃣ Block emojis
+    // 3️ Block emojis
     const emojiRegex = /[\p{Extended_Pictographic}]/gu;
     if (emojiRegex.test(value)) {
       return { valid: false, message: STRING.emojis_not_allowed };
     }
 
-    // 4️⃣ Block HTML tags
+    // 4️Block HTML tags
     if (/<[^>]*>/g.test(value)) {
       return { valid: false, message: STRING.html_tags_not_allowed };
     }
 
-    // 5️⃣ Block SQL injection patterns
+    // 5️Block SQL injection patterns
     const sqlRegex = /(script|select|insert|delete|drop|update|--|;|\/\*|\*\/)/i;
     if (sqlRegex.test(value)) {
       return { valid: false, message: STRING.sql_injection_detected };
     }
 
-    // 6️⃣ Allow only specific characters
+    // 6 Allow only specific characters
     const allowedRegex = /^[a-zA-Z0-9\s\-&.()]+$/;
     if (!allowedRegex.test(value)) {
       return {
@@ -630,7 +633,7 @@ export default function CreateRequest(props: any) {
       };
     }
 
-    // 7️⃣ Block consecutive special characters
+    // 7 Block consecutive special characters
     const consecutiveSpecial = /[\-&.()]{2,}/;
     if (consecutiveSpecial.test(value)) {
       return {
@@ -639,7 +642,7 @@ export default function CreateRequest(props: any) {
       };
     }
 
-    // 8️⃣ Block only numbers
+    // 8 Block only numbers
     if (/^\d+$/.test(value)) {
       return {
         valid: false,
@@ -1469,7 +1472,7 @@ export default function CreateRequest(props: any) {
           font={FONTS.Lato.Medium}
           color={theme.primary}
           style={{ alignSelf: 'center', marginTop: getScaleSize(9) }}>
-          {`${((selectedProgress * 100) / (selectedCategory == 'professional' ? 6 : 7)).toFixed(2)}%`}
+          {`${progressPercent}%`}
         </Text>
       </View>
       <View
