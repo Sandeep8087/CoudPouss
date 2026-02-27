@@ -81,7 +81,8 @@ const API_ROUTES = {
     onRenegotiationDecline: "service_confirmation/service_accept/renegotiation/decline",
     getSavedAddresses: "service_request/addresses/get_list",
     onCreateAddress: "service_request/addresses/create",
-    onUpdateAddress: "service_request/addresses"
-} 
+    onUpdateAddress: "service_request/addresses",
+    createNegotiationChat: "service_confirmation/service_accept/create_negotiation",
+}
 
 export { API_ROUTES, API_BASE_URL, DISABLE_API_LOGS }

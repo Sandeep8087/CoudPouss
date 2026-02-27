@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useRef, useState } from 'react';
+import React, {useContext, useEffect, useRef, useState} from 'react';
 import {
   View,
   StyleSheet,
@@ -15,7 +15,7 @@ import {
 } from 'react-native';
 
 //ASSETS & CONSTANT
-import { FONTS, IMAGES } from '../../assets';
+import {FONTS, IMAGES} from '../../assets';
 import {
   arrayIcons,
   getScaleSize,
@@ -25,7 +25,7 @@ import {
 } from '../../constant';
 
 //CONTEXT
-import { AuthContext, ThemeContext, ThemeContextType } from '../../context';
+import {AuthContext, ThemeContext, ThemeContextType} from '../../context';
 
 //COMPONENT
 import {
@@ -43,17 +43,17 @@ import {
 } from '../../components';
 
 //SCREENS
-import { SCREENS } from '..';
+import {SCREENS} from '..';
 
 //API
-import { API } from '../../api';
+import {API} from '../../api';
 
 //PACKAGES
 import moment from 'moment';
-import { EventRegister } from 'react-native-event-listeners';
-import { CommonActions, useIsFocused } from '@react-navigation/native';
+import {EventRegister} from 'react-native-event-listeners';
+import {CommonActions, useIsFocused} from '@react-navigation/native';
 import Video from 'react-native-video';
-import { buildThreadId } from '../../services/chat';
+import {buildThreadId} from '../../services/chat';
 import {
   getNegotiationFieldData,
   userNegotiationMessage,
@@ -61,7 +61,7 @@ import {
 
 export default function RequestDetails(props: any) {
   const STRING = useString();
-  const { theme } = useContext<any>(ThemeContext);
+  const {theme} = useContext<any>(ThemeContext);
   const item = props.route.params?.item ?? {};
   const serviceId = props.route.params?.serviceId ?? '';
 
@@ -78,10 +78,9 @@ export default function RequestDetails(props: any) {
   const [isStatus, setIsStatus] = useState(false);
   const [visibleTaskDetails, setVisibleTaskDetails] = useState(false);
   const [serviceAmount, setServiceAmount] = useState<any>({});
-  const [paymentDetails, setPaymentDetails] = useState<any>({});
   const [cancelServiceDetails, setCancelServiceDetails] = useState<any>(null);
-  const [visibleModelWebView, setVisibleModelWebView] =
-    useState<boolean>(false);
+  const [buttonDisabled, setButtonDisabled] = useState(false);
+
   const [attachments, setAttachments] = useState<any>([]);
 
   // const [paymentDetails, setPaymentDetails] = useState<any>({});
@@ -90,11 +89,12 @@ export default function RequestDetails(props: any) {
   const [showOfferModal, setShowOfferModal] = useState(false);
   const [newQuoteAmount, setNewQuoteAmount] = useState('');
   const [newQuoteAmountError, setNewQuoteAmountError] = useState('');
-  const { profile } = useContext<any>(AuthContext);
+  const {profile} = useContext<any>(AuthContext);
 
   const isFocused = useIsFocused();
 
-
+  console.log('item', item?.id);
+  console.log('serviceDetails', serviceDetails);
   useEffect(() => {
     if ((serviceId || item?.id) && isFocused) {
       getServiceDetails();
@@ -143,12 +143,13 @@ export default function RequestDetails(props: any) {
     }
   }
 
+  console.log('serviceDetails', serviceDetails);
   async function addFavoriteProfessional() {
     try {
       setLoading(true);
       const result = await API.Instance.post(
         API.API_ROUTES.addFavoriteProfessional +
-        `/${serviceDetails?.provider?.id}`,
+          `/${serviceDetails?.provider?.id}`,
       );
       if (result.status) {
         SHOW_TOAST(result?.data?.message ?? '', 'success');
@@ -167,7 +168,7 @@ export default function RequestDetails(props: any) {
       setLoading(true);
       const result = await API.Instance.delete(
         API.API_ROUTES.removeFavoriteProfessional +
-        `/${serviceDetails?.provider?.id}`,
+          `/${serviceDetails?.provider?.id}`,
       );
       if (result.status) {
         SHOW_TOAST(result?.data?.message ?? '', 'success');
@@ -214,7 +215,7 @@ export default function RequestDetails(props: any) {
             routes: [
               {
                 name: SCREENS.BottomBar.identifier,
-                params: { isValidationService: true },
+                params: {isValidationService: true},
               },
             ],
           }),
@@ -264,7 +265,6 @@ export default function RequestDetails(props: any) {
         API.API_ROUTES.getServiceAmount + `/${serviceDetails?.service_id}`,
       );
       if (result.status) {
-        console.log('serviceAmount==>', result?.data?.data);
         setServiceAmount(result?.data?.data ?? {});
         acceptRef.current.close();
         setTimeout(() => {
@@ -285,7 +285,7 @@ export default function RequestDetails(props: any) {
       setLoading(true);
       const result = await API.Instance.get(
         API.API_ROUTES.getCancelServiceDetails +
-        `/${serviceDetails?.service_id}`,
+          `/${serviceDetails?.service_id}`,
       );
       if (result.status) {
         console.log('result==>', result?.data);
@@ -310,11 +310,11 @@ export default function RequestDetails(props: any) {
       if (result.status) {
         SHOW_TOAST(result?.data?.message ?? '', 'success');
         setCancelServiceDetails(null);
-        console.log('serviceDetails==>', result?.data, result)
+        console.log('serviceDetails==>', result?.data, result);
         cancelScheduledServicePopupRef.current.close();
         props?.navigation.navigate(SCREENS.ServiceCancelled.identifier, {
           item: result?.data,
-          serviceItem: serviceDetails
+          serviceItem: serviceDetails,
         });
       } else {
         SHOW_TOAST(result?.data?.detail ?? '', 'error');
@@ -343,7 +343,7 @@ export default function RequestDetails(props: any) {
     return [...photos, ...videos];
   };
 
-  const AttachmentItem = ({ item, isfromDocumant }: any) => {
+  const AttachmentItem = ({item, isfromDocumant}: any) => {
     switch (item.type) {
       case 'photo':
         return (
@@ -359,7 +359,7 @@ export default function RequestDetails(props: any) {
                   ? styles(theme).photosVieDocumant
                   : styles(theme).photosView,
               ]}
-              source={{ uri: item?.url ?? '' }}
+              source={{uri: item?.url ?? ''}}
             />
           </TouchableOpacity>
         );
@@ -373,7 +373,7 @@ export default function RequestDetails(props: any) {
                 : styles(theme).photosView,
             ]}>
             <Video
-              source={{ uri: item.url }}
+              source={{uri: item.url}}
               resizeMode="cover"
               pointerEvents="none"
               controls
@@ -381,7 +381,7 @@ export default function RequestDetails(props: any) {
               fullscreen={false}
               playInBackground={false}
               playWhenInactive={false}
-              style={{ width: '100%', height: '100%' }}
+              style={{width: '100%', height: '100%'}}
             />
           </View>
         );
@@ -390,7 +390,6 @@ export default function RequestDetails(props: any) {
     }
   };
 
-  console.log('serviceDetails', JSON.stringify(serviceDetails));
   const handleStartNegotiation = async () => {
     if (!serviceDetails?.provider?.id) return;
     if (!newQuoteAmount || Number(newQuoteAmount) <= 0) return;
@@ -410,13 +409,14 @@ export default function RequestDetails(props: any) {
       const providerQuote = Number(
         (serviceDetails?.total_renegotiated?.[0] ||
           serviceDetails?.total_renegotiated) ??
-        0,
+          0,
       );
 
       const now = Date.now();
 
       const negotiationPayload = {
         serviceId: serviceDetails?.service_id,
+        quoteId: serviceDetails?.quote_id,
         serviceName:
           serviceDetails?.sub_category_name || serviceDetails?.category_name,
         status: 'PENDING',
@@ -455,8 +455,9 @@ export default function RequestDetails(props: any) {
         ],
       };
 
-      await userNegotiationMessage(
+      userNegotiationMessage(
         serviceDetails?.service_id,
+        serviceDetails?.quote_id,
         serviceDetails?.sub_category_name || serviceDetails?.category_name,
         serviceDetails?.sub_category_logo ?? '',
         currentUserId,
@@ -508,13 +509,13 @@ export default function RequestDetails(props: any) {
             <Image
               style={styles(theme).imageView}
               resizeMode="cover"
-              source={{ uri: serviceDetails?.sub_category_logo }}
+              source={{uri: serviceDetails?.sub_category_logo}}
             />
           ) : (
             <View
               style={[
                 styles(theme).imageView,
-                { backgroundColor: theme._D5D5D5 },
+                {backgroundColor: theme._D5D5D5},
               ]}
             />
           )}
@@ -545,9 +546,9 @@ export default function RequestDetails(props: any) {
                   color={theme.primary}>
                   {serviceDetails?.chosen_datetime
                     ? moment
-                      .utc(serviceDetails?.chosen_datetime)
-                      .local()
-                      .format('DD MMM, YYYY')
+                        .utc(serviceDetails?.chosen_datetime)
+                        .local()
+                        .format('DD MMM, YYYY')
                     : '-'}
                 </Text>
               </View>
@@ -566,9 +567,9 @@ export default function RequestDetails(props: any) {
                   color={theme.primary}>
                   {serviceDetails?.chosen_datetime
                     ? moment
-                      .utc(serviceDetails?.chosen_datetime)
-                      .local()
-                      .format('hh:mm A')
+                        .utc(serviceDetails?.chosen_datetime)
+                        .local()
+                        .format('hh:mm A')
                     : '-'}
                 </Text>
               </View>
@@ -576,18 +577,18 @@ export default function RequestDetails(props: any) {
             <View
               style={[
                 styles(theme).horizontalView,
-                { marginTop: getScaleSize(12) },
+                {marginTop: getScaleSize(12)},
               ]}>
               <View style={styles(theme).itemView}>
                 {serviceDetails?.category_name ? (
                   <Image
                     style={[
                       styles(theme).informationIcon,
-                      { tintColor: theme._1A3D51 },
+                      {tintColor: theme._1A3D51},
                     ]}
                     source={
                       arrayIcons[
-                      serviceDetails?.category_name?.toLowerCase() as keyof typeof arrayIcons
+                        serviceDetails?.category_name?.toLowerCase() as keyof typeof arrayIcons
                       ] ?? (arrayIcons['diy'] as any)
                     }
                     resizeMode="cover"
@@ -628,27 +629,27 @@ export default function RequestDetails(props: any) {
         {(status === 'accepted' ||
           status === 'completed' ||
           status === 'cancelled') && (
-            <View style={styles(theme).amountContainerCompleted}>
-              <Text
-                style={{ flex: 1.0 }}
-                size={getScaleSize(18)}
-                font={FONTS.Lato.Medium}
-                color={theme._323232}>
-                {STRING.FinalizedQuoteAmount}
-              </Text>
-              <Text
-                style={{ flex: 1.0, marginTop: getScaleSize(8) }}
-                size={getScaleSize(27)}
-                font={FONTS.Lato.Bold}
-                color={theme._323232}>
-                {`€${serviceDetails?.total_renegotiated ?? 0}`}
-              </Text>
-            </View>
-          )}
+          <View style={styles(theme).amountContainerCompleted}>
+            <Text
+              style={{flex: 1.0}}
+              size={getScaleSize(18)}
+              font={FONTS.Lato.Medium}
+              color={theme._323232}>
+              {STRING.FinalizedQuoteAmount}
+            </Text>
+            <Text
+              style={{flex: 1.0, marginTop: getScaleSize(8)}}
+              size={getScaleSize(27)}
+              font={FONTS.Lato.Bold}
+              color={theme._323232}>
+              {`€${serviceDetails?.total_renegotiated ?? 0}`}
+            </Text>
+          </View>
+        )}
         {status === 'accepted' && (
           <View style={styles(theme).amountContainerCompleted}>
             <Text
-              style={{ flex: 1.0 }}
+              style={{flex: 1.0}}
               size={getScaleSize(18)}
               font={FONTS.Lato.Medium}
               color={theme._323232}>
@@ -685,7 +686,7 @@ export default function RequestDetails(props: any) {
                     key={index}
                     style={[
                       styles(theme).securityItemContainer,
-                      { marginLeft: index === 0 ? 0 : 3 },
+                      {marginLeft: index === 0 ? 0 : 3},
                     ]}>
                     <Text
                       size={getScaleSize(18)}
@@ -697,7 +698,7 @@ export default function RequestDetails(props: any) {
                 ))}
             </View>
             <Text
-              style={{ flex: 1.0, marginTop: getScaleSize(12) }}
+              style={{flex: 1.0, marginTop: getScaleSize(12)}}
               size={getScaleSize(11)}
               font={FONTS.Lato.Regular}
               color={'#424242'}>
@@ -708,7 +709,7 @@ export default function RequestDetails(props: any) {
         {status === 'pending' && (
           <View>
             <Text
-              style={{ marginTop: getScaleSize(24) }}
+              style={{marginTop: getScaleSize(24)}}
               size={getScaleSize(18)}
               font={FONTS.Lato.SemiBold}
               color={theme._323232}>
@@ -716,7 +717,7 @@ export default function RequestDetails(props: any) {
             </Text>
             <View style={styles(theme).amountContainerQuoteAmount}>
               <Text
-                style={{ flex: 1.0, alignSelf: 'center' }}
+                style={{flex: 1.0, alignSelf: 'center'}}
                 size={getScaleSize(27)}
                 font={FONTS.Lato.Bold}
                 color={theme._323232}>
@@ -767,7 +768,7 @@ export default function RequestDetails(props: any) {
           <View style={styles(theme).profileContainer}>
             <View style={styles(theme).horizontalView}>
               <Text
-                style={{ flex: 1.0 }}
+                style={{flex: 1.0}}
                 size={getScaleSize(18)}
                 font={FONTS.Lato.SemiBold}
                 color={theme._323232}>
@@ -796,13 +797,13 @@ export default function RequestDetails(props: any) {
             <View
               style={[
                 styles(theme).horizontalView,
-                { marginTop: getScaleSize(16) },
+                {marginTop: getScaleSize(16)},
               ]}>
               {serviceDetails?.provider?.profile_photo_url ? (
                 <Image
                   style={styles(theme).profilePicView}
                   resizeMode="cover"
-                  source={{ uri: serviceDetails?.provider?.profile_photo_url }}
+                  source={{uri: serviceDetails?.provider?.profile_photo_url}}
                 />
               ) : (
                 <Image
@@ -811,7 +812,7 @@ export default function RequestDetails(props: any) {
                 />
               )}
               <Text
-                style={{ alignSelf: 'center', marginLeft: getScaleSize(16) }}
+                style={{alignSelf: 'center', marginLeft: getScaleSize(16)}}
                 size={getScaleSize(20)}
                 font={FONTS.Lato.SemiBold}
                 color={'#0F232F'}>
@@ -832,13 +833,13 @@ export default function RequestDetails(props: any) {
             <View
               style={[
                 styles(theme).horizontalView,
-                { marginTop: getScaleSize(16) },
+                {marginTop: getScaleSize(16)},
               ]}>
               <TouchableOpacity
                 activeOpacity={1}
                 style={[
                   styles(theme).newButton,
-                  { marginRight: getScaleSize(6) },
+                  {marginRight: getScaleSize(6)},
                 ]}
                 onPress={() => {
                   const conversationId = buildThreadId(
@@ -864,7 +865,7 @@ export default function RequestDetails(props: any) {
               </TouchableOpacity>
               <TouchableOpacity
                 activeOpacity={1}
-                style={[styles(theme).newButton, { marginLeft: getScaleSize(6) }]}
+                style={[styles(theme).newButton, {marginLeft: getScaleSize(6)}]}
                 onPress={() => {
                   props.navigation.navigate(
                     SCREENS.OtherUserProfile.identifier,
@@ -886,7 +887,7 @@ export default function RequestDetails(props: any) {
         {status === 'pending' && (
           <>
             <Text
-              style={{ marginTop: getScaleSize(24) }}
+              style={{marginTop: getScaleSize(24)}}
               size={getScaleSize(18)}
               font={FONTS.Lato.SemiBold}
               color={theme._323232}>
@@ -901,7 +902,7 @@ export default function RequestDetails(props: any) {
               </Text>
             </View>
             <Text
-              style={{ marginTop: getScaleSize(24) }}
+              style={{marginTop: getScaleSize(24)}}
               size={getScaleSize(18)}
               font={FONTS.Lato.SemiBold}
               color={theme._323232}>
@@ -915,7 +916,7 @@ export default function RequestDetails(props: any) {
                 gap: getScaleSize(16),
                 marginTop: getScaleSize(12),
               }}
-              renderItem={({ item, index }) => {
+              renderItem={({item, index}) => {
                 return (
                   <TouchableOpacity
                     style={[styles(theme).uploadButton]}
@@ -933,7 +934,7 @@ export default function RequestDetails(props: any) {
                       source={IMAGES.pdf_icon}
                     />
                     <Text
-                      style={{ marginTop: getScaleSize(8) }}
+                      style={{marginTop: getScaleSize(8)}}
                       size={getScaleSize(15)}
                       font={FONTS.Lato.Regular}
                       color={theme._818285}>
@@ -956,11 +957,11 @@ export default function RequestDetails(props: any) {
             <FlatList
               data={attachments ?? []}
               numColumns={2}
-              columnWrapperStyle={{ gap: getScaleSize(12) }}
-              contentContainerStyle={{ gap: getScaleSize(12) }}
+              columnWrapperStyle={{gap: getScaleSize(12)}}
+              contentContainerStyle={{gap: getScaleSize(12)}}
               keyExtractor={(item: any, index: number) => index.toString()}
               showsHorizontalScrollIndicator={false}
-              renderItem={({ item }) => (
+              renderItem={({item}) => (
                 <AttachmentItem isfromDocumant={true} item={item} />
               )}
             />
@@ -970,29 +971,29 @@ export default function RequestDetails(props: any) {
           <View
             style={[
               styles(theme).profileContainer,
-              { paddingVertical: getScaleSize(26) },
+              {paddingVertical: getScaleSize(26)},
             ]}>
             <TouchableOpacity
-              style={{ flexDirection: 'row' }}
+              style={{flexDirection: 'row'}}
               activeOpacity={1}
               onPress={() => {
                 setIsStatus(!isStatus);
               }}>
               <Text
-                style={{ flex: 1.0 }}
+                style={{flex: 1.0}}
                 size={getScaleSize(18)}
                 font={FONTS.Lato.Medium}
                 color={theme._323232}>
                 {STRING.CheckStatus}
               </Text>
               <TouchableOpacity
-                style={{ height: getScaleSize(25), width: getScaleSize(24) }}
+                style={{height: getScaleSize(25), width: getScaleSize(24)}}
                 activeOpacity={1}
                 onPress={() => {
                   setIsStatus(!isStatus);
                 }}>
                 <Image
-                  style={{ height: getScaleSize(25), width: getScaleSize(24) }}
+                  style={{height: getScaleSize(25), width: getScaleSize(24)}}
                   source={isStatus ? IMAGES.up : IMAGES.down}
                 />
               </TouchableOpacity>
@@ -1000,7 +1001,7 @@ export default function RequestDetails(props: any) {
             {isStatus && (
               <>
                 <View style={styles(theme).devider}></View>
-                <View style={{ marginTop: getScaleSize(32) }}>
+                <View style={{marginTop: getScaleSize(32)}}>
                   {serviceDetails?.lifecycle?.map(
                     (item: any, index: number) => (
                       <StatusItem
@@ -1021,29 +1022,29 @@ export default function RequestDetails(props: any) {
           <View
             style={[
               styles(theme).profileContainer,
-              { paddingVertical: getScaleSize(26) },
+              {paddingVertical: getScaleSize(26)},
             ]}>
             <TouchableOpacity
-              style={{ flexDirection: 'row' }}
+              style={{flexDirection: 'row'}}
               activeOpacity={1}
               onPress={() => {
                 setVisibleTaskDetails(!visibleTaskDetails);
               }}>
               <Text
-                style={{ flex: 1.0 }}
+                style={{flex: 1.0}}
                 size={getScaleSize(18)}
                 font={FONTS.Lato.SemiBold}
                 color={theme._323232}>
                 {STRING.TaskDetails}
               </Text>
               <TouchableOpacity
-                style={{ height: getScaleSize(25), width: getScaleSize(24) }}
+                style={{height: getScaleSize(25), width: getScaleSize(24)}}
                 activeOpacity={1}
                 onPress={() => {
                   setVisibleTaskDetails(!visibleTaskDetails);
                 }}>
                 <Image
-                  style={{ height: getScaleSize(25), width: getScaleSize(24) }}
+                  style={{height: getScaleSize(25), width: getScaleSize(24)}}
                   source={visibleTaskDetails ? IMAGES.up : IMAGES.down}
                 />
               </TouchableOpacity>
@@ -1052,14 +1053,14 @@ export default function RequestDetails(props: any) {
               <>
                 <View style={styles(theme).devider}></View>
                 <Text
-                  style={{ flex: 1.0, marginTop: getScaleSize(20) }}
+                  style={{flex: 1.0, marginTop: getScaleSize(20)}}
                   size={getScaleSize(18)}
                   font={FONTS.Lato.SemiBold}
                   color={'#424242'}>
                   {STRING.Servicedescription}
                 </Text>
                 <Text
-                  style={{ flex: 1.0, marginTop: getScaleSize(16) }}
+                  style={{flex: 1.0, marginTop: getScaleSize(16)}}
                   size={getScaleSize(14)}
                   font={FONTS.Lato.Medium}
                   color={theme._939393}>
@@ -1079,11 +1080,11 @@ export default function RequestDetails(props: any) {
                 <FlatList
                   data={attachments ?? []}
                   numColumns={2}
-                  columnWrapperStyle={{ gap: getScaleSize(12) }}
-                  contentContainerStyle={{ gap: getScaleSize(12) }}
+                  columnWrapperStyle={{gap: getScaleSize(12)}}
+                  contentContainerStyle={{gap: getScaleSize(12)}}
                   keyExtractor={(item: any, index: number) => index.toString()}
                   showsHorizontalScrollIndicator={false}
-                  renderItem={({ item }) => <AttachmentItem item={item} />}
+                  renderItem={({item}) => <AttachmentItem item={item} />}
                 />
               </>
             )}
@@ -1092,78 +1093,80 @@ export default function RequestDetails(props: any) {
         {(status === 'accepted' ||
           status === 'completed' ||
           status === 'cancelled') && (
-            <View style={styles(theme).informationContainer}>
+          <View style={styles(theme).informationContainer}>
+            <Text
+              size={getScaleSize(18)}
+              font={FONTS.Lato.SemiBold}
+              color={theme._323232}>
+              {STRING.FinalPaymentBreakdown}
+            </Text>
+            <View style={styles(theme).newHorizontalView}>
               <Text
-                size={getScaleSize(18)}
+                style={{flex: 1.0}}
+                size={getScaleSize(14)}
                 font={FONTS.Lato.SemiBold}
-                color={theme._323232}>
-                {STRING.FinalPaymentBreakdown}
+                color={'#595959'}>
+                {STRING.FinalizedQuoteAmount}
               </Text>
-              <View style={styles(theme).newHorizontalView}>
-                <Text
-                  style={{ flex: 1.0 }}
-                  size={getScaleSize(14)}
-                  font={FONTS.Lato.SemiBold}
-                  color={'#595959'}>
-                  {STRING.FinalizedQuoteAmount}
-                </Text>
-                <Text
-                  size={getScaleSize(14)}
-                  font={FONTS.Lato.SemiBold}
-                  color={'#595959'}>
-                  {`€${serviceDetails?.payment_breakdown?.finalize_quote_amount ?? 0
-                    }`}
-                </Text>
-              </View>
-              <View style={styles(theme).newHorizontalView}>
-                <Text
-                  style={{ flex: 1.0 }}
-                  size={getScaleSize(14)}
-                  font={FONTS.Lato.SemiBold}
-                  color={'#595959'}>
-                  {STRING.PlatformFee}
-                </Text>
-                <Text
-                  size={getScaleSize(14)}
-                  font={FONTS.Lato.SemiBold}
-                  color={'#595959'}>
-                  {`€${serviceDetails?.payment_breakdown?.platform_fees ?? 0}`}
-                </Text>
-              </View>
-              <View style={styles(theme).newHorizontalView}>
-                <Text
-                  style={{ flex: 1.0 }}
-                  size={getScaleSize(14)}
-                  font={FONTS.Lato.SemiBold}
-                  color={'#595959'}>
-                  {STRING.Taxes}
-                </Text>
-                <Text
-                  size={getScaleSize(14)}
-                  font={FONTS.Lato.SemiBold}
-                  color={'#595959'}>
-                  {`€${serviceDetails?.payment_breakdown?.tax ?? 0}`}
-                </Text>
-              </View>
-              <View style={styles(theme).dotView} />
-              <View style={styles(theme).newHorizontalView}>
-                <Text
-                  style={{ flex: 1.0 }}
-                  size={getScaleSize(20)}
-                  font={FONTS.Lato.SemiBold}
-                  color={'#0F232F'}>
-                  {STRING.Total}
-                </Text>
-                <Text
-                  size={getScaleSize(20)}
-                  font={FONTS.Lato.SemiBold}
-                  color={theme.primary}>
-                  {`€${serviceDetails?.payment_breakdown?.total_renegotiated ?? 0
-                    }`}
-                </Text>
-              </View>
+              <Text
+                size={getScaleSize(14)}
+                font={FONTS.Lato.SemiBold}
+                color={'#595959'}>
+                {`€${
+                  serviceDetails?.payment_breakdown?.finalize_quote_amount ?? 0
+                }`}
+              </Text>
             </View>
-          )}
+            <View style={styles(theme).newHorizontalView}>
+              <Text
+                style={{flex: 1.0}}
+                size={getScaleSize(14)}
+                font={FONTS.Lato.SemiBold}
+                color={'#595959'}>
+                {STRING.PlatformFee}
+              </Text>
+              <Text
+                size={getScaleSize(14)}
+                font={FONTS.Lato.SemiBold}
+                color={'#595959'}>
+                {`€${serviceDetails?.payment_breakdown?.platform_fees ?? 0}`}
+              </Text>
+            </View>
+            <View style={styles(theme).newHorizontalView}>
+              <Text
+                style={{flex: 1.0}}
+                size={getScaleSize(14)}
+                font={FONTS.Lato.SemiBold}
+                color={'#595959'}>
+                {STRING.Taxes}
+              </Text>
+              <Text
+                size={getScaleSize(14)}
+                font={FONTS.Lato.SemiBold}
+                color={'#595959'}>
+                {`€${serviceDetails?.payment_breakdown?.tax ?? 0}`}
+              </Text>
+            </View>
+            <View style={styles(theme).dotView} />
+            <View style={styles(theme).newHorizontalView}>
+              <Text
+                style={{flex: 1.0}}
+                size={getScaleSize(20)}
+                font={FONTS.Lato.SemiBold}
+                color={'#0F232F'}>
+                {STRING.Total}
+              </Text>
+              <Text
+                size={getScaleSize(20)}
+                font={FONTS.Lato.SemiBold}
+                color={theme.primary}>
+                {`€${
+                  serviceDetails?.payment_breakdown?.total_renegotiated ?? 0
+                }`}
+              </Text>
+            </View>
+          </View>
+        )}
         {/* <View style={{ height: getScaleSize(50) }} /> */}
       </ScrollView>
       {status === 'pending' && (
@@ -1178,7 +1181,7 @@ export default function RequestDetails(props: any) {
               size={getScaleSize(19)}
               font={FONTS.Lato.Bold}
               color={theme.primary}
-              style={{ alignSelf: 'center' }}>
+              style={{alignSelf: 'center'}}>
               {STRING.Reject}
             </Text>
           </TouchableOpacity>
@@ -1192,7 +1195,7 @@ export default function RequestDetails(props: any) {
               size={getScaleSize(19)}
               font={FONTS.Lato.Bold}
               color={theme.white}
-              style={{ alignSelf: 'center' }}>
+              style={{alignSelf: 'center'}}>
               {STRING.Accept}
             </Text>
           </TouchableOpacity>
@@ -1216,10 +1219,15 @@ export default function RequestDetails(props: any) {
       {status === 'pending' && (
         <AcceptBottomPopup
           onRef={acceptRef}
-          title={`You are about to confirm a service at the rate of ${serviceDetails?.total_renegotiated ? serviceDetails?.total_renegotiated === 'Barter Product'
-            ? 'Barter Product'
-            : `€${serviceDetails?.total_renegotiated}`
-            : ''} with the Provider ${serviceDetails?.provider?.full_name ?? ''}, Are you sure you want to continue? `}
+          title={`You are about to confirm a service at the rate of ${
+            serviceDetails?.total_renegotiated
+              ? serviceDetails?.total_renegotiated === 'Barter Product'
+                ? 'Barter Product'
+                : `€${serviceDetails?.total_renegotiated}`
+              : ''
+          } with the Provider ${
+            serviceDetails?.provider?.full_name ?? ''
+          }, Are you sure you want to continue? `}
           onClose={() => {
             acceptRef.current.close();
           }}
@@ -1266,7 +1274,7 @@ export default function RequestDetails(props: any) {
               size={getScaleSize(19)}
               font={FONTS.Lato.Bold}
               color={theme.primary}
-              style={{ alignSelf: 'center' }}>
+              style={{alignSelf: 'center'}}>
               {STRING.Cancel}
             </Text>
           </TouchableOpacity>
@@ -1292,7 +1300,7 @@ export default function RequestDetails(props: any) {
               size={getScaleSize(19)}
               font={FONTS.Lato.Bold}
               color={theme.white}
-              style={{ alignSelf: 'center' }}>
+              style={{alignSelf: 'center'}}>
               {STRING.Chat}
             </Text>
           </TouchableOpacity>
@@ -1309,15 +1317,17 @@ export default function RequestDetails(props: any) {
         onCancel={(item: any) => {
           console.log('item==>', item);
           if (item) {
-            onCancelService(item)
+            onCancelService(item);
           }
         }}
       />
       <AcceptBottomPopup
         onRef={acceptRef}
-        title={`You are about to confirm a service at the rate of €${serviceDetails?.total_renegotiated ?? 0
-          } with the Provider ${serviceDetails?.provider?.full_name ?? ''
-          }, Are you sure you want to continue? `}
+        title={`You are about to confirm a service at the rate of €${
+          serviceDetails?.total_renegotiated ?? 0
+        } with the Provider ${
+          serviceDetails?.provider?.full_name ?? ''
+        }, Are you sure you want to continue? `}
         onClose={() => {
           acceptRef.current.close();
         }}
@@ -1346,7 +1356,7 @@ export default function RequestDetails(props: any) {
               size={getScaleSize(18)}
               font={FONTS.Lato.SemiBold}
               color={theme._323232}
-              style={{ marginBottom: getScaleSize(16) }}>
+              style={{marginBottom: getScaleSize(16)}}>
               Enter Your Offer Amount
             </Text>
             <View
@@ -1363,9 +1373,11 @@ export default function RequestDetails(props: any) {
                 placeholder={'€0.00'}
                 placeholderTextColor={theme._818285}
                 value={newQuoteAmount ? `€${newQuoteAmount}` : ''}
-                keyboardType="decimal-pad"
+                keyboardType="numeric"
                 onChangeText={(text: string) => {
-                  setNewQuoteAmount(text.replace('€', ''));
+                  // setNewQuoteAmount(text.replace('€', ''));
+                  const cleanedText = text.replace(/[^0-9]/g, '');
+                  setNewQuoteAmount(cleanedText);
                   if (text.replace('€', '').trim() === '') {
                     setNewQuoteAmountError('Please enter an offer amount');
                   } else {
@@ -1376,7 +1388,7 @@ export default function RequestDetails(props: any) {
             </View>
             {newQuoteAmountError ? (
               <Text
-                style={{ marginTop: getScaleSize(8) }}
+                style={{marginTop: getScaleSize(8)}}
                 size={getScaleSize(12)}
                 font={FONTS.Lato.Regular}
                 color={theme._EF5350}>
@@ -1398,13 +1410,16 @@ export default function RequestDetails(props: any) {
               <TouchableOpacity
                 style={styles(theme).modalSubmitButton}
                 activeOpacity={0.8}
+                disabled={buttonDisabled}
                 onPress={async () => {
                   if (!newQuoteAmount || newQuoteAmount.trim() === '') {
                     setNewQuoteAmountError('Please enter an offer amount');
                     return;
                   }
 
-                  await handleStartNegotiation();
+                  setButtonDisabled(true);
+                  handleStartNegotiation();
+                  setButtonDisabled(false);
 
                   setShowOfferModal(false);
                 }}>
@@ -1433,7 +1448,7 @@ export default function RequestDetails(props: any) {
 
 const styles = (theme: ThemeContextType['theme']) =>
   StyleSheet.create({
-    container: { flex: 1, backgroundColor: theme.white },
+    container: {flex: 1, backgroundColor: theme.white},
     scrolledContainer: {
       marginTop: getScaleSize(19),
       marginHorizontal: getScaleSize(24),
@@ -1581,7 +1596,7 @@ const styles = (theme: ThemeContextType['theme']) =>
       paddingHorizontal: getScaleSize(22),
       paddingTop: getScaleSize(12),
       backgroundColor: theme.white,
-      marginBottom: getScaleSize(24)
+      marginBottom: getScaleSize(24),
     },
     backButtonContainer: {
       flex: 1.0,

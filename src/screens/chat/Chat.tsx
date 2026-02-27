@@ -1,10 +1,11 @@
-import React, {useContext, useEffect, useState} from 'react';
+import React, {useContext, useEffect, useRef, useState} from 'react';
 import {
   View,
   StyleSheet,
   TouchableOpacity,
   Image,
   FlatList,
+  Pressable,
 } from 'react-native';
 
 //ASSETS
@@ -23,12 +24,18 @@ import {Header, SearchComponent, Text} from '../../components';
 import {listenToThreads} from '../../services/chat';
 
 import {SCREENS} from '..';
-import {listenToNegotiationThreads} from '../../services/negotiationchat';
+import {
+  listenToNegotiationThreads,
+  removeDocument,
+  removeThread,
+} from '../../services/negotiationchat';
+import RBSheet from 'react-native-raw-bottom-sheet';
 
 export default function Chat(props: any) {
   const STRING = useString();
   const {theme} = useContext<any>(ThemeContext);
   const {profile} = useContext<any>(AuthContext);
+  const mediaPickerSheetRef = useRef<any>(null);
 
   // const [threads, setThreads] = useState<ChatThread[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
@@ -40,8 +47,9 @@ export default function Chat(props: any) {
   const [masterDataSource, setMasterDataSource] = useState<any>([]);
   const [masterNegotiationDataSource, setMasterNegotiationDataSource] =
     useState<any[]>([]);
+  const [conversationId, setConversationId] = useState('');
+  const [recipientId, setRecipientId] = useState('');
   const [selectedTab, setSelectedTab] = useState('chat');
-
   useEffect(() => {
     if (selectedTab === 'chat') {
       return listenToThreads(profile?.user?.id).onSnapshot(querySnapshot => {
@@ -74,7 +82,12 @@ export default function Chat(props: any) {
     }
   }, [selectedTab]);
 
+  const closeSheet = () => {
+    mediaPickerSheetRef.current?.close();
+  };
+
   const ItemView = ({item}: {item: any}) => {
+    console.log('item', item);
     return (
       <TouchableOpacity
         style={styles(theme).itemContainer}
@@ -130,7 +143,7 @@ export default function Chat(props: any) {
   const ItemViewNegotiation = ({item}: {item: any}) => {
     return (
       <TouchableOpacity
-        style={styles(theme).itemContainer}
+        style={styles(theme).itemNegotiationContainer}
         activeOpacity={1}
         onPress={() => {
           props.navigation.navigate(SCREENS.NegotiationDetails.identifier, {
@@ -192,6 +205,14 @@ export default function Chat(props: any) {
             </Text>
           </View>
         </View>
+        <Pressable
+          onPress={() => {
+            setConversationId(item?._id);
+            setRecipientId(item?.user?.recipientId);
+            mediaPickerSheetRef.current?.open();
+          }}>
+          <Image source={IMAGES.ic_delete} style={styles(theme).deleteIcon} />
+        </Pressable>
       </TouchableOpacity>
     );
   };
@@ -314,6 +335,61 @@ export default function Chat(props: any) {
           />
         </View>
       )}
+
+      <RBSheet
+        ref={mediaPickerSheetRef}
+        closeOnPressMask
+        customStyles={{
+          container: styles(theme).sheetContainer,
+          draggableIcon: {
+            backgroundColor: theme._8A8A8A,
+          },
+        }}>
+        <Image
+          source={IMAGES.ic_alart}
+          style={[styles(theme).alartIcon, {marginBottom: getScaleSize(24)}]}
+        />
+
+        <Text
+          align="center"
+          font={FONTS.Lato.Bold}
+          size={getScaleSize(24)}
+          color={theme._31302F}
+          style={styles(theme).sheetTitle}>
+          {'Are you sure you want to delete this chat?'}
+        </Text>
+        <View style={styles(theme).buttonContainer}>
+          <TouchableOpacity
+            onPress={() => {
+              closeSheet();
+            }}
+            style={styles(theme).btnStyle}>
+            <Text
+              size={getScaleSize(19)}
+              font={FONTS.Lato.Bold}
+              align="center"
+              color={theme._214C65}>
+              {'cancel'}
+            </Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            onPress={() => {
+              removeDocument(profile?.user?.id, conversationId);
+              removeDocument(recipientId, conversationId);
+              removeThread(conversationId);
+              closeSheet();
+            }}
+            style={styles(theme).btnStyle}>
+            <Text
+              size={getScaleSize(19)}
+              font={FONTS.Lato.Bold}
+              align="center"
+              color={theme._214C65}>
+              {'Delete'}
+            </Text>
+          </TouchableOpacity>
+        </View>
+      </RBSheet>
     </View>
   );
 }
@@ -324,6 +400,12 @@ const styles = (theme: ThemeContextType['theme']) =>
     scrolledContainer: {
       marginHorizontal: getScaleSize(22),
       flex: 1.0,
+    },
+    buttonContainer: {
+      gap: getScaleSize(16),
+      flexDirection: 'row',
+      alignItems: 'center',
+      marginBottom: getScaleSize(8),
     },
     searchContainer: {
       marginHorizontal: getScaleSize(22),
@@ -342,6 +424,16 @@ const styles = (theme: ThemeContextType['theme']) =>
     itemContainer: {
       marginBottom: getScaleSize(24),
       flexDirection: 'row',
+      padding: getScaleSize(10),
+      borderRadius: getScaleSize(10),
+      marginHorizontal: getScaleSize(20),
+    },
+    itemNegotiationContainer: {
+      marginBottom: getScaleSize(24),
+      flexDirection: 'row',
+      backgroundColor: theme._F7F7F7,
+      padding: getScaleSize(10),
+      borderRadius: getScaleSize(10),
       marginHorizontal: getScaleSize(20),
     },
     threadContent: {
@@ -371,5 +463,37 @@ const styles = (theme: ThemeContextType['theme']) =>
       justifyContent: 'center',
       borderRadius: getScaleSize(10),
       backgroundColor: '#F7F7F7',
+    },
+    deleteIcon: {
+      height: getScaleSize(20),
+      width: getScaleSize(20),
+      marginRight: getScaleSize(2),
+    },
+    btnStyle: {
+      borderWidth: 1,
+      borderColor: theme._214C65,
+      borderRadius: getScaleSize(12),
+      paddingVertical: getScaleSize(18),
+      alignItems: 'center',
+      justifyContent: 'center',
+      flex: 1.0,
+    },
+    alartIcon: {
+      width: getScaleSize(60),
+      height: getScaleSize(60),
+      alignSelf: 'center',
+    },
+    sheetContainer: {
+      borderTopLeftRadius: getScaleSize(24),
+      borderTopRightRadius: getScaleSize(24),
+      paddingVertical: getScaleSize(20),
+      height: 'auto',
+      justifyContent: 'center',
+      paddingHorizontal: getScaleSize(24),
+    },
+    sheetTitle: {
+      marginBottom: getScaleSize(16),
+      textAlign: 'center',
+      alignSelf: 'center',
     },
   });
