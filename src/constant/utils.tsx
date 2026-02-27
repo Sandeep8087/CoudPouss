@@ -1,8 +1,9 @@
-import {IMAGES} from '../assets';
+import { IMAGES } from '../assets';
 import InAppBrowser from 'react-native-inappbrowser-reborn';
-import {Dimensions, Linking} from 'react-native';
-import {PermissionsAndroid, Platform} from 'react-native';
+import { Dimensions, Linking } from 'react-native';
+import { PermissionsAndroid, Platform } from 'react-native';
 import { getScaleSize } from './scaleSize';
+import RNFS from 'react-native-fs';
 
 export const formatDecimalInput = (
   text: string,
@@ -110,6 +111,25 @@ export async function requestLocationPermission() {
   }
 }
 
+export const prepareMediaForUpload = async (asset: any) => {
+  if (!asset?.type?.startsWith('video')) {
+    // ✅ Image → no change
+    return asset;
+  }
+
+  // 🎥 Video → move out of cache
+  const destPath = `${RNFS.DocumentDirectoryPath}/video_${Date.now()}.mp4`;
+
+  await RNFS.copyFile(asset.uri, destPath);
+
+  return {
+    ...asset,
+    uri: 'file://' + destPath,
+  };
+};
+
 const SCREEN_WIDTH = Dimensions.get('window').width;
 const TABBAR_RATIO = getScaleSize(105) / getScaleSize(428);
 export const TABBAR_HEIGHT = SCREEN_WIDTH * TABBAR_RATIO;
+
+

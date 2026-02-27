@@ -232,6 +232,9 @@ export default function ProfessionalHome(props: any) {
       if (result?.status) {
         console.log('result==>', result?.data?.data);
         setServiceList(result.data.data ?? []);
+        if(result?.data?.detail){
+          SHOW_TOAST(result?.data?.detail , 'success')
+        }
       } else {
         setLoading(false);
         SHOW_TOAST(result?.data?.detail, 'error');

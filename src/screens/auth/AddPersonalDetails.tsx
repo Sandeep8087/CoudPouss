@@ -289,15 +289,7 @@ export default function AddPersonalDetails(props: any) {
         }}
         screenName={STRING.add_personal_details}
       />
-      <KeyboardAwareScrollView
-        showsVerticalScrollIndicator={false}
-        enableOnAndroid={true}
-        extraScrollHeight={20}
-        keyboardShouldPersistTaps="handled"
-        contentContainerStyle={{
-          paddingBottom: 20,
-        }}
-      >
+      <ScrollView showsVerticalScrollIndicator={false}>
         <View style={styles(theme).mainContainer}>
           <View style={styles(theme).imageContainer}>
             {profileImage ? (
@@ -423,18 +415,20 @@ export default function AddPersonalDetails(props: any) {
             }}
             isError={addressError}
           />
-          <Button
-            title={STRING.next}
-            style={{
-              marginVertical: getScaleSize(24),
-              // marginHorizontal: getScaleSize(24),
-            }}
-            onPress={() => {
-              onSignup();
-            }}
-          />
+
         </View>
-      </KeyboardAwareScrollView>
+      </ScrollView>
+      <Button
+        title={STRING.next}
+        style={{
+          marginVertical: getScaleSize(24),
+          marginHorizontal: getScaleSize(24),
+        }}
+        onPress={() => {
+          onSignup();
+        }}
+      />
+      {/* </KeyboardAwareScrollView> */}
       <SelectCountrySheet
         height={getScaleSize(500)}
         isVisible={visibleCountry}

@@ -24,7 +24,7 @@ import { FONTS, IMAGES } from '../../assets';
 import { AuthContext, ThemeContext, ThemeContextType } from '../../context';
 
 //CONSTANT
-import { formatDecimalInput, getScaleSize, SHOW_TOAST, useString } from '../../constant';
+import { formatDecimalInput, getScaleSize, prepareMediaForUpload, SHOW_TOAST, useString } from '../../constant';
 
 //COMPONENT
 import {
@@ -210,6 +210,11 @@ export default function CreateRequest(props: any) {
           // 👇 ADD thumbnail handling
           const finalAsset = await handleThumbnail(asset);
 
+          // 🔥 IMPORTANT FIX
+          if (asset?.type?.startsWith('video')) {
+            await new Promise((resolve: any) => setTimeout(resolve, 600));
+          }
+
           if (type === 'first') {
             setFirstImage(finalAsset);
             uploadProfileImage(finalAsset, type);
@@ -259,21 +264,31 @@ export default function CreateRequest(props: any) {
   };
 
   async function uploadProfileImage(asset: any, type: string) {
+    Alert.alert('uploadProfileImage', JSON.stringify(asset));
     try {
-      const formData = new FormData();
-
       const isVideo = asset?.type?.startsWith('video');
-      console.log('isVideo', isVideo, asset)
+
+      // 🔥 IMPORTANT: wait for video file to be ready
+      if (isVideo) {
+        await new Promise((resolve: any) => setTimeout(resolve, 600));
+      }
+      const uploadAsset = await prepareMediaForUpload(asset);
+      const formData = new FormData();
+      const cleanUri =
+        Platform.OS === 'ios'
+          ? uploadAsset.uri.replace('file://', '')
+          : uploadAsset.uri;
       formData.append('file', {
-        uri: isVideo ? asset.uri : asset.uri,
+        uri: cleanUri,
         name: isVideo
-          ? `video_thumb_${Date.now()}.mp4`
-          : asset?.fileName || 'profile_image.jpg',
-        type: isVideo ? asset?.type : asset?.type || 'image/jpeg',
+          ? uploadAsset.fileName || `video_${Date.now()}.mp4`
+          : uploadAsset.fileName || `image_${Date.now()}.jpg`,
+        type: uploadAsset.type || (isVideo ? 'video/mp4' : 'image/jpeg'),
       });
       setLoading(true);
       const result = await API.Instance.post(API.API_ROUTES.uploadServiceRequestImage, formData, {
-        headers: { 'Content-Type': 'multipart/form-data' }
+        headers: { 'Content-Type': 'multipart/form-data' },
+        timeout: 30000
       });
       if (result.status) {
         const file = result?.data?.files?.[0];

@@ -48,6 +48,8 @@ export default function MyProfileProfessional(props: any) {
   const [showMore, setShowMore] = useState(false);
   const [showMoreExperience, setShowMoreExperience] = useState(false);
 
+  const overallRating = Number(profile?.customer_ratings?.average_rating ?? 0);
+
   return (
     <View style={styles(theme).container}>
       <Header
@@ -121,7 +123,7 @@ export default function MyProfileProfessional(props: any) {
                   style={{alignSelf: 'center'}}>
                   {'4.6'}
                 </Text> */}
-                {profile?.provider_info?.is_verified && (
+                {profile?.provider_info?.is_docs_verified && (
                   <Image
                     style={{
                       height: getScaleSize(24),
@@ -137,7 +139,7 @@ export default function MyProfileProfessional(props: any) {
                   color={'#214C65'}
                   align='center'
                   style={{ marginTop: getScaleSize(4) }}>
-                  {profile?.provider_info?.is_certified === true ? STRING.Certified : 'Not\ncertified'}
+                  {profile?.provider_info?.is_docs_verified === true ? STRING.Certified : 'Not\ncertified'}
                 </Text>
               </View>
             </View>
@@ -272,16 +274,17 @@ export default function MyProfileProfessional(props: any) {
                 alignSelf: 'center',
               }}>
               <View style={styles(theme).rowView}>
-                <Rating
-                  type="custom"
-                  ratingBackgroundColor="#EDEFF0"
-                  tintColor="#fff" // background color, useful for layout
-                  ratingCount={5}
-                  ratingColor={'#F0B52C'} // grey color
-                  startingValue={profile?.customer_ratings?.average_rating ?? 0}
-                  imageSize={18}
-                  readonly
-                />
+                {[...Array(5)].map((_, i) => {
+                  const filled = i < Math.round(overallRating);
+
+                  return (
+                    <Image
+                      key={i}
+                      source={filled ? IMAGES.star : IMAGES.ic_star_blank}
+                      style={styles(theme).ratingimage}
+                    />
+                  );
+                })}
               </View>
               <Text
                 size={getScaleSize(12)}

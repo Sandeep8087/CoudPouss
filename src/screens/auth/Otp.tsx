@@ -202,11 +202,7 @@ export default function Otp(props: any) {
     }
 
     return (
-        <KeyboardAvoidingView
-            style={{ flex: 1 }}
-            behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-            keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 20}
-        >
+      
             <View style={styles(theme).container}>
                 <Header
                     onBack={() => {
@@ -288,7 +284,7 @@ export default function Otp(props: any) {
                     }}
                 />
             </View>
-        </KeyboardAvoidingView>
+        // </KeyboardAvoidingView>
     );
 }
 

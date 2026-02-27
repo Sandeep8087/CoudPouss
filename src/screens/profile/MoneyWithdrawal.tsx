@@ -2,10 +2,10 @@ import { Image, Platform, ScrollView, StyleSheet, TextInput, TouchableOpacity, V
 import React, { useContext, useEffect, useState } from 'react'
 
 //COMPONENTS
-import { Button, Header, Input, Text } from '../../components';
+import { Button, Header, Input, ProgressView, Text } from '../../components';
 
 //CONSTANTS & ASSETS
-import { getScaleSize, SHOW_TOAST, useString } from '../../constant';
+import { formatDecimalInput, getScaleSize, SHOW_TOAST, useString } from '../../constant';
 import { FONTS, IMAGES } from '../../assets';
 
 //CONTEXT
@@ -47,6 +47,28 @@ export default function MoneyWithdrawal(props: any) {
         }
     }
 
+    async function onWithdrawal() {
+        try {
+            const payload = {
+                amount: amount,
+            }
+            setLoading(true);
+            const result: any = await API.Instance.post(API.API_ROUTES.onPaymanWithdrawal, payload);
+            if (result?.status) {
+                SHOW_TOAST(result?.data?.message, 'success');
+                props.navigation.navigate(SCREENS.AccountCreatedSuccessfully.identifier, {
+                    isWithdrawal: true,
+                });
+            } else {
+                SHOW_TOAST(result?.data?.message, 'error');
+            }
+        } catch (error: any) {
+            SHOW_TOAST(error?.message ?? '', 'error');
+        } finally {
+            setLoading(false);
+        }
+    }
+
     return (
         <View style={styles(theme).container}>
             <Header
@@ -79,9 +101,25 @@ export default function MoneyWithdrawal(props: any) {
                         inputTitle={STRING.funds_transfer}
                         inputColor={true}
                         continerStyle={{ marginBottom: getScaleSize(16) }}
-                        value={amount}
+                        value={amount ? `€${amount}` : ""}
                         onChangeText={text => {
-                            setAmount(text);
+                            const cleanedText = text.replace('€', '');
+                            const formattedValue = formatDecimalInput(cleanedText);
+
+                            if (!formattedValue) {
+                                setAmount('');
+                                setAmountError('');
+                                return;
+                            }
+
+                            const numericValue = Number(formattedValue);
+
+                            if (numericValue > myWalletBalance?.balance) {
+                                setAmountError(`Maximum allowed amount is €${myWalletBalance?.balance}`);
+                                return;
+                            }
+
+                            setAmount(formattedValue);
                             setAmountError('');
                         }}
                         isError={amountError}
@@ -226,13 +264,15 @@ export default function MoneyWithdrawal(props: any) {
                         title={STRING.request_withdrawal}
                         style={{ marginTop: visiblePaymentMethod ? getScaleSize(24) : getScaleSize(40) }}
                         onPress={() => {
-                            props.navigation.navigate(SCREENS.AccountCreatedSuccessfully.identifier,{
+                            // onWithdrawal()
+                            props.navigation.navigate(SCREENS.AccountCreatedSuccessfully.identifier, {
                                 isWithdrawal: true,
                             });
                         }}
                     />
                 </View>
             </ScrollView >
+            {isLoading && <ProgressView />}
         </View >
     )
 }

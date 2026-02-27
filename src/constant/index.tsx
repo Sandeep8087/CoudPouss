@@ -7,7 +7,8 @@ import {
   arrayIcons,
   requestLocationPermission,
   TABBAR_HEIGHT,
-  isImageFile
+  isImageFile,
+  prepareMediaForUpload
 } from './utils';
 import {Storage} from './storage';
 import {REGEX} from './regex';
@@ -28,4 +29,5 @@ export {
   TABBAR_HEIGHT,
   getPeerUser,
   convertProviderToPeerUser,
+  prepareMediaForUpload,
 };

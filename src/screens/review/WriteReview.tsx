@@ -83,7 +83,7 @@ export default function WriteReview(props: any) {
       const params = {
         rating: {
           service_id: serviceId,
-          work_quality: overallRatting,
+          // work_quality: overallRatting,
           reliability: reliabilityRatting,
           punctuality: punctualityRatting,
           solution: solutionRatting,

@@ -104,83 +104,78 @@ export default function CreatePassword(props: any) {
     }
 
     return (
-        <KeyboardAvoidingView
-            style={{ flex: 1 }}
-            behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-            keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 20}
-        >
-            <View style={[styles(theme).container
-            ]}>
-                <Header
-                    onBack={() => {
-                        props.navigation.goBack();
-                    }}
-                    screenName={STRING.create_password}
-                />
-                <ScrollView showsVerticalScrollIndicator={false}>
-                    <View style={styles(theme).mainContainer}>
-                        <Text
-                            size={getScaleSize(18)}
-                            font={FONTS.Lato.SemiBold}
-                            color={theme._565656}
-                            style={{ marginBottom: getScaleSize(20) }}>
-                            {STRING.create_a_strong_password}
-                        </Text>
-                        <Input
-                            placeholder={STRING.enter_new_password}
-                            placeholderTextColor={theme._939393}
-                            inputTitle={STRING.password}
-                            inputColor={true}
-                            value={password}
-                            passwordIcon={true}
-                            secureTextEntry={show}
-                            onChnageIcon={() => {
-                                setShow(!show);
-                            }}
-                            onChangeText={text => {
-                                // Remove all whitespace
-                                const cleaned = text.replace(/\s/g, '');
 
-                                // Limit to 12 characters
-                                const trimmed = cleaned.slice(0, 12);
+        <View style={[styles(theme).container
+        ]}>
+            <Header
+                onBack={() => {
+                    props.navigation.goBack();
+                }}
+                screenName={STRING.create_password}
+            />
+            <ScrollView showsVerticalScrollIndicator={false}>
+                <View style={styles(theme).mainContainer}>
+                    <Text
+                        size={getScaleSize(18)}
+                        font={FONTS.Lato.SemiBold}
+                        color={theme._565656}
+                        style={{ marginBottom: getScaleSize(20) }}>
+                        {STRING.create_a_strong_password}
+                    </Text>
+                    <Input
+                        placeholder={STRING.enter_new_password}
+                        placeholderTextColor={theme._939393}
+                        inputTitle={STRING.password}
+                        inputColor={true}
+                        value={password}
+                        passwordIcon={true}
+                        secureTextEntry={show}
+                        onChnageIcon={() => {
+                            setShow(!show);
+                        }}
+                        onChangeText={text => {
+                            // Remove all whitespace
+                            const cleaned = text.replace(/\s/g, '');
 
-                                setPassword(trimmed);
-                                setPasswordError('');
-                            }}
-                            isError={passwordError}
-                        />
-                        <Input
-                            placeholder={STRING.re_enter_new_password}
-                            placeholderTextColor={theme._939393}
-                            inputTitle={STRING.confirm_password}
-                            inputColor={true}
-                            value={confirmPassword}
-                            passwordIcon={true}
-                            secureTextEntry={confirmShow}
-                            continerStyle={{ marginTop: getScaleSize(16) }}
-                            onChnageIcon={() => {
-                                setConfirmShow(!confirmShow);
-                            }}
-                            onChangeText={text => {
-                                const cleaned = text.replace(/\s/g, '');
-                                const trimmed = cleaned.slice(0, 12);
+                            // Limit to 12 characters
+                            const trimmed = cleaned.slice(0, 12);
 
-                                setConfirmPassword(trimmed);
-                                setConfirmPasswordError('');
-                            }}
-                            isError={confirmPasswordError}
-                        />
-                    </View>
-                </ScrollView>
-                <Button
-                    title={STRING.next}
-                    style={{ marginVertical: getScaleSize(24), marginHorizontal: getScaleSize(24) }}
-                    onPress={() => {
-                        onSignup();
-                    }}
-                />
-            </View>
-        </KeyboardAvoidingView>
+                            setPassword(trimmed);
+                            setPasswordError('');
+                        }}
+                        isError={passwordError}
+                    />
+                    <Input
+                        placeholder={STRING.re_enter_new_password}
+                        placeholderTextColor={theme._939393}
+                        inputTitle={STRING.confirm_password}
+                        inputColor={true}
+                        value={confirmPassword}
+                        passwordIcon={true}
+                        secureTextEntry={confirmShow}
+                        continerStyle={{ marginTop: getScaleSize(16) }}
+                        onChnageIcon={() => {
+                            setConfirmShow(!confirmShow);
+                        }}
+                        onChangeText={text => {
+                            const cleaned = text.replace(/\s/g, '');
+                            const trimmed = cleaned.slice(0, 12);
+
+                            setConfirmPassword(trimmed);
+                            setConfirmPasswordError('');
+                        }}
+                        isError={confirmPasswordError}
+                    />
+                </View>
+            </ScrollView>
+            <Button
+                title={STRING.next}
+                style={{ marginVertical: getScaleSize(24), marginHorizontal: getScaleSize(24) }}
+                onPress={() => {
+                    onSignup();
+                }}
+            />
+        </View>
     );
 }
 

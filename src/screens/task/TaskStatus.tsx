@@ -113,6 +113,9 @@ export default function TaskStatus(props: any) {
     if (prevStage === 'pending' && currentStage === 'accepted') {
       renegotiatioAcceptSheetRef.current?.open();
     }
+    if (prevStage === 'accepted' && currentStage === 'accepted') {
+      renegotiatioAcceptSheetRef.current?.open();
+    }
 
     prevStageRef.current = currentStage;
   }, [taskStatusLastItem]);
@@ -525,6 +528,7 @@ export default function TaskStatus(props: any) {
       <RenegotiationSheet
         onRef={renegotiatioAcceptSheetRef}
         type='accept'
+        height={getScaleSize(600)}
         item={renegotiationDetails}
         onClose={() => {
           renegotiatioAcceptSheetRef.current?.close();
