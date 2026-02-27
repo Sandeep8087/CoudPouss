@@ -31,7 +31,6 @@ import {Text} from '../../components';
 
 //PACKAGES
 import {useFocusEffect} from '@react-navigation/native';
-import {FirebaseFirestoreTypes} from '@react-native-firebase/firestore';
 import {
   acceptNegotiation,
   messagesListThread,
@@ -40,7 +39,6 @@ import {
   userNegotiationMessage,
 } from '../../services/negotiationchat';
 import {API} from '../../api';
-import {SCREENS} from '..';
 import RBSheet from 'react-native-raw-bottom-sheet';
 
 export default function NegotiationDetails(props: any) {
@@ -682,7 +680,9 @@ export default function NegotiationDetails(props: any) {
             </Text>
             <View style={styles(theme).buttonContainer}>
               <TouchableOpacity
-                onPress={() => {}}
+                onPress={() => {
+                  closeSheet();
+                }}
                 style={styles(theme).btnStyle}>
                 <Text
                   size={getScaleSize(19)}
