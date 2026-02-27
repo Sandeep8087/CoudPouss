@@ -46,6 +46,7 @@ function RequestItem(props: any) {
   return (
     <TouchableOpacity
       style={styles(theme).container}
+      disabled={(item?.status?.toLowerCase() === 'expired') ? true : false}
       onPress={() => {
         props.onPress();
       }}>

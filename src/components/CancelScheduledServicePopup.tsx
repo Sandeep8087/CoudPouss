@@ -31,7 +31,7 @@ export default function CancelScheduledServicePopup(props: CancelScheduledServic
 
     const STRING = useString();
     const { onRef, cancelServiceDetails, onClose, onCancel, height } = props;
-    console.log('cancelServiceDetails==>', cancelServiceDetails)
+    console.log('cancelServiceDetails sdasd==>', cancelServiceDetails?.cancellation_allowed)
 
     function getTitle() {
         if (cancelServiceDetails?.hours_before_service) {
@@ -53,7 +53,7 @@ export default function CancelScheduledServicePopup(props: CancelScheduledServic
                     backgroundColor: theme._77777733,
                 },
                 container: {
-                    height: cancelServiceDetails?.cancellation_allowed == true ? getScaleSize(500) : getScaleSize(300),
+                    height: cancelServiceDetails?.cancellation_allowed == true ? getScaleSize(640) : getScaleSize(300),
                     borderTopLeftRadius: getScaleSize(24),
                     borderTopRightRadius: getScaleSize(24),
                     backgroundColor: theme.white,
@@ -70,69 +70,89 @@ export default function CancelScheduledServicePopup(props: CancelScheduledServic
                     style={{ alignSelf: 'center', marginTop: getScaleSize(16) }}>
                     {getTitle()}
                 </Text>
-                {cancelServiceDetails?.hours_before_service && (
-                    <View style={styles(theme).informationContainer}>
+                {cancelServiceDetails?.cancellation_allowed && (
+                    <>
                         <Text
                             size={getScaleSize(18)}
                             font={FONTS.Lato.SemiBold}
                             color={theme._323232}
-                            style={{ marginBottom: getScaleSize(8) }}>
-                            {STRING.payment_breakdown}
+                            align='center'
+                            style={{ marginVertical: getScaleSize(16), marginHorizontal: getScaleSize(24) }}>
+                            {STRING.are_you_sure_you_want_to_cancel_your_scheduled_service_with_the_expert}
                         </Text>
-                        <View style={styles(theme).horizontalView}>
+                        <View style={styles(theme).informationContainer}>
                             <Text
-                                style={{ flex: 1.0 }}
-                                size={getScaleSize(14)}
+                                size={getScaleSize(18)}
                                 font={FONTS.Lato.SemiBold}
-                                color={'#595959'}>
-                                {STRING.FinalizedQuoteAmount}
+                                color={theme._323232}
+                                style={{ marginBottom: getScaleSize(8) }}>
+                                {STRING.payment_breakdown}
                             </Text>
-                            <Text
-                                size={getScaleSize(14)}
-                                font={FONTS.Lato.SemiBold}
-                                color={'#595959'}>
-                                {`€${cancelServiceDetails?.total_amount ?? '0'}`}
-                            </Text>
-                        </View>
-                        <View style={styles(theme).horizontalView}>
-                            <Text
-                                style={{ flex: 1.0 }}
-                                size={getScaleSize(14)}
-                                font={FONTS.Lato.SemiBold}
-                                color={'#595959'}>
-                                {STRING.service_fee_cancelled + ` (${cancelServiceDetails?.deduction_percentage ?? '0'}%)`}
-                            </Text>
-                            <Text
-
-                                size={getScaleSize(14)}
-                                font={FONTS.Lato.SemiBold}
-                                color={'#595959'}>
-                                {`€${cancelServiceDetails?.service_fee ?? '0'}`}
-                            </Text>
-                        </View>
-                        <View style={styles(theme).dotView} />
-                        <View style={styles(theme).horizontalView}>
-                            <Text
-                                style={{ flex: 1.0 }}
-                                size={getScaleSize(20)}
-                                font={FONTS.Lato.SemiBold}
-                                color={'#0F232F'}>
-                                {STRING.Total}
+                            <View style={styles(theme).horizontalView}>
                                 <Text
-                                    size={getScaleSize(11)}
-                                    font={FONTS.Lato.Regular}
-                                    color={theme._424242}>
-                                    {'  (final amount you will get)'}
+                                    style={{ flex: 1.0 }}
+                                    size={getScaleSize(14)}
+                                    font={FONTS.Lato.SemiBold}
+                                    color={'#595959'}>
+                                    {STRING.FinalizedQuoteAmount}
                                 </Text>
-                            </Text>
-                            <Text
-                                size={getScaleSize(20)}
-                                font={FONTS.Lato.SemiBold}
-                                color={theme.primary}>
-                                {`€${cancelServiceDetails?.total_refund ?? '0'}`}
-                            </Text>
+                                <Text
+                                    size={getScaleSize(14)}
+                                    font={FONTS.Lato.SemiBold}
+                                    color={'#595959'}>
+                                    {`€${cancelServiceDetails?.total_amount ?? '0'}`}
+                                </Text>
+                            </View>
+                            <View style={styles(theme).horizontalView}>
+                                <Text
+                                    style={{ flex: 1.0 }}
+                                    size={getScaleSize(14)}
+                                    font={FONTS.Lato.SemiBold}
+                                    color={'#595959'}>
+                                    {STRING.service_fee_cancelled + ` (${cancelServiceDetails?.deduction_percentage ?? '0'}%)`}
+                                </Text>
+                                <Text
+
+                                    size={getScaleSize(14)}
+                                    font={FONTS.Lato.SemiBold}
+                                    color={'#595959'}>
+                                    {`€${cancelServiceDetails?.service_fee ?? '0'}`}
+                                </Text>
+                            </View>
+                            <View style={styles(theme).dotView} />
+                            <View style={styles(theme).horizontalView}>
+                                <Text
+                                    style={{ flex: 1.0 }}
+                                    size={getScaleSize(20)}
+                                    font={FONTS.Lato.SemiBold}
+                                    color={'#0F232F'}>
+                                    {STRING.Total}
+                                    <Text
+                                        size={getScaleSize(11)}
+                                        font={FONTS.Lato.Regular}
+                                        color={theme._424242}>
+                                        {'  (final amount you will get)'}
+                                    </Text>
+                                </Text>
+                                <Text
+                                    size={getScaleSize(20)}
+                                    font={FONTS.Lato.SemiBold}
+                                    color={theme.primary}>
+                                    {`€${cancelServiceDetails?.total_refund ?? '0'}`}
+                                </Text>
+                            </View>
                         </View>
-                    </View>
+                    </>
+                )}
+                {cancelServiceDetails?.cancellation_allowed && (
+                    <Text
+                        size={getScaleSize(12)}
+                        font={FONTS.Lato.Regular}
+                        color={theme._555555}
+                        align='center'
+                        style={{ marginTop: getScaleSize(16), marginHorizontal: getScaleSize(24) }}>
+                        {STRING.cancelled_message + ` ${cancelServiceDetails?.deduction_percentage ?? '0'}% ` + STRING.cancellation_message_2}
+                    </Text>
                 )}
                 {cancelServiceDetails?.cancellation_allowed == false && (
                     <Text

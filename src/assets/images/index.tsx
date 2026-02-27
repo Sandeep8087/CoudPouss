@@ -131,4 +131,5 @@ export const IMAGES = {
   ic_code: require('./ic_code.png'),
   ic_reNegotiation: require('./ic_reNegotiation.png'),
   ic_file: require('./approve.png'),
+  ic_cancelled: require('./ic_cancelled.png'),
 };

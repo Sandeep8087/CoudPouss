@@ -48,12 +48,13 @@ export default function Assistance(props: any) {
   const { theme } = useContext<any>(ThemeContext);
 
   const [selectedCategory, setSelectedCategory] = useState<any>(null);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [categoryList, setCategoryList] = useState([]);
   const [subCategoryList, setSubCategoryList] = useState([]);
   const [bannerData, setBannerData] = useState<any>(null);
   const [searchText, setSearchText] = useState('');
   const [filteredSubCategories, setFilteredSubCategories] = useState([]);
+  const [errorMessage, setErrorMessage] = useState('');
 
   const scrollY = useSharedValue(0);
   const maxScrollOffset = getScaleSize(220);
@@ -66,6 +67,7 @@ export default function Assistance(props: any) {
   useEffect(() => {
     if (selectedCategory) {
       getSubCategoryData(selectedCategory?.id);
+      setErrorMessage('');
     }
   }, [selectedCategory]);
 
@@ -81,6 +83,10 @@ export default function Assistance(props: any) {
       const title = (item?.subcategory_name || "").toLowerCase();
       return title.includes(search);
     });
+    console.log('filtered==>', JSON.stringify(filtered.length == 0))
+    if(filtered?.length == 0){
+      setErrorMessage('No data found')
+    }
     setFilteredSubCategories(filtered);
   }, [searchText, subCategoryList]);
 
@@ -112,10 +118,13 @@ export default function Assistance(props: any) {
       const result = await API.Instance.get(API.API_ROUTES.getHomeData + `/${id}`);
       setLoading(false)
       if (result.status) {
-        console.log('subcategoryList==', JSON.stringify(result?.data?.data))
+        console.log('subcategoryList==', JSON.stringify(result?.data?.data?.subcategories?.length < 0))
         setBannerData(result?.data?.data?.Banner ?? null);
         setSubCategoryList(result?.data?.data?.subcategories ?? []);
         setFilteredSubCategories(result?.data?.data?.subcategories ?? []);
+        if(result?.data?.data?.subcategories?.length  == 0){
+         setErrorMessage('No data found')
+        }
       } else {
         SHOW_TOAST(result?.data?.message ?? '', 'error')
       }
@@ -173,17 +182,6 @@ export default function Assistance(props: any) {
         <Animated.View style={[{ position: 'absolute', top: 0, left: 0, right: 0, zIndex: 1000, backgroundColor: '#fff' }, animatedHeaderStyle]}>
           <>
             {bannerData ? (
-              // <TouchableOpacity
-              //   activeOpacity={0.8}
-              //   onPress={() => {
-              //     props.navigation.navigate(SCREENS.CreateRequest.identifier)
-              //   }}>
-              //   <Image
-              //     style={styles(theme).bannerContainer}
-              //     resizeMode='cover'
-              //     source={{ uri: bannerData?.url }}
-              //   />
-              // </TouchableOpacity>
               <View>
                 <Image
                   style={styles(theme).bannerContainer}
@@ -334,7 +332,7 @@ export default function Assistance(props: any) {
               size={getScaleSize(16)}
               font={FONTS.Lato.Bold}
               color={theme.primary}>
-              {'No data found'}
+              {errorMessage ?? ''}
             </Text>
           </View>
         }

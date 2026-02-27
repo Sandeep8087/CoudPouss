@@ -81,8 +81,7 @@ export default function ServiceConfirmed(props: any) {
     <View style={styles(theme).container}>
       <Header
         onBack={() => {
-          props.navigation.navigate(SCREENS.RequestDetails.identifier,
-            { serviceId: serviceId ? serviceId : item?.service_id });
+          props.navigation.goBack();
         }}
         screenName={STRING.ServiceConfirmed}
       />
@@ -316,9 +315,7 @@ export default function ServiceConfirmed(props: any) {
               activeOpacity={1}
               style={[styles(theme).newButton, { marginLeft: getScaleSize(6) }]}
               onPress={() => {
-                props.navigation.navigate(SCREENS.OtherUserProfile.identifier, {
-                  providerId: paymentDetails?.provider_id ?? '',
-                });
+                props.navigation.goBack();
               }}>
               <Text
                 size={getScaleSize(14)}

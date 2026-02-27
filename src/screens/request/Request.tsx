@@ -183,9 +183,13 @@ export default function Request(props: any) {
             <RequestItem
               selectedFilter={requestData?.selectedFilter}
               onPress={() => {
+                if(item?.status?.toLowerCase() === 'expired') {
+                 
+                } else {
                 props.navigation.navigate(SCREENS.RequestDetails.identifier, {
-                  item: item
-                })
+                    item: item
+                  })
+                }
               }}
               item={item}
             />
