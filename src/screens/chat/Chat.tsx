@@ -81,20 +81,20 @@ export default function Chat(props: any) {
         activeOpacity={1}
         onPress={() => {
           props.navigation.navigate(SCREENS.ChatDetails.identifier, {
-            conversationId: item._id,
+            conversationId: item?._id,
             peerUser: {
-              user_id: item.user.recipientId ?? '',
-              name: item.user.name ?? '',
-              email: item.user.email ?? '',
-              avatarUrl: item.user.recipientPhoto ?? '',
+              user_id: item?.user?.recipientId ?? '',
+              name: item?.user?.name ?? '',
+              email: item?.user?.email ?? '',
+              avatarUrl: item?.user?.recipientPhoto ?? '',
             },
           });
         }}>
         <Image
           style={styles(theme).userImage}
           source={
-            item.user.recipientPhoto
-              ? {uri: item.user.recipientPhoto}
+            item?.user?.recipientPhoto
+              ? {uri: item?.user?.recipientPhoto}
               : IMAGES.user_placeholder
           }
         />
@@ -103,7 +103,7 @@ export default function Chat(props: any) {
             size={getScaleSize(16)}
             font={FONTS.Lato.Medium}
             color={theme._2B2B2B}>
-            {item.user.name}
+            {item?.user?.name}
           </Text>
           <View style={{marginTop: getScaleSize(5)}} />
           <Text
@@ -113,13 +113,13 @@ export default function Chat(props: any) {
             {item.message}
           </Text>
         </View>
-        {item.readCount > 0 && (
+        {item?.readCount > 0 && (
           <View style={styles(theme).messageContainer}>
             <Text
               size={getScaleSize(12)}
               font={FONTS.Lato.Medium}
               color={theme.white}>
-              {`${item.readCount}`}
+              {`${item?.readCount}`}
             </Text>
           </View>
         )}
@@ -134,20 +134,20 @@ export default function Chat(props: any) {
         activeOpacity={1}
         onPress={() => {
           props.navigation.navigate(SCREENS.NegotiationDetails.identifier, {
-            conversationId: item._id,
+            conversationId: item?._id,
             peerUser: {
-              user_id: item.user.recipientId ?? '',
-              name: item.user.name ?? '',
-              email: item.user.email ?? '',
-              avatarUrl: item.user.recipientPhoto ?? '',
+              user_id: item?.user?.recipientId ?? '',
+              name: item?.user?.name ?? '',
+              email: item?.user?.email ?? '',
+              avatarUrl: item?.user?.recipientPhoto ?? '',
             },
           });
         }}>
         <Image
           style={styles(theme).serviceImage}
           source={
-            item.user.servicePhoto
-              ? {uri: item.user.servicePhoto}
+            item?.user?.servicePhoto
+              ? {uri: item?.user?.servicePhoto}
               : IMAGES.user_placeholder
           }
         />
@@ -156,14 +156,14 @@ export default function Chat(props: any) {
             size={getScaleSize(16)}
             font={FONTS.Lato.Medium}
             color={theme._2B2B2B}>
-            {item.user.serviceName}
+            {item?.user?.serviceName}
           </Text>
           <View style={{marginTop: getScaleSize(5)}} />
           <Text
             size={getScaleSize(12)}
             font={FONTS.Lato.Regular}
             color={theme._ACADAD}>
-            {item.message}
+            {item?.message}
           </Text>
           <View style={{marginTop: getScaleSize(5)}} />
           <View
@@ -179,8 +179,8 @@ export default function Chat(props: any) {
                 borderRadius: getScaleSize(10),
               }}
               source={
-                item.user.recipientPhoto
-                  ? {uri: item.user.recipientPhoto}
+                item?.user?.recipientPhoto
+                  ? {uri: item?.user?.recipientPhoto}
                   : IMAGES.user_placeholder
               }
             />
@@ -188,7 +188,7 @@ export default function Chat(props: any) {
               size={getScaleSize(12)}
               font={FONTS.Lato.Regular}
               color={theme._ACADAD}>
-              {item.user.name}
+              {item?.user?.name}
             </Text>
           </View>
         </View>

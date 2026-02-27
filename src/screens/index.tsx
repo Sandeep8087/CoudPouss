@@ -70,6 +70,7 @@ import Address from './request/Address';
 import AddressMapScreen from './request/AddressMapScreen';
 import EditAddress from './request/EditAddress';
 import NegotiationDetails from './chat/NegotiationDetails';
+import ImageDetailsScreen from './chat/ImageDetailsScreen';
 
 export const SCREENS = {
   Splash: {
@@ -320,6 +321,10 @@ export const SCREENS = {
   NegotiationDetails: {
     identifier: 'NegotiationDetails',
     component: NegotiationDetails,
+  },
+  ImageDetailsScreen: {
+    identifier: 'ImageDetailsScreen',
+    component: ImageDetailsScreen,
   },
 };
 
