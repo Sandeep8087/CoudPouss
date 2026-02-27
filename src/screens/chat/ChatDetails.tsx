@@ -14,6 +14,9 @@ import {
   ViewStyle,
   SafeAreaView,
   Pressable,
+  TouchableWithoutFeedback,
+  Keyboard,
+  ScrollView,
 } from 'react-native';
 
 //ASSETS
@@ -50,11 +53,8 @@ export default function ChatDetails(props: any) {
   const [messages, setMessages] = useState<any[]>([]);
   const [loadingMessages, setLoadingMessages] = useState(true);
   const [buttonDisabled, setButtonDisabled] = useState(false);
-  const [editingForMessageId, setEditingForMessageId] = useState<
-    boolean | null
-  >(false);
+
   const [loading, setLoading] = useState(false);
-  const [offerInputValue, setOfferInputValue] = useState('');
 
   const [commanId, setCommanId] = useState<string | ''>(
     props?.route?.params?.conversationId || '',
@@ -94,7 +94,7 @@ export default function ChatDetails(props: any) {
         if (response.didCancel) return;
 
         if (response.errorCode) {
-          SHOW_TOAST(response.errorMessage || 'Image picker error', 'error');
+          SHOW_TOAST(response.errorMessage, 'error');
           return;
         }
 
@@ -136,7 +136,7 @@ export default function ChatDetails(props: any) {
           const imageUrls = result?.data?.files.map((item: any) => item.url);
           const readCount = await getReadCount(peerUserId, commanId);
 
-          await userMessage(
+          userMessage(
             profile?.user?.id,
             profile?.user?.first_name || 'User',
             peerUserId,
@@ -150,14 +150,12 @@ export default function ChatDetails(props: any) {
             readCount + 1,
           );
 
-          await updateReadCount(profile?.user?.id, commanId);
           setMessage('');
           setButtonDisabled(false);
-
-          SHOW_TOAST(result?.data?.message ?? '', 'success');
+          updateReadCount(profile?.user?.id, commanId);
         }
       } else {
-        SHOW_TOAST(result?.data?.message ?? '', 'error');
+        SHOW_TOAST(result?.data?.message, 'error');
       }
     } catch (error: any) {
       setLoading(false);
@@ -207,7 +205,7 @@ export default function ChatDetails(props: any) {
     }
     const readCount = await getReadCount(peerUserId, commanId);
 
-    await userMessage(
+    userMessage(
       profile?.user?.id,
       profile?.user?.first_name || 'User',
       peerUserId,
@@ -220,10 +218,9 @@ export default function ChatDetails(props: any) {
       'TEXT',
       readCount + 1,
     );
-
-    await updateReadCount(profile?.user?.id, commanId);
     setMessage('');
     setButtonDisabled(false);
+    await updateReadCount(profile?.user?.id, commanId);
   };
 
   const renderMessage = ({item}: {item: any}) => {
@@ -285,13 +282,21 @@ export default function ChatDetails(props: any) {
       case 'IMAGE':
         return (
           <View
-            style={
+            style={[
+              styles(theme).messageRow,
               isMessageMe
-                ? styles(theme).quoteCardContainer
-                : styles(theme).negotiationCard
-            }>
+                ? styles(theme).messageRowRight
+                : styles(theme).messageRowLeft,
+            ]}>
             {item.images.length === 1 ? (
               <Pressable
+                style={{
+                  flexDirection: 'row',
+                  gap: getScaleSize(10),
+                  backgroundColor: theme._F5F5F5,
+                  padding: getScaleSize(10),
+                  borderRadius: getScaleSize(10),
+                }}
                 onPress={() => {
                   props.navigation.navigate(
                     SCREENS.ImageDetailsScreen.identifier,
@@ -311,6 +316,7 @@ export default function ChatDetails(props: any) {
                   flexDirection: 'row',
                   gap: getScaleSize(10),
                   backgroundColor: theme._F5F5F5,
+                  padding: getScaleSize(10),
                   borderRadius: getScaleSize(10),
                 }}>
                 <Pressable
@@ -404,6 +410,7 @@ export default function ChatDetails(props: any) {
                   flexDirection: 'row',
                   gap: getScaleSize(10),
                   backgroundColor: theme._F5F5F5,
+                  padding: getScaleSize(10),
                   borderRadius: getScaleSize(10),
                 }}>
                 <View style={{gap: getScaleSize(10)}}>
@@ -470,457 +477,110 @@ export default function ChatDetails(props: any) {
             ) : null}
           </View>
         );
-      // case 'NEGOTIATION':
-      //   const isMe = item.senderId === profile?.user?.id;
-      //   const latestNegotiationMessage = messages
-      //     ?.filter(msg => msg.type === 'NEGOTIATION')
-      //     ?.sort((a, b) => b.createdAt - a.createdAt)[0];
-      //   const isLatest = latestNegotiationMessage?._id === item._id;
 
-      //   return (
-      //     <View
-      //       style={
-      //         !isMe
-      //           ? styles(theme).quoteCardContainer
-      //           : styles(theme).negotiationCard
-      //       }>
-      //       <Text
-      //         size={getScaleSize(16)}
-      //         font={FONTS.Lato.Bold}
-      //         color={theme._323232}>
-      //         {item.negotiation.serviceName}
-      //       </Text>
-      //       {item.negotiation?.offers.map((offer: any) => {
-      //         return (
-      //           <View style={styles(theme).pricingRow}>
-      //             {offer.label === 'ORIGINAL_VALUATION' ? (
-      //               <Text
-      //                 style={{flex: 1}}
-      //                 size={getScaleSize(14)}
-      //                 font={FONTS.Lato.Medium}
-      //                 color={theme._6D6D6D}>
-      //                 {'Original Valuation :'}
-      //               </Text>
-      //             ) : offer.label === 'PROVIDER_QUOTE' ? (
-      //               <Text
-      //                 style={{flex: 1}}
-      //                 size={getScaleSize(14)}
-      //                 font={FONTS.Lato.Medium}
-      //                 color={theme._6D6D6D}>
-      //                 {'Initial Quote :'}
-      //               </Text>
-      //             ) : (
-      //               <Text
-      //                 style={{flex: 1}}
-      //                 size={getScaleSize(14)}
-      //                 font={FONTS.Lato.Medium}
-      //                 color={theme._6D6D6D}>
-      //                 {offer.userName === profile?.user?.first_name
-      //                   ? 'Your Previous Offer'
-      //                   : offer.userName + ' Current Offer'}
-      //               </Text>
-      //             )}
-
-      //             <Text
-      //               size={getScaleSize(16)}
-      //               font={FONTS.Lato.Bold}
-      //               color={theme._424242}>
-      //               €{offer.amount}
-      //             </Text>
-      //           </View>
-      //         );
-      //       })}
-
-      //       {item.negotiation?.status === 'PENDING' &&
-      //         isLatest &&
-      //         (!isMe ? (
-      //           <View>
-      //             {!editingForMessageId && (
-      //               <TouchableOpacity
-      //                 style={styles(theme).editOfferButton}
-      //                 onPress={() => {
-      //                   setEditingForMessageId(!editingForMessageId);
-      //                 }}>
-      //                 <Text
-      //                   size={getScaleSize(14)}
-      //                   font={FONTS.Lato.SemiBold}
-      //                   color={theme.primary}>
-      //                   Edit Offer
-      //                 </Text>
-      //               </TouchableOpacity>
-      //             )}
-
-      //             {editingForMessageId && (
-      //               <View>
-      //                 <View style={styles(theme).offerInputWrapper}>
-      //                   <Text
-      //                     size={getScaleSize(16)}
-      //                     font={FONTS.Lato.Medium}
-      //                     color={theme._424242}>
-      //                     €
-      //                   </Text>
-      //                   <TextInput
-      //                     value={offerInputValue}
-      //                     onChangeText={setOfferInputValue}
-      //                     style={styles(theme).offerTextInput}
-      //                     placeholder="0.00"
-      //                     placeholderTextColor={theme._ACADAD}
-      //                     keyboardType="decimal-pad"
-      //                   />
-      //                 </View>
-      //                 <View style={styles(theme).actionRow}>
-      //                   <TouchableOpacity
-      //                     style={styles(theme).actionButtonPrimary}
-      //                     onPress={async () => {
-      //                       if (!offerInputValue.trim()) {
-      //                         SHOW_TOAST(
-      //                           'Please enter an offer amount',
-      //                           'error',
-      //                         );
-      //                         return;
-      //                       }
-
-      //                       // const updatedNegotiation = {
-      //                       //   ...item.negotiation,
-      //                       //   currentAmount: offerInputValue,
-      //                       //   latestMessageId: '1', // 👈 only new message has 1
-      //                       //   offers: [
-      //                       //     ...item.negotiation.offers,
-      //                       //     {
-      //                       //       amount: offerInputValue.toString(),
-      //                       //       by: profile?.user?.id,
-      //                       //       label: 'EDITED',
-      //                       //       createdAt: Date.now(),
-      //                       //       userName: profile?.user?.first_name,
-      //                       //     },
-      //                       //   ],
-      //                       // };
-
-      //                       // userMessage(
-      //                       //   item.negotiation.serviceId,
-      //                       //   peerUserId,
-      //                       //   profile?.user?.first_name,
-      //                       //   profile?.user?.id,
-      //                       //   peerUserName,
-      //                       //   commanId,
-      //                       //   {
-      //                       //     type: 'NEGOTIATION',
-      //                       //     text: `My revised offer is €${offerInputValue}`,
-      //                       //     negotiation: updatedNegotiation,
-      //                       //   },
-      //                       //   profile?.user?.profile_photo_url || '',
-      //                       //   peerUserAvatar ?? '',
-      //                       // );
-      //                       setEditingForMessageId(false);
-      //                       setOfferInputValue('');
-      //                     }}>
-      //                     <Text
-      //                       size={getScaleSize(14)}
-      //                       font={FONTS.Lato.SemiBold}
-      //                       color={theme.white}>
-      //                       Submit
-      //                     </Text>
-      //                   </TouchableOpacity>
-      //                   <View style={{width: getScaleSize(12)}} />
-      //                   <TouchableOpacity
-      //                     style={styles(theme).actionButtonSecondary}
-      //                     onPress={() => {
-      //                       setEditingForMessageId(false);
-      //                       setOfferInputValue('');
-      //                     }}>
-      //                     <Text
-      //                       size={getScaleSize(14)}
-      //                       font={FONTS.Lato.SemiBold}
-      //                       color={theme.primary}>
-      //                       Cancel
-      //                     </Text>
-      //                   </TouchableOpacity>
-      //                 </View>
-      //               </View>
-      //             )}
-      //           </View>
-      //         ) : isMe ? (
-      //           <View>
-      //             {!editingForMessageId && (
-      //               <View style={styles(theme).actionRow}>
-      //                 <TouchableOpacity
-      //                   style={styles(theme).actionButtonSecondary}
-      //                   onPress={() => {
-      //                     setEditingForMessageId(true);
-      //                   }}>
-      //                   <Text
-      //                     size={getScaleSize(14)}
-      //                     font={FONTS.Lato.SemiBold}
-      //                     color={theme.primary}>
-      //                     Counter Offer
-      //                   </Text>
-      //                 </TouchableOpacity>
-      //                 <TouchableOpacity
-      //                   style={styles(theme).actionButtonPrimary}
-      //                   onPress={async () => {
-      //                     // acceptNegotiation({
-      //                     //   conversationId: commanId,
-      //                     //   messageId: item._id,
-      //                     //   userId: profile?.user?.id,
-      //                     //   userName: profile?.user?.first_name,
-      //                     // });
-      //                     setEditingForMessageId(false);
-      //                     setOfferInputValue('');
-      //                   }}>
-      //                   <Text
-      //                     size={getScaleSize(14)}
-      //                     font={FONTS.Lato.SemiBold}
-      //                     color={theme.white}>
-      //                     Accept Offer
-      //                   </Text>
-      //                 </TouchableOpacity>
-      //               </View>
-      //             )}
-      //             {editingForMessageId && (
-      //               <View>
-      //                 <View style={styles(theme).offerInputWrapper}>
-      //                   <Text
-      //                     size={getScaleSize(16)}
-      //                     font={FONTS.Lato.Medium}
-      //                     color={theme._424242}>
-      //                     €
-      //                   </Text>
-      //                   <TextInput
-      //                     value={offerInputValue}
-      //                     onChangeText={setOfferInputValue}
-      //                     style={styles(theme).offerTextInput}
-      //                     placeholder="0.00"
-      //                     placeholderTextColor={theme._ACADAD}
-      //                     keyboardType="decimal-pad"
-      //                   />
-      //                 </View>
-      //                 <View style={styles(theme).actionRow}>
-      //                   <TouchableOpacity
-      //                     style={styles(theme).actionButtonPrimary}
-      //                     onPress={() => {
-      //                       if (!offerInputValue.trim()) {
-      //                         SHOW_TOAST(
-      //                           'Please enter an offer amount',
-      //                           'error',
-      //                         );
-      //                         return;
-      //                       }
-
-      //                       // const newOffer = {
-      //                       //   amount: offerInputValue.toString(),
-      //                       //   by: profile?.user?.id,
-      //                       //   label: 'COUNTER', // or ACCEPTED / REJECTED
-      //                       //   createdAt: Date.now(),
-      //                       //   userName: profile?.user?.first_name,
-      //                       // };
-
-      //                       // const updatedNegotiation = {
-      //                       //   ...item.negotiation,
-      //                       //   currentAmount: offerInputValue,
-      //                       //   currentTurn: item.senderId, // switch turn
-      //                       //   offers: [...item.negotiation.offers, newOffer],
-      //                       // };
-
-      //                       // userMessage(
-      //                       //   item.negotiation.serviceId,
-      //                       //   profile?.user?.id,
-      //                       //   profile?.user?.first_name,
-      //                       //   peerUserId,
-      //                       //   peerUserName,
-      //                       //   commanId,
-      //                       //   {
-      //                       //     type: 'NEGOTIATION',
-      //                       //     text: `My revised offer is €${offerInputValue}`,
-      //                       //     negotiation: updatedNegotiation,
-      //                       //   },
-      //                       //   profile?.user?.profile_photo_url || '',
-      //                       //   peerUserAvatar ?? '',
-      //                       // );
-
-      //                       // if (!offerInputValue.trim()) {
-      //                       //   SHOW_TOAST(
-      //                       //     'Please enter an offer amount',
-      //                       //     'error',
-      //                       //   );
-      //                       //   return;
-      //                       // }
-      //                       // counterNegotiation({
-      //                       //   conversationId: commanId,
-      //                       //   messageId: negotiationMessages[0]._id,
-      //                       //   userId: profile?.user?.id,
-      //                       //   amount: parseFloat(offerInputValue),
-      //                       //   label: 'COUNTER',
-      //                       //   userName: profile?.user?.first_name,
-      //                       // });
-      //                       setEditingForMessageId(false);
-      //                       setOfferInputValue('');
-      //                     }}>
-      //                     <Text
-      //                       size={getScaleSize(14)}
-      //                       font={FONTS.Lato.SemiBold}
-      //                       color={theme.white}>
-      //                       Submit
-      //                     </Text>
-      //                   </TouchableOpacity>
-      //                   <View style={{width: getScaleSize(12)}} />
-      //                   <TouchableOpacity
-      //                     style={styles(theme).actionButtonSecondary}
-      //                     onPress={() => {
-      //                       setEditingForMessageId(false);
-      //                       setOfferInputValue('');
-      //                     }}>
-      //                     <Text
-      //                       size={getScaleSize(14)}
-      //                       font={FONTS.Lato.SemiBold}
-      //                       color={theme.primary}>
-      //                       Cancel
-      //                     </Text>
-      //                   </TouchableOpacity>
-      //                 </View>
-      //               </View>
-      //             )}
-      //           </View>
-      //         ) : null)}
-      //     </View>
-      //   );
       default:
         return null;
     }
   };
 
-  // const renderNegotiationMessage = ({item}: {item: any}) => {
-  //   return (
-  //     <View style={styles(theme).pricingRow}>
-  //       {item.label === 'ORIGINAL_VALUATION' ? (
-  //         <Text
-  //           style={{flex: 1}}
-  //           size={getScaleSize(14)}
-  //           font={FONTS.Lato.Medium}
-  //           color={theme._6D6D6D}>
-  //           {'Original Valuation :'}
-  //         </Text>
-  //       ) : item.label === 'PROVIDER_QUOTE' ? (
-  //         <Text
-  //           style={{flex: 1}}
-  //           size={getScaleSize(14)}
-  //           font={FONTS.Lato.Medium}
-  //           color={theme._6D6D6D}>
-  //           {'Initial Quote :'}
-  //         </Text>
-  //       ) : (
-  //         <Text
-  //           style={{flex: 1}}
-  //           size={getScaleSize(14)}
-  //           font={FONTS.Lato.Medium}
-  //           color={theme._6D6D6D}>
-  //           {item.label === 'COUNTER'
-  //             ? 'Your Previous Offer'
-  //             : item.userName + ' Current Offer'}
-  //         </Text>
-  //       )}
-
-  //       <Text
-  //         size={getScaleSize(16)}
-  //         font={FONTS.Lato.Bold}
-  //         color={theme._424242}>
-  //         €{item.amount}
-  //       </Text>
-  //     </View>
-  //   );
-  // };
-
-  // const isMe = negotiationMessages[0]?.senderId === profile?.user?.id;
-
   return (
     <KeyboardAvoidingView
-      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-      style={styles(theme).container}>
-      <StatusBar
-        barStyle="dark-content"
-        backgroundColor={theme.white}
-        translucent={false}
-      />
-      <SafeAreaView style={styles(theme).hearderContainer}>
-        <TouchableOpacity
-          style={styles(theme).backImage}
-          activeOpacity={1}
-          onPress={() => {
-            props.navigation.goBack();
-          }}>
-          <Image style={styles(theme).backImage} source={IMAGES.back_black} />
-        </TouchableOpacity>
-        <Image
-          style={styles(theme).userImage}
-          source={
-            peerUserAvatar ? {uri: peerUserAvatar} : IMAGES.user_placeholder
-          }
-        />
-        <View style={styles(theme).headerDetails}>
-          <Text
-            size={getScaleSize(16)}
-            font={FONTS.Lato.Bold}
-            color={theme._2B2B2B}>
-            {peerUserName || STRING.unknown_user}
-          </Text>
-          <Text
-            size={getScaleSize(14)}
-            font={FONTS.Lato.Medium}
-            color={theme._2E7D32}>
-            {'Available'}
-          </Text>
-        </View>
-      </SafeAreaView>
-      <View style={styles(theme).messagesWrapper}>
-        {loadingMessages ? (
-          <View style={styles(theme).loaderContainer}>
-            <ActivityIndicator size="small" color={theme.primary} />
+      style={styles(theme).container}
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      keyboardVerticalOffset={Platform.OS === 'ios' ? 80 : 0}>
+      <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+        <View style={{flex: 1}}>
+          <StatusBar
+            barStyle="dark-content"
+            backgroundColor={theme.white}
+            translucent={false}
+          />
+          <SafeAreaView style={styles(theme).hearderContainer}>
+            <TouchableOpacity
+              style={styles(theme).backImage}
+              activeOpacity={1}
+              onPress={() => {
+                props.navigation.goBack();
+              }}>
+              <Image
+                style={styles(theme).backImage}
+                source={IMAGES.back_black}
+              />
+            </TouchableOpacity>
+            <Image
+              style={styles(theme).userImage}
+              source={
+                peerUserAvatar ? {uri: peerUserAvatar} : IMAGES.user_placeholder
+              }
+            />
+            <View style={styles(theme).headerDetails}>
+              <Text
+                size={getScaleSize(16)}
+                font={FONTS.Lato.Bold}
+                color={theme._2B2B2B}>
+                {peerUserName || STRING.unknown_user}
+              </Text>
+              <Text
+                size={getScaleSize(14)}
+                font={FONTS.Lato.Medium}
+                color={theme._2E7D32}>
+                {'Available'}
+              </Text>
+            </View>
+          </SafeAreaView>
+          <View style={styles(theme).messagesWrapper}>
+            {loadingMessages ? (
+              <View style={styles(theme).loaderContainer}>
+                <ActivityIndicator size="small" color={theme.primary} />
+              </View>
+            ) : (
+              <FlatList
+                data={messages}
+                renderItem={renderMessage}
+                keyExtractor={item => item.id}
+                contentContainerStyle={messageListContentStyle}
+                showsVerticalScrollIndicator={false}
+              />
+            )}
           </View>
-        ) : (
-          <FlatList
-            data={messages}
-            renderItem={renderMessage}
-            keyExtractor={item => item.id}
-            contentContainerStyle={messageListContentStyle}
-            showsVerticalScrollIndicator={false}
-          />
-        )}
-      </View>
-      <View style={styles(theme).sendMessageContainer}>
-        {/* <Image style={styles(theme).microphoneImage} source={IMAGES.mic} /> */}
-        <TextInput
-          style={styles(theme).searchInput}
-          placeholderTextColor={'#939393'}
-          placeholder={STRING.Sendamessagehere}
-          value={message}
-          onChangeText={setMessage}
-          multiline
-        />
-        <Pressable
-          onPress={() => {
-            handleChoosePhoto();
-          }}
-          style={styles(theme).imageContainer}>
-          <Image source={IMAGES.attachment} style={styles(theme).image1} />
-        </Pressable>
-        <TouchableOpacity
-          style={styles(theme).sendButtonWrapper}
-          disabled={buttonDisabled || !message.trim()}
-          onPress={handleSendMessage}>
-          <Image
-            style={[
-              styles(theme).microphoneImage,
-              (buttonDisabled || !message.trim()) &&
-                styles(theme).disabledSendIcon,
-            ]}
-            source={IMAGES.message_send}
-          />
-        </TouchableOpacity>
-      </View>
-      {loading && (
-        <View style={styles(theme).loaderContainer}>
-          <ActivityIndicator size="small" color={theme.primary} />
+          <View style={styles(theme).sendMessageContainer}>
+            {/* <Image style={styles(theme).microphoneImage} source={IMAGES.mic} /> */}
+            <TextInput
+              style={styles(theme).searchInput}
+              placeholderTextColor={'#939393'}
+              placeholder={STRING.Sendamessagehere}
+              value={message}
+              onChangeText={setMessage}
+              multiline
+            />
+            <Pressable
+              onPress={() => {
+                handleChoosePhoto();
+              }}
+              style={styles(theme).imageContainer}>
+              <Image source={IMAGES.attachment} style={styles(theme).image1} />
+            </Pressable>
+            <TouchableOpacity
+              style={styles(theme).sendButtonWrapper}
+              disabled={buttonDisabled || !message.trim()}
+              onPress={handleSendMessage}>
+              <Image
+                style={[
+                  styles(theme).microphoneImage,
+                  (buttonDisabled || !message.trim()) &&
+                    styles(theme).disabledSendIcon,
+                ]}
+                source={IMAGES.message_send}
+              />
+            </TouchableOpacity>
+          </View>
+          {loading && (
+            <View style={styles(theme).loaderContainer}>
+              <ActivityIndicator size="small" color={theme.primary} />
+            </View>
+          )}
         </View>
-      )}
+      </TouchableWithoutFeedback>
     </KeyboardAvoidingView>
   );
 }

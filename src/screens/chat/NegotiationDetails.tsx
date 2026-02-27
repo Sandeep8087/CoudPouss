@@ -1,4 +1,4 @@
-import React, {useContext, useEffect, useMemo, useState} from 'react';
+import React, {useContext, useEffect, useMemo, useRef, useState} from 'react';
 import {
   View,
   StatusBar,
@@ -13,6 +13,8 @@ import {
   StyleProp,
   ViewStyle,
   SafeAreaView,
+  Keyboard,
+  TouchableWithoutFeedback,
 } from 'react-native';
 
 //ASSETS
@@ -29,11 +31,15 @@ import {Text} from '../../components';
 
 //PACKAGES
 import {useFocusEffect} from '@react-navigation/native';
-import {FirebaseFirestoreTypes} from '@react-native-firebase/firestore';
 import {
+  acceptNegotiation,
   messagesListThread,
+  removeDocument,
+  removeThread,
   userNegotiationMessage,
 } from '../../services/negotiationchat';
+import {API} from '../../api';
+import RBSheet from 'react-native-raw-bottom-sheet';
 
 export default function NegotiationDetails(props: any) {
   const STRING = useString();
@@ -43,8 +49,12 @@ export default function NegotiationDetails(props: any) {
   // const [message, setMessage] = useState('');
   const [messages, setMessages] = useState<any[]>([]);
   const [loadingMessages, setLoadingMessages] = useState(true);
+  const [loading, setLoading] = useState(false);
   // const [isSending, setIsSending] = useState(false);
+  const mediaPickerSheetRef = useRef<any>(null);
+
   const [buttonDisabled, setButtonDisabled] = useState(false);
+  const [selectedNegotiation, setSelectedNegotiation] = useState<any>(null);
   const [editingForMessageId, setEditingForMessageId] = useState<
     boolean | null
   >(false);
@@ -98,91 +108,49 @@ export default function NegotiationDetails(props: any) {
     };
   }, []);
 
-  // const handleSendMessage = () => {
-  //   if (!message.trim()) {
-  //     SHOW_TOAST('Please enter a message', 'error');
-  //     return;
-  //   }
-  //   setIsSending(true);
+  const closeSheet = () => {
+    mediaPickerSheetRef.current?.close();
+  };
 
-  //   if (!profile?.user?.id || !commanId) {
-  //     throw new Error('Chat not initialized');
-  //   }
-  //   userNegotiationMessage(
-  //     '',
-  //     '',
-  //     '',
-  //     profile?.user?.id,
-  //     profile?.user?.first_name || 'User',
-  //     peerUserId,
-  //     peerUserName,
-  //     commanId,
-  //     {
-  //       type: 'TEXT',
-  //       text: message,
-  //     },
-  //     profile?.user?.profile_photo_url || '',
-  //     peerUserAvatar,
-  //   );
-  //   setMessage('');
-  // };
-
+  async function createNegotiationMessage(
+    services_id: string,
+    quote_id: string,
+    negotiation_amount: number,
+    messageId: string,
+  ) {
+    try {
+      const payload: any = {
+        services_id: services_id,
+        quote_id: quote_id,
+        description: '',
+        negotiation_amount: negotiation_amount,
+      };
+      setLoading(true);
+      const result = await API.Instance.post(
+        API.API_ROUTES.createNegotiationChat,
+        payload,
+      );
+      setLoading(false);
+      if (result.status) {
+        acceptNegotiation(commanId, messageId);
+        removeDocument(profile?.user?.id, commanId);
+        removeDocument(peerUserId, commanId);
+        removeThread(commanId);
+        props.navigation.goBack();
+      } else {
+        console.log('result error', result);
+        SHOW_TOAST(result?.data?.message, 'error');
+      }
+    } catch (error: any) {
+      setLoading(false);
+      SHOW_TOAST(error?.message ?? '', 'error');
+      console.log(error?.message);
+    } finally {
+      setLoading(false);
+    }
+  }
   const renderMessage = ({item}: {item: any}) => {
     switch (item.type) {
-      case 'TEXT':
-        const isMessageMe = item.senderId === profile?.user?.id;
-        const currentUserAvatar = profile?.user?.profile_photo_url;
-        return (
-          <View
-            style={[
-              styles(theme).messageRow,
-              isMessageMe
-                ? styles(theme).messageRowRight
-                : styles(theme).messageRowLeft,
-            ]}>
-            {!isMessageMe && (
-              <Image
-                style={styles(theme).userProfilePic}
-                source={
-                  peerUserAvatar
-                    ? {uri: peerUserAvatar}
-                    : IMAGES.user_placeholder
-                }
-              />
-            )}
-            <View
-              style={[
-                styles(theme).messageContainer,
-                isMessageMe
-                  ? styles(theme).selfBubble
-                  : styles(theme).peerBubble,
-              ]}>
-              <Text
-                size={getScaleSize(16)}
-                font={FONTS.Lato.SemiBold}
-                color={isMessageMe ? theme.white : theme._818285}>
-                {item?.text}
-              </Text>
-              <Text
-                size={getScaleSize(10)}
-                font={FONTS.Lato.Regular}
-                color={isMessageMe ? theme.white : theme._ACADAD}
-                style={[styles(theme).messageTime]}>
-                {formatTimestamp(item.createdAt)}
-              </Text>
-            </View>
-            {isMessageMe && (
-              <Image
-                style={styles(theme).userProfilePic}
-                source={
-                  currentUserAvatar
-                    ? {uri: currentUserAvatar}
-                    : IMAGES.user_placeholder
-                }
-              />
-            )}
-          </View>
-        );
       case 'NEGOTIATION':
         const isMe = item.senderId === profile?.user?.id;
 
@@ -310,8 +278,9 @@ export default function NegotiationDetails(props: any) {
                               ],
                             };
 
-                            await userNegotiationMessage(
+                            userNegotiationMessage(
                               item.serviceId,
+                              item.quoteId,
                               item.serviceName,
                               item.servicePhoto,
                               profile?.user?.id,
@@ -375,14 +344,8 @@ export default function NegotiationDetails(props: any) {
                       <TouchableOpacity
                         style={styles(theme).actionButtonPrimary}
                         onPress={async () => {
-                          // acceptNegotiation({
-                          //   conversationId: commanId,
-                          //   messageId: item._id,
-                          //   userId: profile?.user?.id,
-                          //   userName: profile?.user?.first_name,
-                          // });
-                          setEditingForMessageId(false);
-                          setOfferInputValue('');
+                          mediaPickerSheetRef.current?.open();
+                          setSelectedNegotiation(item);
                         }}>
                         <Text
                           size={getScaleSize(14)}
@@ -439,8 +402,9 @@ export default function NegotiationDetails(props: any) {
                               offers: [...item.negotiation.offers, newOffer],
                             };
 
-                            await userNegotiationMessage(
+                            userNegotiationMessage(
                               item.serviceId,
+                              item.quoteId,
                               item.serviceName,
                               item.servicePhoto,
                               profile?.user?.id,
@@ -602,63 +566,70 @@ export default function NegotiationDetails(props: any) {
 
   return (
     <KeyboardAvoidingView
-      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-      style={styles(theme).container}>
-      <StatusBar
-        barStyle="dark-content"
-        backgroundColor={theme.white}
-        translucent={false}
-      />
-      <SafeAreaView style={styles(theme).hearderContainer}>
-        <TouchableOpacity
-          style={styles(theme).backImage}
-          activeOpacity={1}
-          onPress={() => {
-            props.navigation.goBack();
-          }}>
-          <Image style={styles(theme).backImage} source={IMAGES.back_black} />
-        </TouchableOpacity>
-        <Image
-          style={styles(theme).userImage}
-          source={
-            peerUserAvatar ? {uri: peerUserAvatar} : IMAGES.user_placeholder
-          }
-        />
-        <View style={styles(theme).headerDetails}>
-          <Text
-            size={getScaleSize(16)}
-            font={FONTS.Lato.Bold}
-            color={theme._2B2B2B}
-            style={{}}>
-            {peerUserName || STRING.unknown_user}
-          </Text>
-          <Text
-            size={getScaleSize(14)}
-            font={FONTS.Lato.Medium}
-            color={theme._2E7D32}>
-            {'Available'}
-          </Text>
-        </View>
-      </SafeAreaView>
-      <View style={styles(theme).messagesWrapper}>
-        {loadingMessages ? (
-          <View style={styles(theme).loaderContainer}>
-            <ActivityIndicator size="small" color={theme.primary} />
-          </View>
-        ) : (
-          // <ScrollView showsVerticalScrollIndicator={false}>
-          <FlatList
-            data={messages}
-            renderItem={renderMessage}
-            keyExtractor={item => item.id}
-            contentContainerStyle={messageListContentStyle}
-            showsVerticalScrollIndicator={false}
+      style={styles(theme).container}
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      keyboardVerticalOffset={Platform.OS === 'ios' ? 80 : 0}>
+      <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+        <View style={{flex: 1}}>
+          <StatusBar
+            barStyle="dark-content"
+            backgroundColor={theme.white}
+            translucent={false}
           />
+          <SafeAreaView style={styles(theme).hearderContainer}>
+            <TouchableOpacity
+              style={styles(theme).backImage}
+              activeOpacity={1}
+              onPress={() => {
+                props.navigation.goBack();
+              }}>
+              <Image
+                style={styles(theme).backImage}
+                source={IMAGES.back_black}
+              />
+            </TouchableOpacity>
+            <Image
+              style={styles(theme).userImage}
+              source={
+                peerUserAvatar ? {uri: peerUserAvatar} : IMAGES.user_placeholder
+              }
+            />
+            <View style={styles(theme).headerDetails}>
+              <Text
+                size={getScaleSize(16)}
+                font={FONTS.Lato.Bold}
+                color={theme._2B2B2B}
+                style={{}}>
+                {peerUserName || STRING.unknown_user}
+              </Text>
+              <Text
+                size={getScaleSize(14)}
+                font={FONTS.Lato.Medium}
+                color={theme._2E7D32}>
+                {'Available'}
+              </Text>
+            </View>
+          </SafeAreaView>
+          <View style={styles(theme).messagesWrapper}>
+            {loadingMessages ? (
+              <View style={styles(theme).loaderContainer}>
+                <ActivityIndicator size="small" color={theme.primary} />
+              </View>
+            ) : (
+              // <ScrollView showsVerticalScrollIndicator={false}>
+              <FlatList
+                data={messages}
+                renderItem={renderMessage}
+                keyExtractor={item => item.id}
+                removeClippedSubviews={false}
+                contentContainerStyle={messageListContentStyle}
+                showsVerticalScrollIndicator={false}
+              />
 
-          // </ScrollView>
-        )}
-      </View>
-      {/* <View style={styles(theme).sendMessageContainer}>
+              // </ScrollView>
+            )}
+          </View>
+          {/* <View style={styles(theme).sendMessageContainer}>
         <Image style={styles(theme).microphoneImage} source={IMAGES.mic} />
         <TextInput
           style={styles(theme).searchInput}
@@ -682,22 +653,73 @@ export default function NegotiationDetails(props: any) {
           />
         </TouchableOpacity>
       </View> */}
+          <RBSheet
+            ref={mediaPickerSheetRef}
+            closeOnPressMask
+            customStyles={{
+              container: styles(theme).sheetContainer,
+              draggableIcon: {
+                backgroundColor: theme._8A8A8A,
+              },
+            }}>
+            <Image
+              source={IMAGES.ic_alart}
+              style={[
+                styles(theme).alartIcon,
+                {marginBottom: getScaleSize(24)},
+              ]}
+            />
+
+            <Text
+              align="center"
+              font={FONTS.Lato.Bold}
+              size={getScaleSize(24)}
+              color={theme._31302F}
+              style={styles(theme).sheetTitle}>
+              {'Are you sure you want to accept this negotiation?'}
+            </Text>
+            <View style={styles(theme).buttonContainer}>
+              <TouchableOpacity
+                onPress={() => {
+                  closeSheet();
+                }}
+                style={styles(theme).btnStyle}>
+                <Text
+                  size={getScaleSize(19)}
+                  font={FONTS.Lato.Bold}
+                  align="center"
+                  color={theme._214C65}>
+                  {'cancel'}
+                </Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                onPress={() => {
+                  createNegotiationMessage(
+                    selectedNegotiation.serviceId,
+                    selectedNegotiation.quoteId,
+                    Number(selectedNegotiation.negotiation.currentAmount),
+                    selectedNegotiation._id,
+                  );
+                  setEditingForMessageId(false);
+                  setOfferInputValue('');
+                  closeSheet();
+                }}
+                style={styles(theme).btnStyle}>
+                <Text
+                  size={getScaleSize(19)}
+                  font={FONTS.Lato.Bold}
+                  align="center"
+                  color={theme._214C65}>
+                  {'Accept'}
+                </Text>
+              </TouchableOpacity>
+            </View>
+          </RBSheet>
+        </View>
+      </TouchableWithoutFeedback>
     </KeyboardAvoidingView>
   );
 }
-
-const formatTimestamp = (
-  timestamp?: FirebaseFirestoreTypes.Timestamp | null,
-) => {
-  if (!timestamp) {
-    return '';
-  }
-  const date = timestamp.toDate
-    ? timestamp.toDate()
-    : new Date(timestamp as any);
-  return date.toLocaleTimeString([], {hour: '2-digit', minute: '2-digit'});
-};
-
 const styles = (theme: ThemeContextType['theme']) =>
   StyleSheet.create({
     container: {flex: 1, backgroundColor: theme.white},
@@ -907,5 +929,38 @@ const styles = (theme: ThemeContextType['theme']) =>
       borderWidth: 1,
       borderColor: theme.primary,
       marginRight: getScaleSize(8),
+    },
+    alartIcon: {
+      width: getScaleSize(60),
+      height: getScaleSize(60),
+      alignSelf: 'center',
+    },
+    sheetContainer: {
+      borderTopLeftRadius: getScaleSize(24),
+      borderTopRightRadius: getScaleSize(24),
+      paddingVertical: getScaleSize(20),
+      height: 'auto',
+      justifyContent: 'center',
+      paddingHorizontal: getScaleSize(24),
+    },
+    sheetTitle: {
+      marginBottom: getScaleSize(16),
+      textAlign: 'center',
+      alignSelf: 'center',
+    },
+    buttonContainer: {
+      gap: getScaleSize(16),
+      flexDirection: 'row',
+      alignItems: 'center',
+      marginBottom: getScaleSize(8),
+    },
+    btnStyle: {
+      borderWidth: 1,
+      borderColor: theme._214C65,
+      borderRadius: getScaleSize(12),
+      paddingVertical: getScaleSize(18),
+      alignItems: 'center',
+      justifyContent: 'center',
+      flex: 1.0,
     },
   });
