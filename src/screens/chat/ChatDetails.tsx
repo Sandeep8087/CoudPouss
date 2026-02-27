@@ -1,4 +1,4 @@
-import React, {useContext, useEffect, useMemo, useState} from 'react';
+import React, {useContext, useEffect, useMemo, useRef, useState} from 'react';
 import {
   View,
   StatusBar,
@@ -13,6 +13,7 @@ import {
   StyleProp,
   ViewStyle,
   SafeAreaView,
+  Pressable,
 } from 'react-native';
 
 //ASSETS
@@ -36,6 +37,7 @@ import {
   userMessage,
 } from '../../services/chat';
 import {FirebaseFirestoreTypes} from '@react-native-firebase/firestore';
+import {launchImageLibrary} from 'react-native-image-picker';
 
 export default function ChatDetails(props: any) {
   const STRING = useString();
@@ -75,7 +77,32 @@ export default function ChatDetails(props: any) {
       }
     }, [theme.white]),
   );
-  useEffect(() => {}, []);
+
+  const handleChoosePhoto = () => {
+    launchImageLibrary(
+      {
+        mediaType: 'photo',
+        quality: 0.8,
+        maxWidth: 800,
+        maxHeight: 800,
+        selectionLimit: 4,
+      },
+      response => {
+        console.log('response', response);
+        if (response.didCancel) return;
+
+        if (response.errorCode) {
+          SHOW_TOAST(response.errorMessage || 'Image picker error', 'error');
+          return;
+        }
+
+        const asset = response.assets?.[0];
+        if (!asset?.uri) return;
+
+        // updatePhoto(asset.uri);
+      },
+    );
+  };
 
   useEffect(() => {
     // chat found, so we need to get the messages
@@ -618,7 +645,7 @@ export default function ChatDetails(props: any) {
         )}
       </View>
       <View style={styles(theme).sendMessageContainer}>
-        <Image style={styles(theme).microphoneImage} source={IMAGES.mic} />
+        {/* <Image style={styles(theme).microphoneImage} source={IMAGES.mic} /> */}
         <TextInput
           style={styles(theme).searchInput}
           placeholderTextColor={'#939393'}
@@ -627,6 +654,13 @@ export default function ChatDetails(props: any) {
           onChangeText={setMessage}
           multiline
         />
+        <Pressable
+          onPress={() => {
+            handleChoosePhoto();
+          }}
+          style={styles(theme).imageContainer}>
+          <Image source={IMAGES.attachment} style={styles(theme).image1} />
+        </Pressable>
         <TouchableOpacity
           style={styles(theme).sendButtonWrapper}
           // activeOpacity={0.7}
@@ -664,6 +698,13 @@ const styles = (theme: ThemeContextType['theme']) =>
       paddingVertical: getScaleSize(12),
       flexDirection: 'row',
       marginHorizontal: getScaleSize(22),
+    },
+    sheetContainer: {
+      borderTopLeftRadius: getScaleSize(24),
+      borderTopRightRadius: getScaleSize(24),
+      paddingVertical: getScaleSize(20),
+      height: 'auto',
+      paddingHorizontal: getScaleSize(24),
     },
     headerDetails: {
       alignSelf: 'center',
@@ -867,5 +908,14 @@ const styles = (theme: ThemeContextType['theme']) =>
       borderWidth: 1,
       borderColor: theme.primary,
       marginRight: getScaleSize(8),
+    },
+    imageContainer: {
+      alignItems: 'center',
+      marginRight: getScaleSize(12),
+      justifyContent: 'center',
+    },
+    image1: {
+      width: getScaleSize(24),
+      height: getScaleSize(24),
     },
   });
