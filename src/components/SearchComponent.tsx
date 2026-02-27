@@ -39,14 +39,14 @@ const SearchComponent = (props: any) => {
           onChangeText={text => props.onChangeText(text)}
         />
       </View>
-      <TouchableOpacity
+      {/* <TouchableOpacity
         onPress={props.onPressMicrophone}
         style={styles(theme).microPhoneContainer}>
         <Image
           style={styles(theme).microPhoneImage}
           source={IMAGES.microphone_new}
         />
-      </TouchableOpacity>
+      </TouchableOpacity> */}
     </View>
   );
 };

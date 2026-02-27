@@ -350,16 +350,13 @@ export default function AddPersonalDetails(props: any) {
             value={name}
             maxLength={50}
             onChangeText={text => {
-              // Remove emojis
+              // Remove emojis only
               const noEmoji = text.replace(
                 /([\u2700-\u27BF]|[\uE000-\uF8FF]|[\uD83C-\uDBFF\uDC00-\uDFFF]+)/g,
                 ''
               );
 
-              // Allow only letters (NO space)
-              const clean = noEmoji.replace(/[^A-Za-z]/g, '');
-
-              setName(clean);
+              setName(noEmoji);
               setNameError('');
             }}
             isError={nameError}
