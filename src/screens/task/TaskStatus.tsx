@@ -113,9 +113,9 @@ export default function TaskStatus(props: any) {
     if (prevStage === 'pending' && currentStage === 'accepted') {
       renegotiatioAcceptSheetRef.current?.open();
     }
-    if (prevStage === 'accepted' && currentStage === 'accepted') {
-      renegotiatioAcceptSheetRef.current?.open();
-    }
+    // if (prevStage === 'accepted' && currentStage === 'accepted') {
+    //   renegotiatioAcceptSheetRef.current?.open();
+    // }
 
     prevStageRef.current = currentStage;
   }, [taskStatusLastItem]);
@@ -161,7 +161,6 @@ export default function TaskStatus(props: any) {
     const serviceCompleted = timeline.find(i => i.name === 'Service completed');
     const paymentReceived = timeline.find(i => i.name === 'Payment received');
 
-    console.log('serviceFlags.isOutForService ', serviceFlags.isOutForService)
     setServiceFlags({
       isOutForService: !!accepted && !outForService?.completed,
       isExpertConfirmed: !!outForService?.completed && !startedService?.completed,
@@ -563,7 +562,7 @@ export default function TaskStatus(props: any) {
         type='success'
         isNotCloseable={true}
         bottomSheetRef={successBottomSheetRef}
-        height={getScaleSize(230)}
+        height={getScaleSize(260)}
         image={IMAGES.ic_succes}
         title={STRING.security_code_validated_successfully}
         buttonTitle={STRING.proceed}

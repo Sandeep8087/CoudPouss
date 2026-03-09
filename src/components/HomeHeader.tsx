@@ -82,7 +82,7 @@ const HomeHeader = (props: any) => {
             />
           ) :
             <>
-              {profile?.user?.first_name && profile?.user?.last_name ? (
+              {(profile?.user?.first_name && profile?.user?.last_name) ? (
                 <View style={styles(theme).EmptyProfileContainer}>
                   <Text size={getScaleSize(12)}
                     font={FONTS.Lato.Medium}

@@ -205,12 +205,21 @@ export default function TransactionsElder(props: any) {
     const onDateApply = (start: any, end: any) => {
         setOpen(false);
 
-        const isCleared = start === null && end === null;
+        const prevStart = requestData.startDate;
+        const prevEnd = requestData.endDate;
+
+        const isSame =
+            (prevStart === start || (!prevStart && !start)) &&
+            (prevEnd === end || (!prevEnd && !end));
+
+        if (isSame) {
+            return;
+        }
 
         setRequestData((prev: any) => ({
             ...prev,
-            startDate: isCleared ? null : start,
-            endDate: isCleared ? null : end,
+            startDate: start,
+            endDate: end,
             page: 1,
             hasMore: true,
             flatTransactions: [],
@@ -218,7 +227,23 @@ export default function TransactionsElder(props: any) {
         }));
     };
 
-    /* ================= UI ================= */
+    const renderEmptyComponent = () => {
+        // Show empty only when API call finished
+        if (requestData.isLoading) return null;
+
+        return (
+            <View style={styles(theme).emptyContainer}>
+                <Text
+                    size={16}
+                    font={FONTS.Lato.Medium}
+                    color={theme._999999}
+                    align="center"
+                >
+                    {STRING.no_data_found}
+                </Text>
+            </View>
+        );
+    };
 
     return (
         <View style={styles(theme).container}>
@@ -300,6 +325,7 @@ export default function TransactionsElder(props: any) {
                 onEndReached={loadMore}
                 onEndReachedThreshold={0.4}
                 showsVerticalScrollIndicator={false}
+                ListEmptyComponent={renderEmptyComponent}
                 renderSectionHeader={({ section }: any) => (
                     <View style={styles(theme).sectionHeaderContainer}>
                         <View style={{ flex: 1 }}>
@@ -311,7 +337,7 @@ export default function TransactionsElder(props: any) {
                             </Text>
                         </View>
                         <Text size={24} font={FONTS.Lato.Bold} color={theme._2C6587}>
-                            {section.title.total.toFixed(2)}
+                            {`€${section.title.total.toFixed(2)}`}
                         </Text>
                     </View>
                 )}
@@ -395,5 +421,11 @@ const styles = (theme: ThemeContextType['theme']) => StyleSheet.create({
     },
     dropdownItem: {
         paddingVertical: getScaleSize(6),
+    },
+    emptyContainer: {
+        flex: 1,
+        alignItems: 'center',
+        justifyContent: 'center',
+        marginTop: getScaleSize(80),
     },
 });

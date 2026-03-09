@@ -48,6 +48,10 @@ export default function MoneyWithdrawal(props: any) {
     }
 
     async function onWithdrawal() {
+        if(!amount) {
+            setAmountError(STRING.please_Enter_the_amount_to_withdraw);
+            return;
+        }
         try {
             const payload = {
                 amount: amount,
@@ -264,10 +268,8 @@ export default function MoneyWithdrawal(props: any) {
                         title={STRING.request_withdrawal}
                         style={{ marginTop: visiblePaymentMethod ? getScaleSize(24) : getScaleSize(40) }}
                         onPress={() => {
-                            // onWithdrawal()
-                            props.navigation.navigate(SCREENS.AccountCreatedSuccessfully.identifier, {
-                                isWithdrawal: true,
-                            });
+                            onWithdrawal()
+                            
                         }}
                     />
                 </View>

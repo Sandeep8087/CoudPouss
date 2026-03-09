@@ -227,7 +227,8 @@ export default function Notification(props: any) {
     'SERVICE_PROVIDER_ON_THE_WAY',
     'SEVICES PAYMENT DONE',
     'SERVICE_COMPLETED',
-    "SERVICE_REQUEST_MADE"
+    "SERVICE_REQUEST_MADE",
+    "SERVICE_QUOTE_SENT"
   ];
 
   const ProfessionalDetailsRoutes = [
@@ -407,6 +408,7 @@ export default function Notification(props: any) {
                           <TouchableOpacity
                             style={styles(theme).nextButtonContainer}
                             activeOpacity={1}
+                            disabled={item?.data?.action_required ? false : true}
                             onPress={() => {
                               setSelectedRenegotiationItem(item?.data);
                             }}>
@@ -421,6 +423,7 @@ export default function Notification(props: any) {
                           <TouchableOpacity
                             style={styles(theme).backButtonContainer}
                             activeOpacity={1}
+                            disabled={item?.data?.action_required ? false : true}
                             onPress={() => {
                               setSelectedRenegotiationItem(item?.data ?? '');
                             }}>
@@ -585,7 +588,7 @@ export default function Notification(props: any) {
         subTitle={STRING.the_provider_has_reviewed_the_task_and_proposed_a_revised_budget_the_new_agreed_service_fee_is}
         buttonTitle={STRING.confirm_pay}
         secondButtonTitle={STRING.decline}
-        renegotiationAmount={selectedRenegotiationItem?.adjustment_amount ?? '0'}
+        renegotiationAmount={selectedRenegotiationItem?.difference_amount ?? '0'}
         onPressSecondButton={() => {
           onRenegotiationDecline()
         }}

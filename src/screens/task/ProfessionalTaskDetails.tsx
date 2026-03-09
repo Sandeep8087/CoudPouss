@@ -630,7 +630,7 @@ export default function ProfessionalTaskDetails(props: any) {
                 size={getScaleSize(14)}
                 font={FONTS.Lato.SemiBold}
                 color={'#595959'}>
-                {`€${taskDetails?.quote?.tax ?? 0}`}
+                {`€${taskDetails?.quote?.Tax ?? 0}`}
               </Text>
             </View>
             <View style={styles(theme).dotView} />

@@ -407,6 +407,7 @@ export default function MyProfile(props: any) {
                         numberOfLines={10}
                         maxLength={250}
                         onContentSizeChange={(e) => {
+                            
                             const newHeight = e.nativeEvent.contentSize.height;
                             setAddressHeight(
                                 Math.min(getScaleSize(200), Math.max(inputHeight, newHeight))
@@ -419,10 +420,8 @@ export default function MyProfile(props: any) {
                         }}
                         continerStyle={{ marginBottom: getScaleSize(20) }}
                         onChangeText={text => {
-                            // remove HTML brackets immediately
                             let cleaned = text.replace(/[<>]/g, '');
-
-                            // block emoji live
+                            cleaned = cleaned.replace(/^\s+/, '');
                             if (containsEmoji(cleaned)) return;
 
                             setAddress(cleaned);
@@ -441,7 +440,7 @@ export default function MyProfile(props: any) {
             />
             <BottomSheet
                 bottomSheetRef={bottomSheetRef}
-                height={getScaleSize(350)}
+                height={getScaleSize(360)}
                 isInfo={true}
                 title={STRING.are_you_sure_you_want_to_delete_your_account}
                 description={STRING.delete_account_message}

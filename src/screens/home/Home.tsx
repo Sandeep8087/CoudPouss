@@ -135,6 +135,8 @@ export default function Home(props: any) {
     }
   }
 
+  console.log('favoriteProfessionals==', favoriteProfessionals?.length);
+
   return (
     <View style={styles(theme).container}>
       <StatusBar
@@ -186,7 +188,7 @@ export default function Home(props: any) {
                   size={getScaleSize(48)}
                   font={FONTS.Lato.Bold}
                   color={theme.white}>
-                  {props?.professionalConnectedCount ?? '0'}{' '}
+                  {professionalConnectedCount ?? '0'}{' '}
                 </Text>
                 <Text
                   size={getScaleSize(20)}
@@ -402,7 +404,7 @@ export default function Home(props: any) {
                     color={theme._323232}>
                     {STRING.FavoriteProfessionals}
                   </Text>
-                  {favoriteProfessionals?.length > 2 && (
+                  {favoriteProfessionals?.length > 1 && (
                     <Text
                       onPress={() => {
                         props.navigation.navigate(

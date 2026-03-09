@@ -264,7 +264,6 @@ export default function CreateRequest(props: any) {
   };
 
   async function uploadProfileImage(asset: any, type: string) {
-    Alert.alert('uploadProfileImage', JSON.stringify(asset));
     try {
       const isVideo = asset?.type?.startsWith('video');
 
@@ -1012,7 +1011,8 @@ export default function CreateRequest(props: any) {
                   /[\p{Extended_Pictographic}]/gu,
                   ''
                 );
-                const noHtml = noEmoji.replace(/<[^>]*>/g, '');
+                const space = noEmoji.replace(/^\s+/, '');
+                const noHtml = space.replace(/<[^>]*>/g, '');
                 const trimmedToMax = noHtml.slice(0, 500);
                 setDescription(trimmedToMax);
                 setDescriptionError('');
@@ -1139,6 +1139,7 @@ export default function CreateRequest(props: any) {
               style={styles(theme).selectAddressButton}
               onPress={() => {
                 props.navigation.navigate(SCREENS.Address.identifier);
+                setAddressError('');
               }}
             >
               <Text

@@ -17,7 +17,7 @@ import { FONTS, IMAGES } from '../../assets';
 import { AuthContext, ThemeContext, ThemeContextType } from '../../context';
 
 //CONSTANT
-import { getScaleSize, SHOW_SUCCESS_TOAST, SHOW_TOAST, useString } from '../../constant';
+import { getScaleSize, sanitizeAddressInput, sanitizeNameInput, SHOW_SUCCESS_TOAST, SHOW_TOAST, useString } from '../../constant';
 
 //COMPONENT
 import {
@@ -342,33 +342,7 @@ export default function EditProfile(props: any) {
         return '';
     };
 
-    const sanitizeNameInput = (text: string) => {
-        if (!text) return '';
-
-        let value = text;
-
-        // Remove emojis
-        value = value.replace(/([\u{1F000}-\u{1FFFF}]|[\u{2600}-\u{27BF}])/gu, '');
-
-        // Allow only alphabets + space + dot + hyphen
-        value = value.replace(/[^A-Za-z.\-\s]/g, '');
-
-        // Remove leading spaces
-        value = value.replace(/^\s+/, '');
-
-        // Replace multiple spaces with single
-        value = value.replace(/\s{2,}/g, ' ');
-
-        // Remove trailing spaces
-        value = value.replace(/\s+$/, '');
-
-        // Hard limit
-        if (value.length > 50) {
-            value = value.slice(0, 50);
-        }
-
-        return value;
-    };
+   
     const validateMobile = (value: string) => {
         const trimmed = value.trim();
 
@@ -380,30 +354,6 @@ export default function EditProfile(props: any) {
         return "";
     };
 
-    const sanitizeAddressInput = (text: string) => {
-        if (!text) return '';
-
-        let value = text;
-
-        // Remove emojis
-        value = value.replace(/([\u{1F000}-\u{1FFFF}]|[\u{2600}-\u{27BF}])/gu, '');
-
-        // Remove leading spaces
-        value = value.replace(/^\s+/, '');
-
-        // Replace multiple spaces with single
-        value = value.replace(/\s{2,}/g, ' ');
-
-        // Remove trailing spaces
-        value = value.replace(/\s+$/, '');
-
-        // Hard limit
-        if (value.length > 250) {
-            value = value.slice(0, 250);
-        }
-
-        return value;
-    };
 
     const validateAddress = (value: string) => {
         if (!value) {
@@ -749,7 +699,7 @@ export default function EditProfile(props: any) {
                 </View>
                 <BottomSheet
                     bottomSheetRef={bottomSheetRef}
-                    height={getScaleSize(350)}
+                    height={getScaleSize(360)}
                     isInfo={true}
                     title={STRING.are_you_sure_you_want_to_delete_your_account}
                     description={STRING.delete_account_message}

@@ -42,8 +42,6 @@ export default function Search(props: any) {
     const [searchData, setSearchData] = useState<any>([]);
     const [searchDebouncedText, setSearchDebouncedText] = useState('')
 
-    console.log('searchData=', searchData);
-
     const abortControllerRef = useRef<AbortController | undefined>(undefined);
 
     useEffect(() => {
@@ -92,7 +90,7 @@ export default function Search(props: any) {
             />
             <View style={styles(theme).notificationContainer}>
                 <View style={{
-                    marginHorizontal: getScaleSize(24), marginBottom: getScaleSize(15)
+                    marginHorizontal: getScaleSize(24), marginBottom: getScaleSize(24)
                 }}>
                     <SearchComponent
                         value={searchText}
@@ -137,7 +135,7 @@ export default function Search(props: any) {
                     ListEmptyComponent={() => {
                         if (isLoading) return null;
 
-                        if (searchData.length === 0) {
+                        if ((searchData?.services ?? []).length === 0) {
                             return (
                                 <View style={styles(theme).emptyContainer}>
                                     <Text

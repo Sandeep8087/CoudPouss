@@ -46,7 +46,7 @@ export default function RatingsReviewsItem(props: any) {
                         size={getScaleSize(16)}
                         font={FONTS.Lato.SemiBold}
                         color={theme._2B2B2B}>
-                        {isFromProfessionalProfile ? item?.name : item?.full_name ?? ''}
+                        {item?.name ? item?.name : item?.full_name ?? ''}
                     </Text>
                     <Text
                         size={getScaleSize(14)}
@@ -76,7 +76,7 @@ export default function RatingsReviewsItem(props: any) {
                 font={FONTS.Lato.Medium}
                 color={theme._131313}
                 numberOfLines={showMore ? undefined : 3}>
-                {item?.review ?? ''}
+                {item?.review ? item?.review : item?.review_description ?? ''}
             </Text>
             {item?.review?.length > 100 &&
                 <Text size={getScaleSize(11)}
@@ -96,7 +96,7 @@ export default function RatingsReviewsItem(props: any) {
                             size={getScaleSize(12)}
                             font={FONTS.Lato.Regular}
                             color={theme._707D85}>
-                            {'###'}
+                            {item?.dislikes_count ?? 0}
                         </Text>
                     </View>
                     <View style={{ width: getScaleSize(8) }} />
@@ -107,7 +107,7 @@ export default function RatingsReviewsItem(props: any) {
                             font={FONTS.Lato.Regular}
                             style={{ marginLeft: getScaleSize(2) }}
                             color={theme._707D85}>
-                            {'###'}
+                            {item?.likes_count ?? 0}
                         </Text>
                     </View>
                 </View>

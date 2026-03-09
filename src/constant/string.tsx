@@ -99,7 +99,7 @@ export const useString = () => {
     please_select_a_plan: 'Please select a plan',
     selected_plan_details: 'Selected Plan Details',
     start_your_journey_today_first_month_on_Us:
-      'Start Your Journey Today –\nFirst Month on Us!',
+      'Start Your Journey Today –\nThree Month on Us!',
     subscription_details_text:
       'Subscribe now and enjoy your first month completely free. No payment today – your subscription will start immediately, and you’ll be charged only after 30 days.',
     subscription_content: "Subscribe now and enjoy your first 3 months completely free. No payment today - your subscription will begin immediately, and you’ll be charged only after the 3-month trial ends.",
@@ -123,14 +123,14 @@ export const useString = () => {
     complete_profile_now: 'Complete Profile Now',
     subscription_successful: 'Subscription Successful',
     welcome_aboard_your_subscription_is_now_active_you_can_start_exploring_all_features_immediately:
-      'Welcome aboard! Your subscription is now active. You can start exploring all features immediately.',
+      'Welcome aboard! Your subscription is now active. You can start exploring all features Now.',
     subcription_details: 'Subcription Details',
     plan: 'Plan',
     mode_of_payment: 'Mode of Payment',
     transaction_id: 'Transaction ID',
     start_date: 'Start Date',
     billing_cycle: 'Billing Cycle',
-    first_charge_date: 'First Charge Date',
+    charge_date: 'Charge date',
     info: 'Info',
     no_paymentwas_taken_today_your_first_month_is_free:
       'No payment was taken today – your first month is free.',
@@ -250,7 +250,7 @@ export const useString = () => {
     WriteaReview: 'Write a Review',
     LeaveaReview: 'Leave a Review',
     reviewMessage: 'We greatly value your feedback',
-    reviewQuestion: 'How do you rate Bessie Cooper?',
+    reviewQuestion: 'How do you rate',
     OverallService: 'Overall Service',
     Reliability: 'Reliability',
     Punctuality: 'Punctuality',
@@ -524,7 +524,8 @@ export const useString = () => {
     product_name_required: 'Product name is required',
     all_service_categories_are_included_in_your_plan_Add_as_many_as_you_need_all_included_in_subscription_plan: "All service categories are included in your plan. Add as many as you need, all included in subscription plan.",
     are_you_sure_to_delete_the_service: "Are you sure to delete the service?",
-    delete_service: "Delete Service"
+    delete_service: "Delete Service",
+    please_Enter_the_amount_to_withdraw: "Please Enter the amount to withdraw"
   };
 };
 

@@ -8,7 +8,9 @@ import {
   requestLocationPermission,
   TABBAR_HEIGHT,
   isImageFile,
-  prepareMediaForUpload
+  prepareMediaForUpload,
+  sanitizeAddressInput,
+  sanitizeNameInput,
 } from './utils';
 import {Storage} from './storage';
 import {REGEX} from './regex';
@@ -30,4 +32,6 @@ export {
   getPeerUser,
   convertProviderToPeerUser,
   prepareMediaForUpload,
+  sanitizeAddressInput,
+  sanitizeNameInput,
 };

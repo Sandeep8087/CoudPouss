@@ -112,7 +112,7 @@ export default function SubscriptionSuccessful(props: any) {
                                 {subscriptionData?.payment_method ?? ''}
                             </Text>
                         </View>
-                        <View style={[styles(theme).flexView, { marginBottom: getScaleSize(16) }]}>
+                        {/* <View style={[styles(theme).flexView, { marginBottom: getScaleSize(16) }]}>
                             <Text size={getScaleSize(14)}
                                 font={FONTS.Lato.SemiBold}
                                 color={theme._595959}>
@@ -123,7 +123,7 @@ export default function SubscriptionSuccessful(props: any) {
                                 color={theme._424242}>
                                 {subscriptionData?.transaction_id ?? ''}
                             </Text>
-                        </View>
+                        </View> */}
                         <View style={[styles(theme).flexView, { marginBottom: getScaleSize(16) }]}>
                             <Text size={getScaleSize(14)}
                                 font={FONTS.Lato.SemiBold}
@@ -152,7 +152,7 @@ export default function SubscriptionSuccessful(props: any) {
                             <Text size={getScaleSize(14)}
                                 font={FONTS.Lato.SemiBold}
                                 color={theme._595959}>
-                                {STRING.first_charge_date}
+                                {STRING.charge_date}
                             </Text>
                             <Text size={getScaleSize(16)}
                                 font={FONTS.Lato.Bold}

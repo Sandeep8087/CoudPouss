@@ -16,7 +16,7 @@ import { AuthContext, ThemeContext, ThemeContextType } from '../../context';
 
 //CONSTANT & ASSETS
 import { FONTS, IMAGES } from '../../assets';
-import { getScaleSize, REGEX, SHOW_TOAST, Storage, useString } from '../../constant';
+import { getScaleSize, REGEX, sanitizeAddressInput, sanitizeNameInput, SHOW_TOAST, Storage, useString } from '../../constant';
 
 //SCREENS
 import { SCREENS } from '..';
@@ -342,13 +342,8 @@ export default function AddPersonalDetails(props: any) {
             value={name}
             maxLength={50}
             onChangeText={text => {
-              // Remove emojis only
-              const noEmoji = text.replace(
-                /([\u2700-\u27BF]|[\uE000-\uF8FF]|[\uD83C-\uDBFF\uDC00-\uDFFF]+)/g,
-                ''
-              );
-
-              setName(noEmoji);
+              const clean = sanitizeNameInput(text);
+              setName(clean);
               setNameError('');
             }}
             isError={nameError}
@@ -402,15 +397,8 @@ export default function AddPersonalDetails(props: any) {
             value={address}
             maxLength={250}
             onChangeText={text => {
-              const noEmoji = text.replace(
-                /([\u2700-\u27BF]|[\uE000-\uF8FF]|[\uD83C-\uDBFF\uDC00-\uDFFF]+)/g,
-                ''
-              );
-
-              // Remove spaces completely
-              const noSpaces = noEmoji.replace(/\s/g, '');
-
-              setAddress(noSpaces);
+              const clean = sanitizeAddressInput(text);
+              setAddress(clean);
               setAddressError('');
             }}
             isError={addressError}

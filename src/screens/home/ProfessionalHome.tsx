@@ -230,7 +230,7 @@ export default function ProfessionalHome(props: any) {
       );
       setLoading(false);
       if (result?.status) {
-        console.log('result==>', result?.data?.data);
+        console.log('resulcounttvgvt==>', result?.data?.data?.status?.verified_providers_today?.count        );
         setServiceList(result.data.data ?? []);
         if(result?.data?.detail){
           SHOW_TOAST(result?.data?.detail , 'success')
@@ -590,7 +590,7 @@ export default function ProfessionalHome(props: any) {
                   size={getScaleSize(40)}
                   font={FONTS.Lato.Bold}
                   color={theme.white}>
-                  {serviceList?.stats?.verified_providers_today?.count ?? '0'}{' '}
+                  {serviceList?.status?.verified_providers_today?.count ?? '0'}{' '}
                 </Text>
                 <Text
                   size={getScaleSize(16)}

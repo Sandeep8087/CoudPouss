@@ -440,17 +440,17 @@ export default function AddQuote(props: any) {
               styles(theme).horizontalView,
               { marginTop: getScaleSize(16) },
             ]}>
-            {isServiceDetails?.about_client?.profile_photo === null ?
-              <Image
-                style={styles(theme).profilePicView}
-                source={IMAGES.user_placeholder}
-              />
-              :
+            {isServiceDetails?.about_client?.profile_photo ?
               <Image
                 style={styles(theme).profilePicView}
                 resizeMode='contain'
                 source={{ uri: isServiceDetails?.about_client?.profile_photo }}
               />
+              : <Image
+                style={styles(theme).profilePicView}
+                source={IMAGES.user_placeholder}
+              />
+
             }
             <Text
               style={{ alignSelf: 'center', marginLeft: getScaleSize(16) }}

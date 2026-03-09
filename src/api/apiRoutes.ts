@@ -49,7 +49,7 @@ const API_ROUTES = {
     getServicePaymentDetails: "service_confirmation/service_accept/payment-details",
     otherUserProfile: "service_confirmation/service_accept/user",
     confirmPayment: "service_confirmation/service_accept/confirm-payment",
-    onWriteReview: "service_confirmation/ratings/submit?type=both",
+    onWriteReview: "service_confirmation/ratings/submit",
     getCancelServiceDetails: "service_request/get-payment",
     onCancelService: "service_request/cancel",
     getAllService: "userService/provider-services",
@@ -84,6 +84,7 @@ const API_ROUTES = {
     onUpdateAddress: "service_request/addresses",
     onPaymanWithdrawal: "subscription_and_payment/wallet-withdraw/create",
     createNegotiationChat: "service_confirmation/service_accept/create_negotiation",
+    getReviewData: "service_confirmation/ratings/service"
 }
 
 export { API_ROUTES, API_BASE_URL, DISABLE_API_LOGS }

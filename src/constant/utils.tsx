@@ -128,6 +128,59 @@ export const prepareMediaForUpload = async (asset: any) => {
   };
 };
 
+export const sanitizeAddressInput = (text: string) => {
+  if (!text) return '';
+
+  let value = text;
+
+  // Remove emojis
+  value = value.replace(/([\u{1F000}-\u{1FFFF}]|[\u{2600}-\u{27BF}])/gu, '');
+
+  // Remove leading spaces
+  value = value.replace(/^\s+/, '');
+
+  // Replace multiple spaces with single
+  value = value.replace(/\s{2,}/g, ' ');
+
+  // Remove trailing spaces
+
+
+  // Hard limit
+  if (value.length > 250) {
+      value = value.slice(0, 250);
+  }
+
+  return value;
+};
+
+export const sanitizeNameInput = (text: string) => {
+  if (!text) return '';
+
+  let value = text;
+
+  // Remove emojis
+  value = value.replace(/([\u{1F000}-\u{1FFFF}]|[\u{2600}-\u{27BF}])/gu, '');
+
+  // Allow only alphabets + space + dot + hyphen
+  value = value.replace(/[^A-Za-z.\-\s]/g, '');
+
+  // Remove leading spaces
+  value = value.replace(/^\s+/, '');
+
+  // Replace multiple spaces with single
+  value = value.replace(/\s{2,}/g, ' ');
+
+  // Remove trailing spaces
+
+
+  // Hard limit
+  if (value.length > 50) {
+      value = value.slice(0, 50);
+  }
+
+  return value;
+};
+
 const SCREEN_WIDTH = Dimensions.get('window').width;
 const TABBAR_RATIO = getScaleSize(105) / getScaleSize(428);
 export const TABBAR_HEIGHT = SCREEN_WIDTH * TABBAR_RATIO;

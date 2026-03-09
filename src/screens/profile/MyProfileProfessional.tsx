@@ -298,8 +298,8 @@ export default function MyProfileProfessional(props: any) {
           <View style={{ marginTop: getScaleSize(15) }}>
             <RattingControler
               title={'Work quality'}
-              value={profile?.customer_ratings?.criteria_averages?.work_quality ?? '0.0'}
-              fillCount={profile?.customer_ratings?.criteria_averages?.work_quality ?? 0}
+              value={profile?.customer_ratings?.criteria_averages?.overall ?? '0.0'}
+              fillCount={profile?.customer_ratings?.criteria_averages?.overall ?? 0}
               totalCount={5}
             />
           </View>

@@ -157,7 +157,7 @@ export default function OtherUserProfile(props: any) {
                   style={{alignSelf: 'center'}}>
                   {'4.6'}
                 </Text> */}
-                {item?.is_certified === true &&
+                {userProfile?.is_certified === true &&
                   <Image
                     style={{
                       height: getScaleSize(24),
@@ -173,7 +173,7 @@ export default function OtherUserProfile(props: any) {
                   color={'#214C65'}
                   align='center'
                   style={{ marginTop: getScaleSize(4) }}>
-                  {item?.is_certified === true ? STRING.Certified : 'Not\ncertified'}
+                  {userProfile?.is_certified === true ? STRING.Certified : 'Not\ncertified'}
                 </Text>
               </View>
             </View>
@@ -437,6 +437,7 @@ const styles = (theme: ThemeContextType['theme']) =>
       width: getScaleSize(130),
       borderRadius: getScaleSize(65),
       alignSelf: 'center',
+      backgroundColor: '#D5D5D5',
     },
     horizontalContainer: {
       flexDirection: 'row',
