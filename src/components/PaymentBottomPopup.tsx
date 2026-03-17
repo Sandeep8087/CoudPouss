@@ -143,7 +143,7 @@ const PaymentBottomPopup = (props: any) => {
                 size={getScaleSize(14)}
                 font={FONTS.Lato.SemiBold}
                 color={'#595959'}>
-                {STRING.PlatformFee}
+                {STRING.PlatformFee + ' (10%)'}
               </Text>
               <Text
 

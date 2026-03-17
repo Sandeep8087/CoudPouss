@@ -34,6 +34,7 @@ import DocumentStatusItem from './DocumentStatusItem'
 import EmptyView from './EmptyView'
 import RenegotiationSheet from './RenegotiationSheet'
 import EnterSecurityCodeSheet from './EnterSecurityCodeSheet'
+import SelectMediaModal from './SelectMediaModal'
 
 export {
     Header,
@@ -72,4 +73,5 @@ export {
     EmptyView,
     RenegotiationSheet,
     EnterSecurityCodeSheet,
+    SelectMediaModal,
 }

@@ -123,7 +123,7 @@ export default function ApplicationStatus(props: any) {
             status.push({
                 id: 5,
                 name: "Rejected",
-                description: "Some documents are currently missing. Please upload the required documents within the next 15 days to avoid account deletion and a €30 fee charged to your registered card.",
+                description: applicationStatus?.docs_rejected_reason ? applicationStatus?.docs_rejected_reason : "Some documents are currently missing. Please upload the required documents within the next 15 days to avoid account deletion.",
                 isRejected: true,
             });
         }

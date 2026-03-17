@@ -166,9 +166,7 @@ export default function ManageServices(props: any) {
             )
         } else if (isLoading) {
             return (
-                <View style={styles(theme).emptyView}>
-                    <ActivityIndicator size="large" color={theme.primary} style={{ margin: 20 }} />
-                </View>
+               <ProgressView />
             )
         } else {
             return (

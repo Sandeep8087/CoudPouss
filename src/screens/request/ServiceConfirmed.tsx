@@ -214,7 +214,7 @@ export default function ServiceConfirmed(props: any) {
               size={getScaleSize(14)}
               font={FONTS.Lato.SemiBold}
               color={'#595959'}>
-              {STRING.PlatformFee}
+              {STRING.PlatformFee + ' (10%)'}
             </Text>
             <Text
               size={getScaleSize(14)}

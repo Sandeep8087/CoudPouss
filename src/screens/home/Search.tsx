@@ -28,7 +28,7 @@ import {
 } from '../../components';
 
 //PACKAGES
-import { useFocusEffect } from '@react-navigation/native';
+import { useFocusEffect, useIsFocused } from '@react-navigation/native';
 import { SCREENS } from '..';
 import { API } from '../../api';
 import { debounce } from 'lodash';
@@ -100,11 +100,12 @@ export default function Search(props: any) {
                             const trimmed = text.trim();
 
                             if (trimmed.length === 0) {
+                                debouncedSearch.cancel();
                                 setSearchDebouncedText('');
-                                setSearchData([]);
+                                setSearchData([]);   // list empty
                                 return;
+                                
                             }
-
                             debouncedSearch(trimmed);
                         }} />
                 </View>

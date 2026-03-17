@@ -27,6 +27,7 @@ import {
     Button,
     SelectCountrySheet,
     BottomSheet,
+    ProgressView,
 } from '../../components';
 
 //PACKAGES
@@ -198,8 +199,10 @@ export default function EditProfile(props: any) {
             setLoading(false);
             if (result?.status) {
                 SHOW_TOAST(STRING.profile_updated_successfully, 'success')
-                props.navigation.goBack();
-                await fetchProfile()
+                setTimeout(() => {
+                    props.navigation.goBack();
+                }, 500);
+                fetchProfile()
             }
             else {
                 SHOW_TOAST(result?.data?.message, 'error')
@@ -272,24 +275,22 @@ export default function EditProfile(props: any) {
 
         let value = text;
 
-        // Remove emojis
-        value = value.replace(
-            /([\u{1F000}-\u{1FFFF}]|[\u{2600}-\u{27BF}])/gu,
-            ''
-        );
+        // convert non-breaking space to normal space
+        value = value.replace(/\u00A0/g, ' ');
 
-        // Allow characters
-        value = value.replace(/[^a-zA-Z0-9\s.,'@_-]/g, '');
+        // Remove emojis
+        value = value.replace(/([\u{1F000}-\u{1FFFF}]|[\u{2600}-\u{27BF}])/gu, '');
+
+        // Allow characters + space
+        value = value.replace(/[^a-zA-Z0-9 ., '@_-]/g, '');
 
         // Remove leading spaces
         value = value.replace(/^\s+/, '');
 
-        // Replace multiple spaces
+        // Replace multiple spaces with single
         value = value.replace(/\s{2,}/g, ' ');
 
-        // Remove trailing spaces
-        value = value.replace(/\s+$/, '');
-
+        // Max length
         if (value.length > 300) {
             value = value.slice(0, 300);
         }
@@ -342,7 +343,7 @@ export default function EditProfile(props: any) {
         return '';
     };
 
-   
+
     const validateMobile = (value: string) => {
         const trimmed = value.trim();
 
@@ -726,6 +727,7 @@ export default function EditProfile(props: any) {
                     }}
                 />
             </View>
+            {isLoading && <ProgressView />}
         </KeyboardAvoidingView>
     );
 }

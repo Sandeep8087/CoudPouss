@@ -84,7 +84,7 @@ export default function AddQuote(props: any) {
       setLoading(false)
 
       if (result?.status) {
-        setServiceDetails(result?.data)
+        setServiceDetails(result?.data?.data)
       }
       else {
         SHOW_TOAST(result?.data?.message, 'error')
@@ -301,10 +301,16 @@ export default function AddQuote(props: any) {
             isFromHome: true,
           });
         } else {
-          SHOW_TOAST(result?.message || 'Failed to send quote', 'error');
+          console.log('result==>', result)
+          if(result?.code === 403) {
+            SHOW_TOAST(result?.data?.detail || 'Failed to send quote', 'error');
+          } else {
+            SHOW_TOAST(result?.message || 'Failed to send quote', 'error');
+          }
         }
       } catch (e: any) {
         setLoading(false);
+        console.log('e==>', e)
         SHOW_TOAST(e?.message || 'Something went wrong', 'error');
       }
     }

@@ -12,7 +12,7 @@ import {
 import React, { useContext, useEffect, useState } from 'react';
 
 //CONTEXT
-import { AuthContext, ThemeContext, ThemeContextType } from '../../context';
+import { AuthContext, LaungageContext, ThemeContext, ThemeContextType } from '../../context';
 
 //CONSTANT & ASSETS
 import { FONTS, IMAGES } from '../../assets';
@@ -39,8 +39,8 @@ export default function AddPersonalDetails(props: any) {
   const STRING = useString();
 
   const { theme } = useContext<any>(ThemeContext);
-  const { userType, setUser, setUserType, setProfile } =
-    useContext<any>(AuthContext);
+  const { userType, setUser, setUserType, setProfile } = useContext<any>(AuthContext);
+  const { setLanguage } = useContext<any>(LaungageContext);
 
   const isEmail = props?.route?.params?.email || '';
   // const isPhoneNumber = props?.route?.params?.isPhoneNumber || false;
@@ -255,6 +255,8 @@ export default function AddPersonalDetails(props: any) {
       const result = await API.Instance.get(API.API_ROUTES.getUserDetails + `?platform=app`);
       if (result.status) {
         setProfile(result?.data?.data);
+        // Storage.save(Storage.USER_LANGUAGE, JSON.stringify(result?.data?.data?.user?.lang));
+        setLanguage(result?.data?.data?.user?.lang);
         onNext();
       } else {
         SHOW_TOAST(result?.data?.message, 'error');

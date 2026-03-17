@@ -12,7 +12,7 @@ import {
 import React, {useContext, useEffect} from 'react';
 
 //CONTEXT
-import {AuthContext, ThemeContext, ThemeContextType} from '../context';
+import {AuthContext, LaungageContext, ThemeContext, ThemeContextType} from '../context';
 
 //CONSTANT & ASSETS
 import {IMAGES} from '../assets';
@@ -31,7 +31,7 @@ import {PERMISSIONS, request, RESULTS} from 'react-native-permissions';
 export default function Splash(props: any) {
   const {theme} = useContext(ThemeContext);
   const {setUser, setUserType, setProfile} = useContext<any>(AuthContext);
-
+  const {setLanguage} = useContext<any>(LaungageContext);
   useEffect(() => {
     checkUserDetails();
   }, []);
@@ -118,6 +118,9 @@ export default function Splash(props: any) {
       );
       if (result.status) {
         setProfile(result?.data?.data);
+        console.log('result?.data?.data?.user?.lang==>', result?.data?.data?.user?.lang);
+        // Storage.save(Storage.USER_LANGUAGE, JSON.stringify(result?.data?.data?.user?.lang));
+        setLanguage(result?.data?.data?.user?.lang);
         props.navigation.dispatch(
           CommonActions.reset({
             index: 0,

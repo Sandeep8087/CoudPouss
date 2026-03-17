@@ -1,4 +1,4 @@
-import React, {useContext, useEffect, useRef, useState} from 'react';
+import React, { useContext, useEffect, useRef, useState } from 'react';
 import {
   View,
   StatusBar,
@@ -9,9 +9,9 @@ import {
   Platform,
 } from 'react-native';
 
-import {ThemeContext, ThemeContextType} from '../../context';
-import {FONTS, IMAGES} from '../../assets';
-import {getScaleSize, SHOW_TOAST, useString} from '../../constant';
+import { ThemeContext, ThemeContextType } from '../../context';
+import { FONTS, IMAGES } from '../../assets';
+import { getScaleSize, SHOW_TOAST, useString } from '../../constant';
 import {
   Text,
   HomeHeader,
@@ -24,12 +24,12 @@ import {
   useFocusEffect,
   useIsFocused,
 } from '@react-navigation/native';
-import {SCREENS, TABS} from '..';
-import {API} from '../../api';
+import { SCREENS, TABS } from '..';
+import { API } from '../../api';
 
 export default function Home(props: any) {
   const STRING = useString();
-  const {theme} = useContext<any>(ThemeContext);
+  const { theme } = useContext<any>(ThemeContext);
 
   const acceptRef = useRef<any>(null);
 
@@ -161,7 +161,7 @@ export default function Home(props: any) {
               routes: [
                 {
                   name: SCREENS.BottomBar.identifier,
-                  params: {isProfile: true},
+                  params: { isProfile: true },
                 },
               ],
             }),
@@ -183,7 +183,7 @@ export default function Home(props: any) {
               <Image style={styles(theme).workerImage} source={IMAGES.worker} />
             </View>
             <View style={styles(theme).textView}>
-              <View style={{flexDirection: 'row'}}>
+              <View style={{ flexDirection: 'row' }}>
                 <Text
                   size={getScaleSize(48)}
                   font={FONTS.Lato.Bold}
@@ -194,11 +194,11 @@ export default function Home(props: any) {
                   size={getScaleSize(20)}
                   font={FONTS.Lato.SemiBold}
                   color={theme.white}>
-                  {'Professionals\nConnected Today'}
+                  {STRING.professionals_connected_today}
                 </Text>
               </View>
               <Text
-                style={{marginTop: getScaleSize(8)}}
+                style={{ marginTop: getScaleSize(8) }}
                 size={getScaleSize(12)}
                 font={FONTS.Lato.Regular}
                 color={theme.white}>
@@ -230,15 +230,15 @@ export default function Home(props: any) {
                 service: service,
               });
             } else {
-              SHOW_TOAST('Service not found', 'error');
+              SHOW_TOAST(STRING.service_not_found, 'error');
             }
           }}>
           <Text
-            style={{flex: 1.0, alignSelf: 'center'}}
+            style={{ flex: 1.0, alignSelf: 'center' }}
             size={getScaleSize(24)}
             font={FONTS.Lato.Bold}
             color={theme._323232}>
-            {'Home Assistance'}
+            {STRING.home_assistance}
           </Text>
           <Image
             style={styles(theme).bannerImage}
@@ -249,7 +249,7 @@ export default function Home(props: any) {
           <TouchableOpacity
             style={[
               styles(theme).imageContainer,
-              {borderTopLeftRadius: getScaleSize(40)},
+              { borderTopLeftRadius: getScaleSize(40) },
             ]}
             activeOpacity={1}
             onPress={() => {
@@ -261,7 +261,7 @@ export default function Home(props: any) {
                   service: service,
                 });
               } else {
-                SHOW_TOAST('Service not found', 'error');
+                SHOW_TOAST(STRING.service_not_found, 'error');
               }
             }}>
             <Image
@@ -272,7 +272,7 @@ export default function Home(props: any) {
             <Text
               size={getScaleSize(16)}
               font={FONTS.Lato.Medium}
-              style={{marginTop: getScaleSize(8)}}
+              style={{ marginTop: getScaleSize(8) }}
               color={theme._787878}>
               {STRING.Transport}
             </Text>
@@ -280,7 +280,7 @@ export default function Home(props: any) {
           <TouchableOpacity
             style={[
               styles(theme).imageContainer,
-              {marginHorizontal: getScaleSize(12)},
+              { marginHorizontal: getScaleSize(12) },
             ]}
             activeOpacity={1}
             onPress={() => {
@@ -292,7 +292,7 @@ export default function Home(props: any) {
                   service: service,
                 });
               } else {
-                SHOW_TOAST('Service not found', 'error');
+                SHOW_TOAST(STRING.service_not_found, 'error');
               }
             }}>
             <Image
@@ -303,7 +303,8 @@ export default function Home(props: any) {
             <Text
               size={getScaleSize(16)}
               font={FONTS.Lato.Medium}
-              style={{marginTop: getScaleSize(8)}}
+              align="center"
+              style={{ marginTop: getScaleSize(8) }}
               color={theme._787878}>
               {STRING.PersonalCare}
             </Text>
@@ -311,7 +312,7 @@ export default function Home(props: any) {
           <TouchableOpacity
             style={[
               styles(theme).imageContainer,
-              {borderTopRightRadius: getScaleSize(40)},
+              { borderTopRightRadius: getScaleSize(40) },
             ]}
             activeOpacity={1}
             onPress={() => {
@@ -323,7 +324,7 @@ export default function Home(props: any) {
                   service: service,
                 });
               } else {
-                SHOW_TOAST('Service not found', 'error');
+                SHOW_TOAST(STRING.service_not_found, 'error');
               }
             }}>
             <Image
@@ -334,7 +335,8 @@ export default function Home(props: any) {
             <Text
               size={getScaleSize(16)}
               font={FONTS.Lato.Medium}
-              style={{marginTop: getScaleSize(8)}}
+              align="center"
+              style={{ marginTop: getScaleSize(8) }}
               color={theme._787878}>
               {STRING.TechSupport}
             </Text>
@@ -351,7 +353,7 @@ export default function Home(props: any) {
           <Text
             size={getScaleSize(20)}
             font={FONTS.Lato.SemiBold}
-            style={{flex: 1.0}}
+            style={{ flex: 1.0 }}
             color={theme._323232}>
             {STRING.ResentRequests}
           </Text>
@@ -362,7 +364,7 @@ export default function Home(props: any) {
               onPress={() => {
                 props.navigation.navigate(TABS.Request.identifier);
               }}
-              style={{alignSelf: 'center'}}
+              style={{ alignSelf: 'center' }}
               color={theme._999999}>
               {STRING.ViewAll}
             </Text>
@@ -400,7 +402,7 @@ export default function Home(props: any) {
                   <Text
                     size={getScaleSize(20)}
                     font={FONTS.Lato.SemiBold}
-                    style={{flex: 1.0}}
+                    style={{ flex: 1.0 }}
                     color={theme._323232}>
                     {STRING.FavoriteProfessionals}
                   </Text>
@@ -413,7 +415,7 @@ export default function Home(props: any) {
                       }}
                       size={getScaleSize(16)}
                       font={FONTS.Lato.Regular}
-                      style={{alignSelf: 'center'}}
+                      style={{ alignSelf: 'center' }}
                       color={theme._999999}>
                       {STRING.ViewAll}
                     </Text>
@@ -428,7 +430,7 @@ export default function Home(props: any) {
                   {favoriteProfessionals?.length > 0 &&
                     favoriteProfessionals.map((item: any, index: number) => {
                       return (
-                        <View key={index} style={{marginTop: getScaleSize(26)}}>
+                        <View key={index} style={{ marginTop: getScaleSize(26) }}>
                           <FavouritesItem
                             item={item}
                             itemContainer={{}}
@@ -475,7 +477,10 @@ export default function Home(props: any) {
 
 const styles = (theme: ThemeContextType['theme']) =>
   StyleSheet.create({
-    container: {flex: 1, backgroundColor: theme.white},
+    container: {
+      flex: 1,
+      backgroundColor: theme.white
+    },
     bannerContainer: {
       height: getScaleSize(105),
       flex: 1.0,

@@ -161,7 +161,7 @@ const styles = (theme: ThemeContextType['theme']) => StyleSheet.create({
         flex: 1,
     },
     statusBarContainer: {
-        paddingTop: StatusBar.currentHeight
+        // paddingTop: StatusBar.currentHeight
     },
     backIcon: {
         width: getScaleSize(48),

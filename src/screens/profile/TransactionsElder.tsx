@@ -276,7 +276,7 @@ export default function TransactionsElder(props: any) {
                                     { id: '1', title: 'All', value: '' },
                                     { id: '2', title: 'Success', value: 'success' },
                                     { id: '3', title: 'Failed', value: 'failed' },
-                                    { id: '4', title: 'Pending', value: 'pending' },
+                                    // { id: '4', title: 'Pending', value: 'pending' },
                                 ].map(item => (
                                     <TouchableOpacity
                                         key={item.id}

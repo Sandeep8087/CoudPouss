@@ -43,6 +43,22 @@ export default function Address(props: any) {
         }
     }
 
+    async function onDeleteAddress(id: string) {
+        try {
+            setIsLoading(true);
+            const result = await API.Instance.delete(API.API_ROUTES.onUpdateAddress + '/' + id);
+            if (result.status) {
+                getSavedAddresses();
+            } else {
+                SHOW_TOAST(result.data.message, 'error');
+            }
+        } catch (error: any) {
+            SHOW_TOAST(error?.message ?? '', 'error');
+        } finally {
+            setIsLoading(false);
+        }
+    }
+
     return (
         <View style={styles(theme).container}>
             <Header
@@ -57,59 +73,68 @@ export default function Address(props: any) {
                     <ActivityIndicator size="large" color={theme.primary} />
                 </View>
             ) : (
-                savedAddresses.length > 0 ? 
-                <FlatList
-                    data={savedAddresses}
-                    showsVerticalScrollIndicator={false}
-                    keyExtractor={(item, index) => index.toString()}
-                    renderItem={({ item }) => (
-                        <View style={styles(theme).itemContainer}>
-                            <TouchableOpacity
-                                activeOpacity={1}
-                                onPress={() => {
-                                    setSelectedAddress(item);
-                                }}
-                            >
-                                <Image source={selectedAddress?.id === item?.id ? IMAGES.ic_radio_select : IMAGES.ic_radio_unselect} style={styles(theme).radioSelectIcon} />
-                            </TouchableOpacity>
-                            <View style={{ flex: 1 }}>
-                                <Text
-                                    size={getScaleSize(20)}
-                                    font={FONTS.Lato.SemiBold}
-                                    color={theme.black}>
-                                    {profile?.user?.first_name} {profile?.user?.last_name ?? ''}
-                                </Text>
-                                <Text
-                                    style={{ marginTop: getScaleSize(16), marginBottom: getScaleSize(12), }}
-                                    size={getScaleSize(18)}
-                                    font={FONTS.Lato.Regular}
-                                    color={theme._555555}>
-                                    {`${item.banglo}, ${item.city}, ${item.state}, ${item.postal_code}`}
-                                </Text>
-                                <Text
-                                    size={getScaleSize(16)}
-                                    font={FONTS.Lato.Bold}
-                                    color={theme._2B2B2B}>
-                                    {profile?.user?.phone_number}
-                                </Text>
+                savedAddresses.length > 0 ?
+                    <FlatList
+                        data={savedAddresses}
+                        showsVerticalScrollIndicator={false}
+                        keyExtractor={(item, index) => index.toString()}
+                        renderItem={({ item }) => (
+                            <View style={styles(theme).itemContainer}>
+                                <TouchableOpacity
+                                    activeOpacity={1}
+                                    onPress={() => {
+                                        setSelectedAddress(item);
+                                        props.navigation.goBack();
+                                    }}
+                                >
+                                    <Image source={selectedAddress?.id === item?.id ? IMAGES.ic_radio_select : IMAGES.ic_radio_unselect} style={styles(theme).radioSelectIcon} />
+                                </TouchableOpacity>
+                                <View style={{ flex: 1 }}>
+                                    <Text
+                                        size={getScaleSize(20)}
+                                        font={FONTS.Lato.SemiBold}
+                                        color={theme.black}>
+                                        {profile?.user?.first_name} {profile?.user?.last_name ?? ''}
+                                    </Text>
+                                    <Text
+                                        style={{ marginTop: getScaleSize(16), marginBottom: getScaleSize(12), }}
+                                        size={getScaleSize(18)}
+                                        font={FONTS.Lato.Regular}
+                                        color={theme._555555}>
+                                        {`${item.banglo}, ${item.city}, ${item.state}, ${item.postal_code}`}
+                                    </Text>
+                                    <Text
+                                        size={getScaleSize(16)}
+                                        font={FONTS.Lato.Bold}
+                                        color={theme._2B2B2B}>
+                                        {profile?.user?.phone_number}
+                                    </Text>
+                                </View>
+                                <TouchableOpacity
+                                    activeOpacity={1}
+                                    onPress={() => {
+                                        props.navigation.navigate(SCREENS.EditAddress.identifier, {
+                                            addressData: item
+                                        });
+                                    }}
+                                >
+                                    <Image source={IMAGES.edit} style={styles(theme).editIcon} />
+                                </TouchableOpacity>
+                                <TouchableOpacity
+                                    activeOpacity={1}
+                                    onPress={() => {
+                                        onDeleteAddress(item.id);
+                                    }}
+                                >
+                                    <Image source={IMAGES.ic_delete} style={styles(theme).deleteIcon} />
+                                </TouchableOpacity>
                             </View>
-                            <TouchableOpacity
-                                activeOpacity={1}
-                                onPress={() => {
-                                    props.navigation.navigate(SCREENS.EditAddress.identifier, {
-                                        addressData: item
-                                    });
-                                }}
-                            >
-                                <Image source={IMAGES.edit} style={styles(theme).editIcon} />
-                            </TouchableOpacity>
-                        </View>
-                    )}
-                />
-                :
-                <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-                    <Text size={getScaleSize(16)} font={FONTS.Lato.Regular} color={theme._555555}>No addresses found</Text>
-                </View>
+                        )}
+                    />
+                    :
+                    <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+                        <Text size={getScaleSize(16)} font={FONTS.Lato.Regular} color={theme._555555}>No addresses found</Text>
+                    </View>
             )}
             <Button
                 title={STRING.add_new_address}
@@ -147,5 +172,11 @@ const styles = (theme: ThemeContextType['theme']) => StyleSheet.create({
         width: getScaleSize(20),
         height: getScaleSize(20),
         marginLeft: getScaleSize(10),
+    },
+    deleteIcon: {
+        width: getScaleSize(18),
+        height: getScaleSize(18),
+        marginLeft: getScaleSize(16),
+        tintColor: theme._2C6587,
     }
 })

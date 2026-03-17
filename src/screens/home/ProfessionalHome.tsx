@@ -230,7 +230,7 @@ export default function ProfessionalHome(props: any) {
       );
       setLoading(false);
       if (result?.status) {
-        console.log('resulcounttvgvt==>', result?.data?.data?.status?.verified_providers_today?.count        );
+        console.log('resulcounttvgvt==>', result?.data?.data?.status?.verified_providers_today?.count);
         setServiceList(result.data.data ?? []);
         if(result?.data?.detail){
           SHOW_TOAST(result?.data?.detail , 'success')
@@ -301,7 +301,7 @@ export default function ProfessionalHome(props: any) {
             style={{
               marginTop: getScaleSize(28),
             }}>
-            {STRING.ExploreServiceRequests}
+            {STRING.explore_service_requests}
           </Text>
           <View style={{flex: 1}}></View>
           {serviceList?.open_services?.length > 0 && (
@@ -496,7 +496,7 @@ export default function ProfessionalHome(props: any) {
             font={FONTS.Lato.Medium}
             color={theme._6D6D6D}
             style={{}}>
-            {`Hello! ${
+            {`${STRING.hello} ${
               profile?.user?.first_name + ' ' + profile?.user?.last_name
             }`}
           </Text>
@@ -505,7 +505,7 @@ export default function ProfessionalHome(props: any) {
             font={FONTS.Lato.Bold}
             color={theme._2C6587}
             style={{}}>
-            {'Welcome to CoudPouss'}
+            {STRING.welcome_to_coudpouss}
           </Text>
         </View>
         <TouchableOpacity
@@ -596,7 +596,7 @@ export default function ProfessionalHome(props: any) {
                   size={getScaleSize(16)}
                   font={FONTS.Lato.Medium}
                   color={theme.white}>
-                  {'Professionals\nConnected Today'}
+                  {STRING.professionals_connected_today}
                 </Text>
               </View>
               <Text
@@ -604,7 +604,7 @@ export default function ProfessionalHome(props: any) {
                 size={getScaleSize(12)}
                 font={FONTS.Lato.Regular}
                 color={theme.white}>
-                {'Verified professionals ready to help you today'}
+                {STRING.verified_professionals_ready_to_help_you_today}
               </Text>
             </View>
           </ImageBackground>

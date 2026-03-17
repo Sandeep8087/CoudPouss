@@ -73,48 +73,50 @@ export default function SelectedPlanDetails(props: any) {
                         style={{ marginBottom: getScaleSize(18) }}>
                         {STRING.subscription_content}
                     </Text>
-                    <View style={styles(theme).subscriptionItem}>
-                        <View style={[styles(theme).flexView]}>
+                    {planDetails?.name && (
+                        <View style={styles(theme).subscriptionItem}>
+                            <View style={[styles(theme).flexView]}>
+                                <Text
+                                    size={getScaleSize(19)}
+                                    font={FONTS.Lato.Bold}
+                                    color={theme._214C65}>
+                                    {planDetails?.name ?? ''}
+                                </Text>
+                                {/* <Image source={IMAGES.ic_check} style={styles(theme).selectedView} /> */}
+                            </View>
                             <Text
-                                size={getScaleSize(19)}
-                                font={FONTS.Lato.Bold}
-                                color={theme._214C65}>
-                                {planDetails?.name ?? ''}
+                                size={getScaleSize(27)}
+                                font={FONTS.Lato.ExtraBold}
+                                color={theme._214C65}
+                                style={{ marginVertical: getScaleSize(8) }}>
+                                {`€${planDetails?.price ?? '0.00'}`}{' '}
+                                <Text
+                                    size={getScaleSize(16)}
+                                    font={FONTS.Lato.Medium}
+                                    color={theme._214C65}>
+                                    {planDetails?.duration ?? ''}
+                                </Text>
                             </Text>
-                            {/* <Image source={IMAGES.ic_check} style={styles(theme).selectedView} /> */}
-                        </View>
-                        <Text
-                            size={getScaleSize(27)}
-                            font={FONTS.Lato.ExtraBold}
-                            color={theme._214C65}
-                            style={{ marginVertical: getScaleSize(8) }}>
-                            {`€${planDetails?.price ?? '0.00'}`}{' '}
-                            <Text
-                                size={getScaleSize(16)}
-                                font={FONTS.Lato.Medium}
-                                color={theme._214C65}>
-                                {planDetails?.duration ?? ''}
-                            </Text>
-                        </Text>
-                        <View style={styles(theme).divider} />
-                        <View style={{ flex: 1.0 }}>
-                            {(planDetails?.features ?? []).map((e: any, index: number) => {
-                                return (
-                                    <View key={index} style={styles(theme).itemContainer} >
-                                        <Image source={IMAGES.ic_sealCheck} style={styles(theme).itemIcon} />
-                                        <View style={{ flex: 1.0 }}>
-                                            <Text
-                                                size={getScaleSize(16)}
-                                                font={FONTS.Lato.SemiBold}
-                                                color={theme._424242}>
-                                                {e ?? ''}
-                                            </Text>
+                            <View style={styles(theme).divider} />
+                            <View style={{ flex: 1.0 }}>
+                                {(planDetails?.features ?? []).map((e: any, index: number) => {
+                                    return (
+                                        <View key={index} style={styles(theme).itemContainer} >
+                                            <Image source={IMAGES.ic_sealCheck} style={styles(theme).itemIcon} />
+                                            <View style={{ flex: 1.0 }}>
+                                                <Text
+                                                    size={getScaleSize(16)}
+                                                    font={FONTS.Lato.SemiBold}
+                                                    color={theme._424242}>
+                                                    {e ?? ''}
+                                                </Text>
+                                            </View>
                                         </View>
-                                    </View>
-                                )
-                            })}
+                                    )
+                                })}
+                            </View>
                         </View>
-                    </View>
+                    )}
                 </View>
             </ScrollView>
             <View style={styles(theme).buttonContainer}>

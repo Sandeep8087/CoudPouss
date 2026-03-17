@@ -9,7 +9,7 @@ import {
 } from 'react-native';
 
 //CONTEXT
-import {ThemeProvider, AuthProvider, ThemeContext} from './src/context';
+import {ThemeProvider, AuthProvider, ThemeContext, LanguageProvider} from './src/context';
 
 //CONSTANT & ASSETS
 import {getScaleSize} from './src/constant';
@@ -30,6 +30,7 @@ import Toast, {
   InfoToast,
 } from 'react-native-toast-message';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { initI18n } from './src/Translation/i18n';
 
 LogBox.ignoreAllLogs(true);
 
@@ -77,6 +78,10 @@ const {Navigator, Screen} = createStackNavigator();
 
 function App(): any {
   // const toastRef = useRef<any>(null);
+
+  useEffect(() => {
+    initI18n();
+  }, []);
 
   useEffect(() => {
     if (Platform.OS === 'ios') {
@@ -162,7 +167,9 @@ function App(): any {
   return (
     <SafeAreaView style={{flex: 1.0}}>
       <ThemeProvider>
-        <AuthProvider>{AppWrraper()}</AuthProvider>
+        <LanguageProvider>
+          <AuthProvider>{AppWrraper()}</AuthProvider>
+        </LanguageProvider>
       </ThemeProvider>
     </SafeAreaView>
   );

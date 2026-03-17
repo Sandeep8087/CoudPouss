@@ -1,11 +1,11 @@
-import {Dimensions, Image, ScrollView, StyleSheet, View} from 'react-native';
-import React, {useContext, useEffect, useState} from 'react';
+import { Dimensions, Image, ScrollView, StyleSheet, View } from 'react-native';
+import React, { useContext, useEffect, useState } from 'react';
 
 //CONTEXT
-import {AuthContext, ThemeContext, ThemeContextType} from '../../context';
+import { AuthContext, LaungageContext, ThemeContext, ThemeContextType } from '../../context';
 
 //CONSTANT & ASSETS
-import {FONTS, IMAGES} from '../../assets';
+import { FONTS, IMAGES } from '../../assets';
 import {
   getScaleSize,
   REGEX,
@@ -16,24 +16,26 @@ import {
 } from '../../constant';
 
 //COMPONENTS
-import {Header, Input, Text, Button, ProgressView} from '../../components';
+import { Header, Input, Text, Button, ProgressView } from '../../components';
 
 //SCREENS
-import {SCREENS} from '..';
+import { SCREENS } from '..';
 
 //PACKAGES
-import {CommonActions, useFocusEffect} from '@react-navigation/native';
-import {launchImageLibrary} from 'react-native-image-picker';
-import {API} from '../../api';
+import { CommonActions, useFocusEffect } from '@react-navigation/native';
+import { launchImageLibrary } from 'react-native-image-picker';
+import { API } from '../../api';
 import Geolocation from 'react-native-geolocation-service';
 
-import {createNewThread} from '../../services/chat';
+import { createNewThread } from '../../services/chat';
 
 export default function Login(props: any) {
   const STRING = useString();
-  const {setUser, setUserType, setProfile, profile} =
+  const { setUser, setUserType, setProfile, profile } =
     useContext<any>(AuthContext);
-  const {theme} = useContext<any>(ThemeContext);
+  const { theme } = useContext<any>(ThemeContext);
+  const { language, setLanguage } = useContext<any>(LaungageContext);
+
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -139,7 +141,8 @@ export default function Login(props: any) {
         // API returns data.data.user structure
         const userProfileData = result?.data?.data?.user;
         setProfile(result?.data?.data);
-
+        setLanguage(result?.data?.data?.user?.lang);
+        // Storage.save(Storage.USER_LANGUAGE, JSON.stringify(result?.data?.data?.user?.lang));
         // Save user to Firebase for chat functionality
         try {
           console.log('🧪 Testing Firebase connection first...');
@@ -171,8 +174,8 @@ export default function Login(props: any) {
             userProfileData?.elder_address || userProfileData?.address || '',
             userProfileData?.profile_photo_url || '',
           )
-            .then(() => {})
-            .finally(() => {});
+            .then(() => { })
+            .finally(() => { });
           console.log('✅ User saved to Firebase successfully');
         } catch (firebaseError: any) {
           console.log('❌ Failed to save user to Firebase:', firebaseError);
@@ -211,7 +214,7 @@ export default function Login(props: any) {
             font={FONTS.Lato.ExtraBold}
             color={theme._2C6587}
             align="center"
-            style={{marginBottom: getScaleSize(12)}}>
+            style={{ marginBottom: getScaleSize(12) }}>
             {STRING.welcome_back}
           </Text>
           <Text
@@ -219,7 +222,7 @@ export default function Login(props: any) {
             font={FONTS.Lato.SemiBold}
             color={theme._565656}
             align="center"
-            style={{marginBottom: getScaleSize(36)}}>
+            style={{ marginBottom: getScaleSize(36) }}>
             {STRING.enter_your_email_and_password_to_login}
           </Text>
           <View style={styles(theme).inputContainer}>
@@ -286,13 +289,13 @@ export default function Login(props: any) {
               }}
               color={theme._2C6587}
               align="right"
-              style={{marginTop: getScaleSize(12)}}>
+              style={{ marginTop: getScaleSize(12) }}>
               {STRING.forgot_password}
             </Text>
           </View>
           <Button
             title="Log In"
-            style={{marginBottom: getScaleSize(24)}}
+            style={{ marginBottom: getScaleSize(24) }}
             onPress={() => {
               onVerification();
             }}
@@ -302,7 +305,7 @@ export default function Login(props: any) {
             font={FONTS.Lato.Regular}
             color={theme._999999}
             align="center"
-            style={{marginTop: getScaleSize(12)}}>
+            style={{ marginTop: getScaleSize(12) }}>
             {STRING.dont_have_an_account}{' '}
             <Text
               size={getScaleSize(20)}

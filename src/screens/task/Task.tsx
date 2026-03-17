@@ -258,7 +258,7 @@ export default function Task(props: any) {
         style={{
           marginHorizontal: getScaleSize(22),
         }}>
-        {'Task Management'}
+        {STRING.task_management}
       </Text>
       <View style={styles(theme).tabContainer}>
         <TouchableOpacity
@@ -279,7 +279,7 @@ export default function Task(props: any) {
                 quateList?.selectedIndex === 0 ? theme._2C6587 : theme._595959
               }
               style={{}}>
-              {'Quote Sent'}
+              {STRING.quote_sent}
             </Text>
           </View>
         </TouchableOpacity>
@@ -301,7 +301,7 @@ export default function Task(props: any) {
                 quateList?.selectedIndex === 1 ? theme._2C6587 : theme._595959
               }
               style={{}}>
-              {'Accepted'}
+              {STRING.accepted}
             </Text>
           </View>
         </TouchableOpacity>
@@ -323,7 +323,7 @@ export default function Task(props: any) {
                 quateList?.selectedIndex === 2 ? theme._2C6587 : theme._595959
               }
               style={{}}>
-              {'Completed'}
+              {STRING.completed}
             </Text>
           </View>
         </TouchableOpacity>

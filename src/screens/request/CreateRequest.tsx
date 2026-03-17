@@ -37,6 +37,7 @@ import {
   ProgressSlider,
   ProgressView,
   SearchComponent,
+  SelectMediaModal,
   ServiceItem,
   Text,
   TimePicker,
@@ -46,7 +47,7 @@ import {
 import { CommonActions, useFocusEffect } from '@react-navigation/native';
 import { SCREENS } from '..';
 import { API } from '../../api';
-import { launchImageLibrary } from 'react-native-image-picker';
+import { launchCamera, launchImageLibrary } from 'react-native-image-picker';
 import moment from 'moment';
 import { createThumbnail } from 'react-native-create-thumbnail';
 import Geolocation from 'react-native-geolocation-service';
@@ -63,7 +64,7 @@ export default function CreateRequest(props: any) {
 
   const STRING = useString();
   const { theme } = useContext<any>(ThemeContext);
-  const { selectedAddress } = useContext<any>(AuthContext);
+  const { selectedAddress, setSelectedAddress } = useContext<any>(AuthContext);
 
   const category = props.route.params?.category;
   const subCategory = props.route.params?.subCategory;
@@ -103,11 +104,15 @@ export default function CreateRequest(props: any) {
   const [descriptionError, setDescriptionError] = useState('')
   const [firstImageError, setFirstImageError] = useState('')
   const [location, setLocation] = useState<any>(null);
+  const [mediaModal, setMediaModal] = useState(false);
+  const [mediaType, setMediaType] = useState<any>(null);
 
-  const totalSteps = selectedCategory === 'professional' ? 6 : 7;
-  const progressPercent = Math.round((selectedProgress / totalSteps) * 100);
+
+  // const totalSteps = selectedCategory === 'professional' ? 6 : 7;
+  const progressPercent = Math.round((selectedProgress / 6) * 100);
 
   useEffect(() => {
+    setSelectedAddress(null);
     getAllCategories();
     getLocation()
   }, []);
@@ -196,43 +201,64 @@ export default function CreateRequest(props: any) {
     }
   }
 
-  const pickImage = async (type: string) => {
-    launchImageLibrary(
+  const openMediaPicker = (type: string) => {
+    setMediaType(type);
+    setMediaModal(true);
+  };
+
+  const pickImageFromCamera = (type: string) => {
+    launchCamera(
       {
-        mediaType: 'mixed', // 👈 image + video
-        selectionLimit: 1,
+        mediaType: 'mixed', // 📷 photo + 🎥 video
+        cameraType: 'back',
+        videoQuality: 'high',
+        durationLimit: 60, // seconds
+        saveToPhotos: true,
       },
-      async (response) => {
-        if (!response.didCancel && !response.errorCode && response.assets) {
-          const asset: any = response.assets[0];
-          console.log('asset', asset);
-
-          // 👇 ADD thumbnail handling
-          const finalAsset = await handleThumbnail(asset);
-
-          // 🔥 IMPORTANT FIX
-          if (asset?.type?.startsWith('video')) {
-            await new Promise((resolve: any) => setTimeout(resolve, 600));
-          }
-
-          if (type === 'first') {
-            setFirstImage(finalAsset);
-            uploadProfileImage(finalAsset, type);
-          } else if (type === 'second') {
-            setSecondImage(finalAsset);
-            uploadProfileImage(finalAsset, type);
-          } else if (type === 'firstProduct') {
-            setFirstProductImage(finalAsset);
-            uploadProfileImage(finalAsset, type);
-          } else if (type === 'secondProduct') {
-            setSecondProductImage(finalAsset);
-            uploadProfileImage(finalAsset, type);
-          }
-        } else {
-          setLoading(false);
-        }
+      (response) => {
+        handleMediaResponse(response, type);
       }
     );
+  };
+
+  const pickImage = (type: string) => {
+    launchImageLibrary(
+      {
+        mediaType: 'mixed',
+        selectionLimit: 1,
+      },
+      (response) => {
+        handleMediaResponse(response, type);
+      }
+    );
+  };
+
+  const handleMediaResponse = async (response: any, type: string) => {
+    if (!response.didCancel && !response.errorCode && response.assets) {
+      const asset: any = response.assets[0];
+
+      const finalAsset = await handleThumbnail(asset);
+
+      if (asset?.type?.startsWith('video')) {
+        await new Promise((resolve: any) => setTimeout(resolve, 600));
+      }
+
+      if (type === 'first') {
+        setFirstImage(finalAsset);
+        uploadProfileImage(finalAsset, type);
+      } else if (type === 'second') {
+        setSecondImage(finalAsset);
+        uploadProfileImage(finalAsset, type);
+      } else if (type === 'firstProduct') {
+        setFirstProductImage(finalAsset);
+        uploadProfileImage(finalAsset, type);
+      } else if (type === 'secondProduct') {
+        setSecondProductImage(finalAsset);
+        uploadProfileImage(finalAsset, type);
+      }
+    } else {
+      setLoading(false);
+    }
   };
 
   const handleThumbnail = async (asset: any) => {
@@ -447,7 +473,6 @@ export default function CreateRequest(props: any) {
       if (!isLoading) {
         onCreateRequest();
       }
-
     }
   }
 
@@ -532,18 +557,26 @@ export default function CreateRequest(props: any) {
         }
       } else if (selectedCategory == 'non_professional') {
         params = {
-          is_professional: false,
+          is_professional: true,
           category_id: selectedCategoryItem?.id,
           sub_category_id: selectSubCategoryItem?.id,
           description: description.trim(),
           description_files: imageUrls,
-          chosen_datetime: dateTime,
           address_id: selectedAddress?.id,
-          barter_product: {
-            product_name: productName,
-            quantity: Number(quantity),
-            barter_photo_files: productImageUrls
-          }
+          validation_amount: valuation,
+          chosen_datetime: dateTime
+          // is_professional: false,
+          // category_id: selectedCategoryItem?.id,
+          // sub_category_id: selectSubCategoryItem?.id,
+          // description: description.trim(),
+          // description_files: imageUrls,
+          // chosen_datetime: dateTime,
+          // address_id: selectedAddress?.id,
+          // barter_product: {
+          //   product_name: productName,
+          //   quantity: Number(quantity),
+          //   barter_photo_files: productImageUrls
+          // }
         }
       }
 
@@ -762,14 +795,16 @@ export default function CreateRequest(props: any) {
                 size={getScaleSize(18)}
                 font={FONTS.Lato.SemiBold}
                 color={theme._989898}>
-                {selectedCategory === 'professional' ? STRING.Valuation : STRING.product}
+                {/* {selectedCategory === 'professional' ? STRING.Valuation : STRING.product} */}
+                {STRING.Valuation}
               </Text>
               <Text
                 style={{ marginTop: getScaleSize(6) }}
                 size={getScaleSize(20)}
                 font={FONTS.Lato.SemiBold}
                 color={theme.primary}>
-                {selectedCategory === 'professional' ? `€${valuation}` : productName}
+                {/* {selectedCategory === 'professional' ? `€${valuation}` : productName} */}
+                {`€${valuation}`}
               </Text>
             </View>
             <View style={styles(theme).deviderVerticalView} />
@@ -805,7 +840,7 @@ export default function CreateRequest(props: any) {
               </Text>
             </View>
           </View>
-          {selectedCategory == 'non_professional' && (
+          {/* {selectedCategory == 'non_professional' && (
             <View style={{ marginTop: getScaleSize(24) }}>
               <Input
                 placeholder={STRING.enter_name}
@@ -839,7 +874,7 @@ export default function CreateRequest(props: any) {
 
               </View>
             </View>
-          )}
+          )} */}
           <Text
             style={{ marginTop: getScaleSize(24) }}
             size={getScaleSize(18)}
@@ -911,7 +946,8 @@ export default function CreateRequest(props: any) {
             size={getScaleSize(24)}
             font={FONTS.Lato.Bold}
             color={theme.primary}>
-            {selectedCategory === 'professional' ? STRING.ValuationofJob : STRING.Choose_Date_Time}
+            {/* {selectedCategory === 'professional' ? STRING.ValuationofJob : STRING.Choose_Date_Time} */}
+            {STRING.ValuationofJob}
           </Text>
           <Text
             style={{ marginTop: getScaleSize(12) }}
@@ -920,7 +956,7 @@ export default function CreateRequest(props: any) {
             color={theme._939393}>
             {STRING.valuation_message}
           </Text>
-          {selectedCategory === 'professional' && (
+          {/* {selectedCategory === 'professional' && ( */}
             <View style={styles(theme).textInputContainer}>
               <Input
                 placeholder={STRING.EnterValuation}
@@ -935,7 +971,7 @@ export default function CreateRequest(props: any) {
                 }}
               />
             </View>
-          )}
+          {/* )} */}
           <Text
             style={{ marginTop: getScaleSize(12) }}
             size={getScaleSize(16)}
@@ -1046,7 +1082,7 @@ export default function CreateRequest(props: any) {
               style={[styles(theme).uploadButton, { marginRight: getScaleSize(9), borderColor: firstImageError ? theme._EF5350 : theme._818285, }]}
               activeOpacity={1}
               onPress={() => {
-                pickImage('first');
+                openMediaPicker('first');
                 setFirstImageError('');
               }}>
               {firstImage ? (
@@ -1076,7 +1112,7 @@ export default function CreateRequest(props: any) {
               activeOpacity={1}
               onPress={() => {
                 setFirstImageError('');
-                pickImage('second');
+                openMediaPicker('second');
               }}>
               {secondImage ? (
                 <Image
@@ -1233,7 +1269,7 @@ export default function CreateRequest(props: any) {
               style={[styles(theme).uploadButton, { marginRight: getScaleSize(9), borderColor: theme._818285, }]}
               activeOpacity={1}
               onPress={() => {
-                pickImage('firstProduct');
+                openMediaPicker('firstProduct');
               }}>
               {firstProductImage ? (
                 <Image
@@ -1261,7 +1297,7 @@ export default function CreateRequest(props: any) {
               style={[styles(theme).uploadButton, { marginLeft: getScaleSize(9), borderColor: theme._818285, }]}
               activeOpacity={1}
               onPress={() => {
-                pickImage('secondProduct');
+                openMediaPicker('secondProduct');
               }}>
               {secondProductImage ? (
                 <Image
@@ -1481,7 +1517,8 @@ export default function CreateRequest(props: any) {
         <View style={styles(theme).progressSlider}>
           <ProgressSlider
             fillCount={selectedProgress}
-            totalCount={selectedCategory == 'professional' ? 6 : 7} />
+            // totalCount={selectedCategory == 'professional' ? 6 : 7} />
+            totalCount={6} />
         </View>
         <Text
           size={getScaleSize(12)}
@@ -1494,7 +1531,8 @@ export default function CreateRequest(props: any) {
       <View
         style={[styles(theme).container, {}]}>
         <>
-          {selectedCategory == 'professional' ? renderProfessional() : renderNonProfessional()}
+        {renderProfessional()}
+          {/* {selectedCategory == 'professional' ? renderProfessional() : renderNonProfessional()} */}
         </>
       </View>
       <View style={styles(theme).buttonContainer}>
@@ -1502,18 +1540,19 @@ export default function CreateRequest(props: any) {
           style={styles(theme).backButtonContainer}
           activeOpacity={1}
           onPress={() => {
-            if (selectedCategory == 'professional') {
-              onBackProfessional();
-            } else {
-              onBackNonProfessional();
-            }
+            // if (selectedCategory == 'professional') {
+            //   onBackProfessional();
+            // } else {
+            //   onBackNonProfessional();
+            // }
+            onBackProfessional();
           }}>
           <Text
             size={getScaleSize(19)}
             font={FONTS.Lato.Bold}
             color={theme.primary}
             style={{ alignSelf: 'center' }}>
-            {selectedProgress === (selectedCategory == 'professional' ? 6 : 7) ? 'Edit' : STRING.Back}
+            {selectedProgress === 6 ? 'Edit' : STRING.Back}
           </Text>
         </TouchableOpacity>
         <TouchableOpacity
@@ -1521,21 +1560,43 @@ export default function CreateRequest(props: any) {
           activeOpacity={1}
           onPress={() => {
             if (isLoading) return;
-            if (selectedCategory == 'professional') {
-              onNextProfessional();
-            } else {
-              onNextNonProfessional();
-            }
+            // if (selectedCategory == 'professional') {
+            //   onNextProfessional();
+            // } else {
+            //   onNextNonProfessional();
+            // }
+            onNextProfessional()
           }}>
           <Text
             size={getScaleSize(19)}
             font={FONTS.Lato.Bold}
             color={theme.white}
             style={{ alignSelf: 'center' }}>
-            {selectedProgress === (selectedCategory == 'professional' ? 6 : 7) ? 'Submit' : STRING.Next}
+            {selectedProgress === 6 ? 'Submit' : STRING.Next}
           </Text>
         </TouchableOpacity>
       </View>
+      <SelectMediaModal
+        visible={mediaModal}
+        onClose={() => {
+          setMediaModal(false);
+          setMediaType(null);
+        }}
+        onPressCamera={() => {
+          if (!mediaType) return;
+
+          setMediaModal(false);
+          pickImageFromCamera(mediaType);
+          setMediaType(null);
+        }}
+        onPressGallery={() => {
+          if (!mediaType) return;
+
+          setMediaModal(false);
+          pickImage(mediaType);
+          setMediaType(null);
+        }}
+      />
       {isLoading && <ProgressView />}
     </View>
   );

@@ -273,9 +273,9 @@ export default function Transactions(props: any) {
             content={
               <View>
                 {[
-                  { id: '1', title: 'All', value: '' },
-                  { id: '2', title: 'Completed', value: 'completed' },
-                  { id: '3', title: 'Pending', value: 'pending' },
+                 { id: '1', title: 'All', value: '' },
+                 { id: '2', title: 'Success', value: 'success' },
+                 { id: '3', title: 'Failed', value: 'failed' },
                 ].map(item => (
                   <TouchableOpacity
                     key={item.id}

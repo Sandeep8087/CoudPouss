@@ -26,25 +26,35 @@ Instance.interceptors.request.use(
     async (config) => {
         const netState = await NetInfo.fetch();
 
-        // if (!netState.isConnected) {
-        //     // ✅ Show Alert Only Once
-        //     if (!hasShownNoInternetAlert) {
-        //         // hasShownNoInternetAlert = true;
-        //         // Alert.alert('No Internet', 'Please check your internet connection.');
-        //     }
+        if (!netState.isConnected) {
+            // ✅ Show Alert Only Once
+            if (!hasShownNoInternetAlert) {
+                hasShownNoInternetAlert = true;
+                Alert.alert('No Internet', 'Please check your internet connection.');
+            }
 
-        //     return Promise.reject({
-        //         message: 'No internet connection',
-        //         code: 503,
-        //         status: false,
-        //         data: null
-        //     });
-        // } else {
-        //     // 🔄 Reset once internet is back
-        //     if (hasShownNoInternetAlert) {
-        //         hasShownNoInternetAlert = false;
-        //     }
-        // }
+            return Promise.reject({
+                message: 'No internet connection',
+                code: 503,
+                status: false,
+                data: null
+            });
+        } else {
+            // 🔄 Reset once internet is back
+            if (hasShownNoInternetAlert) {
+                hasShownNoInternetAlert = false;
+            }
+        }
+        const userLanguage: any = await Storage.get(Storage.USER_LANGUAGE)
+        const lang = userLanguage ? JSON.parse(userLanguage) : 'en';
+        if (config?.url) {
+            if (config.url.includes('?')) {
+                config.url = `${config.url}&lang=${lang == "fr" ? 'fr' : 'en'}`;
+            } else {
+                config.url = `${config.url}?lang=${lang == "fr" ? 'fr' : 'en'}`;
+            }
+        }
+
         if (!DISABLE_API_LOGS) {
             console.log(`Config Header ${JSON.stringify(config?.headers)}`)
             console.log(`Config Base URL ${config?.method} ${JSON.stringify(config?.baseURL)} ${JSON.stringify(config?.url)}`)
@@ -96,7 +106,7 @@ const responseValidator = (response: AxiosResponse<any, any>) => {
     if (!DISABLE_API_LOGS) {
         console.log(`Response Status ${response?.status}`)
         console.log(`Response Config Header ${JSON.stringify(response?.config?.headers)}`)
-        console.log(`Response Config Base URL ${JSON.stringify(response?.config?.baseURL)}`)
+        console.log(`Response Config Base URL ${JSON.stringify(response?.config?.baseURL) } ${JSON.stringify(response?.config?.url)}`)
         console.log(`Response Config Data ${JSON.stringify(response?.config?.data)}`)
         console.log(`Response Details ${JSON.stringify(response?.data)}`)
     }

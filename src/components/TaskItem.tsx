@@ -13,11 +13,11 @@ export default function TaskItem(props: any) {
   const { item } = props;
 
   function getMessage() {
-    if (item?.quote_status === 'send') {
+    if (item?.service_details?.quote_status === 'send' || item?.quote_status === 'send') {
       return 'Quote Submitted';
-    } else if (item?.quote_status === 'accepted') {
+    } else if (item?.service_details?.quote_status === 'accepted' || item?.quote_status === 'accepted') {
       return 'Quote Accepted';
-    } else if (item?.quote_status === 'complete') {
+    } else if (item?.service_details?.quote_status === 'complete' || item?.quote_status === 'complete') {
       return 'Task Completed'
     }
   }

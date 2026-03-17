@@ -60,12 +60,12 @@ import {
 } from '../../services/negotiationchat';
 
 export default function RequestDetails(props: any) {
+
   const STRING = useString();
   const { theme } = useContext<any>(ThemeContext);
+
   const item = props.route.params?.item ?? {};
   const serviceId = props.route.params?.serviceId ?? '';
-
-  console.log('serviceId==>', serviceId);
 
   const rejectRef = useRef<any>(null);
   const acceptRef = useRef<any>(null);
@@ -94,9 +94,7 @@ export default function RequestDetails(props: any) {
   const { profile } = useContext<any>(AuthContext);
 
   const isFocused = useIsFocused();
-
-  console.log('item', item?.id);
-  console.log('serviceDetails', serviceDetails);
+  
   useEffect(() => {
     if ((serviceId || item?.id) && isFocused) {
       getServiceDetails();
@@ -146,7 +144,6 @@ export default function RequestDetails(props: any) {
     }
   }
 
-  console.log('serviceDetails', serviceDetails);
   async function addFavoriteProfessional() {
     try {
       setLoading(true);
@@ -529,7 +526,7 @@ export default function RequestDetails(props: any) {
         contentContainerStyle={{
           paddingBottom:
             status === 'pending' || status === 'accepted'
-              ? getScaleSize(140)
+              ? getScaleSize(70)
               : getScaleSize(40),
         }}
         showsVerticalScrollIndicator={false}>
@@ -1243,25 +1240,7 @@ export default function RequestDetails(props: any) {
           }}
         />
       )}
-      {status === 'pending' && (
-        <AcceptBottomPopup
-          onRef={acceptRef}
-          title={`You are about to confirm a service at the rate of ${serviceDetails?.total_renegotiated?.[0]
-            ? serviceDetails?.total_renegotiated?.[0] === 'Barter Product'
-              ? 'Barter Product'
-              : `€${serviceDetails?.total_renegotiated?.[0]}`
-            : ''
-            } with the Provider ${serviceDetails?.provider?.full_name ?? ''
-            }, Are you sure you want to continue? `}
-          onClose={() => {
-            console.log('serviceDetails?.total_renegotiated?.[0]', serviceDetails?.total_renegotiated?.[0]);
-            acceptRef.current.close();
-          }}
-          onNavigate={() => {
-            getServiceAmount();
-          }}
-        />
-      )}
+     
       {status === 'pending' && (
         <PaymentBottomPopup
           onRef={paymentRef}
@@ -1354,22 +1333,19 @@ export default function RequestDetails(props: any) {
           }
         }}
       />
-      <AcceptBottomPopup
-        onRef={acceptRef}
-        title={`You are about to confirm a service at the rate of ${serviceDetails?.total_renegotiated?.[0]
-          ? serviceDetails?.total_renegotiated?.[0] === 'Barter Product'
-            ? 'Barter Product'
-            : `€${serviceDetails?.total_renegotiated?.[0]}`
-          : ''
-          } with the Provider ${serviceDetails?.provider?.full_name ?? ''
-          }, Are you sure you want to continue? `}
-        onClose={() => {
-          acceptRef.current.close();
-        }}
-        onNavigate={() => {
-          getServiceAmount();
-        }}
-      />
+       {status === 'pending' && (
+        <AcceptBottomPopup
+          onRef={acceptRef}
+          title={`You are about to confirm a service at the rate of  €${serviceDetails?.total_renegotiated} with the Provider ${serviceDetails?.provider?.full_name ?? ''}, Are you sure you want to continue?`}
+          onClose={() => {
+            console.log('serviceDetails?.total_renegotiated?.[0]', serviceDetails?.total_renegotiated);
+            acceptRef.current.close();
+          }}
+          onNavigate={() => {
+            getServiceAmount();
+          }}
+        />
+      )}
       <PaymentBottomPopup
         onRef={paymentRef}
         serviceAmount={serviceAmount}

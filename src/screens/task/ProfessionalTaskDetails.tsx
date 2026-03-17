@@ -271,7 +271,7 @@ export default function ProfessionalTaskDetails(props: any) {
                   font={FONTS.Lato.Medium}
                   numberOfLines={4}
                   color={theme.primary}>
-                  {taskDetails?.elderly_user?.address ?? '-'}
+                  {taskDetails?.task?.address ?? '-'}
                 </Text>
               </View>
             </View>
@@ -362,7 +362,7 @@ export default function ProfessionalTaskDetails(props: any) {
               size={getScaleSize(18)}
               font={FONTS.Lato.SemiBold}
               color={theme._323232}>
-              {'About client'}
+              {STRING.Aboutclient}
             </Text>
           </View>
           <View
@@ -443,7 +443,7 @@ export default function ProfessionalTaskDetails(props: any) {
               size={getScaleSize(18)}
               font={FONTS.Lato.Medium}
               color={theme._323232}>
-              {'Address'}
+              {STRING.address}
             </Text>
             <View style={{flexDirection: 'row', marginTop: getScaleSize(12)}}>
               <Image
@@ -455,7 +455,7 @@ export default function ProfessionalTaskDetails(props: any) {
                 size={getScaleSize(14)}
                 font={FONTS.Lato.SemiBold}
                 color={'#595959'}>
-                {taskDetails?.elderly_user?.address ?? '-'}
+                {taskDetails?.task?.address ?? '-'}
               </Text>
             </View>
           </View>

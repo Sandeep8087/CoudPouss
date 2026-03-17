@@ -323,43 +323,16 @@ export default function Notification(props: any) {
                       />
                     ) : (
                       <>
-                        {(() => {
-                          const imageUrl = item?.data?.sender_profile_photo_url;
-                          const senderName = item?.data?.sender_name?.trim();
-
-                          // If image exists
-                          if (imageUrl && imageUrl.trim() !== '') {
-                            return (
-                              <Image
-                                style={styles(theme).profilePic}
-                                source={{ uri: imageUrl }}
-                              />
-                            );
-                          }
-
-                          //  If name exists show first letter
-                          if (senderName && senderName.length > 0) {
-                            return (
-                              <View style={[styles(theme).profilePic, { backgroundColor: theme.primary }]}>
-                                <Text
-                                  size={getScaleSize(18)}
-                                  font={FONTS.Lato.Bold}
-                                  color={theme.white}
-                                >
-                                  {senderName.charAt(0).toUpperCase()}
-                                </Text>
-                              </View>
-                            );
-                          }
-
-                          //  If both missing show default circle
-                          return (
-                            <Image style={styles(theme).profilePic}
-                              resizeMode='contain'
-                              source={IMAGES.user_placeholder}>
-                            </Image>
-                          );
-                        })()}
+                        {item?.data?.sender_profile_photo_url ?
+                          <Image
+                            style={styles(theme).profilePic}
+                            source={{ uri: item?.data?.sender_profile_photo_url }}
+                          />
+                          :
+                          <Image style={styles(theme).profilePic}
+                            source={IMAGES.user_placeholder}>
+                          </Image>
+                        }
                       </>
                     )}
                     <View style={{ flex: 1.0 }}>
@@ -378,6 +351,7 @@ export default function Notification(props: any) {
                         font={FONTS.Lato.Medium}
                         color={'#595959'}>
                         {item?.body ?? ''}
+                        {item?.data?.event === 'QUOTE_REJECTED' ? ` ${STRING.reason}: ${item?.data?.failure_reason ?? ''}` : ''}
                       </Text>
                       <View
                         style={{

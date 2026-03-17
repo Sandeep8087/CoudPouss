@@ -57,7 +57,7 @@ const WebViewScreen = (props: any) => {
             <StatusBar
                 barStyle="dark-content"
                 backgroundColor={theme.white}
-                translucent={false}
+                translucent={true}
             />
             <TouchableOpacity
                 style={styles(theme).backContainer} onPress={() => props.navigation.goBack()}>

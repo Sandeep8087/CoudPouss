@@ -1,7 +1,7 @@
 import { Dimensions, Image, Platform, ScrollView, StyleSheet, TouchableOpacity, View } from 'react-native'
 import React, { useContext, useEffect, useState } from 'react'
 import { ThemeContext, ThemeContextType } from '../../context'
-import { Button, EarningsChart, Header, Text, TransactionItem } from '../../components'
+import { Button, EarningsChart, Header, ProgressView, Text, TransactionItem } from '../../components'
 import { getScaleSize, SHOW_TOAST, useString } from '../../constant'
 import { FONTS, IMAGES } from '../../assets'
 import { SCREENS } from '..'
@@ -9,6 +9,7 @@ import { SCREENS } from '..'
 //PACKAGES
 import { API } from '../../api'
 import DateTimePicker from '@react-native-community/datetimepicker';
+import { useIsFocused } from '@react-navigation/native'
 
 export default function MyEarnings(props: any) {
 
@@ -27,9 +28,17 @@ export default function MyEarnings(props: any) {
         { id: 3, title: 'History of Withdrawals', onPress: SCREENS.WithdrawHistory.identifier },
     ]
 
+    const isFocused = useIsFocused();
+
     useEffect(() => {
-        fetchActivities(new Date().toISOString().slice(0, 7));
-    }, []);
+        if (isFocused) {
+            if(selectedDate) {
+                fetchActivities(selectedDate.toISOString().slice(0, 7));
+            } else {
+                fetchActivities(new Date().toISOString().slice(0, 7));
+            }
+        }
+    }, [isFocused]);
 
     const onChange = (_: any, date?: Date) => {
         setShowPicker(false);

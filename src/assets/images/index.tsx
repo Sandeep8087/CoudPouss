@@ -106,6 +106,7 @@ export const IMAGES = {
   search_icon: require('./search_icon.png'),
   arrow_left: require('./arrow_left.png'),
   homeBanner: require('./pHomeBanner.png'),
+  ic_tech_support: require('./ic_tech_support.png'),
 
   homecare: require('./homecare.png'),
   it: require('./it.png'),
@@ -132,4 +133,6 @@ export const IMAGES = {
   ic_reNegotiation: require('./ic_reNegotiation.png'),
   ic_file: require('./approve.png'),
   ic_cancelled: require('./ic_cancelled.png'),
+  ic_gallery: require('./ic_gallery.png'),
+  ic_camare: require('./ic_camare.png'),
 };

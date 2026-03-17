@@ -1,4 +1,4 @@
-import React, { useContext, useRef, useState } from 'react';
+import React, { useContext} from 'react';
 import {
   View,
   StyleSheet,
@@ -8,82 +8,42 @@ import {
   Easing,
   TextInput,
   Platform,
+  Keyboard,
 } from 'react-native';
+
+//CONTEXT
 import { ThemeContext, ThemeContextType } from '../context';
+
+//CONSTANT & ASSETS
 import { getScaleSize, useString } from '../constant';
 import { FONTS, IMAGES } from '../assets';
+
+//COMPONENTS
 import Text from './Text';
-import { constant } from 'lodash';
+
+//PACKAGES
 import RBSheet from 'react-native-raw-bottom-sheet';
-import Input from './Input';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 const RejectBottomPopup = (props: any) => {
-
-  const insets = useSafeAreaInsets();
 
   const STRING = useString();
   const { theme } = useContext<any>(ThemeContext);
 
-  const fadeAnim = useRef(new Animated.Value(0)).current;
-  const slideAnim = useRef(new Animated.Value(50)).current;
-  const scaleAnim = useRef(new Animated.Value(0.8)).current;
-
   const { selectedCategory, reason, setSelectedCategory, setReason } = props;
 
-  const startOpenAnimations = () => {
-    fadeAnim.setValue(0);
-    slideAnim.setValue(100); // Start from further down for slower feel
-    scaleAnim.setValue(0.7); // Start smaller for more dramatic scale
-
-    // Ultra slow and smooth animation
-    Animated.parallel([
-      Animated.timing(fadeAnim, {
-        toValue: 1,
-        duration: 1200, // 1.2 seconds
-        easing: Easing.out(Easing.cubic),
-        useNativeDriver: true,
-      }),
-      Animated.timing(slideAnim, {
-        toValue: 0,
-        duration: 1200,
-        easing: Easing.out(Easing.cubic),
-        useNativeDriver: true,
-      }),
-      Animated.timing(scaleAnim, {
-        toValue: 1,
-        duration: 1200,
-        easing: Easing.out(Easing.cubic),
-        useNativeDriver: true,
-      }),
-    ]).start();
-  };
-
-  const startCloseAnimations = () => {
-    Animated.parallel([
-      Animated.timing(fadeAnim, {
-        toValue: 0,
-        duration: 300,
-        easing: Easing.in(Easing.cubic),
-        useNativeDriver: true,
-      }),
-      Animated.timing(slideAnim, {
-        toValue: 50,
-        duration: 300,
-        easing: Easing.in(Easing.cubic),
-        useNativeDriver: true,
-      }),
-      Animated.timing(scaleAnim, {
-        toValue: 0.8,
-        duration: 300,
-        easing: Easing.in(Easing.cubic),
-        useNativeDriver: true,
-      }),
-    ]).start();
+  const handleReasonChange = (text: string) => {
+    // Prevent starting space
+    if (text.length === 1 && text === ' ') {
+      return;
+    }
+  
+    // Limit to 250 characters
+    if (text.length <= 250) {
+      setReason(text);
+    }
   };
 
   return (
-    <View style={{ backgroundColor: 'rgba(0,0,0,0.3)' }}>
       <RBSheet
         ref={props.rejectRef}
         customModalProps={{
@@ -95,7 +55,7 @@ const RejectBottomPopup = (props: any) => {
             backgroundColor: theme._77777733,
           },
           container: {
-            height: selectedCategory == 3 ? getScaleSize(760) : getScaleSize(580),
+            minHeight: selectedCategory == 3 ? getScaleSize(710) : getScaleSize(580),
             borderTopLeftRadius: getScaleSize(24),
             borderTopRightRadius: getScaleSize(24),
             backgroundColor: theme.white,
@@ -197,7 +157,7 @@ const RejectBottomPopup = (props: any) => {
                     placeholder={'Write your reason here…'}
                     placeholderTextColor={theme._818285}
                     value={reason}
-                    onChangeText={setReason}
+                    onChangeText={handleReasonChange}
                     multiline={true}
                     numberOfLines={8}
                     textAlignVertical="top"
@@ -235,7 +195,6 @@ const RejectBottomPopup = (props: any) => {
           </View>
         </View>
       </RBSheet>
-    </View>
   );
 };
 

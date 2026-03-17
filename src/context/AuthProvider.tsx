@@ -1,5 +1,9 @@
-import React, {createContext, useEffect, useState} from 'react';
+import React, {createContext, useContext, useEffect, useState} from 'react';
 import {API} from '../api';
+
+//CONSTANT
+import { Storage } from '../constant';
+import { LaungageContext } from './LanguageProvider';
 
 interface AuthProviderProps {
   children: any;
@@ -13,6 +17,7 @@ export function AuthProvider(props: Readonly<AuthProviderProps>): any {
   useEffect(() => {
     fetchProfile();
   }, []);
+  const {setLanguage} = useContext<any>(LaungageContext);
 
   const [user, setUser] = useState<any>(null);
   const [userType, setUserType] = useState<any>('service_provider');
@@ -28,7 +33,7 @@ export function AuthProvider(props: Readonly<AuthProviderProps>): any {
       const result = await API.Instance.get(API.API_ROUTES.getUserDetails + `?platform=app`);
       if (result.status) {
         const userDetail = result?.data?.data;
-        console.log('PRO',JSON.stringify(userDetail))
+        setLanguage(userDetail?.user?.lang);
         setProfile(userDetail);
         return userDetail;
       }

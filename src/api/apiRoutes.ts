@@ -84,7 +84,9 @@ const API_ROUTES = {
     onUpdateAddress: "service_request/addresses",
     onPaymanWithdrawal: "subscription_and_payment/wallet-withdraw/create",
     createNegotiationChat: "service_confirmation/service_accept/create_negotiation",
-    getReviewData: "service_confirmation/ratings/service"
+    getReviewData: "service_confirmation/ratings/service",
+    onChangeLanguage: "userService/auth/change-lang"
 }
+
 
 export { API_ROUTES, API_BASE_URL, DISABLE_API_LOGS }

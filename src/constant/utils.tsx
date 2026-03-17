@@ -81,7 +81,7 @@ export const arrayIcons = {
   diy: IMAGES.diy,
   transport: IMAGES.transportIcon,
   'personal care': IMAGES.personalCareIcon,
-  'tech support': IMAGES.it,
+  'tech support': IMAGES.ic_tech_support,
   gardening: IMAGES.gardening,
 };
 

@@ -45,6 +45,7 @@ import { useFocusEffect } from '@react-navigation/native'; import moment from 'm
 
 //SCREENS
 import { SCREENS } from '..';
+import { Video } from 'react-native-video';
 
 export default function ServicePreview(props: any) {
 
@@ -61,6 +62,7 @@ export default function ServicePreview(props: any) {
   const [visibleTaskDetails, setVisibleTaskDetails] = useState(false);
   const [isLoading, setLoading] = useState(false);
   const [serviceDetails, setServiceDetails] = useState<any>("")
+  const [attachments, setAttachments] = useState<any>([]);
 
   useEffect(() => {
     getServicesDetails()
@@ -73,7 +75,8 @@ export default function ServicePreview(props: any) {
       setLoading(false)
 
       if (result?.status) {
-        setServiceDetails(result?.data)
+        setServiceDetails(result?.data?.data)
+        setAttachments(normalizeAttachments(result?.data?.data));
       }
       else {
         SHOW_TOAST(result?.data?.message, 'error')
@@ -84,6 +87,61 @@ export default function ServicePreview(props: any) {
       SHOW_TOAST(error?.message ?? '', 'error');
     }
   }
+
+  const normalizeAttachments = (data: any) => {
+    console.log('data==>', data)
+    const photos = (data?.job_photos || []).map((url: any) => ({
+      id: url,
+      type: 'photo',
+      url,
+    }));
+
+    const videos = (data?.job_videos || []).map((url: any) => ({
+      id: url,
+      type: 'video',
+      url,
+    }));
+
+    return [...photos, ...videos];
+  };
+
+  const AttachmentItem = ({ item }: any) => {
+    switch (item.type) {
+      case 'photo':
+        return (
+          <TouchableOpacity
+            onPress={() => {
+              props.navigation.navigate(SCREENS.WebViewScreen.identifier, {
+                url: item?.url ?? '',
+              });
+            }}>
+            <Image
+              style={[styles(theme).photosView]}
+              source={{ uri: item?.url ?? '' }}
+            />
+          </TouchableOpacity>
+        );
+
+      case 'video':
+        return (
+          <View style={styles(theme).photosView}>
+            <Video
+              source={{ uri: item.url }}
+              resizeMode="cover"
+              pointerEvents="none"
+              controls
+              paused={false}
+              fullscreen={false}
+              playInBackground={false}
+              playWhenInactive={false}
+              style={{ width: '100%', height: '100%' }}
+            />
+          </View>
+        );
+      default:
+        return null;
+    }
+  };
 
   useFocusEffect(
     React.useCallback(() => {
@@ -245,7 +303,7 @@ export default function ServicePreview(props: any) {
             </Text>
           </View>
         </View>
-        {profile?.user?.service_provider_type === 'non_professional' &&
+        {/* {profile?.user?.service_provider_type === 'non_professional' &&
           <View style={styles(theme).profileContainer}>
             <View>
               <Text
@@ -325,7 +383,7 @@ export default function ServicePreview(props: any) {
               />
             </View>
           </View>
-        }
+        } */}
         <Text
           style={{ marginTop: getScaleSize(24) }}
           size={getScaleSize(18)}
@@ -349,26 +407,13 @@ export default function ServicePreview(props: any) {
           {STRING.Jobphotos}
         </Text>
         <FlatList
-          data={serviceDetails?.job_photos}
-          horizontal
+          data={attachments ?? []}
+          numColumns={2}
+          columnWrapperStyle={{ gap: getScaleSize(12) }}
+          contentContainerStyle={{ gap: getScaleSize(12) }}
+          keyExtractor={(item: any, index: number) => index.toString()}
           showsHorizontalScrollIndicator={false}
-          contentContainerStyle={{ gap: getScaleSize(16), marginBottom: getScaleSize(24) }}
-          renderItem={({ item, index }) => {
-            return (
-              <TouchableOpacity onPress={() => {
-                props.navigation.navigate(SCREENS.WebViewScreen.identifier, {
-                  url: item,
-                })
-              }}>
-                <Image
-                  style={styles(theme).photosView}
-                  resizeMode='cover'
-                  source={{ uri: item }}
-                />
-              </TouchableOpacity>
-
-            );
-          }}
+          renderItem={({ item }) => <AttachmentItem item={item} />}
         />
       </ScrollView>
       <View

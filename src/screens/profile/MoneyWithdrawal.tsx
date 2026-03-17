@@ -52,6 +52,10 @@ export default function MoneyWithdrawal(props: any) {
             setAmountError(STRING.please_Enter_the_amount_to_withdraw);
             return;
         }
+        if(Number(amount) <= 0 ){
+            setAmountError(STRING.please_Enter_the_amount_to_withdraw);
+            return;
+        }
         try {
             const payload = {
                 amount: amount,
@@ -67,7 +71,8 @@ export default function MoneyWithdrawal(props: any) {
                 SHOW_TOAST(result?.data?.message, 'error');
             }
         } catch (error: any) {
-            SHOW_TOAST(error?.message ?? '', 'error');
+            console.log('error==>', error);
+            SHOW_TOAST(error?.msg ?? '', 'error');
         } finally {
             setLoading(false);
         }
