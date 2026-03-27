@@ -487,5 +487,19 @@
     "accepted": "Accepté",
     "completed": "Terminé",
     "reason": "Raison",
-    "reject_reason": "Certains documents sont actuellement manquants. Veuillez télécharger les documents requis dans les 15 prochains jours afin d'éviter la suppression de votre compte."
+    "reject_reason": "Certains documents sont actuellement manquants. Veuillez télécharger les documents requis dans les 15 prochains jours afin d'éviter la suppression de votre compte.",
+    "enter_discount_coupon": "Saisir le coupon de réduction",
+    "coupon_code": "Code coupon",
+    "view_all_coupons": "Voir tous les coupons",
+    "welcome_discount": "Bonne affaire",
+    "applied": "Appliqué",
+    "apply": "Appliquer",
+    "discount": "Réduction",
+    "transaction_overview": "Aperçu des transactions",
+    "history_of_withdrawals": "Historique des retraits",
+    "all": "Tous",
+    "success": "Succès",
+    "failed": "Échec",
+    "status": "Statut",
+    "no_request_matched_to_your_filter": "Aucune demande correspondant à votre filtre"
   }

@@ -85,7 +85,12 @@ const API_ROUTES = {
     onPaymanWithdrawal: "subscription_and_payment/wallet-withdraw/create",
     createNegotiationChat: "service_confirmation/service_accept/create_negotiation",
     getReviewData: "service_confirmation/ratings/service",
-    onChangeLanguage: "userService/auth/change-lang"
+    onChangeLanguage: "userService/auth/change-lang",
+    getAvailableCoupons: "subscription_and_payment/discounts/available",
+    onValidateCoupon: "subscription_and_payment/discounts/coupon-validate",
+    onServiceProviderAccepted: "quote_accept/service-provider/accepted",
+    getCompletedTaskDetails: "quote_accept",
+
 }
 
 

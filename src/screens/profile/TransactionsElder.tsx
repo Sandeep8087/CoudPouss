@@ -80,7 +80,7 @@ export default function TransactionsElder(props: any) {
         hasMore: true,
         isLoading: false,
 
-        selectedStatus: { id: '1', title: 'All', value: '' },
+        selectedStatus: { id: '1', title: STRING.all, value: '' },
         startDate: null,
         endDate: null,
     });
@@ -257,8 +257,8 @@ export default function TransactionsElder(props: any) {
                 {/* STATUS */}
                 <View style={styles(theme).filterView}>
                     <Text size={14} font={FONTS.Lato.Medium} color={theme._2B2B2B}>
-                        {requestData.selectedStatus.title === 'All'
-                            ? 'Status'
+                        {requestData.selectedStatus.title === STRING.all
+                            ? STRING.status
                             : requestData.selectedStatus.title}
                     </Text>
 
@@ -273,9 +273,9 @@ export default function TransactionsElder(props: any) {
                         content={
                             <View>
                                 {[
-                                    { id: '1', title: 'All', value: '' },
-                                    { id: '2', title: 'Success', value: 'success' },
-                                    { id: '3', title: 'Failed', value: 'failed' },
+                                    { id: '1', title: STRING.all, value: '' },
+                                    { id: '2', title: STRING.success, value: 'success' },
+                                    { id: '3', title: STRING.failed, value: 'failed' },
                                     // { id: '4', title: 'Pending', value: 'pending' },
                                 ].map(item => (
                                     <TouchableOpacity

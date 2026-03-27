@@ -100,7 +100,7 @@ export default function SubscriptionSuccessful(props: any) {
                                 {subscriptionData?.plan_name ?? ''}
                             </Text>
                         </View>
-                        <View style={[styles(theme).flexView, { marginBottom: getScaleSize(16) }]}>
+                        {/* <View style={[styles(theme).flexView, { marginBottom: getScaleSize(16) }]}>
                             <Text size={getScaleSize(14)}
                                 font={FONTS.Lato.SemiBold}
                                 color={theme._595959}>
@@ -111,7 +111,7 @@ export default function SubscriptionSuccessful(props: any) {
                                 color={theme._424242}>
                                 {subscriptionData?.payment_method ?? ''}
                             </Text>
-                        </View>
+                        </View> */}
                         {/* <View style={[styles(theme).flexView, { marginBottom: getScaleSize(16) }]}>
                             <Text size={getScaleSize(14)}
                                 font={FONTS.Lato.SemiBold}

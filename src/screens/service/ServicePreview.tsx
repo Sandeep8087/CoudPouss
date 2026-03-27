@@ -433,7 +433,7 @@ export default function ServicePreview(props: any) {
             size={getScaleSize(27)}
             font={FONTS.Lato.ExtraBold}
             color={theme._2C6587}>
-            {`€${serviceDetails?.estimated_cost === null ? "" : serviceDetails?.estimated_cost}`}
+            {`${serviceDetails?.estimated_cost === null ? "€0" : `€${serviceDetails?.estimated_cost}`}`}
           </Text>
         </View>
         <TouchableOpacity

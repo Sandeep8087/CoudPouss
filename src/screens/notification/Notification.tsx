@@ -64,7 +64,6 @@ export default function Notification(props: any) {
 
   useEffect(() => {
     if (selectedItem) {
-      console.log('selectedItem==>', selectedItem);
       mapViewRef.current?.open();
     }
   }, [selectedItem]);
@@ -130,6 +129,9 @@ export default function Notification(props: any) {
         SHOW_TOAST(result?.data?.message ?? '', 'success');
         mapViewRef.current?.close();
         setSelectedItem(null);
+        getNotification()
+        setPage(1)
+        setNotification([])
       } else {
         SHOW_TOAST(result?.data?.message ?? '', 'error');
         mapViewRef.current?.close();
@@ -152,6 +154,9 @@ export default function Notification(props: any) {
         SHOW_TOAST(result?.data?.message ?? '', 'success');
         mapViewRef.current?.close();
         setSelectedItem(null);
+        getNotification()
+        setPage(1)
+        setNotification([])
       } else {
         SHOW_TOAST(result?.data?.message ?? '', 'error');
         mapViewRef.current?.close();
@@ -182,7 +187,6 @@ export default function Notification(props: any) {
           renegotiationViewRef.current?.close();
           setSelectedRenegotiationItem(null);
         }, 2000);
-        console.log('result==>', result?.data?.data);
       } else {
         SHOW_TOAST(result?.data?.message ?? '', 'error');
         renegotiationViewRef.current?.close();
@@ -209,6 +213,9 @@ export default function Notification(props: any) {
         SHOW_TOAST(result?.data?.message ?? '', 'success');
         renegotiationViewRef.current?.close();
         setSelectedRenegotiationItem(null);
+        getNotification()
+        setPage(1)
+        setNotification([])
       } else {
         SHOW_TOAST(result?.data?.message ?? '', 'error');
         renegotiationViewRef.current?.close();
@@ -380,7 +387,7 @@ export default function Notification(props: any) {
                       {item?.data?.event === 'RENEGOTIATION_REQUEST' && (
                         <View style={styles(theme).buttonContainer}>
                           <TouchableOpacity
-                            style={styles(theme).nextButtonContainer}
+                            style={[styles(theme).nextButtonContainer, { backgroundColor: item?.data?.action_required ? theme.primary : theme._BECFDA }]}
                             activeOpacity={1}
                             disabled={item?.data?.action_required ? false : true}
                             onPress={() => {
@@ -395,7 +402,7 @@ export default function Notification(props: any) {
                             </Text>
                           </TouchableOpacity>
                           <TouchableOpacity
-                            style={styles(theme).backButtonContainer}
+                            style={[styles(theme).backButtonContainer]}
                             activeOpacity={1}
                             disabled={item?.data?.action_required ? false : true}
                             onPress={() => {
@@ -418,8 +425,9 @@ export default function Notification(props: any) {
                       {item?.data?.event === "PROVIDER_REACHED" && (
                         <View style={styles(theme).buttonContainer}>
                           <TouchableOpacity
-                            style={styles(theme).nextButtonContainer}
+                            style={[styles(theme).nextButtonContainer, { backgroundColor: item?.data?.action_required ? theme.primary : theme._BECFDA }]}
                             activeOpacity={1}
+                            disabled={item?.data?.action_required ? false : true}
                             onPress={() => {
                               setSelectedItem(item?.data);
                             }}>
@@ -434,6 +442,7 @@ export default function Notification(props: any) {
                           <TouchableOpacity
                             style={styles(theme).backButtonContainer}
                             activeOpacity={1}
+                            disabled={item?.data?.action_required ? false : true}
                             onPress={() => {
                               setSelectedItem(item?.data ?? '');
                             }}>
@@ -454,7 +463,7 @@ export default function Notification(props: any) {
                       {elderDetailsRoutes.includes(item?.data?.event) && (
                         <View style={styles(theme).buttonContainer}>
                           <TouchableOpacity
-                            style={styles(theme).nextButtonContainer}
+                            style={[styles(theme).nextButtonContainer, { backgroundColor: theme.primary }]}
                             activeOpacity={1}
                             onPress={() => {
                               props.navigation.navigate(SCREENS.RequestDetails.identifier, {
@@ -478,7 +487,7 @@ export default function Notification(props: any) {
                       {ProfessionalDetailsRoutes.includes(item?.data?.event) && (
                         <View style={styles(theme).buttonContainer}>
                           <TouchableOpacity
-                            style={styles(theme).nextButtonContainer}
+                            style={[styles(theme).nextButtonContainer, { backgroundColor: theme.primary }]}
                             activeOpacity={1}
                             onPress={() => {
                               props.navigation.navigate(SCREENS.ProfessionalTaskDetails.identifier, {
@@ -607,8 +616,7 @@ const styles = (theme: ThemeContextType['theme']) =>
     },
     nextButtonContainer: {
       justifyContent: 'center',
-      borderWidth: 1,
-      borderColor: theme.primary,
+
       borderRadius: getScaleSize(12),
       paddingVertical: getScaleSize(8),
       backgroundColor: theme.primary,

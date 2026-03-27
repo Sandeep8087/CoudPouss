@@ -101,7 +101,7 @@ export default function Splash(props: any) {
         props?.navigation?.dispatch(
           CommonActions.reset({
             index: 0,
-            routes: [{name: SCREENS.Login.identifier}],
+            routes: [{name: SCREENS.LanguageSelection.identifier}],
           }),
         );
         setUser('');
@@ -119,7 +119,6 @@ export default function Splash(props: any) {
       if (result.status) {
         setProfile(result?.data?.data);
         console.log('result?.data?.data?.user?.lang==>', result?.data?.data?.user?.lang);
-        // Storage.save(Storage.USER_LANGUAGE, JSON.stringify(result?.data?.data?.user?.lang));
         setLanguage(result?.data?.data?.user?.lang);
         props.navigation.dispatch(
           CommonActions.reset({
@@ -137,7 +136,7 @@ export default function Splash(props: any) {
             index: 0,
             routes: [
               {
-                name: SCREENS.Login.identifier,
+                name: SCREENS.LanguageSelection.identifier,
               },
             ],
           }),
@@ -149,7 +148,7 @@ export default function Splash(props: any) {
           index: 0,
           routes: [
             {
-              name: SCREENS.Login.identifier,
+              name: SCREENS.LanguageSelection.identifier,
             },
           ],
         }),

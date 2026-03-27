@@ -8,6 +8,8 @@ import {
   Dimensions,
   Animated,
   Easing,
+  TextInput,
+  Platform,
 } from 'react-native';
 import { ThemeContext, ThemeContextType } from '../context';
 import { getScaleSize, useString } from '../constant';
@@ -15,6 +17,7 @@ import { FONTS, IMAGES } from '../assets';
 import Text from './Text';
 import { constant } from 'lodash';
 import RBSheet from 'react-native-raw-bottom-sheet';
+import Input from './Input';
 
 const PaymentBottomPopup = (props: any) => {
   const STRING = useString();
@@ -24,7 +27,7 @@ const PaymentBottomPopup = (props: any) => {
   const slideAnim = useRef(new Animated.Value(50)).current;
   const scaleAnim = useRef(new Animated.Value(0.8)).current;
 
-  const { serviceAmount } = props;
+  const { serviceAmount, couponCode, onChangeText, appliedCouponCode, couponCodeError, onPressViewAllCoupons, onPressApply } = props;
 
   const startOpenAnimations = () => {
     fadeAnim.setValue(0);
@@ -77,19 +80,23 @@ const PaymentBottomPopup = (props: any) => {
     ]).start();
   };
 
+  console.log('couponCode====>?', couponCode, appliedCouponCode)
+
   return (
     <View style={{ backgroundColor: 'rgba(0,0,0,0.3)' }}>
       <RBSheet
         ref={props.onRef}
-        closeOnDragDown={true}
         closeOnPressMask={true}
-        animationType="slide"
+        customModalProps={{
+          animationType: 'slide',
+          statusBarTranslucent: true,
+        }}
         onOpen={startOpenAnimations}
         onClose={startCloseAnimations}
         customStyles={{
           container: {
             backgroundColor: '#FFF',
-            height: getScaleSize(580),
+            height: getScaleSize(750),
             borderTopLeftRadius: getScaleSize(20),
             borderTopRightRadius: getScaleSize(20),
           },
@@ -146,7 +153,6 @@ const PaymentBottomPopup = (props: any) => {
                 {STRING.PlatformFee + ' (10%)'}
               </Text>
               <Text
-
                 size={getScaleSize(14)}
                 font={FONTS.Lato.SemiBold}
                 color={'#595959'}>
@@ -168,6 +174,23 @@ const PaymentBottomPopup = (props: any) => {
                 {`€${serviceAmount?.tax ?? 0}`}
               </Text>
             </View>
+            {serviceAmount?.coupon_code && (
+              <View style={styles(theme).horizontalView}>
+                <Text
+                  style={{ flex: 1.0 }}
+                  size={getScaleSize(14)}
+                  font={FONTS.Lato.SemiBold}
+                  color={'#595959'}>
+                  {STRING.discount}
+                </Text>
+                <Text
+                  size={getScaleSize(14)}
+                  font={FONTS.Lato.SemiBold}
+                  color={'#595959'}>
+                  {`-€${serviceAmount?.discount_amount ?? 0}`}
+                </Text>
+              </View>
+            )}
             <View style={styles(theme).dotView} />
             <View style={styles(theme).horizontalView}>
               <Text
@@ -185,37 +208,60 @@ const PaymentBottomPopup = (props: any) => {
               </Text>
             </View>
           </View>
-          {/* <View style={{flex:1.0}}/> */}
-          <View style={styles(theme).buttonContainer}>
-            <TouchableOpacity
-              style={styles(theme).backButtonContainer}
-              activeOpacity={1}
+          <View style={styles(theme).inputContainer}>
+            <Input
+              inputTitle={STRING.enter_discount_coupon}
+              placeholder={STRING.coupon_code}
+              placeholderTextColor={theme._818285}
+              inputColor={true}
+              value={appliedCouponCode?.code_name ? appliedCouponCode?.code_name : appliedCouponCode?.coupon_code ? appliedCouponCode?.coupon_code : couponCode}
+              couponCode={appliedCouponCode?.id ? STRING.applied : STRING.apply}
+              onPressCouponCode={onPressApply}
+              onChangeText={onChangeText}
+              isError={couponCodeError}
+            />
+            <Text
+              size={getScaleSize(14)}
+              font={FONTS.Lato.SemiBold}
+              align="right"
+              style={{ marginTop: getScaleSize(8) }}
+              color={theme.primary}
               onPress={() => {
-                props?.onClose()
+                onPressViewAllCoupons()
               }}>
-              <Text
-                size={getScaleSize(19)}
-                font={FONTS.Lato.Bold}
-                color={theme.primary}
-                style={{ alignSelf: 'center' }}>
-                {STRING.cancel}
-              </Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={styles(theme).nextButtonContainer}
-              activeOpacity={1}
-              onPress={() => {
-                props?.proceedToPay()
-              }}>
-              <Text
-                size={getScaleSize(19)}
-                font={FONTS.Lato.Bold}
-                color={theme.white}
-                style={{ alignSelf: 'center' }}>
-                {STRING.proceed_to_pay}
-              </Text>
-            </TouchableOpacity>
+              {STRING.view_all_coupons}
+            </Text>
           </View>
+        </View>
+        <View style={styles(theme).buttonContainer}>
+          <TouchableOpacity
+            style={styles(theme).backButtonContainer}
+            activeOpacity={1}
+            onPress={() => {
+              props?.onClose()
+            }}>
+            <Text
+              size={getScaleSize(19)}
+              font={FONTS.Lato.Bold}
+              color={theme.primary}
+              style={{ alignSelf: 'center' }}>
+              {STRING.cancel}
+            </Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={styles(theme).nextButtonContainer}
+            activeOpacity={1}
+            onPress={() => {
+              props?.proceedToPay()
+            }}>
+            <Text
+              size={getScaleSize(19)}
+              font={FONTS.Lato.Bold}
+              color={theme.white}
+              style={{ alignSelf: 'center' }}>
+              {STRING.proceed_to_pay}
+            </Text>
+          </TouchableOpacity>
         </View>
       </RBSheet>
     </View>
@@ -230,6 +276,7 @@ const styles = (theme: ThemeContextType['theme']) =>
     },
     content: {
       paddingVertical: getScaleSize(24),
+      flex: 1.0,
     },
     icon: {
       height: getScaleSize(60),
@@ -255,6 +302,7 @@ const styles = (theme: ThemeContextType['theme']) =>
       flexDirection: 'row',
       marginHorizontal: getScaleSize(22),
       marginTop: getScaleSize(24),
+      marginBottom: getScaleSize(34),
     },
     backButtonContainer: {
       flex: 1.0,
@@ -295,7 +343,11 @@ const styles = (theme: ThemeContextType['theme']) =>
       borderColor: theme.primary,
       borderWidth: 1,
       marginTop: getScaleSize(8)
-    }
+    },
+    inputContainer: {
+      marginTop: getScaleSize(24),
+      marginHorizontal: getScaleSize(24),
+    },
   });
 
 export default PaymentBottomPopup;

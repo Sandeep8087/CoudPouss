@@ -13,11 +13,11 @@ export default function TaskItem(props: any) {
   const { item } = props;
 
   function getMessage() {
-    if (item?.service_details?.quote_status === 'send' || item?.quote_status === 'send') {
+    if (item?.quote_status === 'send') {
       return 'Quote Submitted';
-    } else if (item?.service_details?.quote_status === 'accepted' || item?.quote_status === 'accepted') {
+    } else if (item?.quote_status === 'accepted') {
       return 'Quote Accepted';
-    } else if (item?.service_details?.quote_status === 'complete' || item?.quote_status === 'complete') {
+    } else if (item?.quote_status === 'complete') {
       return 'Task Completed'
     }
   }
@@ -35,7 +35,7 @@ export default function TaskItem(props: any) {
           font={FONTS.Lato.Bold}
           color={theme._214C65}
           style={{}}>
-          {getMessage()}
+          {item?.service_details?.quote_status ? item?.service_details?.quote_status : getMessage()}
         </Text>
       </View>
       <View style={styles(theme).horizontalContainer}>
@@ -87,7 +87,7 @@ export default function TaskItem(props: any) {
             source={{ uri: item?.service_details?.subcategory?.icon }}
           />
         ) : (
-          <View style={[styles(theme).imageView, { backgroundColor: theme._EAF0F3 }]} />  
+          <View style={[styles(theme).imageView, { backgroundColor: theme._EAF0F3 }]} />
         )}
       </View>
       <View style={styles(theme).deviderView} />

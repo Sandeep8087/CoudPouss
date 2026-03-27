@@ -18,7 +18,7 @@ export function LanguageProvider(props: LanguageContextType) {
   useEffect(() => {
     const loadLanguage = async () => {
       const storedLang = await Storage.get(Storage.USER_LANGUAGE);
-
+      console.log('storedLang==>', storedLang);
       const initialLang = storedLang || 'en';
       i18n.changeLanguage(initialLang);
       console.log('initialLang==>', initialLang);

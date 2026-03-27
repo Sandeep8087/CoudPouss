@@ -127,9 +127,8 @@ return (
             {data.weeks.map((w: any, i: number) => {
                 const midIndex = i * 7 + 4;
                 return (
-                    <>
+                    <React.Fragment key={i}>
                         <Line
-                            key={i}
                             x1={i == 0 ? PADDING + 20 : xScale(midIndex) - PADDING}
                             y1={20}
                             x2={i == 0 ? PADDING + 20 : xScale(midIndex) - PADDING}
@@ -138,7 +137,6 @@ return (
                             strokeDasharray="4 4"
                         />
                         <SvgText
-                            key={i}
                             x={i == 0 ? PADDING + 20 : xScale(midIndex) - PADDING}
                             y={HEIGHT - 1}
                             fontSize={getScaleSize(11)}
@@ -147,7 +145,7 @@ return (
                         >
                             {w.label}
                         </SvgText>
-                    </>
+                    </React.Fragment>
                 );
             })}
         </Svg>

@@ -35,6 +35,7 @@ import EmptyView from './EmptyView'
 import RenegotiationSheet from './RenegotiationSheet'
 import EnterSecurityCodeSheet from './EnterSecurityCodeSheet'
 import SelectMediaModal from './SelectMediaModal'
+import ViewAllCouponsPopup from './ViewAllCouponsPopup'
 
 export {
     Header,
@@ -74,4 +75,5 @@ export {
     RenegotiationSheet,
     EnterSecurityCodeSheet,
     SelectMediaModal,
+    ViewAllCouponsPopup,
 }

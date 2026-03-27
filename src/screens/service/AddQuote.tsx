@@ -251,7 +251,7 @@ export default function AddQuote(props: any) {
     const photoIds = [doc1Id, doc2Id].filter(Boolean)
 
     // amount validation only for professional
-    if (profile?.user?.service_provider_type === 'professional' && !amount) {
+    if (!amount) {
       setAmountError('Please enter amount');
     } else if (!desctiption) {
       setDescriptionError('Please enter short description');
@@ -264,30 +264,33 @@ export default function AddQuote(props: any) {
         let payload: any = {
           servicesid: isServiceDetails?.service_id,
           description: desctiption,
+          provider_quote_amount: amount,
+          offer_photoids: photoIds,
+          offer_videoids: videoId ? [videoId] : [],
         };
 
-        // PROFESSIONAL PAYLOAD
-        if (profile?.user?.service_provider_type === 'professional') {
-          payload = {
-            ...payload,
-            provider_quote_amount: amount,
-            offer_photoids: photoIds,
-            offer_videoids: videoId ? [videoId] : [],
-          };
-        }
+        // // PROFESSIONAL PAYLOAD
+        // if (profile?.user?.service_provider_type === 'professional') {
+        //   payload = {
+        //     ...payload,
+        //     provider_quote_amount: amount,
+        //     offer_photoids: photoIds,
+        //     offer_videoids: videoId ? [videoId] : [],
+        //   };
+        // }
 
-        // NON-PROFESSIONAL PAYLOAD
-        if (profile?.user?.service_provider_type === 'non_professional') {
-          payload = {
-            ...payload,
-            offer_photos: photoIds.map(key => ({
-              storage_key: key,
-            })),
-            offer_videos: videoId
-              ? [{ storage_key: videoId }]
-              : [],
-          };
-        }
+        // // NON-PROFESSIONAL PAYLOAD
+        // if (profile?.user?.service_provider_type === 'non_professional') {
+        //   payload = {
+        //     ...payload,
+        //     offer_photos: photoIds.map(key => ({
+        //       storage_key: key,
+        //     })),
+        //     offer_videos: videoId
+        //       ? [{ storage_key: videoId }]
+        //       : [],
+        //   };
+        // }
 
         const result: any = await API.Instance.post(
           API.API_ROUTES.sendQuoteRequest,
@@ -302,7 +305,7 @@ export default function AddQuote(props: any) {
           });
         } else {
           console.log('result==>', result)
-          if(result?.code === 403) {
+          if (result?.code === 403) {
             SHOW_TOAST(result?.data?.detail || 'Failed to send quote', 'error');
           } else {
             SHOW_TOAST(result?.message || 'Failed to send quote', 'error');
@@ -476,23 +479,21 @@ export default function AddQuote(props: any) {
             /> */}
           </View>
         </View>
-        {profile?.user?.service_provider_type === 'professional' &&
-          <Input
-            placeholder={`${isServiceDetails?.estimated_cost ? `€${isServiceDetails?.estimated_cost}` : '0'}`}
-            placeholderTextColor={theme._D5D5D5}
-            inputTitle={STRING.EnterQuoteAmount}
-            inputColor={true}
-            continerStyle={{ marginTop: getScaleSize(16) }}
-            value={amount ? `${'€'}${amount}` : ''}
-            keyboardType="decimal-pad"
-            autoCapitalize="none"
-            onChangeText={text => {
-              setAmount(formatDecimalInput(text));
-              setAmountError('');
-            }}
-            isError={amountError}
-          />
-        }
+        <Input
+          placeholder={`${isServiceDetails?.estimated_cost ? `€${isServiceDetails?.estimated_cost}` : '0'}`}
+          placeholderTextColor={theme._D5D5D5}
+          inputTitle={STRING.EnterQuoteAmount}
+          inputColor={true}
+          continerStyle={{ marginTop: getScaleSize(16) }}
+          value={amount ? `${'€'}${amount}` : ''}
+          keyboardType="decimal-pad"
+          autoCapitalize="none"
+          onChangeText={text => {
+            setAmount(formatDecimalInput(text));
+            setAmountError('');
+          }}
+          isError={amountError}
+        />
         <Input
           inputTitle={STRING.Addpersonalizedshortmessage}
           placeholder={STRING.Enterdescriptionhere}
@@ -607,10 +608,7 @@ export default function AddQuote(props: any) {
       </ScrollView>
       <Button
         title={STRING.SubmitQuote}
-        disabled={
-          (profile?.user?.service_provider_type === 'professional' && amount === '') ||
-          desctiption === ''
-        }
+        disabled={(amount === '') || desctiption === ''}
         style={{
           marginVertical: getScaleSize(24),
           marginHorizontal: getScaleSize(24),

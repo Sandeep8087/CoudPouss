@@ -135,4 +135,5 @@ export const IMAGES = {
   ic_cancelled: require('./ic_cancelled.png'),
   ic_gallery: require('./ic_gallery.png'),
   ic_camare: require('./ic_camare.png'),
+  ic_coupon: require('./ic_coupon.png'),
 };

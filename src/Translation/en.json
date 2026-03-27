@@ -487,5 +487,19 @@
     "accepted": "Accepted",
     "completed": "Completed",
     "reason": "Reason",
-    "reject_reason":"Some documents are currently missing. Please upload the required documents within the next 15 days to avoid account deletion."
+    "reject_reason":"Some documents are currently missing. Please upload the required documents within the next 15 days to avoid account deletion.",
+    "enter_discount_coupon": "Enter Discount Coupon",
+    "coupon_code": "Coupon Code",
+    "view_all_coupons": "View All Coupons",
+    "welcome_discount": "Welcome Discount",
+    "applied": "Applied",
+    "apply": "Apply",
+    "discount": "Discount",
+    "transaction_overview": "Transaction Overview",
+    "history_of_withdrawals": "History of Withdrawals",
+    "all": "All",
+    "success": "Success",
+    "failed": "Failed",
+    "status": "Status",
+    "no_request_matched_to_your_filter": "No request matched to your filter"
 }

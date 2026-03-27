@@ -1,5 +1,5 @@
 import { ActivityIndicator, FlatList, Image, StyleSheet, TouchableOpacity, View } from 'react-native'
-import React, { useContext, useEffect, useState } from 'react'
+import React, { useContext, useEffect, useRef, useState } from 'react'
 import { ThemeContext, ThemeContextType } from '../../context/ThemeProvider';
 import { getScaleSize } from '../../constant/scaleSize';
 import { Button, Header, Text } from '../../components';
@@ -58,6 +58,20 @@ export default function Address(props: any) {
             setIsLoading(false);
         }
     }
+    const isNavigatingRef = useRef(false);
+
+    const handleSelectAddress = (item: any) => {
+        if (isNavigatingRef.current) return;
+
+        isNavigatingRef.current = true;
+
+        setSelectedAddress(item);
+
+        setTimeout(() => {
+            props.navigation.goBack();
+            isNavigatingRef.current = false; // reset for safety
+        }, 300);
+    };
 
     return (
         <View style={styles(theme).container}>
@@ -82,10 +96,7 @@ export default function Address(props: any) {
                             <View style={styles(theme).itemContainer}>
                                 <TouchableOpacity
                                     activeOpacity={1}
-                                    onPress={() => {
-                                        setSelectedAddress(item);
-                                        props.navigation.goBack();
-                                    }}
+                                    onPress={() => {handleSelectAddress(item)}}
                                 >
                                     <Image source={selectedAddress?.id === item?.id ? IMAGES.ic_radio_select : IMAGES.ic_radio_unselect} style={styles(theme).radioSelectIcon} />
                                 </TouchableOpacity>

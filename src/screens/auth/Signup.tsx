@@ -42,17 +42,19 @@ export default function Signup(props: any) {
     // }, [email])
 
     async function onSignup() {
+        if (isLoading) return;
+        setLoading(true);
         const trimmedEmail = email.trim();
 
         if (!trimmedEmail) {
             setEmailError(STRING.email_required);
-
+            setLoading(false);
         } else if (trimmedEmail.length < 6 || trimmedEmail.length > 100) {
             setEmailError(STRING.email_must_be_six_to_hundred_char_allow);
-
+            setLoading(false);
         } else if (!REGEX.email.test(trimmedEmail)) {
             setEmailError(STRING.please_enter_valid_email);
-
+            setLoading(false);
         } else {
             setEmailError('');
             // let params = {}
@@ -69,10 +71,7 @@ export default function Signup(props: any) {
             }
             // }
             try {
-                setLoading(true);
                 const result: any = await API.Instance.post(API.API_ROUTES.signup, params);
-                setLoading(false);
-                console.log('result', result?.code, result)
                 if (result.status) {
                     SHOW_TOAST(result?.data?.message ?? '', 'success')
                     props.navigation.navigate(SCREENS.Otp.identifier, {
@@ -105,9 +104,10 @@ export default function Signup(props: any) {
                     }
                 }
             } catch (error: any) {
-                setLoading(false);
                 SHOW_TOAST(error?.message ?? '', 'error');
                 console.log(error?.message)
+            }finally{
+                setLoading(false);
             }
         }
     }
@@ -122,7 +122,7 @@ export default function Signup(props: any) {
                 keyboardShouldPersistTaps="handled"
                 contentContainerStyle={{
                     paddingBottom: 20,
-                     flexGrow: 1,
+                    flexGrow: 1,
                 }}
             >
                 <View style={styles(theme).mainContainer}>

@@ -7,6 +7,7 @@ import {
   Platform,
   TouchableOpacity,
   Image,
+  Keyboard,
 } from 'react-native';
 
 // ASSETS
@@ -55,6 +56,7 @@ export default function TaskStatus(props: any) {
   const [newQuoteAmount, setNewQuoteAmount] = useState('');
   const [newQuoteAmountError, setNewQuoteAmountError] = useState('');
   const [renegotiationDetails, setRenegotiationDetails] = useState<any>({});
+  const [renegotiationNewDetails, setRenegotiationNewDetails] = useState<any>({});
   const [otp, setOtp] = useState('');
   const [otpError, setOtpError] = useState('');
   const [serviceFlags, setServiceFlags] = useState({
@@ -104,14 +106,17 @@ export default function TaskStatus(props: any) {
   }, [taskStatusData]);
 
   useEffect(() => {
-    if (!taskStatusLastItem?.stage) return;
+    if (!taskStatusData?.is_renegotiated) return;
 
-    const currentStage = taskStatusLastItem.stage;
+    console.log('taskStatusData', taskStatusData)
+    const currentStage = taskStatusData?.is_renegotiated;
     const prevStage = prevStageRef.current;
 
+    console.log('currentStage', currentStage, prevStage)
+
     // pending ➜ accepted
-    if (prevStage === 'pending' && currentStage === 'accepted') {
-      renegotiatioAcceptSheetRef.current?.open();
+    if (prevStage === 'pending' && currentStage === 'paid') {
+      onServiceProviderAccepted();
     }
     // if (prevStage === 'accepted' && currentStage === 'accepted') {
     //   renegotiatioAcceptSheetRef.current?.open();
@@ -135,6 +140,7 @@ export default function TaskStatus(props: any) {
       const result = await API.Instance.get(API.API_ROUTES.getTaskStatus + `/${item?.service_request_id}`);
       if (result.status) {
         const item = result?.data?.data ?? {}
+        console.log('dataaaaa==', item)
         setTaskStatusData(item);
         let array = item?.task_status_timeline ?? [];
         let finalArray = array.pop();
@@ -244,6 +250,25 @@ export default function TaskStatus(props: any) {
     }
   }
 
+  async function onServiceProviderAccepted() {
+    try {
+      setLoading(true);
+      const result = await API.Instance.get(API.API_ROUTES.onServiceProviderAccepted + `/${item?.service_request_id}`);
+      if (result.status) {
+        setRenegotiationNewDetails(result?.data?.data ?? {});
+        setTimeout(() => {
+          renegotiatioAcceptSheetRef.current?.open();
+        }, 300);
+      } else {
+        SHOW_TOAST(result?.data?.message ?? '', 'error');
+      }
+    } catch (error: any) {
+      SHOW_TOAST(error?.message ?? '', 'error');
+    } finally {
+      setLoading(false);
+    }
+  }
+
   const onProcessPress = () => {
     if (!newQuoteAmount || isNaN(Number(newQuoteAmount))) {
       setNewQuoteAmountError('Please enter a valid amount');
@@ -343,8 +368,6 @@ export default function TaskStatus(props: any) {
       setLoading(false);
     }
   }
-
-  console.log('serviceFlags.isServiceFinalized==>', serviceFlags.isServiceFinalized, taskStatusData?.is_otp_verifed?.status == 'false');
 
   return (
     <View style={styles(theme).container}>
@@ -528,7 +551,7 @@ export default function TaskStatus(props: any) {
         onRef={renegotiatioAcceptSheetRef}
         type='accept'
         height={getScaleSize(600)}
-        item={renegotiationDetails}
+        item={renegotiationNewDetails?.payment_breakdown ?? {}}
         onClose={() => {
           renegotiatioAcceptSheetRef.current?.close();
         }}
@@ -542,6 +565,7 @@ export default function TaskStatus(props: any) {
         onChangeOtp={(text: string) => {
           setOtp(text);
           setOtpError('');
+
         }}
         otpError={otpError}
         otp={otp}
@@ -555,6 +579,7 @@ export default function TaskStatus(props: any) {
             return;
           } else {
             onVerifySecurityCode();
+            Keyboard.dismiss()
           }
         }}
       />

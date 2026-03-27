@@ -71,6 +71,7 @@ import AddressMapScreen from './request/AddressMapScreen';
 import EditAddress from './request/EditAddress';
 import NegotiationDetails from './chat/NegotiationDetails';
 import ImageDetailsScreen from './chat/ImageDetailsScreen';
+import LanguageSelection from './LanguageSelection';
 
 export const SCREENS = {
   Splash: {
@@ -326,6 +327,10 @@ export const SCREENS = {
     identifier: 'ImageDetailsScreen',
     component: ImageDetailsScreen,
   },
+  LanguageSelection:{
+    identifier: 'LanguageSelection',
+    component: LanguageSelection,
+  }
 };
 
 export const TABS = {

@@ -135,13 +135,7 @@ export default function AddPersonalDetails(props: any) {
 
   async function onSignup() {
 
-    // REGEX (clean + strict)
-    const emojiRegex =
-      /([\u2700-\u27BF]|[\uE000-\uF8FF]|[\uD83C-\uDBFF\uDC00-\uDFFF]+)/;
-
-    const nameRegex = /^[A-Za-z.\- ]+$/;
-    const onlyNumbers = /^\d+$/;
-    const onlySpecialChars = /^[^A-Za-z0-9]+$/;
+    
     const mobileRegex = /^[0-9]{10}$/;
 
     // Trim everything first
@@ -255,7 +249,6 @@ export default function AddPersonalDetails(props: any) {
       const result = await API.Instance.get(API.API_ROUTES.getUserDetails + `?platform=app`);
       if (result.status) {
         setProfile(result?.data?.data);
-        // Storage.save(Storage.USER_LANGUAGE, JSON.stringify(result?.data?.data?.user?.lang));
         setLanguage(result?.data?.data?.user?.lang);
         onNext();
       } else {

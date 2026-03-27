@@ -40,6 +40,8 @@ interface InputProps {
   onPressQuantityRemove?: () => void;
   onPressQuantityAdd?: () => void;
   containerStyle?: StyleProp<ViewStyle>;
+  couponCode?: string | null;
+  onPressCouponCode?: () => void;
 }
 
 function Input(props: InputProps & TextInputProps) {
@@ -60,7 +62,9 @@ function Input(props: InputProps & TextInputProps) {
     onPressCountryCode,
     quantityIcon,
     onPressQuantityRemove,
-    onPressQuantityAdd
+    onPressQuantityAdd,
+    couponCode,
+    onPressCouponCode,
   } = props;
 
   const { theme } = useContext<any>(ThemeContext);
@@ -184,6 +188,19 @@ function Input(props: InputProps & TextInputProps) {
               />
             </Pressable>
           )}
+          {couponCode && (
+            <Pressable
+              style={styles(theme).couponCodeContainer}
+              onPress={onPressCouponCode}>
+              <Text
+                size={getScaleSize(19)}
+                font={FONTS.Lato.Bold}
+                color={theme.white}
+                lineHeight={getScaleSize(24)}>
+                {couponCode}
+              </Text>
+            </Pressable>
+          )}
         </Pressable>
       </View>
       {isError && (
@@ -215,7 +232,7 @@ const styles = (theme: ThemeContextType['theme']) =>
       fontFamily: FONTS.Lato.Medium,
       color: theme._31302F,
       flex: 1.0,
-      height: Platform.OS == 'ios' ? getScaleSize(56) : getScaleSize(56),
+      height: getScaleSize(56),
     },
     rightIcon: {
       width: getScaleSize(20),
@@ -235,4 +252,12 @@ const styles = (theme: ThemeContextType['theme']) =>
       flexDirection: 'row',
       alignItems: 'center',
     },
+    couponCodeContainer: {
+      backgroundColor: theme.primary,
+      borderRadius: getScaleSize(12),
+      paddingHorizontal: getScaleSize(16),
+      paddingVertical: getScaleSize(10),
+      marginLeft: getScaleSize(10),
+      marginVertical: getScaleSize(8),
+    }
   });

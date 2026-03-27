@@ -23,9 +23,9 @@ export default function MyEarnings(props: any) {
     const [earningsData, setEarningsData] = useState<any>(null);
 
     const itemData = [
-        { id: 1, title: 'Transaction Overview', onPress: SCREENS.Transactions.identifier },
+        { id: 1, title: STRING.transaction_overview, onPress: SCREENS.Transactions.identifier },
         // { id: 2, title: 'Account Information', onPress: SCREENS.BankDetails.identifier },
-        { id: 3, title: 'History of Withdrawals', onPress: SCREENS.WithdrawHistory.identifier },
+        { id: 3, title: STRING.history_of_withdrawals, onPress: SCREENS.WithdrawHistory.identifier },
     ]
 
     const isFocused = useIsFocused();
@@ -138,7 +138,7 @@ export default function MyEarnings(props: any) {
                         {itemData.map((item: any, index: number) => {
                             return (
                                 <TouchableOpacity
-                                    key={item.id}
+                                    key={index}
                                     style={styles(theme).itemContainer}
                                     onPress={() => { props.navigation.navigate(item.onPress) }}>
                                     <Text

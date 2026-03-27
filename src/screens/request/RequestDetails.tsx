@@ -12,6 +12,7 @@ import {
   Linking,
   Platform,
   Alert,
+  Keyboard,
 } from 'react-native';
 
 //ASSETS & CONSTANT
@@ -40,6 +41,7 @@ import {
   SearchComponent,
   StatusItem,
   Text,
+  ViewAllCouponsPopup,
 } from '../../components';
 
 //SCREENS
@@ -71,6 +73,7 @@ export default function RequestDetails(props: any) {
   const acceptRef = useRef<any>(null);
   const paymentRef = useRef<any>(null);
   const cancelScheduledServicePopupRef = useRef<any>(null);
+  const viewAllCouponsPopupRef = useRef<any>(null);
 
   const [isLoading, setLoading] = useState(false);
   const [serviceDetails, setServiceDetails] = useState<any>({});
@@ -91,10 +94,14 @@ export default function RequestDetails(props: any) {
   const [showOfferModal, setShowOfferModal] = useState(false);
   const [newQuoteAmount, setNewQuoteAmount] = useState('');
   const [newQuoteAmountError, setNewQuoteAmountError] = useState('');
+  const [coupons, setCoupons] = useState<any>([]);
+  const [couponCode, setCouponCode] = useState<any>('');
+  const [couponCodeError, setCouponCodeError] = useState('');
+  const [appliedCouponCode, setAppliedCouponCode] = useState<any>({});
   const { profile } = useContext<any>(AuthContext);
 
   const isFocused = useIsFocused();
-  
+
   useEffect(() => {
     if ((serviceId || item?.id) && isFocused) {
       getServiceDetails();
@@ -138,7 +145,6 @@ export default function RequestDetails(props: any) {
     } catch (error: any) {
       setLoading(false);
       SHOW_TOAST(error?.message ?? '', 'error');
-      console.log(error?.message);
     } finally {
       setLoading(false);
     }
@@ -237,10 +243,11 @@ export default function RequestDetails(props: any) {
         quote_id: serviceDetails?.quote_id,
       };
       setLoading(true);
-      const result = await API.Instance.put(
-        API.API_ROUTES.onAcceptService + `?platform=app`,
-        params,
-      );
+      let url = API.API_ROUTES.onAcceptService + `?platform=app`;
+      if (couponCode) {
+        url += `&discount_code_id=${couponCode?.id}`;
+      }
+      const result = await API.Instance.put(url, params);
       if (result.status) {
         const STRIPE_URL = result?.data?.data?.checkout_url ?? '';
         paymentRef.current.close();
@@ -258,18 +265,30 @@ export default function RequestDetails(props: any) {
     }
   }
 
-  async function getServiceAmount() {
+  async function getServiceAmount(couponId: any) {
     try {
       setLoading(true);
-      const result = await API.Instance.get(
-        API.API_ROUTES.getServiceAmount + `/${serviceDetails?.service_id}`,
-      );
+      let url = API.API_ROUTES.getServiceAmount + `/${serviceDetails?.service_id}`;
+      if (couponId) {
+        url += `?discount_code_id=${couponId}`;
+      }
+      const result = await API.Instance.get(url);
       if (result.status) {
         setServiceAmount(result?.data?.data ?? {});
-        acceptRef.current.close();
-        setTimeout(() => {
-          paymentRef.current.open();
-        }, 200);
+        if (couponId) {
+          viewAllCouponsPopupRef.current.close();
+          setTimeout(() => {
+            if (!paymentRef.current.open()) {
+              paymentRef.current.open();
+            }
+          }, 200);
+        } else {
+          acceptRef.current.close();
+          setTimeout(() => {
+            paymentRef.current.open();
+          }, 200);
+        }
+
       } else {
         SHOW_TOAST(result?.data?.message ?? '', 'error');
       }
@@ -511,6 +530,56 @@ export default function RequestDetails(props: any) {
     } finally {
       setLoading(false);
     }
+  }
+
+  console.log('couponCode==>', couponCode);
+
+  async function getAvailableCoupons() {
+    try {
+      setLoading(true);
+      const result: any = await API.Instance.get(API.API_ROUTES.getAvailableCoupons);
+      if (result.status) {
+        setCoupons(result?.data?.data?.results ?? []);
+        if (result?.data?.data?.results?.length > 0) {
+          setTimeout(() => {
+            viewAllCouponsPopupRef.current.open();
+          }, 200);
+        }
+        paymentRef.current.close();
+      } else {
+        SHOW_TOAST(result?.data?.message ?? '', 'error');
+      }
+    } catch (error: any) {
+      SHOW_TOAST(error?.message ?? '', 'error');
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  async function onValidateCoupon(couponCode: any) {
+    if (!couponCode) {
+      setCouponCodeError('Coupon code is required');
+      return;
+    } else {
+      setCouponCodeError('');
+      try {
+        setLoading(true);
+        const result: any = await API.Instance.get(API.API_ROUTES.onValidateCoupon + `?coupon_code=${couponCode}`);
+        if (result.status) {
+          console.log('result==>', result?.data);
+          setAppliedCouponCode(result?.data?.data ?? {});
+          getServiceAmount(result?.data?.data?.id);
+        } else {
+          setCouponCodeError(result?.data?.message ?? '');
+        }
+      }
+      catch (error: any) {
+        SHOW_TOAST(error?.message ?? '', 'error');
+      } finally {
+        setLoading(false);
+      }
+    }
+
   }
 
   return (
@@ -1214,6 +1283,9 @@ export default function RequestDetails(props: any) {
             activeOpacity={1}
             onPress={() => {
               acceptRef.current.open();
+              setCouponCode(null);
+              setCouponCodeError('');
+              setAppliedCouponCode({});
             }}>
             <Text
               size={getScaleSize(19)}
@@ -1237,19 +1309,6 @@ export default function RequestDetails(props: any) {
           }}
           onReject={() => {
             onRejectReason();
-          }}
-        />
-      )}
-     
-      {status === 'pending' && (
-        <PaymentBottomPopup
-          onRef={paymentRef}
-          serviceAmount={serviceAmount}
-          onClose={() => {
-            paymentRef.current.close();
-          }}
-          proceedToPay={() => {
-            onAcceptService();
           }}
         />
       )}
@@ -1333,7 +1392,7 @@ export default function RequestDetails(props: any) {
           }
         }}
       />
-       {status === 'pending' && (
+      {status === 'pending' && (
         <AcceptBottomPopup
           onRef={acceptRef}
           title={`You are about to confirm a service at the rate of  €${serviceDetails?.total_renegotiated} with the Provider ${serviceDetails?.provider?.full_name ?? ''}, Are you sure you want to continue?`}
@@ -1342,18 +1401,54 @@ export default function RequestDetails(props: any) {
             acceptRef.current.close();
           }}
           onNavigate={() => {
-            getServiceAmount();
+            getServiceAmount(null);
           }}
         />
       )}
       <PaymentBottomPopup
         onRef={paymentRef}
         serviceAmount={serviceAmount}
+        couponCode={couponCode}
+        appliedCouponCode={appliedCouponCode}
+        onChangeText={(text: string) => {
+          if (appliedCouponCode?.id) {
+            setAppliedCouponCode(null);
+            getServiceAmount(null);
+            setCouponCode(text);
+          } else {
+            setCouponCode(text);
+          }
+        }}
+        couponCodeError={couponCodeError}
+        onPressApply={() => {
+          onValidateCoupon(couponCode);
+          Keyboard.dismiss();
+        }}
         onClose={() => {
           paymentRef.current.close();
         }}
         proceedToPay={() => {
           onAcceptService();
+        }}
+        onPressViewAllCoupons={() => {
+          getAvailableCoupons();
+        }}
+      />
+      <ViewAllCouponsPopup
+        onRef={viewAllCouponsPopupRef}
+        coupons={coupons}
+        couponCode={couponCode}
+        onProcessPress={(item: any) => {
+          getServiceAmount(item?.id);
+          setAppliedCouponCode(item);
+          setCouponCodeError('');
+        }}
+        onClose={() => {
+          setTimeout(() => {
+            paymentRef.current.open();
+            setCoupons([]);
+          }, 200);
+          viewAllCouponsPopupRef.current.close();
         }}
       />
       <Modal

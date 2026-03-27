@@ -492,6 +492,20 @@ export const useString = () => {
     completed: getTranslation('completed'),
     reason: getTranslation('reason'),
     reject_reason: getTranslation('reject_reason'),
+    enter_discount_coupon: getTranslation('enter_discount_coupon'),
+    coupon_code: getTranslation('coupon_code'),
+    view_all_coupons: getTranslation('view_all_coupons'),
+    welcome_discount: getTranslation('welcome_discount'),
+    applied: getTranslation('applied'),
+    apply: getTranslation('apply'),
+    discount: getTranslation('discount'),
+    transaction_overview: getTranslation('transaction_overview'),
+    history_of_withdrawals: getTranslation('history_of_withdrawals'),
+    all: getTranslation('all'),
+    success: getTranslation('success'),
+    failed: getTranslation('failed'),
+    status: getTranslation('status'),
+    no_request_matched_to_your_filter: getTranslation('no_request_matched_to_your_filter'),
   };
 };
 

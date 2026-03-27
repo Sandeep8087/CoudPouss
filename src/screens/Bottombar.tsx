@@ -1,14 +1,14 @@
-import React, {useContext, useEffect, useRef} from 'react';
-import {Alert, Linking, PermissionsAndroid, Platform, View} from 'react-native';
+import React, { useContext, useEffect, useRef } from 'react';
+import { Alert, Linking, PermissionsAndroid, Platform, StatusBar, View } from 'react-native';
 
 //COMPONENTS
-import {Tabbar} from '../components';
+import { Tabbar } from '../components';
 
 //SCREENS
 import { SCREENS, TABS } from '.';
 
 //CONTEXT
-import {AuthContext} from '../context';
+import { AuthContext } from '../context';
 
 //PACKAGES
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
@@ -234,7 +234,7 @@ function BottomBar(props: any) {
           'Notification was declined.',
           'Go to your settings and enable notifications always.',
           [
-            {text: 'No', style: 'cancel'},
+            { text: 'No', style: 'cancel' },
             {
               text: 'Open Settings',
               onPress: () => {
@@ -265,6 +265,7 @@ function BottomBar(props: any) {
           <Tab.Screen
             name={TABS.ProfessionalHome.identifier}
             component={TABS.ProfessionalHome.component}
+
           />
           <Tab.Screen
             name={TABS.Task.identifier}
@@ -295,19 +296,31 @@ function BottomBar(props: any) {
           <Tab.Screen
             name={TABS.Home.identifier}
             component={TABS.Home.component}
+            options={{
+              freezeOnBlur: true
+            }}
           />
           <Tab.Screen
             name={TABS.Request.identifier}
             component={TABS.Request.component}
+            options={{
+              freezeOnBlur: true
+            }}
           />
           <Tab.Screen name={'plus'} component={() => <View />} />
           <Tab.Screen
             name={TABS.Chat.identifier}
             component={TABS.Chat.component}
+            options={{
+              freezeOnBlur: false
+            }}
           />
           <Tab.Screen
             name={TABS.Profile.identifier}
             component={TABS.Profile.component}
+            options={{
+              freezeOnBlur: true
+            }}
           />
         </Tab.Navigator>
       </>

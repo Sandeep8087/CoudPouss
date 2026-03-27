@@ -43,7 +43,10 @@ export default function RenegotiationSheet(props: RenegotiationProps) {
     const STRING = useString();
     const { onRef, onProcessPress, onClose, newQuoteAmount, type, newQuoteAmountError, onChangeNewQuoteAmount, item, height } = props;
 
-    return (
+    const amount = item?.base_amount ?? item?.finalized_quote_amount ?? 0;
+
+
+return (
         <RBSheet
             ref={onRef}
             customModalProps={{
@@ -118,7 +121,7 @@ export default function RenegotiationSheet(props: RenegotiationProps) {
                             size={getScaleSize(14)}
                             font={FONTS.Lato.SemiBold}
                             color={'#595959'}>
-                            {`€${item?.finalized_quote_amount ?? '0'}`}
+                            {`€ ${Number(amount).toFixed(2)}`}
                         </Text>
                     </View>
                     <View style={styles(theme).horizontalView}>

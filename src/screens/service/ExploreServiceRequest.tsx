@@ -124,15 +124,8 @@ export default function ExploreServiceRequest(props: any) {
 
       const queryParams = new URLSearchParams(params).toString();
 
-      console.log('PRMS', queryParams)
-
       const url = `${API.API_ROUTES.getProfessionalAllServices}?${queryParams}`;
-
-      console.log("API URL =>", url);
-
       const result: any = await API.Instance.get(url);
-
-      console.log('SEARCH RES', JSON.stringify(result))
 
       if (result?.status) {
 
@@ -163,6 +156,60 @@ export default function ExploreServiceRequest(props: any) {
       setPage(prev => prev + 1);
     }
   };
+
+  console.log('serviceList', serviceList, serviceList?.length)
+
+  function renderFlatList() {
+    if (serviceList?.length > 0) {
+      return (
+        <FlatList
+          data={serviceList}
+          showsVerticalScrollIndicator={false}
+          keyExtractor={(item: any, index: number) => index.toString()}
+          contentContainerStyle={{ marginHorizontal: getScaleSize(22), paddingBottom: getScaleSize(50) }}
+          onEndReached={loadMore}
+          onEndReachedThreshold={0.1}
+          ListFooterComponent={
+            isLoading ? <ActivityIndicator size="large" color={theme.primary} style={{ margin: 20 }} /> : null
+          }
+          renderItem={({ item, index }) => {
+            return (
+              <ServiceRequest
+                key={index}
+                data={item}
+                onPress={() => {
+                  props.navigation.navigate(SCREENS.ServicePreview.identifier, { serviceData: item });
+                }}
+                onPressAccept={() => {
+                  props.navigation.navigate(SCREENS.AddQuote.identifier, {
+                    isItem: item,
+                    isFromHome: false,
+                  });
+                }}
+              />
+            )
+          }}
+        />
+      )
+    }else if(isLoading){
+      return (
+        <View style={{ margin: 20 }}>
+          <ActivityIndicator size="large" color={theme.primary} />
+        </View>
+      )
+    } else {
+      return (
+        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+          <Text
+            size={getScaleSize(16)}
+            font={FONTS.Lato.Medium}
+            color={theme._555555}>
+            {STRING.no_request_matched_to_your_filter}
+          </Text>
+        </View>
+      )
+    }
+  }
 
   return (
     <View style={styles(theme).container}>
@@ -262,34 +309,7 @@ export default function ExploreServiceRequest(props: any) {
           </TouchableOpacity>
         </Modal>
       </View>
-      <FlatList
-        data={serviceList}
-        showsVerticalScrollIndicator={false}
-        keyExtractor={(item: any, index: number) => index.toString()}
-        contentContainerStyle={{ marginHorizontal: getScaleSize(22), paddingBottom: getScaleSize(50) }}
-        onEndReached={loadMore}
-        onEndReachedThreshold={0.1}
-        ListFooterComponent={
-          isLoading ? <ActivityIndicator size="large" color={theme.primary} style={{ margin: 20 }} /> : null
-        }
-        renderItem={({ item, index }) => {
-          return (
-            <ServiceRequest
-              key={index}
-              data={item}
-              onPress={() => {
-                props.navigation.navigate(SCREENS.ServicePreview.identifier, { serviceData: item });
-              }}
-              onPressAccept={() => {
-                props.navigation.navigate(SCREENS.AddQuote.identifier, {
-                  isItem: item,
-                  isFromHome: false,
-                });
-              }}
-            />
-          )
-        }}
-      />
+      {renderFlatList()}
     </View>
   );
 }
