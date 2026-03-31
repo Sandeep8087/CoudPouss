@@ -244,8 +244,8 @@ export default function RequestDetails(props: any) {
       };
       setLoading(true);
       let url = API.API_ROUTES.onAcceptService + `?platform=app`;
-      if (couponCode) {
-        url += `&discount_code_id=${couponCode?.id}`;
+      if (appliedCouponCode?.id) {
+        url += `&discount_code_id=${appliedCouponCode?.id}`;
       }
       const result = await API.Instance.put(url, params);
       if (result.status) {
@@ -531,8 +531,6 @@ export default function RequestDetails(props: any) {
       setLoading(false);
     }
   }
-
-  console.log('couponCode==>', couponCode);
 
   async function getAvailableCoupons() {
     try {

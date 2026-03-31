@@ -90,6 +90,7 @@ const API_ROUTES = {
     onValidateCoupon: "subscription_and_payment/discounts/coupon-validate",
     onServiceProviderAccepted: "quote_accept/service-provider/accepted",
     getCompletedTaskDetails: "quote_accept",
+    onLikeReviewRating: "profile_module/like-review-rating",
 
 }
 

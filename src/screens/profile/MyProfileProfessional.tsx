@@ -21,7 +21,7 @@ import { FONTS, IMAGES } from '../../assets';
 import { AuthContext, ThemeContext, ThemeContextType } from '../../context';
 
 //CONSTANT
-import { getScaleSize, useString } from '../../constant';
+import { getScaleSize, SHOW_TOAST, useString } from '../../constant';
 
 //COMPONENT
 import {
@@ -37,18 +37,40 @@ import {
 import { useFocusEffect } from '@react-navigation/native';
 import { SCREENS } from '..';
 import { Rating } from 'react-native-ratings';
+import { API } from '../../api';
 
 export default function MyProfileProfessional(props: any) {
 
   const STRING = useString();
 
   const { theme } = useContext<any>(ThemeContext);
-  const { profile } = useContext(AuthContext)
+  const { profile, fetchProfile } = useContext(AuthContext)
 
   const [showMore, setShowMore] = useState(false);
   const [showMoreExperience, setShowMoreExperience] = useState(false);
-
+  const [isLoading, setLoading] = useState(false);
   const overallRating = Number(profile?.customer_ratings?.average_rating ?? 0);
+
+  async function onLikeReviewRating(item: any, action: string) {
+    try {
+      setLoading(true);
+      const params = {
+        review_id: item?.review_id,
+        action: action,
+      }
+      const result: any = await API.Instance.put(API.API_ROUTES.onLikeReviewRating, params);
+      if (result?.status) {
+        fetchProfile();
+      } else {
+        SHOW_TOAST(result?.data?.message ?? '', 'error');
+      }
+    } catch (error: any) {
+      SHOW_TOAST(error?.message ?? '', 'error');
+    }
+    finally {
+      setLoading(false);
+    }
+  }
 
   return (
     <View style={styles(theme).container}>
@@ -355,6 +377,9 @@ export default function MyProfileProfessional(props: any) {
                     setShowMore(!showMore);
                   }}
                   showMore={showMore}
+                  onPressLike={(item: any, action: string) => {
+                    onLikeReviewRating(item, action);
+                  }}
                 />
               );
             })}

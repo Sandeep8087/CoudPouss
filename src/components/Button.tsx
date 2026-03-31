@@ -30,6 +30,7 @@ const Button = (props: ButtonProps) => {
 
   return (
     <TouchableOpacity 
+    disabled={disabled}
     onPress={onPress} 
     style={[styles(theme).gradient, { backgroundColor: disabled ? theme._DFE8ED : theme._214C65 }, style]} activeOpacity={0.8}>
       <Text

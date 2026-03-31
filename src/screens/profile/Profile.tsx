@@ -128,21 +128,25 @@ export default function Profile(props: any) {
                       color={theme._214C65}>
                       {STRING.account_under_verification}
                     </Text>
-                    {profile?.provider_info?.is_docs_verified === false && (
-                      <TouchableOpacity
-                        onPress={() => {
-                          props.navigation.navigate(SCREENS.ApplicationStatus.identifier);
-                        }}
-                        style={[styles(theme).checkStatusButton, { backgroundColor: theme._214C65 }]}>
-                        <Text
-                          size={getScaleSize(16)}
-                          font={FONTS.Lato.SemiBold}
-                          align="center"
-                          color={theme.white}>
-                          {STRING.check_status}
-                        </Text>
-                      </TouchableOpacity>
-                    )}
+                    {profile?.user?.service_provider_type === 'professional' &&
+                      <>
+                        {profile?.provider_info?.is_docs_verified === false && (
+                          <TouchableOpacity
+                            onPress={() => {
+                              props.navigation.navigate(SCREENS.ApplicationStatus.identifier);
+                            }}
+                            style={[styles(theme).checkStatusButton, { backgroundColor: theme._214C65 }]}>
+                            <Text
+                              size={getScaleSize(16)}
+                              font={FONTS.Lato.SemiBold}
+                              align="center"
+                              color={theme.white}>
+                              {STRING.check_status}
+                            </Text>
+                          </TouchableOpacity>
+                        )}
+                      </>
+                    }
                     {profile?.onboarding_status === false && (
                       <TouchableOpacity
                         onPress={() => {

@@ -1,4 +1,4 @@
-import React, {useContext, useEffect, useRef, useState} from 'react';
+import React, { useContext, useEffect, useRef, useState } from 'react';
 import {
   View,
   StatusBar,
@@ -20,13 +20,13 @@ import {
 } from 'react-native';
 
 //ASSETS
-import {FONTS, IMAGES} from '../../assets';
+import { FONTS, IMAGES } from '../../assets';
 
 //API
-import {API} from '../../api';
+import { API } from '../../api';
 
 //CONTEXT
-import {AuthContext, ThemeContext, ThemeContextType} from '../../context';
+import { AuthContext, ThemeContext, ThemeContextType } from '../../context';
 
 //CONSTANT
 import {
@@ -57,20 +57,20 @@ import {
 } from '@react-navigation/native';
 
 //SCREENS
-import {SCREENS} from '..';
+import { SCREENS } from '..';
 import Geolocation from 'react-native-geolocation-service';
-import {PERMISSIONS, request, RESULTS} from 'react-native-permissions';
-import {EventRegister} from 'react-native-event-listeners';
-import {buildThreadId} from '../../services/chat';
+import { PERMISSIONS, request, RESULTS } from 'react-native-permissions';
+import { EventRegister } from 'react-native-event-listeners';
+import { buildThreadId } from '../../services/chat';
 
 export default function ProfessionalHome(props: any) {
   const skipSubscription = props?.route?.params?.skipSubscription;
 
   const STRING = useString();
 
-  const {theme} = useContext<any>(ThemeContext);
+  const { theme } = useContext<any>(ThemeContext);
 
-  const {profile, fetchProfile, userType} = useContext(AuthContext);
+  const { profile, fetchProfile, userType } = useContext(AuthContext);
 
   const [isLoading, setLoading] = useState(false);
   const [serviceList, setServiceList] = useState<any>([]);
@@ -145,9 +145,9 @@ export default function ProfessionalHome(props: any) {
 
     Geolocation.getCurrentPosition(
       position => {
-        const {latitude, longitude} = position.coords;
+        const { latitude, longitude } = position.coords;
         setLoading(false);
-        getAllServices({latitude, longitude});
+        getAllServices({ latitude, longitude });
       },
       error => {
         setLoading(false);
@@ -232,8 +232,8 @@ export default function ProfessionalHome(props: any) {
       if (result?.status) {
         console.log('resulcounttvgvt==>', result?.data?.data?.status?.verified_providers_today?.count);
         setServiceList(result.data.data ?? []);
-        if(result?.data?.detail){
-          SHOW_TOAST(result?.data?.detail , 'success')
+        if (result?.data?.detail) {
+          SHOW_TOAST(result?.data?.detail, 'success')
         }
       } else {
         setLoading(false);
@@ -292,7 +292,7 @@ export default function ProfessionalHome(props: any) {
         <View
           style={[
             styles(theme).directionView,
-            {marginBottom: getScaleSize(24)},
+            { marginBottom: getScaleSize(24) },
           ]}>
           <Text
             size={getScaleSize(20)}
@@ -303,7 +303,7 @@ export default function ProfessionalHome(props: any) {
             }}>
             {STRING.explore_service_requests}
           </Text>
-          <View style={{flex: 1}}></View>
+          <View style={{ flex: 1 }}></View>
           {serviceList?.open_services?.length > 0 && (
             <TouchableOpacity
               onPress={() => {
@@ -357,7 +357,7 @@ export default function ProfessionalHome(props: any) {
           </Text>
           {serviceList?.recent_tasks?.data?.length > 0 && (
             <TouchableOpacity
-              style={{paddingVertical: getScaleSize(8)}}
+              style={{ paddingVertical: getScaleSize(8) }}
               onPress={() => {
                 props.navigation.dispatch(
                   CommonActions.reset({
@@ -365,7 +365,7 @@ export default function ProfessionalHome(props: any) {
                     routes: [
                       {
                         name: SCREENS.BottomBar.identifier,
-                        params: {isTask: true},
+                        params: { isTask: true },
                       },
                     ],
                   }),
@@ -446,23 +446,19 @@ export default function ProfessionalHome(props: any) {
 
   const renderServiceRequestView = () => {
     if (profile?.has_purchased === true) {
-      if (profile?.user?.service_provider_type === 'professional') {
-        if (profile?.onboarding_status === true) {
-          return renderServiceRequestListView();
-        } else {
-          return (
-            <EmptyView
-              title={STRING.you_have_not_completed_your_onboarding}
-              style={styles(theme).emptyContainer}
-              buttonTitle={STRING.onboarding_process}
-              onPressButton={() => {
-                openStripeCheckout(profile?.onboarding_redirect_url ?? '');
-              }}
-            />
-          );
-        }
-      } else {
+      if (profile?.onboarding_status === true) {
         return renderServiceRequestListView();
+      } else {
+        return (
+          <EmptyView
+            title={STRING.you_have_not_completed_your_onboarding}
+            style={styles(theme).emptyContainer}
+            buttonTitle={STRING.onboarding_process}
+            onPressButton={() => {
+              openStripeCheckout(profile?.onboarding_redirect_url ?? '');
+            }}
+          />
+        );
       }
     } else {
       return (
@@ -496,9 +492,8 @@ export default function ProfessionalHome(props: any) {
             font={FONTS.Lato.Medium}
             color={theme._6D6D6D}
             style={{}}>
-            {`${STRING.hello} ${
-              profile?.user?.first_name + ' ' + profile?.user?.last_name
-            }`}
+            {`${STRING.hello} ${profile?.user?.first_name + ' ' + profile?.user?.last_name
+              }`}
           </Text>
           <Text
             size={getScaleSize(24)}
@@ -511,7 +506,7 @@ export default function ProfessionalHome(props: any) {
         <TouchableOpacity
           style={[
             styles(theme).notifiationIcon,
-            {marginRight: getScaleSize(8)},
+            { marginRight: getScaleSize(8) },
           ]}
           activeOpacity={1}
           onPress={() => {
@@ -531,7 +526,7 @@ export default function ProfessionalHome(props: any) {
           {profile?.user?.profile_photo_url ? (
             <Image
               style={styles(theme).profilePic}
-              source={{uri: profile?.user?.profile_photo_url}}
+              source={{ uri: profile?.user?.profile_photo_url }}
             />
           ) : (
             <>
@@ -585,7 +580,7 @@ export default function ProfessionalHome(props: any) {
             resizeMode="cover"
             source={IMAGES.homeBanner}>
             <View style={styles(theme).textView}>
-              <View style={{flexDirection: 'row', alignItems: 'center'}}>
+              <View style={{ flexDirection: 'row', alignItems: 'center' }}>
                 <Text
                   size={getScaleSize(40)}
                   font={FONTS.Lato.Bold}
@@ -600,7 +595,7 @@ export default function ProfessionalHome(props: any) {
                 </Text>
               </View>
               <Text
-                style={{marginTop: getScaleSize(8)}}
+                style={{ marginTop: getScaleSize(8) }}
                 size={getScaleSize(12)}
                 font={FONTS.Lato.Regular}
                 color={theme.white}>
@@ -618,7 +613,7 @@ export default function ProfessionalHome(props: any) {
 
 const styles = (theme: ThemeContextType['theme']) =>
   StyleSheet.create({
-    container: {flex: 1.0, backgroundColor: theme.white},
+    container: { flex: 1.0, backgroundColor: theme.white },
     headerContainer: {
       flexDirection: 'row',
       marginHorizontal: getScaleSize(22),

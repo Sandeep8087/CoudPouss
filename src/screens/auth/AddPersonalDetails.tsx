@@ -9,7 +9,7 @@ import {
   KeyboardAvoidingView,
   Platform
 } from 'react-native';
-import React, { useContext, useEffect, useState } from 'react';
+import React, { useCallback, useContext, useEffect, useRef, useState } from 'react';
 
 //CONTEXT
 import { AuthContext, LaungageContext, ThemeContext, ThemeContextType } from '../../context';
@@ -28,11 +28,14 @@ import {
   Text,
   Button,
   SelectCountrySheet,
+  ProgressView,
 } from '../../components';
+
+//PACKAGES
 import { CommonActions } from '@react-navigation/native';
 import { API } from '../../api';
 import { launchImageLibrary } from 'react-native-image-picker';
-import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
+import debounce from 'lodash/debounce';
 
 export default function AddPersonalDetails(props: any) {
 
@@ -133,115 +136,69 @@ export default function AddPersonalDetails(props: any) {
     }
   }
 
-  async function onSignup() {
+  const debouncedSignup = useCallback(
+    debounce(() => {
+      onSignup();
+    }, 500), // 500ms delay
+    []
+  );
 
-    
-    const mobileRegex = /^[0-9]{10}$/;
-
-    // Trim everything first
+  const onSignup = async () => {
+    if (isLoading) return;
     const cleanName = name.trim();
     const cleanMobile = mobileNo.trim();
     const cleanAddress = address.trim();
-    const cleanEmail = email.trim();
-
-    // Update state with trimmed values
-    setName(cleanName);
-    setMobileNo(cleanMobile);
-    setAddress(cleanAddress);
-    setEmail(cleanEmail);
-
-    let hasError = false;
-
-    setNameError('');
-    setMobileNoError('');
-    setEmailError('');
-    setAddressError('')
-
-    // NAME VALIDATION 
-    if (!cleanName) {
+    if(!cleanName && !cleanMobile && !cleanAddress) {
       setNameError(STRING.name_required);
-      hasError = true;
-    }
-    else if (!/^[A-Za-z]+(?: [A-Za-z]+)*$/.test(cleanName)) {
-      setNameError(STRING.name_invalid_characters);
-      hasError = true;
-    }
-
-    // MOBILE VALIDATION 
-    if (!cleanMobile) {
       setMobileNoError(STRING.mobile_number_required);
-      hasError = true;
-    } else if (!mobileRegex.test(cleanMobile)) {
-      setMobileNoError(STRING.mobile_must_be_10_digits);
-      hasError = true;
-    }
-
-    // EMAIL VALIDATION 
-    if (!cleanEmail) {
-      setEmailError(STRING.email_required);
-      hasError = true;
-    } else if (
-      cleanEmail.length < 6 ||
-      cleanEmail.length > 100 ||
-      !REGEX.email.test(cleanEmail)
-    ) {
-      setEmailError(STRING.please_enter_valid_email);
-      hasError = true;
-    }
-
-    // ADDRESS VALIDATION 
-    if (!cleanAddress) {
       setAddressError(STRING.address_required);
-      hasError = true;
-    }
-    else if (/^\d+$/.test(cleanAddress)) {
+    } else if (!cleanName) {
+      setNameError(STRING.name_required);
+    } else if (!/^[A-Za-z]+(?: [A-Za-z]+)*$/.test(cleanName)) {
+      setNameError(STRING.name_invalid_characters);
+    } else if (!cleanMobile) {
+      setMobileNoError(STRING.mobile_number_required);
+    } else if (!cleanAddress) {
+      setAddressError(STRING.address_required);
+    } else if (/^\d+$/.test(cleanAddress)) {
       setAddressError(STRING.address_only_numbers_error);
-      hasError = true;
-    }
-    else if (/^[^A-Za-z0-9]+$/.test(cleanAddress)) {
+    } else if (/^[^A-Za-z0-9]+$/.test(cleanAddress)) {
       setAddressError(STRING.address_special_char_error);
-      hasError = true;
-    }
-
-    if (hasError) {
-      return
-    }
-    else {
+    } else {
+      setNameError('');
+      setMobileNoError('');
+      setAddressError('');
       const params = {
         mobile: cleanMobile,
         phone_country_code: countryCode,
         name: cleanName,
-        email: cleanEmail,
+        email: email,
         address: cleanAddress,
         role: userType,
       };
-
       try {
         setLoading(true);
-        const result = await API.Instance.post(
-          API.API_ROUTES.addPersonalDetails,
-          params,
-        );
-
-        if (result.status) {
+        const result = await API.Instance.post(API.API_ROUTES.addPersonalDetails, params);
+        if (result?.status) {
           SHOW_TOAST(result?.data?.message ?? '', 'success');
-          Storage.save(
+          const userData = result?.data?.data;
+          await Storage.save(
             Storage.USER_DETAILS,
-            JSON.stringify(result?.data?.data),
+            JSON.stringify(userData)
           );
-          setUser(result?.data?.data);
-          setUserType(result?.data?.data?.user_data?.role);
+          setUser(userData);
+          setUserType(userData?.user_data?.role);
           getProfileData();
         } else {
           SHOW_TOAST(result?.data?.message ?? '', 'error');
         }
       } catch (error: any) {
-        SHOW_TOAST(error?.message ?? '', 'error');
+        SHOW_TOAST(error?.message ?? 'Something went wrong', 'error');
       } finally {
         setLoading(false);
       }
     }
-  }
+  };
 
   async function getProfileData() {
     try {
@@ -357,7 +314,7 @@ export default function AddPersonalDetails(props: any) {
               setMobileNoError('');
             }}
             keyboardType="number-pad"
-            maxLength={10}
+            maxLength={15}
             isError={mobileNoError}
             countryCode={countryCode}
             countryFlag={countryFlag}
@@ -408,7 +365,8 @@ export default function AddPersonalDetails(props: any) {
           marginHorizontal: getScaleSize(24),
         }}
         onPress={() => {
-          onSignup();
+          if (isLoading) return;
+          debouncedSignup();
         }}
       />
       {/* </KeyboardAwareScrollView> */}
@@ -425,6 +383,7 @@ export default function AddPersonalDetails(props: any) {
           setVisibleCountry(false);
         }}
       />
+      {isLoading && <ProgressView />}
     </View>
   );
 }

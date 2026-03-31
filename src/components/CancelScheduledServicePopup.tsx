@@ -151,7 +151,7 @@ export default function CancelScheduledServicePopup(props: CancelScheduledServic
                         color={theme._555555}
                         align='center'
                         style={{ marginTop: getScaleSize(16), marginHorizontal: getScaleSize(24) }}>
-                        {STRING.cancelled_message + ` ${cancelServiceDetails?.deduction_percentage ?? '0'}% ` + STRING.cancellation_message_2}
+                        {STRING.cancelled_message + ` ${cancelServiceDetails?.deduction_percentage ?? '0'}% ` + STRING.cancellation_message_3}
                     </Text>
                 )}
                 {cancelServiceDetails?.cancellation_allowed == false && (

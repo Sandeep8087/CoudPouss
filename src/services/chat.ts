@@ -190,7 +190,7 @@ export const isThreadExists = async (threadId: string) => {
 };
 
 export const getReadCount = async (userId: string, conversationId: string) => {
-  const docSnap = await firestore()
+  const docSnap: any = await firestore()
     .collection('Users')
     .doc(userId)
     .collection('MESSAGES')
@@ -216,6 +216,36 @@ export const updateReadCount = async (recipientId: string, conversationId: strin
       { merge: true },
     );
 };
+
+export const updateUserStatus = async (userId: string, status: string) => {
+  return await firestore()
+    .collection('Users')
+    .doc(userId)
+    .set({
+      isOnline: status,
+      lastActive: new Date().getTime(),
+    }, { merge: true });
+}
+
+export const listenToUserStatus = (userId: string) => {
+  return firestore().collection('Users').doc(userId);
+};
+
+export const getUserStatus = async (userId: string) => {
+  const docSnap: any = await firestore()
+    .collection('Users')
+    .doc(userId)
+    .get();
+  return docSnap.exists ? docSnap.data()?.isOnline || false : false;
+}
+
+export const getUserLastActive = async (userId: string) => {
+  const docSnap: any = await firestore()
+    .collection('Users')
+    .doc(userId)
+    .get();
+  return docSnap.exists ? docSnap.data()?.lastActive || 0 : 0;
+}
 
 // export const getPrividerbyId = async (providerId: string) => {
 //   return await firestore()

@@ -112,14 +112,16 @@ export default function ExploreServiceRequest(props: any) {
 
       if (formattedText) {
         if (selectedFilterType === "category") {
-          params.category_name = formattedText;
-        }
-        else if (selectedFilterType === "location") {
-          params.location = formattedText;
-        }
-        else {
+          params.category_boolean = true;
           params.search = formattedText;
         }
+        else if (selectedFilterType === "location") {
+          params.location_boolean = true;
+          params.search = formattedText;
+        } else {
+          params.search = formattedText;
+        }
+
       }
 
       const queryParams = new URLSearchParams(params).toString();
@@ -191,7 +193,7 @@ export default function ExploreServiceRequest(props: any) {
           }}
         />
       )
-    }else if(isLoading){
+    } else if (isLoading) {
       return (
         <View style={{ margin: 20 }}>
           <ActivityIndicator size="large" color={theme.primary} />

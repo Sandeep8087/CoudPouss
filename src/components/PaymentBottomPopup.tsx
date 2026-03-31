@@ -96,7 +96,7 @@ const PaymentBottomPopup = (props: any) => {
         customStyles={{
           container: {
             backgroundColor: '#FFF',
-            height: getScaleSize(750),
+            height: couponCodeError ? getScaleSize(780) : getScaleSize(750),
             borderTopLeftRadius: getScaleSize(20),
             borderTopRightRadius: getScaleSize(20),
           },

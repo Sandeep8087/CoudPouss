@@ -1,10 +1,11 @@
-import {StyleProp, ViewStyle} from 'react-native';
+import { StyleProp, ViewStyle } from 'react-native';
 import React, { useContext } from 'react';
 
 //PACKAGES
-import {getScaleSize, useString} from '../constant';
-import {CountryPicker} from 'react-native-country-codes-picker';
+import { getScaleSize, useString } from '../constant';
+import {CountryList,  CountryPicker } from 'react-native-country-codes-picker';
 import { ThemeContext } from '../context/ThemeProvider';
+import { AuthContext } from '../context/AuthProvider';
 
 interface SheetProps {
   style?: StyleProp<ViewStyle> | undefined;
@@ -29,8 +30,10 @@ export default function SelectCountrySheet(props: SheetProps) {
 
   const STRING = useString();
   const { theme } = useContext<any>(ThemeContext);
+  const { profile } = useContext(AuthContext);
 
-  const {isVisible, onClose, height, onPress} = props;
+  const { isVisible, onClose, height, onPress } = props;
+
 
   return (
     <CountryPicker

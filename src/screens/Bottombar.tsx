@@ -1,5 +1,5 @@
 import React, { useContext, useEffect, useRef } from 'react';
-import { Alert, Linking, PermissionsAndroid, Platform, StatusBar, View } from 'react-native';
+import { Alert, AppState, Linking, PermissionsAndroid, Platform, StatusBar, View } from 'react-native';
 
 //COMPONENTS
 import { Tabbar } from '../components';
@@ -26,11 +26,13 @@ import PushNotification from 'react-native-push-notification';
 
 //API
 import { API } from '../api';
+import { updateUserStatus } from '../services/chat';
 
 const Tab = createBottomTabNavigator();
 
 function BottomBar(props: any) {
   const { userType, profile } = useContext<any>(AuthContext);
+  const appState = useRef(AppState.currentState);
 
   const isProfile = props?.route?.params?.isProfile ?? false;
   const isValidationService = props?.route?.params?.isValidationService ?? false;
@@ -136,6 +138,37 @@ function BottomBar(props: any) {
   useEffect(() => {
     getNotificationTokens();
   }, []);
+
+  useEffect(() => {
+    const currentUserId = profile?.user?.id;
+    if (!currentUserId) {
+      return;
+    }
+
+    // Mark online when tab navigator mounts in foreground.
+    updateUserStatus(currentUserId, 'Online');
+
+    const appStateSubscription = AppState.addEventListener(
+      'change',
+      nextAppState => {
+        const wasInactive = /inactive|background/.test(appState.current);
+        const isNowActive = nextAppState === 'active';
+
+        if (wasInactive && isNowActive) {
+          updateUserStatus(currentUserId, 'Online');
+        } else if (nextAppState === 'background' || nextAppState === 'inactive') {
+          updateUserStatus(currentUserId, 'Offline');
+        }
+
+        appState.current = nextAppState;
+      },
+    );
+
+    return () => {
+      updateUserStatus(currentUserId, 'Offline');
+      appStateSubscription.remove();
+    };
+  }, [profile?.user?.id]);
 
   async function getNotificationTokens() {
     try {

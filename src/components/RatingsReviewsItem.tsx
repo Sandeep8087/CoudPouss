@@ -1,4 +1,4 @@
-import { Image, StyleSheet, View } from 'react-native'
+import { Image, StyleSheet, TouchableOpacity, View } from 'react-native'
 import React, { useContext } from 'react'
 import { ThemeContext, ThemeContextType } from '../context';
 import { getScaleSize, useString } from '../constant';
@@ -9,7 +9,7 @@ import moment from 'moment';
 
 export default function RatingsReviewsItem(props: any) {
 
-    const { onPressShowMore, showMore, itemContainer, item, isFromProfessionalProfile } = props;
+    const { onPressShowMore, showMore, itemContainer, item, isFromProfessionalProfile, onPressLike } = props;
 
     const { theme } = useContext<any>(ThemeContext);
 
@@ -89,7 +89,12 @@ export default function RatingsReviewsItem(props: any) {
             }
             <View style={styles(theme).likeView}>
                 <View style={styles(theme).flexView}>
-                    <View style={styles(theme).flexView}>
+                    <TouchableOpacity
+                        onPress={() => {
+                            onPressLike(item, 'dislike');
+                        }}
+                        activeOpacity={0.8}
+                        style={styles(theme).flexView}>
                         <Image source={IMAGES.ic_thumbsDown} style={styles(theme).starIcon} />
                         <Text
                             style={{ marginLeft: getScaleSize(2) }}
@@ -98,9 +103,14 @@ export default function RatingsReviewsItem(props: any) {
                             color={theme._707D85}>
                             {item?.dislikes_count ?? 0}
                         </Text>
-                    </View>
+                    </TouchableOpacity>
                     <View style={{ width: getScaleSize(8) }} />
-                    <View style={styles(theme).flexView}>
+                    <TouchableOpacity
+                        style={styles(theme).flexView}
+                        onPress={() => {
+                            onPressLike(item, 'like');
+                        }}
+                        activeOpacity={0.8}>
                         <Image source={IMAGES.ic_thumbsUp} style={styles(theme).starIcon} />
                         <Text
                             size={getScaleSize(12)}
@@ -109,7 +119,7 @@ export default function RatingsReviewsItem(props: any) {
                             color={theme._707D85}>
                             {item?.likes_count ?? 0}
                         </Text>
-                    </View>
+                    </TouchableOpacity>
                 </View>
             </View>
         </View>

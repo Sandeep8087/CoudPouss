@@ -329,6 +329,7 @@ export const useString = () => {
     service_cancelled: getTranslation('service_cancelled'),
     cancelled_message: getTranslation('cancelled_message'),
     cancellation_message_2: getTranslation('cancellation_message_2'),
+    cancellation_message_3: getTranslation('cancellation_message_3'),
     service_cancelled_message: getTranslation('service_cancelled_message'),
     service_fee: getTranslation('service_fee'),
     service_fee_cancelled: getTranslation('service_fee_cancelled'),

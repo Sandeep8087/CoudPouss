@@ -569,7 +569,6 @@ export default function NegotiationDetails(props: any) {
       style={styles(theme).container}
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       keyboardVerticalOffset={Platform.OS === 'ios' ? 80 : 0}>
-      <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
         <View style={{flex: 1}}>
           <StatusBar
             barStyle="dark-content"
@@ -716,7 +715,6 @@ export default function NegotiationDetails(props: any) {
             </View>
           </RBSheet>
         </View>
-      </TouchableWithoutFeedback>
     </KeyboardAvoidingView>
   );
 }

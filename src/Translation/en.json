@@ -325,6 +325,7 @@
     "service_cancelled": "Service Cancelled",
     "cancelled_message": "This cancellation is happened in less than 48 hours before the scheduled service time. According to policy, your payment will not be fully refunded. A",
     "cancellation_message_2": "service fee is charged.",
+    "cancellation_message_3": "service fee will also be charged.",
     "service_cancelled_message": "Your service has been successfully cancelled. Here are the details regarding your payment and the cancellation policy.",
     "service_fee": "Service Fee (5%)",
     "service_fee_cancelled": "Service Fee",

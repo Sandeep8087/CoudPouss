@@ -182,6 +182,9 @@ export default function Notification(props: any) {
       if (result.status) {
         SHOW_TOAST(result?.data?.message ?? '', 'success');
         const STRIPE_URL = result?.data?.data?.checkout_url ?? '';
+        getNotification()
+        setPage(1)
+        setNotification([])
         openStripeCheckout(STRIPE_URL);
         setTimeout(() => {
           renegotiationViewRef.current?.close();
@@ -358,7 +361,7 @@ export default function Notification(props: any) {
                         font={FONTS.Lato.Medium}
                         color={'#595959'}>
                         {item?.body ?? ''}
-                        {item?.data?.event === 'QUOTE_REJECTED' ? ` ${STRING.reason}: ${item?.data?.failure_reason ?? ''}` : ''}
+                        {/* {item?.data?.event === 'QUOTE_REJECTED' ? ` ${STRING.reason}: ${item?.data?.failure_reason ?? ''}` : ''} */}
                       </Text>
                       <View
                         style={{

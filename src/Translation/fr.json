@@ -325,6 +325,7 @@
     "service_cancelled": "Service annulé",
     "cancelled_message": "Cette annulation a eu lieu moins de 48 heures avant l’heure prévue du service. Conformément à notre politique, votre paiement ne sera pas entièrement remboursé. Des",
     "cancellation_message_2": "frais de service sont appliqués.",
+    "cancellation_message_3": "des frais de service sont également appliqués.",
     "service_cancelled_message": "Votre service a été annulé avec succès. Voici les détails concernant votre paiement et la politique d’annulation.",
     "service_fee": "Frais de service (5 %)",
     "service_fee_cancelled": "Frais de service",

@@ -95,6 +95,28 @@ export default function OtherUserProfile(props: any) {
 
   const overallRating = Number(userProfile?.overall_ratings ?? 0);
 
+  async function onLikeReviewRating(item: any, action: string) {
+
+    if (isLoading) return;
+    console.log('item=====', item);
+    try {
+      setLoading(true);
+      const params = {
+        review_id: item?.review_id,
+        action: action,
+      }
+      const result = await API.Instance.post(API.API_ROUTES.onLikeReviewRating, params);
+      if (result?.status) {
+        getOtherUserProfile();
+      } else {
+        SHOW_TOAST(result?.data?.message ?? '', 'error');
+      }
+    }
+    finally {
+      setLoading(false);
+    }
+  }
+
   return (
     <View style={styles(theme).container}>
       <Header
@@ -399,6 +421,9 @@ export default function OtherUserProfile(props: any) {
             {(userProfile?.recent_works_and_reviews ?? []).map((item: any, index: number) => {
               return (
                 <RatingsReviewsItem
+                  onPressLike={(item: any, action: string) => {
+                    onLikeReviewRating(item, action);
+                  }}
                   item={item}
                   key={index}
                   itemContainer={{ marginTop: index === 0 ? getScaleSize(20) : getScaleSize(16) }}

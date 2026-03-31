@@ -1,4 +1,4 @@
-import React, { useContext, useRef, useState } from 'react';
+import React, { useContext, useEffect, useRef, useState } from 'react';
 import {
     View,
     StyleSheet,
@@ -14,7 +14,7 @@ import { AuthContext, ThemeContext, ThemeContextType } from '../../context';
 
 //CONSTANT & ASSETS
 import { FONTS, IMAGES } from '../../assets';
-import { getScaleSize, SHOW_SUCCESS_TOAST, SHOW_TOAST, useString } from '../../constant';
+import { getScaleSize, sanitizeAddressInput, SHOW_SUCCESS_TOAST, SHOW_TOAST, useString } from '../../constant';
 
 //COMPONENTS
 import { Text, Header, Input, Button, BottomSheet, SelectCountrySheet } from '../../components';
@@ -52,15 +52,14 @@ export default function MyProfile(props: any) {
     const [profileImage, setProfileImage] = useState<any>(null);
     const [addressHeight, setAddressHeight] = useState(inputHeight);
     const [visibleCountry, setVisibleCountry] = useState(false);
-
-    const fullPhone = profile?.user?.phone_number ?? '';
-
-    const codeMatch = fullPhone.match(/^\+\d+/);
-    const numberMatch = fullPhone.replace(/^\+\d+/, '');
-
-    const [countryCode, setCountryCode] = useState(codeMatch || '+91');
+    const [countryCode, setCountryCode] = useState('');
     const [countryFlag, setCountryFlag] = useState('🇮🇳');
-    const [mobileNumber, setMobileNumber] = useState(numberMatch);
+    const [mobileNumber, setMobileNumber] = useState(profile?.user?.phone_number ?? '');
+
+    useEffect(() => {
+        console.log('profile', profile)
+        setCountryCode(profile?.user?.phone_country_code ? profile?.user?.phone_country_code : '+91');
+    }, [profile]);
 
     const pickImage = async () => {
         launchImageLibrary({ mediaType: 'photo' }, (response) => {
@@ -420,11 +419,11 @@ export default function MyProfile(props: any) {
                         }}
                         continerStyle={{ marginBottom: getScaleSize(20) }}
                         onChangeText={text => {
-                            let cleaned = text.replace(/[<>]/g, '');
-                            cleaned = cleaned.replace(/^\s+/, '');
-                            if (containsEmoji(cleaned)) return;
+                            // let cleaned = text.replace(/[<>]/g, '');
+                            // cleaned = cleaned.replace(/^\s+/, '');
+                            // if (containsEmoji(cleaned)) return;
 
-                            setAddress(cleaned);
+                            setAddress(sanitizeAddressInput(text));
                             setAddressError('');
                         }}
                         isError={addressError}
