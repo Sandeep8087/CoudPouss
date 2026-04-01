@@ -8,6 +8,7 @@ import {
     Dimensions,
     Animated,
     Easing,
+    Platform,
 } from 'react-native';
 import { ThemeContext, ThemeContextType } from '../context';
 import { getScaleSize, useString } from '../constant';
@@ -48,6 +49,11 @@ export default function CancelScheduledServicePopup(props: CancelScheduledServic
                 animationType: 'fade',
                 statusBarTranslucent: true,
             }}
+            customAvoidingViewProps={
+                Platform.OS === 'android'
+                    ? { enabled: false }
+                    : { enabled: true, behavior: 'padding' }
+            }
             customStyles={{
                 wrapper: {
                     backgroundColor: theme._77777733,

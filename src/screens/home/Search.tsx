@@ -119,12 +119,11 @@ export default function Search(props: any) {
                     keyExtractor={(item: any, index: number) => index.toString()}
                     renderItem={({ item, index }) => (
                         <RequestItem
-                            selectedFilter={typeof searchText === 'string' ? { id: '1', title: 'All', filter: 'all' } : null}
+                            selectedFilter={typeof searchText === 'string' ? { id: '1', title: STRING.all, filter: 'all' } : null}
                             key={index}
                             isFromSearch={true}
                             onPress={() => {
                                 if (item?.task_status?.toLowerCase() === 'expired') {
-
                                 } else {
                                     props.navigation.navigate(SCREENS.RequestDetails.identifier, {
                                         item: item

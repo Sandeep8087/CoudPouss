@@ -1,106 +1,59 @@
-import React, { useContext, useRef, useState } from 'react';
+import React, { useContext } from 'react';
 import {
   View,
+  Keyboard,
+  ScrollView,
   StyleSheet,
   TouchableOpacity,
-  Alert,
   Image,
   Dimensions,
-  Animated,
-  Easing,
-  TextInput,
   Platform,
 } from 'react-native';
 import { ThemeContext, ThemeContextType } from '../context';
 import { getScaleSize, useString } from '../constant';
 import { FONTS, IMAGES } from '../assets';
 import Text from './Text';
-import { constant } from 'lodash';
 import RBSheet from 'react-native-raw-bottom-sheet';
 import Input from './Input';
 
 const PaymentBottomPopup = (props: any) => {
   const STRING = useString();
   const { theme } = useContext<any>(ThemeContext);
-
-  const fadeAnim = useRef(new Animated.Value(0)).current;
-  const slideAnim = useRef(new Animated.Value(50)).current;
-  const scaleAnim = useRef(new Animated.Value(0.8)).current;
-
   const { serviceAmount, couponCode, onChangeText, appliedCouponCode, couponCodeError, onPressViewAllCoupons, onPressApply } = props;
-
-  const startOpenAnimations = () => {
-    fadeAnim.setValue(0);
-    slideAnim.setValue(100); // Start from further down for slower feel
-    scaleAnim.setValue(0.7); // Start smaller for more dramatic scale
-
-    // Ultra slow and smooth animation
-    Animated.parallel([
-      Animated.timing(fadeAnim, {
-        toValue: 1,
-        duration: 1200, // 1.2 seconds
-        easing: Easing.out(Easing.cubic),
-        useNativeDriver: true,
-      }),
-      Animated.timing(slideAnim, {
-        toValue: 0,
-        duration: 1200,
-        easing: Easing.out(Easing.cubic),
-        useNativeDriver: true,
-      }),
-      Animated.timing(scaleAnim, {
-        toValue: 1,
-        duration: 1200,
-        easing: Easing.out(Easing.cubic),
-        useNativeDriver: true,
-      }),
-    ]).start();
-  };
-
-  const startCloseAnimations = () => {
-    Animated.parallel([
-      Animated.timing(fadeAnim, {
-        toValue: 0,
-        duration: 300,
-        easing: Easing.in(Easing.cubic),
-        useNativeDriver: true,
-      }),
-      Animated.timing(slideAnim, {
-        toValue: 50,
-        duration: 300,
-        easing: Easing.in(Easing.cubic),
-        useNativeDriver: true,
-      }),
-      Animated.timing(scaleAnim, {
-        toValue: 0.8,
-        duration: 300,
-        easing: Easing.in(Easing.cubic),
-        useNativeDriver: true,
-      }),
-    ]).start();
-  };
-
-  console.log('couponCode====>?', couponCode, appliedCouponCode)
+  const maxSheetHeight = Dimensions.get('screen').height * 0.9;
+  const desiredHeight = couponCodeError ? getScaleSize(780) : getScaleSize(750);
+  const sheetHeight = Math.min(desiredHeight, maxSheetHeight);
 
   return (
-    <View style={{ backgroundColor: 'rgba(0,0,0,0.3)' }}>
-      <RBSheet
-        ref={props.onRef}
-        closeOnPressMask={true}
-        customModalProps={{
-          animationType: 'slide',
-          statusBarTranslucent: true,
-        }}
-        onOpen={startOpenAnimations}
-        onClose={startCloseAnimations}
-        customStyles={{
-          container: {
-            backgroundColor: '#FFF',
-            height: couponCodeError ? getScaleSize(780) : getScaleSize(750),
-            borderTopLeftRadius: getScaleSize(20),
-            borderTopRightRadius: getScaleSize(20),
-          },
-        }}>
+    <RBSheet
+      ref={props.onRef}
+      closeOnPressMask={true}
+      onClose={() => Keyboard.dismiss()}
+      customModalProps={{
+        animationType: 'slide',
+        statusBarTranslucent: true,
+      }}
+      customAvoidingViewProps={
+        Platform.OS === 'android'
+          ? { enabled: false }
+          : { enabled: true, behavior: 'padding' }
+      }
+      customStyles={{
+        wrapper: {
+          backgroundColor: theme._77777733,
+        },
+        container: {
+          backgroundColor: '#FFF',
+          height: sheetHeight,
+          borderTopLeftRadius: getScaleSize(20),
+          borderTopRightRadius: getScaleSize(20),
+        },
+      }}>
+      <View style={styles(theme).sheetContent}>
+        <ScrollView
+          bounces={false}
+          keyboardShouldPersistTaps="handled"
+          contentContainerStyle={styles(theme).scrollContent}>
         <View style={styles(theme).content}>
           <Image style={styles(theme).icon} source={IMAGES.payment_icon} />
           <Text
@@ -233,11 +186,13 @@ const PaymentBottomPopup = (props: any) => {
             </Text>
           </View>
         </View>
+        </ScrollView>
         <View style={styles(theme).buttonContainer}>
           <TouchableOpacity
             style={styles(theme).backButtonContainer}
             activeOpacity={1}
             onPress={() => {
+              Keyboard.dismiss();
               props?.onClose()
             }}>
             <Text
@@ -252,6 +207,7 @@ const PaymentBottomPopup = (props: any) => {
             style={styles(theme).nextButtonContainer}
             activeOpacity={1}
             onPress={() => {
+              Keyboard.dismiss();
               props?.proceedToPay()
             }}>
             <Text
@@ -263,8 +219,8 @@ const PaymentBottomPopup = (props: any) => {
             </Text>
           </TouchableOpacity>
         </View>
-      </RBSheet>
-    </View>
+      </View>
+    </RBSheet>
   );
 };
 
@@ -275,8 +231,13 @@ const styles = (theme: ThemeContextType['theme']) =>
       marginTop: getScaleSize(24),
     },
     content: {
-      paddingVertical: getScaleSize(24),
-      flex: 1.0,
+      paddingTop: getScaleSize(24),
+    },
+    sheetContent: {
+      flex: 1,
+    },
+    scrollContent: {
+      paddingBottom: getScaleSize(12),
     },
     icon: {
       height: getScaleSize(60),
@@ -301,8 +262,8 @@ const styles = (theme: ThemeContextType['theme']) =>
     buttonContainer: {
       flexDirection: 'row',
       marginHorizontal: getScaleSize(22),
-      marginTop: getScaleSize(24),
-      marginBottom: getScaleSize(34),
+      marginTop: getScaleSize(12),
+      marginBottom: getScaleSize(20),
     },
     backButtonContainer: {
       flex: 1.0,

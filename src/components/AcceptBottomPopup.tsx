@@ -6,6 +6,7 @@ import {
   Image,
   Animated,
   Easing,
+  Platform,
 } from 'react-native';
 import {ThemeContext, ThemeContextType} from '../context';
 import {getScaleSize, useString} from '../constant';
@@ -79,9 +80,17 @@ const AcceptBottomPopup = (props: any) => {
     <View style={{backgroundColor: 'rgba(0,0,0,0.3)'}}>
       <RBSheet
         ref={props.onRef}
-        closeOnDragDown={true}
+        draggable={true}
         closeOnPressMask={true}
-        animationType="slide"
+        customModalProps={{
+          animationType: 'slide',
+          statusBarTranslucent: true,
+        }}
+        customAvoidingViewProps={
+          Platform.OS === 'android'
+            ? {enabled: false}
+            : {enabled: true, behavior: 'padding'}
+        }
         onOpen={startOpenAnimations}
         onClose={startCloseAnimations}
         customStyles={{

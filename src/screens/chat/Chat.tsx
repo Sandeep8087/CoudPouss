@@ -6,6 +6,7 @@ import {
   Image,
   FlatList,
   Pressable,
+  Platform,
 } from 'react-native';
 
 //ASSETS
@@ -295,7 +296,7 @@ export default function Chat(props: any) {
             size={getScaleSize(16)}
             font={FONTS.Lato.Regular}
             color={selectedTab === 'chat' ? theme.white : theme._818285}>
-            {'Chat'}
+            {STRING.Chat}
           </Text>
         </TouchableOpacity>
         <TouchableOpacity
@@ -314,7 +315,7 @@ export default function Chat(props: any) {
             size={getScaleSize(16)}
             font={FONTS.Lato.Regular}
             color={selectedTab === 'negotiation' ? theme.white : theme._818285}>
-            {'Negotiation'}
+            {STRING.negotiation}
           </Text>
         </TouchableOpacity>
       </View>
@@ -342,6 +343,11 @@ export default function Chat(props: any) {
       <RBSheet
         ref={mediaPickerSheetRef}
         closeOnPressMask
+        customAvoidingViewProps={
+          Platform.OS === 'android'
+            ? {enabled: false}
+            : {enabled: true, behavior: 'padding'}
+        }
         customStyles={{
           container: styles(theme).sheetContainer,
           draggableIcon: {

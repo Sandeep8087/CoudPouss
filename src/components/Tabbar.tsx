@@ -19,6 +19,7 @@ const SCREEN_WIDTH = Dimensions.get('window').width;
 function Tabbar(props: any) {
 
   const insets = useSafeAreaInsets();
+  const STRING = useString();
 
   const { theme } = useContext<any>(ThemeContext);
 
@@ -202,7 +203,7 @@ function Tabbar(props: any) {
       IMAGES.profile_unselected,
     ];
 
-    names = ['Home', 'Task', 'Chat', 'Profile'];
+    names = [STRING.home, STRING.task, STRING.chat, STRING.profile];
   } else {
     images = [
       IMAGES.home_unselected,
@@ -212,10 +213,8 @@ function Tabbar(props: any) {
       IMAGES.profile_unselected,
     ];
 
-    names = ['Home', 'Request', '', 'Chat', 'Profile'];
+    names = [STRING.home, STRING.request, '', STRING.chat, STRING.profile];
   }
-
-  const STRING = useString();
 
 
 
@@ -302,6 +301,7 @@ function Tabbar(props: any) {
 
 const Item = (props: any) => {
   const { theme } = useContext<any>(ThemeContext);
+  const STRING = useString();
 
   const { userType } = useContext<any>(AuthContext);
 
@@ -316,7 +316,7 @@ const Item = (props: any) => {
       IMAGES.profile_unselected,
     ];
 
-    names = ['Home', 'Task', 'Chat', 'Profile'];
+    names = [STRING.home, STRING.task, STRING.chat, STRING.profile];
   } else {
     images = [
       IMAGES.home_unselected,
@@ -326,10 +326,9 @@ const Item = (props: any) => {
       IMAGES.profile_unselected,
     ];
 
-    names = ['Home', 'Request', '', 'Chat', 'Profile'];
+    names = [STRING.home, STRING.request, '', STRING.chat, STRING.profile];
   }
 
-  const STRING = useString();
   if (userType === 'service_provider') {
     return (
       <TouchableOpacity

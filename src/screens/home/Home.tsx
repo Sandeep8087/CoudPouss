@@ -135,8 +135,6 @@ export default function Home(props: any) {
     }
   }
 
-  console.log('favoriteProfessionals==', favoriteProfessionals?.length);
-
   return (
     <View style={styles(theme).container}>
       <StatusBar
@@ -202,7 +200,7 @@ export default function Home(props: any) {
                 size={getScaleSize(12)}
                 font={FONTS.Lato.Regular}
                 color={theme.white}>
-                {'Verified professionals ready to\nhelp you today'}
+                {STRING.verified_professionals_ready_to_help_you_today}
               </Text>
             </View>
           </View>

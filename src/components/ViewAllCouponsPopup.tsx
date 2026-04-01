@@ -6,6 +6,7 @@ import {
     Dimensions,
     FlatList,
     Pressable,
+    Platform,
 } from 'react-native';
 import { ThemeContext, ThemeContextType } from '../context';
 import { getScaleSize, useString } from '../constant';
@@ -42,6 +43,11 @@ export default function ViewAllCouponsPopup(props: ViewAllCouponsPopupProps) {
                 animationType: 'fade',
                 statusBarTranslucent: true,
             }}
+            customAvoidingViewProps={
+                Platform.OS === 'android'
+                    ? { enabled: false }
+                    : { enabled: true, behavior: 'padding' }
+            }
             customStyles={{
                 wrapper: {
                     backgroundColor: theme._77777733,

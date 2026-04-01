@@ -65,6 +65,11 @@ export default function BottomSheet(props: BottomSheetProps) {
                 animationType: 'fade',
                 statusBarTranslucent: true,
             }}
+            customAvoidingViewProps={
+                Platform.OS === 'android'
+                    ? { enabled: false }
+                    : { enabled: true, behavior: 'padding' }
+            }
             customStyles={{
                 wrapper: {
                     backgroundColor: theme._77777733,

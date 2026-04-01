@@ -655,6 +655,11 @@ export default function NegotiationDetails(props: any) {
           <RBSheet
             ref={mediaPickerSheetRef}
             closeOnPressMask
+            customAvoidingViewProps={
+              Platform.OS === 'android'
+                ? {enabled: false}
+                : {enabled: true, behavior: 'padding'}
+            }
             customStyles={{
               container: styles(theme).sheetContainer,
               draggableIcon: {

@@ -389,6 +389,7 @@ export const useString = () => {
     password_required: getTranslation('password_required'),
     name_required: getTranslation('name_required'),
     mobile_number_required: getTranslation('mobile_number_required'),
+    mobile_number_must_be_6_to_15_digits: getTranslation('mobile_number_must_be_6_to_15_digits'),
     address_required: getTranslation('address_required'),
     confirm_password_required: getTranslation('confirm_password_required'),
     name_min_max_error: getTranslation('name_min_max_error'),
@@ -507,6 +508,17 @@ export const useString = () => {
     failed: getTranslation('failed'),
     status: getTranslation('status'),
     no_request_matched_to_your_filter: getTranslation('no_request_matched_to_your_filter'),
+    home: getTranslation('home'),
+    request: getTranslation('request'),
+    chat: getTranslation('chat'),
+    profile: getTranslation('profile'),
+    task: getTranslation('task'),
+    open_proposal: getTranslation('open_proposal'),
+    responses: getTranslation('responses'),
+    validation: getTranslation('validation'),
+    cancelled: getTranslation('cancelled'),
+    expired: getTranslation('expired'),
+    negotiation: getTranslation('negotiation'),
   };
 };
 

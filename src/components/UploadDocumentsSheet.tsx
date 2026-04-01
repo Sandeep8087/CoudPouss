@@ -1,4 +1,4 @@
-import { Image, StyleSheet, TouchableOpacity, View } from 'react-native'
+import { Image, Platform, StyleSheet, TouchableOpacity, View } from 'react-native'
 import React, { useContext } from 'react'
 import { ThemeContext, ThemeContextType } from '../context/ThemeProvider';
 import RBSheet from 'react-native-raw-bottom-sheet';
@@ -33,6 +33,11 @@ export default function UploadDocumentsSheet(props: UploadDocumentsSheetProps) {
                 animationType: 'fade',
                 statusBarTranslucent: true,
             }}
+            customAvoidingViewProps={
+                Platform.OS === 'android'
+                    ? { enabled: false }
+                    : { enabled: true, behavior: 'padding' }
+            }
             customStyles={{
                 wrapper: {
                     backgroundColor: theme._77777733,

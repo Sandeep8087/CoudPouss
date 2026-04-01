@@ -47,7 +47,7 @@ export default function Request(props: any) {
   const flatListRef = useRef<FlatList>(null);
 
   const [requestData, setRequestData] = useState<any>({
-    selectedFilter: {id: '1', title: 'All', filter: 'all'},
+    selectedFilter: {id: '1', title: STRING.all, filter: 'all'},
     allRequests: [],
     page: 1,
     hasMore: true,
@@ -58,12 +58,12 @@ export default function Request(props: any) {
   });
 
   const data = [
-    {id: '1', title: 'All', filter: 'all'},
-    {id: '2', title: 'Open Proposal', filter: 'open'},
-    {id: '3', title: 'Responses', filter: 'pending'},
-    {id: '4', title: 'Validation', filter: 'accepted'},
-    {id: '5', title: 'Completed', filter: 'completed'},
-    {id: '6', title: 'Cancelled', filter: 'cancelled'},
+    {id: '1', title: STRING.all, filter: 'all'},
+    {id: '2', title: STRING.open_proposal, filter: 'open'},
+    {id: '3', title: STRING.responses, filter: 'pending'},
+    {id: '4', title: STRING.validation, filter: 'accepted'},
+    {id: '5', title: STRING.completed, filter: 'completed'},
+    {id: '6', title: STRING.cancelled, filter: 'cancelled'},
   ];
 
   const abortControllerRef = useRef<AbortController | undefined>(undefined);
@@ -160,7 +160,6 @@ export default function Request(props: any) {
   };
 
   function renderFlatList() {
-    console.log('requestData?.isLoading', requestData?.isLoading);
     if (requestData?.allRequests?.length > 0) {
       return (
         <FlatList

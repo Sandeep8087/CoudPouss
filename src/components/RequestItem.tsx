@@ -28,18 +28,17 @@ function RequestItem(props: any) {
 
   function getStatus(status: any) {
     if (status === 'open') {
-      return 'Open Proposal';
+      return STRING.open_proposal;
     } else if (status === 'pending') {
-      return 'Responsed';
+      return STRING.responses;
     } else if (status === 'accepted') {
-      return 'Validation';
+      return STRING.validation;
     } else if (status === 'completed') {
-      return 'Completed';
+      return STRING.completed;
     } else if (status === 'cancelled') {
-      return 'Cancelled';
-    }
-    else if (status === 'expired') {
-      return 'Expired'
+      return STRING.cancelled;
+    } else if (status === 'expired') {
+      return STRING.expired;
     }
   }
 
@@ -89,7 +88,7 @@ function RequestItem(props: any) {
           color={theme.primary}>
           {item?.sub_category_name ?? ''}
         </Text>
-        {selectedFilter?.title === 'All' && (
+        {selectedFilter?.title === STRING.all && (
           <View style={styles(theme).statusContainer}>
             <Text
               size={getScaleSize(16)}

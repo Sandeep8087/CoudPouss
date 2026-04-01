@@ -48,7 +48,7 @@ const HomeHeader = (props: any) => {
             size={getScaleSize(16)}
             font={FONTS.Lato.Medium}
             color={theme.white}>
-            {`Hello! ${(profile?.user?.first_name ?? "") + " " + (profile?.user?.last_name ?? " ")}`}
+            {`${STRING.hello} ${(profile?.user?.first_name ?? "") + " " + (profile?.user?.last_name ?? " ")}`}
           </Text>
           <Text
             size={getScaleSize(24)}

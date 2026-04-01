@@ -9,7 +9,7 @@ import {
   KeyboardAvoidingView,
   Platform
 } from 'react-native';
-import React, { useCallback, useContext, useEffect, useRef, useState } from 'react';
+import React, { useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
 
 //CONTEXT
 import { AuthContext, LaungageContext, ThemeContext, ThemeContextType } from '../../context';
@@ -136,34 +136,41 @@ export default function AddPersonalDetails(props: any) {
     }
   }
 
-  const debouncedSignup = useCallback(
-    debounce(() => {
-      onSignup();
-    }, 500), // 500ms delay
-    []
-  );
-
-  const onSignup = async () => {
+  const onSignup = useCallback(async () => {
     if (isLoading) return;
     const cleanName = name.trim();
     const cleanMobile = mobileNo.trim();
     const cleanAddress = address.trim();
-    if(!cleanName && !cleanMobile && !cleanAddress) {
-      setNameError(STRING.name_required);
-      setMobileNoError(STRING.mobile_number_required);
-      setAddressError(STRING.address_required);
-    } else if (!cleanName) {
-      setNameError(STRING.name_required);
-    } else if (!/^[A-Za-z]+(?: [A-Za-z]+)*$/.test(cleanName)) {
-      setNameError(STRING.name_invalid_characters);
-    } else if (!cleanMobile) {
-      setMobileNoError(STRING.mobile_number_required);
-    } else if (!cleanAddress) {
-      setAddressError(STRING.address_required);
+    let nextNameError = '';
+    let nextMobileError = '';
+    let nextAddressError = '';
+
+    if (!cleanName) {
+      nextNameError = STRING.name_required;
+    } else if (!/^[A-Za-z.\-\s]+$/.test(cleanName)) {
+      nextNameError = STRING.name_invalid_characters;
+    }
+
+    if (!cleanMobile) {
+      nextMobileError = STRING.mobile_number_required;
+    } else if (!/^[0-9]{6,15}$/.test(cleanMobile)) {
+      nextMobileError = STRING.mobile_number_must_be_6_to_15_digits;
+    }
+
+    if (!cleanAddress) {
+      nextAddressError = STRING.address_required;
     } else if (/^\d+$/.test(cleanAddress)) {
-      setAddressError(STRING.address_only_numbers_error);
+      nextAddressError = STRING.address_only_numbers_error;
     } else if (/^[^A-Za-z0-9]+$/.test(cleanAddress)) {
-      setAddressError(STRING.address_special_char_error);
+      nextAddressError = STRING.address_special_char_error;
+    }
+
+    setNameError(nextNameError);
+    setMobileNoError(nextMobileError);
+    setAddressError(nextAddressError);
+
+    if (nextNameError || nextMobileError || nextAddressError) {
+      return;
     } else {
       setNameError('');
       setMobileNoError('');
@@ -188,7 +195,7 @@ export default function AddPersonalDetails(props: any) {
           );
           setUser(userData);
           setUserType(userData?.user_data?.role);
-          getProfileData();
+          await getProfileData();
         } else {
           SHOW_TOAST(result?.data?.message ?? '', 'error');
         }
@@ -198,11 +205,24 @@ export default function AddPersonalDetails(props: any) {
         setLoading(false);
       }
     }
-  };
+  }, [address, countryCode, email, isLoading, mobileNo, name, userType, STRING, setUser, setUserType, setProfile, setLanguage]);
+
+  const debouncedSignup = useMemo(
+    () =>
+      debounce(() => {
+        onSignup();
+      }, 500),
+    [onSignup]
+  );
+
+  useEffect(() => {
+    return () => {
+      debouncedSignup.cancel();
+    };
+  }, [debouncedSignup]);
 
   async function getProfileData() {
     try {
-      setLoading(true);
       const result = await API.Instance.get(API.API_ROUTES.getUserDetails + `?platform=app`);
       if (result.status) {
         setProfile(result?.data?.data);
@@ -215,8 +235,6 @@ export default function AddPersonalDetails(props: any) {
     } catch (error: any) {
       SHOW_TOAST(error?.message ?? '', 'error');
       return null;
-    } finally {
-      setLoading(false);
     }
   }
 
@@ -364,6 +382,7 @@ export default function AddPersonalDetails(props: any) {
           marginVertical: getScaleSize(24),
           marginHorizontal: getScaleSize(24),
         }}
+        disabled={isLoading}
         onPress={() => {
           if (isLoading) return;
           debouncedSignup();
