@@ -1,17 +1,9 @@
-import React, { useContext, useEffect, useRef, useState } from 'react';
+import React, { useCallback, useContext, useEffect, useRef, useState } from 'react';
 import {
   View,
-  StatusBar,
   StyleSheet,
-  Dimensions,
-  NativeScrollEvent,
-  NativeSyntheticEvent,
-  Alert,
   ScrollView,
-  FlatList,
   TouchableOpacity,
-  Image,
-  Platform,
   TextInput,
   Keyboard,
 } from 'react-native';
@@ -27,25 +19,19 @@ import { getScaleSize, SHOW_TOAST, useString } from '../../constant';
 
 //COMPONENT
 import {
-  AcceptBottomPopup,
   BottomSheet,
   Button,
   Header,
-  PaymentBottomPopup,
   ProgressView,
-  RejectBottomPopup,
-  RequestItem,
-  SearchComponent,
-  StatusItem,
   Text,
 } from '../../components';
 
 //PACKAGES
-import { CommonActions, useFocusEffect } from '@react-navigation/native';
-import { Rating } from 'react-native-ratings';
+import { CommonActions } from '@react-navigation/native';
 
 import { SCREENS } from '..';
 import { API } from '../../api';
+import debounce from 'lodash/debounce';
 
 export default function WriteReview(props: any) {
 
@@ -66,6 +52,41 @@ export default function WriteReview(props: any) {
 
   const successBottomSheetRef = useRef<any>(null);
 
+  const normalizeRatingValue = (value: any) => {
+    const numericValue = Number(value);
+    if (Number.isNaN(numericValue)) {
+      return 0;
+    }
+    return Math.min(5, Math.max(0, Math.round(numericValue)));
+  };
+
+  const renderStars = (
+    value: number,
+    onChange: (rating: number) => void,
+  ) => {
+    return (
+      <View style={styles(theme).starsRow}>
+        {[1, 2, 3, 4, 5].map(star => {
+          const isFilled = star <= value;
+          return (
+            <TouchableOpacity
+              key={star}
+              activeOpacity={0.8}
+              onPress={() => onChange(star)}
+              style={styles(theme).starTouchable}>
+              <Text
+                size={getScaleSize(34)}
+                font={FONTS.Lato.Bold}
+                color={isFilled ? '#F0B52C' : '#DADDE1'}>
+                {'\u2605'}
+              </Text>
+            </TouchableOpacity>
+          );
+        })}
+      </View>
+    );
+  };
+
   useEffect(() => {
     setTimeout(() => {
       setIsLoadingRating(false);
@@ -73,7 +94,16 @@ export default function WriteReview(props: any) {
     getReviewData();
   }, [])
 
+
+  const debouncedWriteReview = useCallback(
+    debounce(() => {
+      onWriteReview();
+    }, 800),
+    []
+  );
+
   async function onWriteReview() {
+    if (isLoading) return;
     if (overallRatting === 0 || reliabilityRatting === 0 || punctualityRatting === 0 || solutionRatting === 0 || payoutRatting === 0) {
       SHOW_TOAST('Please fill all fields', 'error');
       return;
@@ -131,15 +161,17 @@ export default function WriteReview(props: any) {
         console.log('reviewData==>', result?.data?.data);
         const reviewData = result?.data?.data ?? '';
         setReview(reviewData?.review?.review_description ?? '');
-        setOverallRatting(reviewData?.rating?.overall ?? 0);
-        setReliabilityRatting(reviewData?.rating?.reliability ?? 0);
-        setPunctualityRatting(reviewData?.rating?.punctuality ?? 0);
-        setSolutionRatting(reviewData?.rating?.solution ?? 0);
-        setPayoutRatting(reviewData?.rating?.payout ?? 0);
+        setOverallRatting(normalizeRatingValue(reviewData?.rating?.overall ?? 0));
+        setReliabilityRatting(normalizeRatingValue(reviewData?.rating?.reliability ?? 0));
+        setPunctualityRatting(normalizeRatingValue(reviewData?.rating?.punctuality ?? 0));
+        setSolutionRatting(normalizeRatingValue(reviewData?.rating?.solution ?? 0));
+        setPayoutRatting(normalizeRatingValue(reviewData?.rating?.payout ?? 0));
       } else {
+        console.log('result==>', result);
         SHOW_TOAST(result?.data?.message ?? '', 'error');
       }
     } catch (error: any) {
+      console.log('error==>', error);
       SHOW_TOAST(error?.message ?? '', 'error');
     } finally {
       setLoading(false);
@@ -177,23 +209,7 @@ export default function WriteReview(props: any) {
               color={'#424242'}>
               {STRING.OverallService}
             </Text>
-            {!isLoadingRating &&
-              <View style={{ height: 40, justifyContent: 'center' }}>
-                <Rating
-                  type="custom"
-                  ratingBackgroundColor="#EDEFF0"
-                  // style={{ marginHorizontal: getScaleSize(20) }}
-                  tintColor={theme.white}
-                  ratingCount={5}
-                  ratingColor='#F0B52C'// grey color
-                  startingValue={overallRatting}
-                  imageSize={30}
-                  // ratingImage={IMAGES.ic_star}
-                  // fractions={0}
-                  onFinishRating={(value: any) => setOverallRatting(value)}
-                />
-              </View>
-            }
+            {!isLoadingRating && renderStars(overallRatting, value => setOverallRatting(normalizeRatingValue(value)))}
           </View>
           <View style={styles(theme).ratingContainer}>
             <Text
@@ -202,18 +218,7 @@ export default function WriteReview(props: any) {
               color={'#424242'}>
               {STRING.Reliability}
             </Text>
-            {!isLoadingRating &&
-              <Rating
-                type="custom"
-                ratingBackgroundColor="#EDEFF0"
-                tintColor="#fff" // background color, useful for layout
-                ratingCount={5}
-                ratingColor={'#F0B52C'} // grey color
-                startingValue={reliabilityRatting}
-                imageSize={30}
-                onFinishRating={(value: any) => setReliabilityRatting(value)}
-              />
-            }
+            {!isLoadingRating && renderStars(reliabilityRatting, value => setReliabilityRatting(normalizeRatingValue(value)))}
           </View>
           <View style={styles(theme).ratingContainer}>
             <Text
@@ -222,18 +227,7 @@ export default function WriteReview(props: any) {
               color={'#424242'}>
               {STRING.Punctuality}
             </Text>
-            {!isLoadingRating &&
-              <Rating
-                type="custom"
-                ratingBackgroundColor="#EDEFF0"
-                tintColor="#fff" // background color, useful for layout
-                ratingCount={5}
-                ratingColor={'#F0B52C'} // grey color
-                startingValue={punctualityRatting}
-                imageSize={30}
-                onFinishRating={(value: any) => setPunctualityRatting(value)}
-              />
-            }
+            {!isLoadingRating && renderStars(punctualityRatting, value => setPunctualityRatting(normalizeRatingValue(value)))}
           </View>
           <View style={styles(theme).ratingContainer}>
             <Text
@@ -242,18 +236,7 @@ export default function WriteReview(props: any) {
               color={'#424242'}>
               {STRING.Solution}
             </Text>
-            {!isLoadingRating &&
-              <Rating
-                type="custom"
-                ratingBackgroundColor="#EDEFF0"
-                tintColor="#fff" // background color, useful for layout
-                ratingCount={5}
-                ratingColor={'#F0B52C'} // grey color
-                startingValue={solutionRatting}
-                imageSize={30}
-                onFinishRating={(value: any) => setSolutionRatting(value)}
-              />
-            }
+            {!isLoadingRating && renderStars(solutionRatting, value => setSolutionRatting(normalizeRatingValue(value)))}
           </View>
           <View style={styles(theme).ratingContainer}>
             <Text
@@ -263,18 +246,7 @@ export default function WriteReview(props: any) {
               {STRING.Payout}
             </Text>
 
-            {!isLoadingRating &&
-              <Rating
-                type="custom"
-                ratingBackgroundColor="#EDEFF0"
-                tintColor="#fff" // background color, useful for layout
-                ratingCount={5}
-                ratingColor={'#F0B52C'} // grey color
-                startingValue={payoutRatting}
-                imageSize={30}
-                onFinishRating={(value: any) => setPayoutRatting(value)}
-              />
-            }
+            {!isLoadingRating && renderStars(payoutRatting, value => setPayoutRatting(normalizeRatingValue(value)))}
           </View>
           <Text
             style={{ marginTop: getScaleSize(20) }}
@@ -306,7 +278,7 @@ export default function WriteReview(props: any) {
         }}
         onPress={() => {
           Keyboard.dismiss();
-          onWriteReview();
+          debouncedWriteReview();
         }}
       />
       <BottomSheet
@@ -363,5 +335,12 @@ const styles = (theme: ThemeContextType['theme']) =>
       flexDirection: 'row',
       alignItems: 'center',
       justifyContent: 'space-between'
-    }
+    },
+    starsRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+    },
+    starTouchable: {
+      marginLeft: getScaleSize(2),
+    },
   });

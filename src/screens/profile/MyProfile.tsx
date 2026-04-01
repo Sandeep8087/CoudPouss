@@ -29,6 +29,7 @@ import { CommonActions } from '@react-navigation/native';
 
 //SCREENS
 import { SCREENS } from '..';
+import { countryCodes } from 'react-native-country-codes-picker';
 
 export default function MyProfile(props: any) {
 
@@ -53,13 +54,23 @@ export default function MyProfile(props: any) {
     const [addressHeight, setAddressHeight] = useState(inputHeight);
     const [visibleCountry, setVisibleCountry] = useState(false);
     const [countryCode, setCountryCode] = useState('');
-    const [countryFlag, setCountryFlag] = useState('🇮🇳');
+    const [countryFlag, setCountryFlag] = useState('');
     const [mobileNumber, setMobileNumber] = useState(profile?.user?.phone_number ?? '');
 
     useEffect(() => {
-        console.log('profile', profile)
-        setCountryCode(profile?.user?.phone_country_code ? profile?.user?.phone_country_code : '+91');
-    }, [profile]);
+        const flag: any = countryCodes.find((item: any) => {
+            return item?.dial_code == profile?.user?.phone_country_code
+        })
+
+        if (flag) {
+            const countryItem = flag?.flag
+            setCountryFlag(countryItem)
+            setCountryCode(flag?.dial_code)
+        } else {
+            setCountryFlag('🇮🇳')
+            setCountryCode('+91')
+        }
+    }, [])
 
     const pickImage = async () => {
         launchImageLibrary({ mediaType: 'photo' }, (response) => {
@@ -406,7 +417,7 @@ export default function MyProfile(props: any) {
                         numberOfLines={10}
                         maxLength={250}
                         onContentSizeChange={(e) => {
-                            
+
                             const newHeight = e.nativeEvent.contentSize.height;
                             setAddressHeight(
                                 Math.min(getScaleSize(200), Math.max(inputHeight, newHeight))

@@ -37,6 +37,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { SCREENS } from '..';
 import { CommonActions } from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { countryCodes } from 'react-native-country-codes-picker';
 
 export default function EditProfile(props: any) {
 
@@ -73,12 +74,9 @@ export default function EditProfile(props: any) {
 
     const fullPhone = profile?.user?.phone_number ?? '';
 
-    const codeMatch = fullPhone.match(/^\+\d+/);
-    const numberMatch = fullPhone.replace(/^\+\d+/, '');
-
-    const [countryCode, setCountryCode] = useState(codeMatch || '+91');
-    const [countryFlag, setCountryFlag] = useState('🇮🇳');
-    const [mobileNumber, setMobileNumber] = useState(numberMatch);
+    const [countryCode, setCountryCode] = useState('');
+    const [countryFlag, setCountryFlag] = useState('');
+    const [mobileNumber, setMobileNumber] = useState('');
 
     console.log('profile==>', profile)
 
@@ -95,7 +93,23 @@ export default function EditProfile(props: any) {
         setAchievements(profile?.provider_info?.achievements ?? '');
         setFirstImageURL(profile?.past_work_files?.[0] ?? null);
         setSecondImageURL(profile?.past_work_files?.[1] ?? null);
+        setMobileNumber(profile?.user?.phone_number ?? '');
     }, [profile]);
+
+    useEffect(() => {
+        const flag: any = countryCodes.find((item: any) => {
+            return item?.dial_code == profile?.user?.phone_country_code
+        })
+
+        if (flag) {
+            const countryItem = flag?.flag
+            setCountryFlag(countryItem)
+            setCountryCode(flag?.dial_code)
+        } else {
+            setCountryFlag('🇮🇳')
+            setCountryCode('+91')
+        }
+    }, [])
 
     console.log('firstImageURL', profile?.past_work_photos)
 

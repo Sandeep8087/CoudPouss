@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useMemo, useState } from 'react';
+import React, { useContext, useEffect, useMemo, useRef, useState } from 'react';
 import {
   View,
   StatusBar,
@@ -59,6 +59,7 @@ export default function ChatDetails(props: any) {
   const [loading, setLoading] = useState(false);
   const [isPeerOnline, setIsPeerOnline] = useState(false);
   const [peerLastActive, setPeerLastActive] = useState(0);
+  const flatListRef = useRef<FlatList<any> | null>(null);
 
   const [commanId, setCommanId] = useState<string | ''>(
     props?.route?.params?.conversationId || '',
@@ -229,6 +230,25 @@ export default function ChatDetails(props: any) {
       : 'Offline';
   }, [isPeerOnline, peerLastActive]);
 
+  const scrollToBottom = (animated = true) => {
+    requestAnimationFrame(() => {
+      flatListRef.current?.scrollToEnd({ animated });
+    });
+  };
+
+  useEffect(() => {
+    if (loadingMessages) {
+      return;
+    }
+    scrollToBottom(false);
+  }, [loadingMessages]);
+
+  useEffect(() => {
+    if (!loadingMessages && messages.length > 0) {
+      scrollToBottom(true);
+    }
+  }, [messages, loadingMessages]);
+
   const handleSendMessage = async () => {
     if (!message.trim()) {
       SHOW_TOAST('Please enter a message', 'error');
@@ -257,6 +277,7 @@ export default function ChatDetails(props: any) {
     setMessage('');
     setButtonDisabled(false);
     await updateReadCount(profile?.user?.id, commanId);
+    scrollToBottom(true);
   };
 
   const renderMessage = ({ item }: { item: any }) => {
@@ -572,11 +593,14 @@ export default function ChatDetails(props: any) {
             ) : (
               <View style={{ flex: 1 }}>
                 <FlatList
+                  ref={flatListRef}
                   data={messages}
                   renderItem={renderMessage}
-                  keyExtractor={item => item.id}
-                contentContainerStyle={messageListContentStyle}
-                showsVerticalScrollIndicator={false}
+                  keyExtractor={item => item._id || item.id}
+                  contentContainerStyle={messageListContentStyle}
+                  showsVerticalScrollIndicator={false}
+                  onLayout={() => scrollToBottom(false)}
+                  onContentSizeChange={() => scrollToBottom(true)}
                 />
               </View>
             )}
@@ -592,10 +616,12 @@ export default function ChatDetails(props: any) {
               multiline
               onFocus={() => {
                 setIsKeyboardVisible(true);
+                scrollToBottom(true);
               }}
               onBlur={() => {
                 setIsKeyboardVisible(false);
               }}
+              onChange={() => scrollToBottom(false)}
             />
             <Pressable
               onPress={() => {
