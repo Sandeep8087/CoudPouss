@@ -92,6 +92,8 @@ export default function CreateRequest(props: any) {
   const [secondImageURL, setSecondImageURL] = useState<any>(null);
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [selectedTime, setSelectedTime] = useState(new Date());
+  const [isTimeValid, setIsTimeValid] = useState(true);
+  const [timeValidationError, setTimeValidationError] = useState('');
   const [productName, setProductName] = useState('')
   const [productNameError, setProductNameError] = useState<any>('')
   const [quantity, setQuantity] = useState('')
@@ -385,11 +387,17 @@ export default function CreateRequest(props: any) {
       if (!valuation) {
         SHOW_TOAST(STRING.please_enter_valuation, 'error');
         return;
+      } else if (timeValidationError) {
+        SHOW_TOAST(timeValidationError, 'error');
+        return;
       } else if (!selectedDate) {
         SHOW_TOAST(STRING.please_select_date, 'error');
         return;
       } else if (!selectedTime) {
         SHOW_TOAST(STRING.please_select_time, 'error');
+        return;
+      } else if (!isTimeValid) {
+        SHOW_TOAST(timeValidationError || STRING.please_select_valid_future_time, 'error');
         return;
       } else {
         setSelectedProgress(6);
@@ -441,11 +449,17 @@ export default function CreateRequest(props: any) {
         setSelectedProgress(5);
       }
     } else if (selectedProgress == 5) {
-      if (!selectedDate) {
+      if (timeValidationError) {
+        SHOW_TOAST(timeValidationError, 'error');
+        return;
+      } else if (!selectedDate) {
         SHOW_TOAST(STRING.please_select_date, 'error');
         return;
       } else if (!selectedTime) {
         SHOW_TOAST(STRING.please_select_time, 'error');
+        return;
+      } else if (!isTimeValid) {
+        SHOW_TOAST(timeValidationError || STRING.please_select_valid_future_time, 'error');
         return;
       } else {
         setSelectedProgress(6);
@@ -557,7 +571,7 @@ export default function CreateRequest(props: any) {
         }
       } else if (selectedCategory == 'non_professional') {
         params = {
-          is_professional: true,
+          is_professional: false,
           category_id: selectedCategoryItem?.id,
           sub_category_id: selectSubCategoryItem?.id,
           description: description.trim(),
@@ -591,14 +605,12 @@ export default function CreateRequest(props: any) {
           }),
         );
       } else {
-        SHOW_TOAST(result?.data?.message ?? '', 'error')
-        console.log('error==>', result?.data?.message)
+        SHOW_TOAST(result?.data?.detail  ?? '', 'error')
+        console.log('error==>', result?.data?.detail)
       }
     } catch (error: any) {
       setLoading(false);
       SHOW_TOAST(error?.message ?? '', 'error');
-
-      console.log('erro sbqwhdr==>', error?.message)
     } finally {
       setLoading(false);
     }
@@ -794,6 +806,7 @@ export default function CreateRequest(props: any) {
               <Text
                 size={getScaleSize(18)}
                 font={FONTS.Lato.SemiBold}
+                 align='center'
                 color={theme._989898}>
                 {/* {selectedCategory === 'professional' ? STRING.Valuation : STRING.product} */}
                 {STRING.Valuation}
@@ -812,6 +825,7 @@ export default function CreateRequest(props: any) {
               <Text
                 size={getScaleSize(18)}
                 font={FONTS.Lato.SemiBold}
+                 align='center'
                 color={theme._989898}>
                 {STRING.JobDate}
               </Text>
@@ -828,6 +842,7 @@ export default function CreateRequest(props: any) {
               <Text
                 size={getScaleSize(18)}
                 font={FONTS.Lato.SemiBold}
+                align='center'
                 color={theme._989898}>
                 {STRING.JobTime}
               </Text>
@@ -957,20 +972,20 @@ export default function CreateRequest(props: any) {
             {STRING.valuation_message}
           </Text>
           {/* {selectedCategory === 'professional' && ( */}
-            <View style={styles(theme).textInputContainer}>
-              <Input
-                placeholder={STRING.EnterValuation}
-                placeholderTextColor={theme._939393}
-                inputTitle={STRING.EnterValuation}
-                inputColor={theme._555555}
-                value={valuation ? `${'€'}${valuation}` : ''}
-                keyboardType="numeric"
-                autoCapitalize="none"
-                onChangeText={text => {
-                  setValuation(formatDecimalInput(text));
-                }}
-              />
-            </View>
+          <View style={styles(theme).textInputContainer}>
+            <Input
+              placeholder={STRING.EnterValuation}
+              placeholderTextColor={theme._939393}
+              inputTitle={STRING.EnterValuation}
+              inputColor={theme._555555}
+              value={valuation ? `${'€'}${valuation}` : ''}
+              keyboardType="numeric"
+              autoCapitalize="none"
+              onChangeText={text => {
+                setValuation(formatDecimalInput(text));
+              }}
+            />
+          </View>
           {/* )} */}
           <Text
             style={{ marginTop: getScaleSize(12) }}
@@ -983,6 +998,7 @@ export default function CreateRequest(props: any) {
             selectedDate={selectedDate}
             onDateChange={(date: any) => {
               setSelectedDate(date);
+              setTimeValidationError('');
             }}
           />
           <View style={styles(theme).deviderView} />
@@ -995,10 +1011,11 @@ export default function CreateRequest(props: any) {
           </Text>
           <TimePicker
             selectedDate={selectedDate}
+            validationMessage={STRING.please_select_valid_future_time}
             onTimeChange={(hour: number, minute: number, am: boolean) => {
               let hour24 = hour % 12;
               if (!am) hour24 += 12;
-              const utcString = moment()
+              const utcString = moment(selectedDate)
                 .hour(hour24)
                 .minute(minute)
                 .second(0)
@@ -1006,7 +1023,20 @@ export default function CreateRequest(props: any) {
                 .format();
               setSelectedTime(new Date(utcString));
             }}
+            onValidationChange={(isValid: boolean, message: string) => {
+              setIsTimeValid(isValid);
+              setTimeValidationError(message || '');
+            }}
           />
+          {timeValidationError ? (
+            <Text
+              size={getScaleSize(14)}
+              font={FONTS.Lato.Regular}
+              color={theme._EF5350}
+              style={{ marginTop: getScaleSize(8) }}>
+              {timeValidationError}
+            </Text>
+          ) : null}
           <View style={{ height: 16 }} />
         </View>
       </ScrollView>
@@ -1531,7 +1561,7 @@ export default function CreateRequest(props: any) {
       <View
         style={[styles(theme).container, {}]}>
         <>
-        {renderProfessional()}
+          {renderProfessional()}
           {/* {selectedCategory == 'professional' ? renderProfessional() : renderNonProfessional()} */}
         </>
       </View>
@@ -1552,7 +1582,7 @@ export default function CreateRequest(props: any) {
             font={FONTS.Lato.Bold}
             color={theme.primary}
             style={{ alignSelf: 'center' }}>
-            {selectedProgress === 6 ? 'Edit' : STRING.Back}
+            {selectedProgress === 6 ? STRING.edit : STRING.Back}
           </Text>
         </TouchableOpacity>
         <TouchableOpacity
@@ -1572,7 +1602,7 @@ export default function CreateRequest(props: any) {
             font={FONTS.Lato.Bold}
             color={theme.white}
             style={{ alignSelf: 'center' }}>
-            {selectedProgress === 6 ? 'Submit' : STRING.Next}
+            {selectedProgress === 6 ? STRING.Submit : STRING.Next}
           </Text>
         </TouchableOpacity>
       </View>

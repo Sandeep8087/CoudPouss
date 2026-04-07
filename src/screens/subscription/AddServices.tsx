@@ -481,7 +481,6 @@ export default function AddServices(props: any) {
                 secondButtonTitle={STRING.cancel}
                 onPressButton={() => {
                     onSelectedCategoriesNonProfessional()
-
                 }}
                 onPressSecondButton={() => {
                     bottomSheetRef.current.close();

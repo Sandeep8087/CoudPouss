@@ -1,4 +1,4 @@
-import React, { useCallback, useContext, useEffect, useRef, useState } from 'react';
+import React, { useContext, useEffect, useRef, useState } from 'react';
 import {
   View,
   StyleSheet,
@@ -31,7 +31,6 @@ import { CommonActions } from '@react-navigation/native';
 
 import { SCREENS } from '..';
 import { API } from '../../api';
-import debounce from 'lodash/debounce';
 
 export default function WriteReview(props: any) {
 
@@ -51,6 +50,7 @@ export default function WriteReview(props: any) {
   const [isLoadingRating, setIsLoadingRating] = useState(true);
 
   const successBottomSheetRef = useRef<any>(null);
+  const isSubmittingRef = useRef(false);
 
   const normalizeRatingValue = (value: any) => {
     const numericValue = Number(value);
@@ -95,52 +95,37 @@ export default function WriteReview(props: any) {
   }, [])
 
 
-  const debouncedWriteReview = useCallback(
-    debounce(() => {
-      onWriteReview();
-    }, 800),
-    []
-  );
-
   async function onWriteReview() {
-    if (isLoading) return;
+    if (isLoading || !isSubmittingRef.current) return;
     if (overallRatting === 0 || reliabilityRatting === 0 || punctualityRatting === 0 || solutionRatting === 0 || payoutRatting === 0) {
       SHOW_TOAST('Please fill all fields', 'error');
+      isSubmittingRef.current = false;
       return;
     }
     try {
-      let params = {};
-      if (!review) {
-        params = {
-          rating: {
-            service_id: serviceId,
-            // work_quality: overallRatting,
-            reliability: reliabilityRatting,
-            punctuality: punctualityRatting,
-            solution: solutionRatting,
-            payout: payoutRatting,
-            overall: overallRatting,
+      const trimmedReview = review?.trim() ?? '';
+      const ratingPayload = {
+        rating: {
+          service_id: serviceId,
+          // work_quality: overallRatting,
+          reliability: reliabilityRatting,
+          punctuality: punctualityRatting,
+          solution: solutionRatting,
+          payout: payoutRatting,
+          overall: overallRatting,
+        },
+      };
+      const params = trimmedReview
+        ? {
+            ...ratingPayload,
+            review: {
+              service_id: serviceId,
+              review_description: trimmedReview,
+            },
           }
-        }
-      } else {
-        params = {
-          rating: {
-            service_id: serviceId,
-            // work_quality: overallRatting,
-            reliability: reliabilityRatting,
-            punctuality: punctualityRatting,
-            solution: solutionRatting,
-            payout: payoutRatting,
-            overall: overallRatting,
-          },
-          review: {
-            service_id: serviceId,
-            review_description: review,
-          }
-        }
-      }
+        : ratingPayload;
       setLoading(true);
-      const result = await API.Instance.post(API.API_ROUTES.onWriteReview + `?type=${review ? `both` : `rating`}`, params);
+      const result = await API.Instance.post(API.API_ROUTES.onWriteReview + `?type=${trimmedReview ? `both` : `rating`}`, params);
       if (result.status) {
         SHOW_TOAST(result?.data?.message ?? '', 'success')
         successBottomSheetRef.current?.open();
@@ -151,6 +136,7 @@ export default function WriteReview(props: any) {
       SHOW_TOAST(error?.message ?? '', 'error');
     } finally {
       setLoading(false);
+      isSubmittingRef.current = false;
     }
   }
 
@@ -276,9 +262,12 @@ export default function WriteReview(props: any) {
           marginHorizontal: getScaleSize(22),
           marginBottom: getScaleSize(16),
         }}
+        disabled={isLoading || isSubmittingRef.current}
         onPress={() => {
+          if (isLoading || isSubmittingRef.current) return;
+          isSubmittingRef.current = true;
           Keyboard.dismiss();
-          debouncedWriteReview();
+          onWriteReview();
         }}
       />
       <BottomSheet

@@ -8,7 +8,7 @@ import {
 } from 'react-native';
 import React, {useContext, useState} from 'react';
 import {ThemeContext, ThemeContextType} from '../context/ThemeProvider';
-import {getScaleSize} from '../constant';
+import {getScaleSize, useString} from '../constant';
 import Text from './Text';
 import {FONTS, IMAGES} from '../assets';
 import Tooltip from 'react-native-walkthrough-tooltip';
@@ -16,6 +16,7 @@ import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 export default function ServiceItem(props: any) {
 
+  const STRING = useString();
   const {
     item,
     itemContainer,
@@ -106,12 +107,12 @@ export default function ServiceItem(props: any) {
                         onClose={() => setVisible(false)}
                         content={
                             <View style={{}}>
-                                {[{ title: 'Remove', icon: IMAGES.trash2 }, { title: 'Add More', icon: IMAGES.edit }].map((type, i) => (
+                                {[{id: 1, title: STRING.remove, icon: IMAGES.trash2 }, {id: 2, title: STRING.add_more, icon: IMAGES.edit }].map((type, i) => (
                                     <TouchableOpacity
                                         key={i}
                                         style={styles(theme).dropdownItem}
                                         onPress={() => {
-                                            if (type.title === 'Remove') {
+                                            if (type.id === 1) {
                                                 onRemove(item);
                                                 // setVisible(false);
                                             } else {

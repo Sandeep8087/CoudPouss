@@ -26,6 +26,7 @@ import { getScaleSize, SHOW_TOAST, useString } from '../../constant';
 //COMPONENT
 import {
   Header,
+  ProgressView,
   RatingsReviewsItem,
   RattingControler,
   RequestItem,
@@ -313,13 +314,13 @@ export default function MyProfileProfessional(props: any) {
                 style={{ marginTop: getScaleSize(3) }}
                 font={FONTS.Lato.Medium}
                 color={theme._323232}>
-                {`Based on ${profile?.customer_ratings?.total_ratings ?? 0} ratings`}
+                {`${STRING.based_on} ${profile?.customer_ratings?.total_ratings ?? 0} ${STRING.ratings}`}
               </Text>
             </View>
           </View>
           <View style={{ marginTop: getScaleSize(15) }}>
             <RattingControler
-              title={'Work quality'}
+              title={STRING.work_quality}
               value={profile?.customer_ratings?.criteria_averages?.overall ?? '0.0'}
               fillCount={profile?.customer_ratings?.criteria_averages?.overall ?? 0}
               totalCount={5}
@@ -327,7 +328,7 @@ export default function MyProfileProfessional(props: any) {
           </View>
           <View style={{ marginTop: getScaleSize(15) }}>
             <RattingControler
-              title={'Reliability'}
+              title={STRING.reliability}
               value={profile?.customer_ratings?.criteria_averages?.reliability ?? '0.0'}
               fillCount={profile?.customer_ratings?.criteria_averages?.reliability ?? 0}
               totalCount={5}
@@ -335,7 +336,7 @@ export default function MyProfileProfessional(props: any) {
           </View>
           <View style={{ marginTop: getScaleSize(15) }}>
             <RattingControler
-              title={'Punctunality'}
+              title={STRING.punctunality}
               value={profile?.customer_ratings?.criteria_averages?.punctuality ?? '0.0'}
               fillCount={profile?.customer_ratings?.criteria_averages?.punctuality ?? 0}
               totalCount={5}
@@ -343,7 +344,7 @@ export default function MyProfileProfessional(props: any) {
           </View>
           <View style={{ marginTop: getScaleSize(15) }}>
             <RattingControler
-              title={'Soluction'}
+              title={STRING.soluction}
               value={profile?.customer_ratings?.criteria_averages?.solution ?? '0.0'}
               fillCount={profile?.customer_ratings?.criteria_averages?.solution ?? 0}
               totalCount={5}
@@ -351,7 +352,7 @@ export default function MyProfileProfessional(props: any) {
           </View>
           <View style={{ marginTop: getScaleSize(15) }}>
             <RattingControler
-              title={'Payout'}
+              title={STRING.payout}
               value={profile?.customer_ratings?.criteria_averages?.payout ?? '0.0'}
               fillCount={profile?.customer_ratings?.criteria_averages?.payout ?? 0}
               totalCount={5}
@@ -387,6 +388,7 @@ export default function MyProfileProfessional(props: any) {
         }
         <View style={{ height: getScaleSize(32) }} />
       </ScrollView>
+      {isLoading && <ProgressView />}
     </View>
   );
 }

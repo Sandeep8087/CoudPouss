@@ -26,6 +26,8 @@ interface ViewAllCouponsPopupProps {
     height?: number;
     coupons: any;
     couponCode: any;
+    onModelClose: () => void;
+
 }
 
 export default function ViewAllCouponsPopup(props: ViewAllCouponsPopupProps) {
@@ -34,7 +36,7 @@ export default function ViewAllCouponsPopup(props: ViewAllCouponsPopupProps) {
     const { theme } = useContext<any>(ThemeContext);
 
     const STRING = useString();
-    const { onRef, onProcessPress, onClose, couponCode, coupons } = props;
+    const { onRef, onProcessPress, onClose, onModelClose, couponCode, coupons } = props;
 
     return (
         <RBSheet
@@ -53,7 +55,7 @@ export default function ViewAllCouponsPopup(props: ViewAllCouponsPopupProps) {
                     backgroundColor: theme._77777733,
                 },
                 container: {
-                    height: getScaleSize(500),
+                    height: coupons?.length > 0 ? getScaleSize(500) : getScaleSize(200),
                     borderTopLeftRadius: getScaleSize(24),
                     borderTopRightRadius: getScaleSize(24),
                     backgroundColor: theme.white,
@@ -61,7 +63,6 @@ export default function ViewAllCouponsPopup(props: ViewAllCouponsPopupProps) {
                 },
             }}
             draggable={false}
-            
             closeOnPressMask={true}>
             <View style={[styles(theme).content]}>
                 <Text
@@ -71,54 +72,65 @@ export default function ViewAllCouponsPopup(props: ViewAllCouponsPopupProps) {
                     color={theme.primary}>
                     {STRING.view_all_coupons}
                 </Text>
-                <View style={{ height: getScaleSize(400) }}>
-                    <FlatList
-                        data={coupons}
-                        keyExtractor={(item: any, index: number) => index.toString()}
-                        renderItem={({ item }) => (
-                            <View style={styles(theme).couponItem}>
-                                <View style={{ flex: 1 }}>
-                                    <View style={styles(theme).couponItemTitle}>
-                                        <Image
-                                            source={IMAGES.ic_coupon}
-                                            style={styles(theme).icon} />
+                {coupons?.length > 0 ? (
+                    <View style={{ height: getScaleSize(400) }}>
+                        <FlatList
+                            data={coupons}
+                            keyExtractor={(item: any, index: number) => index.toString()}
+                            renderItem={({ item }) => (
+                                <View style={styles(theme).couponItem}>
+                                    <View style={{ flex: 1 }}>
+                                        <View style={styles(theme).couponItemTitle}>
+                                            <Image
+                                                source={IMAGES.ic_coupon}
+                                                style={styles(theme).icon} />
+                                            <Text
+                                                size={getScaleSize(14)}
+                                                font={FONTS.Lato.SemiBold}
+                                                color={theme.primary}>
+                                                {item.code_name}
+                                            </Text>
+                                        </View>
                                         <Text
                                             size={getScaleSize(14)}
                                             font={FONTS.Lato.SemiBold}
-                                            color={theme.primary}>
-                                            {item.code_name}
+                                            color={theme._595959}>
+                                            {STRING.welcome_discount}
                                         </Text>
                                     </View>
                                     <Text
-                                        size={getScaleSize(14)}
-                                        font={FONTS.Lato.SemiBold}
-                                        color={theme._595959}>
-                                        {STRING.welcome_discount}
-                                    </Text>
-                                </View>
-                                <Text
-                                    size={getScaleSize(16)}
-                                    font={FONTS.Lato.Bold}
-                                    style={{ marginHorizontal: getScaleSize(18) }}
-                                    color={theme.primary}>
-                                    {`${item.discount_percentage}%`}
-                                </Text>
-                                <Pressable 
-                                style={styles(theme).couponItemValue}
-                                onPress={() => {
-                                    onProcessPress(item);
-                                }}>
-                                    <Text
                                         size={getScaleSize(16)}
                                         font={FONTS.Lato.Bold}
+                                        style={{ marginHorizontal: getScaleSize(18) }}
                                         color={theme.primary}>
-                                        {couponCode?.id === item?.id  ?  STRING.applied : STRING.apply}
+                                        {`${item.discount_percentage}%`}
                                     </Text>
-                                </Pressable>
-                            </View>
-                        )}
-                    />
-                </View>
+                                    <Pressable
+                                        style={styles(theme).couponItemValue}
+                                        onPress={() => {
+                                            onProcessPress(item);
+                                        }}>
+                                        <Text
+                                            size={getScaleSize(16)}
+                                            font={FONTS.Lato.Bold}
+                                            color={theme.primary}>
+                                            {couponCode?.id === item?.id ? STRING.applied : STRING.apply}
+                                        </Text>
+                                    </Pressable>
+                                </View>
+                            )}
+                        />
+                    </View>
+                ) : (
+                    <View style={{ justifyContent: 'center', alignItems: 'center' }}>
+                        <Text
+                            size={getScaleSize(16)}
+                            font={FONTS.Lato.Medium}
+                            color={theme._595959}>
+                            {STRING.no_coupons_available}
+                        </Text>
+                    </View>
+                )}
             </View>
         </RBSheet>
     )

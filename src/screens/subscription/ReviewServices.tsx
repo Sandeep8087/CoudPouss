@@ -141,6 +141,7 @@ export default function ReviewServices(props: any) {
             category_id: item.category.id,
             sub_category_ids: item.service.map((e: any) => e.id),
         }));
+        console.log('output==>', output);
         const params = {
             categories_subcategory_ids: output
         }
@@ -148,8 +149,20 @@ export default function ReviewServices(props: any) {
             setLoading(true);
             const result = await API.Instance.post(API.API_ROUTES.onSelectedCategoriesNonProfessional + `?platform=app&action=add`, params);
             if (result.status) {
-                const STRIPE_URL = result?.data?.data?.checkout_url ?? '';
-                openStripeCheckout(STRIPE_URL);
+                if (result?.data?.data?.checkout_url) {
+                    const STRIPE_URL = result?.data?.data?.checkout_url ?? '';
+                    console.log('STRIPE_URL==>', STRIPE_URL);
+                    openStripeCheckout(STRIPE_URL);
+                } else {
+                    props?.navigation?.dispatch(
+                        CommonActions.reset({
+                            index: 0,
+                            routes: [{
+                                name: SCREENS.AccountCreatedSuccessfully.identifier
+                            }],
+                        }),
+                    );
+                }
             } else {
                 SHOW_TOAST(result?.data?.message, 'error')
             }

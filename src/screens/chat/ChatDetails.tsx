@@ -42,7 +42,11 @@ import {
 } from '../../services/chat';
 import { FirebaseFirestoreTypes } from '@react-native-firebase/firestore';
 import { launchImageLibrary } from 'react-native-image-picker';
+
+//API
 import { API } from '../../api';
+
+//SCREENS
 import { SCREENS } from '..';
 
 export default function ChatDetails(props: any) {

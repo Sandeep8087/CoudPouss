@@ -39,12 +39,18 @@ export default function EditAddress(props: any) {
     const addressData = props?.route?.params?.addressData || {};
     const myLocationData = props?.route?.params?.myLocation ?? ''
     const isFromAddressMap = props?.route?.params?.isFromAddressMap ?? false;
+    const selectedAddress = props?.route?.params?.selectedAddress ?? '';
+    const selectedCity = props?.route?.params?.city ?? '';
+    const selectedState = props?.route?.params?.state ?? '';
+    const selectedCountry = props?.route?.params?.country ?? '';
+    const selectedPostalCode = props?.route?.params?.postalCode ?? '';
 
     const [isLoading, setLoading] = useState<boolean>(false);
 
     const inputHeight = Platform.OS == 'ios' ? getScaleSize(56) : getScaleSize(56)
 
     const [address, setAddress] = useState<string>('');
+    const [houseFlatNumber, setHouseFlatNumber] = useState<string>('');
     const [addressError, setAddressError] = useState<string>('');
     const [addressHeight, setAddressHeight] = useState(inputHeight);
     const [city, setCity] = useState<string>('Surat');
@@ -57,10 +63,27 @@ export default function EditAddress(props: any) {
     const [postalCodeError, setPostalCodeError] = useState<string>('');
     const [myLocation, setMyLocation] = useState<any>(null);
 
+    const splitBangloAddress = (fullAddress: string) => {
+        const value = fullAddress?.trim() || '';
+        if (!value) {
+            return { houseFlat: '', line1: '' };
+        }
+        const parts = value.split(',').map((item) => item.trim()).filter(Boolean);
+        if (parts.length <= 1) {
+            return { houseFlat: '', line1: value };
+        }
+        return {
+            houseFlat: (parts[0] || '').replace(/,/g, '').trim(),
+            line1: parts.slice(1).join(', ')
+        };
+    };
+
 
     useEffect(() => {
         if (addressData) {
-            setAddress(addressData.banglo);
+            const parsed = splitBangloAddress(addressData.banglo || '');
+            setHouseFlatNumber(parsed.houseFlat);
+            setAddress(parsed.line1);
             setCity(addressData.city);
             setState(addressData.state);
             setCountry(addressData.country);
@@ -71,13 +94,31 @@ export default function EditAddress(props: any) {
 
     useEffect(() => {
         if (isFromAddressMap) {
-            setCity('Surat')
-            setState('Gujrat')
-            setCountry('India')
-            setPostalCode('123456')
-            setMyLocation({ latitude: myLocationData.latitude, longitude: myLocationData.longitude });
+            setHouseFlatNumber('');
+            setAddress(selectedAddress || '');
+            setCity(selectedCity || 'Surat');
+            setState(selectedState || 'Gujrat');
+            setCountry(selectedCountry || 'India');
+            setPostalCode(selectedPostalCode || '123456');
+            if (myLocationData?.latitude && myLocationData?.longitude) {
+                setMyLocation({ latitude: myLocationData.latitude, longitude: myLocationData.longitude });
+            }
         }
-    }, [isFromAddressMap]);
+    }, [isFromAddressMap, selectedAddress, selectedCity, selectedState, selectedCountry, selectedPostalCode, myLocationData]);
+
+    useEffect(() => {
+        const hasExplicitNewLine = address?.includes('\n');
+        const shouldUseTwoLines = hasExplicitNewLine || (address?.trim()?.length ?? 0) > 45;
+        setAddressHeight(shouldUseTwoLines ? getScaleSize(84) : inputHeight);
+    }, [address]);
+
+    const getBangloAddress = () => {
+        const cleanHouseFlatNumber = (houseFlatNumber || '').replace(/,/g, '').trim();
+        return [
+            cleanHouseFlatNumber,
+            address?.trim() || ''
+        ].filter(Boolean).join(', ');
+    };
 
     async function onUpdateAddress() {
         if (!address) {
@@ -86,8 +127,9 @@ export default function EditAddress(props: any) {
         }
         setLoading(true);
         try {
+            const bangloAddress = getBangloAddress();
             const params = {
-                "banglo": address,
+                "banglo": bangloAddress,
                 "city": city,
                 "state": state,
                 "country": country,
@@ -117,8 +159,9 @@ export default function EditAddress(props: any) {
             return;
         } else {
             try {
+                const bangloAddress = getBangloAddress();
                 const params = {
-                    "banglo": address,
+                    "banglo": bangloAddress,
                     "city": city,
                     "state": state,
                     "country": country,
@@ -158,30 +201,38 @@ export default function EditAddress(props: any) {
             <ScrollView showsVerticalScrollIndicator={false} style={{ flex: 1 }}>
                 <View style={styles(theme).mainContainer}>
                     <Input
+                        placeholder={STRING.house_flat_number}
+                        placeholderTextColor={theme._939393}
+                        inputTitle={STRING.house_flat_number}
+                        inputColor={true}
+                        value={houseFlatNumber}
+                        continerStyle={{ marginBottom: getScaleSize(16) }}
+                        onChangeText={text => {
+                            setHouseFlatNumber((text || '').replace(/,/g, ''));
+                        }}
+                    />
+                    <Input
                         placeholder={STRING.enter_address}
                         placeholderTextColor={theme._939393}
                         inputTitle={STRING.address_line_1}
                         inputColor={true}
                         value={address}
+                        editable={false}
                         maxLength={250}
                         multiline={true}
-                        numberOfLines={10}
+                        numberOfLines={2}
                         onContentSizeChange={(e) => {
                             const newHeight = e.nativeEvent.contentSize.height;
                             setAddressHeight(
-                                Math.min(getScaleSize(200), Math.max(inputHeight, newHeight))
+                                Math.min(getScaleSize(84), Math.max(inputHeight, newHeight))
                             );
                         }}
                         inputContainer={{
-                            maxHeight: getScaleSize(200),
+                            maxHeight: getScaleSize(84),
                             height: addressHeight,
                             minHeight: inputHeight,
                         }}
                         continerStyle={{ marginBottom: getScaleSize(16) }}
-                        onChangeText={text => {
-                            setAddress(text);
-                            setAddressError('');
-                        }}
                         isError={addressError}
                     />
                     <Input

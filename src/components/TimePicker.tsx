@@ -1,19 +1,14 @@
 import React, { useContext, useEffect, useState } from 'react';
-import { View, StyleSheet, TouchableOpacity, Alert, Image } from 'react-native';
+import { View, StyleSheet, TouchableOpacity, Image } from 'react-native';
 import { ThemeContext, ThemeContextType } from '../context';
-import { getScaleSize, SHOW_TOAST } from '../constant';
+import { getScaleSize } from '../constant';
 import { FONTS, IMAGES } from '../assets';
 import Text from './Text';
 import moment from 'moment';
 
 const TimePicker = (props: any) => {
-  const { onTimeChange, selectedDate } = props;
+  const { onTimeChange, selectedDate, onValidationChange, validationMessage } = props;
   const { theme } = useContext<any>(ThemeContext);
-
-  useEffect(() => {
-    onTimeChange &&
-      onTimeChange(selectedHour, selectedMinute, isAM);
-  }, []);
 
   const defaultTime = moment().add(2, 'hours').add(1, 'minute');
 
@@ -22,7 +17,7 @@ const TimePicker = (props: any) => {
   const isCurrentAM = currentHour24 < 12;
 
   const [selectedHour, setSelectedHour] = useState(currentHour12);
-  const [selectedMinute, setSelectedMinute] = useState(moment().minute());
+  const [selectedMinute, setSelectedMinute] = useState(defaultTime.minute());
   const [isAM, setIsAM] = useState(isCurrentAM);
 
 
@@ -78,21 +73,29 @@ const TimePicker = (props: any) => {
 
   const updateParent = (hour: number, minute: number, am: boolean) => {
     if (isFutureDateTime(selectedDate, hour, minute, am)) {
+      onValidationChange && onValidationChange(true, '');
       onTimeChange && onTimeChange(hour, minute, am);
-      return true;
-    } else {
-      SHOW_TOAST('Please select a time at least 2 hours from now', 'error');
-      return false;
+      return;
     }
+
+    onValidationChange &&
+      onValidationChange(
+        false,
+        validationMessage || SRE,
+      );
   };
+
+  useEffect(() => {
+    updateParent(selectedHour, selectedMinute, isAM);
+  }, [selectedDate, selectedHour, selectedMinute, isAM]);
 
 
   // Handle hour increment
   const incrementHour = () => {
     setSelectedHour(prev => {
       const newHour = prev === 12 ? 1 : prev + 1;
-      const isValid = updateParent(newHour, selectedMinute, isAM);
-      return isValid ? newHour : prev;
+      updateParent(newHour, selectedMinute, isAM);
+      return newHour;
     });
   };
 
@@ -100,8 +103,8 @@ const TimePicker = (props: any) => {
   const decrementHour = () => {
     setSelectedHour(prev => {
       const newHour = prev === 1 ? 12 : prev - 1;
-      const isValid = updateParent(newHour, selectedMinute, isAM);
-      return isValid ? newHour : prev;
+      updateParent(newHour, selectedMinute, isAM);
+      return newHour;
     });
   };
 
@@ -109,8 +112,8 @@ const TimePicker = (props: any) => {
   const incrementMinute = () => {
     setSelectedMinute(prev => {
       const newMinute = prev === 59 ? 0 : prev + 1;
-      const isValid = updateParent(selectedHour, newMinute, isAM);
-      return isValid ? newMinute : prev;
+      updateParent(selectedHour, newMinute, isAM);
+      return newMinute;
     });
   };
 
@@ -118,8 +121,8 @@ const TimePicker = (props: any) => {
   const decrementMinute = () => {
     setSelectedMinute(prev => {
       const newMinute = prev === 0 ? 59 : prev - 1;
-      const isValid = updateParent(selectedHour, newMinute, isAM);
-      return isValid ? newMinute : prev;
+      updateParent(selectedHour, newMinute, isAM);
+      return newMinute;
     });
   };
 
@@ -127,21 +130,9 @@ const TimePicker = (props: any) => {
   const toggleAmPm = () => {
     setIsAM(prev => {
       const newAm = !prev;
-      const isValid = updateParent(selectedHour, selectedMinute, newAm);
-      return isValid ? newAm : prev;
+      updateParent(selectedHour, selectedMinute, newAm);
       return newAm;
     });
-  };
-
-  // Handle time confirmation
-  const confirmTime = () => {
-    Alert.alert(
-      'Time Selected',
-      `You selected: ${selectedHour}:${selectedMinute
-        .toString()
-        .padStart(2, '0')} ${isAM ? 'AM' : 'PM'}`,
-      [{ text: 'OK' }],
-    );
   };
 
   return (

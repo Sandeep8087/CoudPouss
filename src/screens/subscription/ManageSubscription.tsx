@@ -85,7 +85,7 @@ export default function ManageSubscription(props: any) {
                                 size={getScaleSize(14)}
                                 font={FONTS.Lato.Medium}
                                 color={theme._555555}>
-                                {'Enjoy exclusive benefits with your Premium Membership. From enhanced features to priority support, this plan unlocks the full experience tailored just for you.'}
+                                {STRING.enjoy_exclusive_benefits_with_your_premium_membership}
                             </Text>
                             <View style={styles(theme).planDetailsContainer} >
                                 <Image source={IMAGES.ic_calander} style={styles(theme).calanderIcon} />
@@ -94,13 +94,13 @@ export default function ManageSubscription(props: any) {
                                     align="center"
                                     style={{ marginTop: getScaleSize(16), marginBottom: getScaleSize(8) }}
                                     color={theme.primary}>
-                                    {`Your plan will end on ${subscriptionPlanDetails?.subscription_expires_at ? moment.utc(subscriptionPlanDetails?.subscription_expires_at).local().format('MMMM DD, YYYY') : ''}\nat ${subscriptionPlanDetails?.subscription_expires_at ? moment.utc(subscriptionPlanDetails?.subscription_expires_at).local().format('hh:mm A') : ''}`}
+                                    {`${STRING.your_plan_will_end_on} ${subscriptionPlanDetails?.subscription_expires_at ? moment.utc(subscriptionPlanDetails?.subscription_expires_at).local().format('MMMM DD, YYYY') : ''}\n${STRING.at} ${subscriptionPlanDetails?.subscription_expires_at ? moment.utc(subscriptionPlanDetails?.subscription_expires_at).local().format('hh:mm A') : ''}`}
                                 </Text>
                                 <Text size={getScaleSize(14)}
                                     font={FONTS.Lato.Medium}
                                     align="center"
                                     color={theme._424242}>
-                                    {`After that, you will be automatically billed €${subscriptionPlanDetails?.plan?.price ?? '0.00'}`}
+                                    {`${STRING.after_that_you_will_be_automatically_billed} €${subscriptionPlanDetails?.plan?.price ?? '0.00'}`}
                                 </Text>
                             </View>
                             <View style={styles(theme).flexView}>

@@ -106,7 +106,6 @@ export default function RatingsReviews(props: any) {
 
     return (
         <View style={styles(theme).container}>
-
             <Header
                 onBack={() => props.navigation.goBack()}
                 screenName={STRING.ratings_reviews}
@@ -151,12 +150,6 @@ export default function RatingsReviews(props: any) {
                             />
                         )}
                     />
-                ) : isLoading ? (
-                    <ActivityIndicator
-                        size="large"
-                        color={theme.primary}
-                        style={{ marginTop: 40 }}
-                    />
                 ) : (
                     <View style={{ alignItems: 'center', marginTop: 40 }}>
                         <Text
@@ -164,7 +157,7 @@ export default function RatingsReviews(props: any) {
                             font={FONTS.Lato.Medium}
                             color={theme._2B2B2B}
                         >
-                            {STRING.no_data_found}
+                            {isLoading ? '' : STRING.no_data_found}
                         </Text>
                     </View>
                 )}

@@ -16,12 +16,14 @@ import { Header, Input, Text, Button } from '../../components';
 
 //PACKAGES
 import OTPTextInput from 'react-native-otp-textinput';
+import { useTranslation } from 'react-i18next';
 
 import { API } from '../../api';
 
 export default function Otp(props: any) {
 
     const STRING = useString();
+    const { t } = useTranslation();
     const isFromSignup = props?.route?.params?.isFromSignup || false;
     // const isPhoneNumber = props?.route?.params?.isPhoneNumber || false;
     // const countryCode = props?.route?.params?.countryCode || '+91';
@@ -138,11 +140,11 @@ export default function Otp(props: any) {
                     });
                 } else {
                     if (result?.code === 409) {
-                        if (result?.data?.message == 'OTP already verified. Redirect to Password page.') {
+                        if (result?.data?.message == STRING.otp_already_verified_redirect_to_password_page) {
                             props.navigation.navigate(SCREENS.CreatePassword.identifier, {
                                 email: email,
                             })
-                        } else if (result?.data?.message == 'Password already set. Redirect to Details page.') {
+                        } else if (result?.data?.message == STRING.password_already_set_redirect_to_details_page) {
                             props.navigation.navigate(SCREENS.AddPersonalDetails.identifier, {
                                 email: email,
                             })
@@ -257,7 +259,7 @@ export default function Otp(props: any) {
                             color={theme._2C6587}
                             size={getScaleSize(18)}
                             align="center">
-                            {`Resend code in ${timer} seconds`}
+                            {t('resend_code_in_seconds', { seconds: timer })}
                         </Text>
                     ) : (
                         <TouchableOpacity

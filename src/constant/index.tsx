@@ -11,6 +11,7 @@ import {
   prepareMediaForUpload,
   sanitizeAddressInput,
   sanitizeNameInput,
+  sanitizePublicProfileText,
 } from './utils';
 import {Storage} from './storage';
 import {REGEX} from './regex';
@@ -34,4 +35,5 @@ export {
   prepareMediaForUpload,
   sanitizeAddressInput,
   sanitizeNameInput,
+  sanitizePublicProfileText,
 };

@@ -31,10 +31,15 @@ export default function PaymentMethod(props: any) {
 
     console.log(isFromSubscriptionButton, 'isFromSubscriptionButton')
 
-    const paymentMethods = [
-        { id: 1, title: 'Google Pay', icon: IMAGES.ic_google_pay },
-        { id: 2, title: 'Apple Pay', icon: IMAGES.ic_apple_pay },
-        { id: 3, title: 'Credit Card', icon: IMAGES.ic_credit_card },
+    const iosPaymentMethods = [
+        { id: 1, title: STRING.google_pay, icon: IMAGES.ic_google_pay },
+        { id: 2, title: STRING.apple_pay, icon: IMAGES.ic_apple_pay },
+        { id: 3, title: STRING.credit_card, icon: IMAGES.ic_credit_card },
+    ]
+
+    const androidPaymentMethods = [
+        { id: 1, title: STRING.google_pay, icon: IMAGES.ic_google_pay },
+        { id: 2, title: STRING.apple_pay, icon: IMAGES.ic_apple_pay },
     ]
 
     useEffect(() => {
@@ -220,9 +225,10 @@ export default function PaymentMethod(props: any) {
                         {STRING.choose_payment_method}
                     </Text>
                     <View style={styles(theme).paymentMethodContainer}>
-                        {paymentMethods.map((e, index) => {
+                        {(Platform.OS === 'ios' ? iosPaymentMethods : androidPaymentMethods)?.map((e, index) => {
                             return (
                                 <TouchableOpacity
+                                disabled={true}
                                     key={index}
                                     onPress={() => {
 

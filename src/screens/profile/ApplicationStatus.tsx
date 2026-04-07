@@ -66,8 +66,8 @@ export default function ApplicationStatus(props: any) {
         if (applicationStatus?.subscription) {
             status.push({
                 id: 1,
-                name: "Subscribed",
-                description: "You are successfully subscribed.",
+                name: STRING.subscribed,
+                description: STRING.you_are_successfully_subscribed,
                 completed: true,
             });
         }
@@ -75,8 +75,8 @@ export default function ApplicationStatus(props: any) {
         if (applicationStatus?.subscription && !applicationStatus?.doc_status || applicationStatus?.doc_status == 'null') {
             status.push({
                 id: 2,
-                name: "Upload Documents",
-                description: "Upload your documents to get verified.",
+                name: STRING.upload_documents,
+                description: STRING.upload_your_documents_to_get_verified,
                 completed: false,
             });
         }
@@ -84,15 +84,15 @@ export default function ApplicationStatus(props: any) {
         if (applicationStatus?.subscription && applicationStatus?.doc_status == 'uploaded') {
             status.push({
                 id: 2,
-                name: "Documents Uploaded",
-                description: "Your documents have been received and are being processed.",
+                name: STRING.documents_uploaded,
+                description: STRING.your_documents_have_been_received_and_are_being_processed,
                 completed: true,
             });
 
             status.push({
                 id: 3,
-                name: "Under Review",
-                description: "Your profile is in review and will be assessed by a system administrator within 72 hours. After approval, you can begin sending quotes for service requests.",
+                name: STRING.under_review,
+                description: STRING.your_profile_is_in_review_and_will_be_assessed_by_a_system_administrator_within_72_hours_after_approval_you_can_begin_sending_quotes_for_service_requests,
                 serviceRunning: true,
             });
         }
@@ -100,15 +100,15 @@ export default function ApplicationStatus(props: any) {
         if (applicationStatus?.subscription && applicationStatus?.doc_status == 'accepted') {
             status.push({
                 id: 2,
-                name: "Documents Uploaded",
-                description: "All documents verified.",
+                name: STRING.documents_uploaded,
+                description: STRING.all_documents_verified,
                 completed: true,
             });
 
             status.push({
                 id: 4,
-                name: "Accepted",
-                description: "Your profile is active.",
+                    name: STRING.accepted,
+                description: STRING.your_profile_is_active,
                 completed: true,
             });
         }
@@ -116,14 +116,14 @@ export default function ApplicationStatus(props: any) {
         if (applicationStatus?.subscription && applicationStatus?.doc_status == 'rejected') {
             status.push({
                 id: 2,
-                name: "Documents Uploaded",
-                description: "Documents verified.",
+                name: STRING.documents_uploaded,
+                description: STRING.documents_verified,
                 completed: true,
             });
             status.push({
                 id: 5,
-                name: "Rejected",
-                description: applicationStatus?.docs_rejected_reason ? applicationStatus?.docs_rejected_reason : "Some documents are currently missing. Please upload the required documents within the next 15 days to avoid account deletion.",
+                name: STRING.rejected,
+                description: applicationStatus?.docs_rejected_reason ? applicationStatus?.docs_rejected_reason : STRING.some_documents_are_currently_missing_please_upload_the_required_documents_within_the_next_15_days_to_avoid_account_deletion,
                 isRejected: true,
             });
         }

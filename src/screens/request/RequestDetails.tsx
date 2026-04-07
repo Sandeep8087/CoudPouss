@@ -441,7 +441,7 @@ export default function RequestDetails(props: any) {
         serviceName:
           serviceDetails?.sub_category_name || serviceDetails?.category_name,
         status: 'PENDING',
-        currentTurn: '',
+        currentTurn: serviceDetails?.provider?.id,
         currentAmount: newQuoteAmount,
         initialQuote: providerQuote,
         originalValuation: baseValuation,
@@ -537,12 +537,11 @@ export default function RequestDetails(props: any) {
       setLoading(true);
       const result: any = await API.Instance.get(API.API_ROUTES.getAvailableCoupons);
       if (result.status) {
+        console.log('result==>', result?.data);
         setCoupons(result?.data?.data?.results ?? []);
-        if (result?.data?.data?.results?.length > 0) {
-          setTimeout(() => {
-            viewAllCouponsPopupRef.current.open();
-          }, 200);
-        }
+        setTimeout(() => {
+          viewAllCouponsPopupRef.current.open();
+        }, 200);
         paymentRef.current.close();
       } else {
         SHOW_TOAST(result?.data?.message ?? '', 'error');
@@ -820,13 +819,8 @@ export default function RequestDetails(props: any) {
                 style={styles(theme).negociateButton}
                 activeOpacity={1}
                 onPress={async () => {
-                  const conversationId = buildThreadId(
-                    profile?.user?.id,
-                    serviceDetails?.service_id,
-                  );
-                  const negotiationFieldData = await getNegotiationFieldData(
-                    conversationId,
-                  );
+                  const conversationId = buildThreadId(profile?.user?.id, serviceDetails?.service_id);
+                  const negotiationFieldData = await getNegotiationFieldData(conversationId);
                   if (negotiationFieldData) {
                     props.navigation.navigate(
                       SCREENS.NegotiationDetails.identifier,
@@ -1436,6 +1430,10 @@ export default function RequestDetails(props: any) {
         onRef={viewAllCouponsPopupRef}
         coupons={coupons}
         couponCode={couponCode}
+        onModelClose={() => {
+          setCoupons([]);
+          viewAllCouponsPopupRef.current.close();
+        }}
         onProcessPress={(item: any) => {
           getServiceAmount(item?.id);
           setAppliedCouponCode(item);

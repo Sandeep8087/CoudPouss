@@ -96,7 +96,7 @@ export default function Address(props: any) {
                             <View style={styles(theme).itemContainer}>
                                 <TouchableOpacity
                                     activeOpacity={1}
-                                    onPress={() => {handleSelectAddress(item)}}
+                                    onPress={() => { handleSelectAddress(item) }}
                                 >
                                     <Image source={selectedAddress?.id === item?.id ? IMAGES.ic_radio_select : IMAGES.ic_radio_unselect} style={styles(theme).radioSelectIcon} />
                                 </TouchableOpacity>
@@ -144,7 +144,9 @@ export default function Address(props: any) {
                     />
                     :
                     <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-                        <Text size={getScaleSize(16)} font={FONTS.Lato.Regular} color={theme._555555}>No addresses found</Text>
+                        <Text size={getScaleSize(16)} font={FONTS.Lato.Regular} color={theme._555555}>
+                            {STRING.no_addresses_found}
+                        </Text>
                     </View>
             )}
             <Button

@@ -23,7 +23,7 @@ import { FONTS, IMAGES } from '../../assets';
 import { ThemeContext, ThemeContextType } from '../../context';
 
 //CONSTANT
-import { getScaleSize } from '../../constant';
+import { getScaleSize, useString } from '../../constant';
 
 //COMPONENT
 import {
@@ -43,6 +43,7 @@ import { CommonActions, useFocusEffect } from '@react-navigation/native';
 import { SCREENS } from '..';
 
 export default function Thankyou(props: any) {
+  const STRING = useString();
   const { theme } = useContext<any>(ThemeContext);
 
   useEffect(() => {
@@ -59,6 +60,12 @@ export default function Thankyou(props: any) {
   return (
     <View style={styles(theme).container}>
       <Image style={styles(theme).imageView} source={IMAGES.request_submitteed} />
+      <Text size={getScaleSize(24)}
+        font={FONTS.Lato.Bold}
+        color={theme._939393}
+        align="center">
+        {STRING.great_job_Your_request_is_now_submitted_successfully}
+      </Text>
     </View>
   );
 }
@@ -69,11 +76,12 @@ const styles = (theme: ThemeContextType['theme']) =>
       flex: 1,
       backgroundColor: theme.white,
       justifyContent: 'center',
+      alignItems: 'center',
+      paddingHorizontal: getScaleSize(29),
     },
     imageView: {
       width: Dimensions.get('window').width - getScaleSize(58),
-      height: getScaleSize(500),
-      resizeMode: 'contain',
-      alignSelf: 'center'
+      height: ((Dimensions.get('window').width - getScaleSize(58)) * getScaleSize(333)) / getScaleSize(373),
+      marginBottom: getScaleSize(40),
     }
   });

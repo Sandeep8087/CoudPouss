@@ -137,7 +137,7 @@ export default function ServiceRequest(props: any) {
           </View>
         </View>
       </View>
-      {profile?.user?.service_provider_type === 'professional' ?
+      {/* {profile?.user?.service_provider_type === 'professional' ? */}
         <View
           style={[styles(theme).horizontalView, { marginTop: getScaleSize(24), alignItems: 'center' }]}>
           <View style={{ flex: 1.0 }}>
@@ -167,7 +167,7 @@ export default function ServiceRequest(props: any) {
             </Text>
           </TouchableOpacity>
         </View>
-        :
+        {/* :
         <View style={styles(theme).buttonView}>
           <TouchableOpacity style={styles(theme).viewButton}
             onPress={onPress}>
@@ -187,7 +187,7 @@ export default function ServiceRequest(props: any) {
               {STRING.accept}
             </Text>
           </TouchableOpacity>
-        </View>}
+        </View>} */}
     </TouchableOpacity>
   );
 }

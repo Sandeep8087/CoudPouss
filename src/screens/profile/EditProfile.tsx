@@ -17,7 +17,7 @@ import { FONTS, IMAGES } from '../../assets';
 import { AuthContext, ThemeContext, ThemeContextType } from '../../context';
 
 //CONSTANT
-import { getScaleSize, sanitizeAddressInput, sanitizeNameInput, SHOW_SUCCESS_TOAST, SHOW_TOAST, useString } from '../../constant';
+import { getScaleSize, sanitizeAddressInput, sanitizeNameInput, sanitizePublicProfileText, SHOW_SUCCESS_TOAST, SHOW_TOAST, useString } from '../../constant';
 
 //COMPONENT
 import {
@@ -284,34 +284,6 @@ export default function EditProfile(props: any) {
         return value;
     };
 
-    const sanitizeOptionalText = (text: string) => {
-        if (!text) return '';
-
-        let value = text;
-
-        // convert non-breaking space to normal space
-        value = value.replace(/\u00A0/g, ' ');
-
-        // Remove emojis
-        value = value.replace(/([\u{1F000}-\u{1FFFF}]|[\u{2600}-\u{27BF}])/gu, '');
-
-        // Allow characters + space
-        value = value.replace(/[^a-zA-Z0-9 ., '@_-]/g, '');
-
-        // Remove leading spaces
-        value = value.replace(/^\s+/, '');
-
-        // Replace multiple spaces with single
-        value = value.replace(/\s{2,}/g, ' ');
-
-        // Max length
-        if (value.length > 300) {
-            value = value.slice(0, 300);
-        }
-
-        return value;
-    };
-
     const validateOptionalText = (value: string) => {
         const trimmed = value.trim();
 
@@ -321,10 +293,6 @@ export default function EditProfile(props: any) {
         }
 
         if (!trimmed) return '';
-
-        if (!/[a-zA-Z0-9]/.test(trimmed)) {
-            return STRING.enter_valid_text;
-        }
 
         if (trimmed.length < 5) {
             return STRING.minimum_five_char_required;
@@ -523,14 +491,11 @@ export default function EditProfile(props: any) {
                             isError={emailError}
                         />
                         <Input
-                            placeholder={STRING.enter_mobile_number}
-                            placeholderTextColor={theme._939393}
                             inputTitle={STRING.mobile_number}
                             inputColor={true}
                             keyboardType="numeric"
                             continerStyle={{ marginBottom: getScaleSize(20) }}
                             value={mobileNumber}
-                            maxLength={10}
                             countryCode={`${countryFlag} ${countryCode}`}
                             onPressCountryCode={() => {
                                 setVisibleCountry(true);
@@ -599,7 +564,12 @@ export default function EditProfile(props: any) {
                             numberOfLines={8}
                             continerStyle={{ marginBottom: getScaleSize(20) }}
                             onChangeText={text => {
-                                const clean = sanitizeOptionalText(text);
+                                const clean = sanitizePublicProfileText(text);
+                                setBio(clean);
+                                setBioError(validateOptionalText(clean));
+                            }}
+                            onBlur={() => {
+                                const clean = sanitizePublicProfileText(bio.trimEnd());
                                 setBio(clean);
                                 setBioError(validateOptionalText(clean));
                             }}
@@ -615,7 +585,12 @@ export default function EditProfile(props: any) {
                             numberOfLines={8}
                             continerStyle={{ marginBottom: getScaleSize(20) }}
                             onChangeText={text => {
-                                const clean = sanitizeOptionalText(text);
+                                const clean = sanitizePublicProfileText(text);
+                                setExperienceSpecialities(clean);
+                                setExperienceSpecialitiesError(validateOptionalText(clean));
+                            }}
+                            onBlur={() => {
+                                const clean = sanitizePublicProfileText(experienceSpecialities.trimEnd());
                                 setExperienceSpecialities(clean);
                                 setExperienceSpecialitiesError(validateOptionalText(clean));
                             }}
@@ -631,7 +606,12 @@ export default function EditProfile(props: any) {
                             numberOfLines={8}
                             continerStyle={{ marginBottom: getScaleSize(20) }}
                             onChangeText={text => {
-                                const clean = sanitizeOptionalText(text);
+                                const clean = sanitizePublicProfileText(text);
+                                setAchievements(clean);
+                                setAchievementsError(validateOptionalText(clean));
+                            }}
+                            onBlur={() => {
+                                const clean = sanitizePublicProfileText(achievements.trimEnd());
                                 setAchievements(clean);
                                 setAchievementsError(validateOptionalText(clean));
                             }}

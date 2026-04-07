@@ -181,6 +181,30 @@ export const sanitizeNameInput = (text: string) => {
   return value;
 };
 
+export const sanitizePublicProfileText = (text: string) => {
+  if (!text) return '';
+
+  let value = text;
+
+  // Non-breaking spaces (often from paste) → normal space so spacing rules apply
+  value = value.replace(/\u00A0/g, ' ');
+  // Strip emoji / pictographs
+  value = value.replace(/([\u{1F000}-\u{1FFFF}]|[\u{2600}-\u{27BF}])/gu, '');
+  // Only allow letters, digits, space, and a small set of punctuation
+  // value = value.replace(/[^a-zA-Z0-9 ., '@_-]/g, '');
+  // No leading spaces / line breaks before the first character
+  value = value.replace(/^\s+/, '');
+  // Collapse 2+ spaces (or other whitespace runs) to a single space between words
+  value = value.replace(/\s{2,}/g, ' ');
+
+  // Enforce API / UI max length (300)
+  if (value.length > 300) {
+    value = value.slice(0, 300);
+  }
+
+  return value;
+};
+
 const SCREEN_WIDTH = Dimensions.get('window').width;
 const TABBAR_RATIO = getScaleSize(105) / getScaleSize(428);
 export const TABBAR_HEIGHT = SCREEN_WIDTH * TABBAR_RATIO;

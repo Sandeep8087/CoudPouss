@@ -35,7 +35,7 @@ export default function TaskItem(props: any) {
           font={FONTS.Lato.Bold}
           color={theme._214C65}
           style={{}}>
-          {item?.service_details?.quote_status ? item?.service_details?.quote_status : getMessage()}
+          {item?.service_details?.task_status ? item?.service_details?.task_status : item?.task_status}
         </Text>
       </View>
       <View style={styles(theme).horizontalContainer}>

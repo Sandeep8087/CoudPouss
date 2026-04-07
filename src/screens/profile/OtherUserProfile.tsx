@@ -26,6 +26,7 @@ import { getScaleSize, SHOW_TOAST, useString } from '../../constant';
 //COMPONENT
 import {
   Header,
+  ProgressView,
   RatingsReviewsItem,
   RattingControler,
   RequestItem,
@@ -105,7 +106,7 @@ export default function OtherUserProfile(props: any) {
         review_id: item?.review_id,
         action: action,
       }
-      const result = await API.Instance.post(API.API_ROUTES.onLikeReviewRating, params);
+      const result = await API.Instance.put(API.API_ROUTES.onLikeReviewRating, params);
       if (result?.status) {
         getOtherUserProfile();
       } else {
@@ -195,7 +196,7 @@ export default function OtherUserProfile(props: any) {
                   color={'#214C65'}
                   align='center'
                   style={{ marginTop: getScaleSize(4) }}>
-                  {userProfile?.is_certified === true ? STRING.Certified : 'Not\ncertified'}
+                  {userProfile?.is_certified === true ? STRING.Certified : STRING.not_certified}
                 </Text>
               </View>
             </View>
@@ -365,13 +366,13 @@ export default function OtherUserProfile(props: any) {
                 style={{ marginTop: getScaleSize(3) }}
                 font={FONTS.Lato.Medium}
                 color={theme._323232}>
-                {`Based on ${userProfile?.total_ratings ?? '0'} ratings`}
+                {`${STRING.based_on} ${userProfile?.total_ratings ?? '0'} ${STRING.ratings}`}
               </Text>
             </View>
           </View>
           <View style={{ marginTop: getScaleSize(15) }}>
             <RattingControler
-              title={'Work quality'}
+              title={STRING.work_quality}
               value={ratings?.work_quality ?? '0.0'}
               fillCount={ratings?.work_quality ?? 0}
               totalCount={5}
@@ -379,7 +380,7 @@ export default function OtherUserProfile(props: any) {
           </View>
           <View style={{ marginTop: getScaleSize(15) }}>
             <RattingControler
-              title={'Reliability'}
+              title={STRING.reliability}
               value={ratings?.reliability ?? '0.0'}
               fillCount={ratings?.reliability ?? 0}
               totalCount={5}
@@ -387,7 +388,7 @@ export default function OtherUserProfile(props: any) {
           </View>
           <View style={{ marginTop: getScaleSize(15) }}>
             <RattingControler
-              title={'Punctunality'}
+              title={STRING.punctunality}
               value={ratings?.punctuality ?? '0.0'}
               fillCount={ratings?.punctuality ?? 0}
               totalCount={5}
@@ -395,7 +396,7 @@ export default function OtherUserProfile(props: any) {
           </View>
           <View style={{ marginTop: getScaleSize(15) }}>
             <RattingControler
-              title={'Soluction'}
+              title={STRING.soluction}
               value={ratings?.solution ?? '0.0'}
               fillCount={ratings?.solution ?? 0}
               totalCount={5}
@@ -403,7 +404,7 @@ export default function OtherUserProfile(props: any) {
           </View>
           <View style={{ marginTop: getScaleSize(15) }}>
             <RattingControler
-              title={'Payout'}
+              title={STRING.payout}
               value={ratings?.payout ?? '0.0'}
               fillCount={ratings?.payout ?? 0}
               totalCount={5}
@@ -438,6 +439,7 @@ export default function OtherUserProfile(props: any) {
         }
         <View style={{ height: getScaleSize(32) }} />
       </ScrollView>
+      {isLoading && <ProgressView />}
     </View>
   );
 }

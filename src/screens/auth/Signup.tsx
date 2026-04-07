@@ -82,16 +82,16 @@ export default function Signup(props: any) {
                     });
                 } else {
                     if (result?.code === 409) {
-                        if (result?.data?.message == 'OTP already sent. Redirect to Verify page.') {
+                        if (result?.data?.message == STRING.otp_already_sent_redirect_to_verify_page) {
                             props.navigation.navigate(SCREENS.Otp.identifier, {
                                 isFromSignup: true,
                                 email: email,
                             })
-                        } else if (result?.data?.message == 'OTP already verified. Redirect to Password page.') {
+                        } else if (result?.data?.message == STRING.otp_already_verified_redirect_to_password_page) {
                             props.navigation.navigate(SCREENS.CreatePassword.identifier, {
                                 email: email,
                             })
-                        } else if (result?.data?.message == 'Password already set. Redirect to Details page.') {
+                        } else if (result?.data?.message == STRING.password_already_set_redirect_to_details_page) {
                             props.navigation.navigate(SCREENS.AddPersonalDetails.identifier, {
                                 email: email,
                             })

@@ -81,7 +81,7 @@ export default function CreatePassword(props: any) {
                     });
                 } else {
                     if (result?.code === 409) {
-                        if (result?.data?.message == 'Password already set. Redirect to Details page.') {
+                        if (result?.data?.message == STRING.password_already_set_redirect_to_details_page) {
                             props.navigation.navigate(SCREENS.AddPersonalDetails.identifier, {
                                 email: email,
                             })

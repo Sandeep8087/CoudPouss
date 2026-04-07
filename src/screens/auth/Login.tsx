@@ -294,7 +294,7 @@ export default function Login(props: any) {
             </Text>
           </View>
           <Button
-            title="Log In"
+            title={STRING.log_in}
             style={{ marginBottom: getScaleSize(24) }}
             onPress={() => {
               onVerification();
