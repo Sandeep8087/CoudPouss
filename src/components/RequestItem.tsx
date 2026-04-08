@@ -51,13 +51,9 @@ function RequestItem(props: any) {
       }}>
       <View style={styles(theme).horizontalContainer}>
         <View style={styles(theme).imageContainer}>
-          {item?.category_name ? (
+          {item?.category_logo ? (
             <Image
-              source={
-                arrayIcons[
-                item?.category_name?.toLowerCase() as keyof typeof arrayIcons
-                ] ?? (arrayIcons['diy'] as any)
-              }
+              source={{uri: isFromSearch ? item?.category_logo_url : item?.category_logo}}
               style={[styles(theme).imageIcon, { tintColor: theme.white }]}
               resizeMode="cover"
             />

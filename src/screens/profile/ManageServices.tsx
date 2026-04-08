@@ -235,7 +235,7 @@ export default function ManageServices(props: any) {
                                                     },
                                                 ]}>
                                                 <Image
-                                                    source={arrayIcons[item?.category_name?.toLowerCase() as keyof typeof arrayIcons] ?? arrayIcons['diy'] as any}
+                                                    source={{uri: item?.image}}
                                                     style={[
                                                         styles(theme).itemIcon,
                                                         {
@@ -341,6 +341,7 @@ export default function ManageServices(props: any) {
                 bottomSheetRef={deleteServicePopupRef}
                 isDelete={true}
                 height={getScaleSize(290)}
+                buttonTitle={STRING.delete_service}
                 icon={IMAGES.ic_alart}
                 title={
                     STRING.are_you_sure_to_delete_the_service

@@ -171,7 +171,7 @@ return (
                                 size={getScaleSize(11)}
                                 font={FONTS.Lato.Regular}
                                 color={theme._424242}>
-                                {'  (final amount you will get)'}
+                                {`  ${STRING.final_amount_you_will_get}`}
                             </Text>
                         </Text>
                         <Text

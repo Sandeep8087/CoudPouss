@@ -139,15 +139,22 @@ export default function AddQuote(props: any) {
         selectionLimit: 1,
       },
       async response => {
-        if (response.didCancel) return;
+        if (response.didCancel){
+          setLoading(false);
+          return
+        } ;
 
         if (response.errorCode) {
-          SHOW_TOAST(response.errorMessage || 'Error', 'error');
-          return;
+          SHOW_TOAST(response.errorMessage || 'Error', 'error')
+          setLoading(false);
+          return
         }
 
         const asset = response.assets?.[0];
-        if (!asset) return;
+        if (!asset){
+          setLoading(false);
+          return
+        };
 
         try {
           setLoading(true);
@@ -164,12 +171,12 @@ export default function AddQuote(props: any) {
               setDoc2Id(id);
             }
 
-            SHOW_TOAST('Document uploaded successfully', 'success');
+            SHOW_TOAST(STRING.document_uploaded_successfully, 'success');
           } else {
-            SHOW_TOAST('Document upload failed', 'error');
+            SHOW_TOAST(STRING.document_upload_failed, 'error');
           }
         } catch (e: any) {
-          SHOW_TOAST('Document upload failed', 'error');
+          SHOW_TOAST(STRING.document_upload_failed, 'error');
           if (index === 1) {
             setDoc1(null);
             setDoc1Id(null);
@@ -204,12 +211,12 @@ export default function AddQuote(props: any) {
         if (!asset) return;
 
         if (!asset.uri) {
-          SHOW_TOAST('Invalid video file', 'error');
+          SHOW_TOAST(STRING.invalid_video_file, 'error');
           return;
         }
 
         if (asset.duration && asset.duration > 120) {
-          SHOW_TOAST('Video must be less than 2 minutes', 'error');
+          SHOW_TOAST(STRING.video_must_be_less_than_2_minutes, 'error');
           return;
         }
 
@@ -221,9 +228,9 @@ export default function AddQuote(props: any) {
           if (id) {
             setVideoId(id);
             setVideo(asset);
-            SHOW_TOAST('Video uploaded successfully', 'success');
+            SHOW_TOAST(STRING.video_uploaded_successfully, 'success');
           } else {
-            SHOW_TOAST('Video upload failed', 'error');
+            SHOW_TOAST(STRING.video_upload_failed, 'error');
             return
           }
 
@@ -235,9 +242,9 @@ export default function AddQuote(props: any) {
 
           setVideoThumbnail(thumbnail.path);
 
-          SHOW_SUCCESS_TOAST('Video uploaded successfully');
+          SHOW_SUCCESS_TOAST(STRING.video_uploaded_successfully);
         } catch (e: any) {
-          SHOW_TOAST(e.message || 'Upload failed', 'error');
+          SHOW_TOAST(e.message || STRING.upload_failed, 'error');
         } finally {
           setLoading(false);
         }
@@ -252,11 +259,11 @@ export default function AddQuote(props: any) {
 
     // amount validation only for professional
     if (!amount) {
-      setAmountError('Please enter amount');
+      setAmountError(STRING.please_enter_amount);
     } else if (!desctiption) {
-      setDescriptionError('Please enter short description');
+      setDescriptionError(STRING.please_enter_short_description);
     } else if (photoIds.length === 0) {
-      setDocError('Please upload at least one document');
+      setDocError(STRING.please_upload_at_least_one_document);
     } else {
       try {
         setLoading(true);
@@ -306,15 +313,15 @@ export default function AddQuote(props: any) {
         } else {
           console.log('result==>', result)
           if (result?.code === 403) {
-            SHOW_TOAST(result?.data?.detail || 'Failed to send quote', 'error');
+            SHOW_TOAST(result?.data?.detail || STRING.failed_to_send_quote, 'error');
           } else {
-            SHOW_TOAST(result?.message || 'Failed to send quote', 'error');
+            SHOW_TOAST(result?.message || STRING.failed_to_send_quote, 'error');
           }
         }
       } catch (e: any) {
         setLoading(false);
         console.log('e==>', e)
-        SHOW_TOAST(e?.message || 'Something went wrong', 'error');
+        SHOW_TOAST(e?.message || STRING.something_went_wrong, 'error');
       }
     }
   }
@@ -397,7 +404,7 @@ export default function AddQuote(props: any) {
                 {isServiceDetails?.category_info?.category_name ?
                   <Image
                     style={[styles(theme).informationIcon, { tintColor: theme._1A3D51 }]}
-                    source={arrayIcons[isServiceDetails?.category_info?.category_name?.toLowerCase() as keyof typeof arrayIcons] ?? arrayIcons['diy'] as any}
+                    source={{uri: isServiceDetails?.category_info?.category_logo}}
                     resizeMode='cover'
                   />
                   :

@@ -149,7 +149,7 @@ export default function ServiceConfirmed(props: any) {
                 {paymentDetails?.category_name ?
                   <Image
                     style={[styles(theme).informationIcon, { tintColor: theme._1A3D51 }]}
-                    source={arrayIcons[paymentDetails?.category_name?.toLowerCase() as keyof typeof arrayIcons] ?? arrayIcons['diy'] as any}
+                    source={{uri: paymentDetails?.category_logo}}
                     resizeMode='cover'
                   />
                   :

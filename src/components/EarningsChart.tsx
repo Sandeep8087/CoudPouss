@@ -14,12 +14,20 @@ import * as d3 from "d3-shape";
 import * as scale from "d3-scale";
 import { getScaleSize } from "../constant";
 import { FONTS, IMAGES } from "../assets";
+import { useTranslation } from "react-i18next";
 
 const WIDTH = Dimensions.get('window').width - getScaleSize(66);
 const HEIGHT = getScaleSize(227);
 const PADDING = getScaleSize(30);
 
 const EarningsChart = ({ data, onMonthPress }: any) => {
+    const { t } = useTranslation();
+
+    const getTranslatedWeekLabel = (label: string, index: number) => {
+        const parsedWeek = Number(String(label).replace(/[^\d]/g, ""));
+        const weekNumber = Number.isNaN(parsedWeek) || parsedWeek < 1 ? index + 1 : parsedWeek;
+        return `${t("week")} ${weekNumber}`;
+    };
 
     if (!data || !data.weeks || data.weeks.length === 0) {
         return (
@@ -73,7 +81,7 @@ return (
             <Text
                 size={getScaleSize(16)}
                 font={FONTS.Lato.Bold}
-                color="#2C6587">Earnings</Text>
+                color="#2C6587">{t("earnings")}</Text>
             <TouchableOpacity
                 style={{ padding: getScaleSize(10), borderRadius: getScaleSize(10), backgroundColor: '#EAF0F3', flexDirection: 'row', alignItems: 'center' }}
                 onPress={onMonthPress}>
@@ -143,7 +151,7 @@ return (
                             fill="#595959"
                             textAnchor="middle"
                         >
-                            {w.label}
+                            {getTranslatedWeekLabel(w.label, i)}
                         </SvgText>
                     </React.Fragment>
                 );

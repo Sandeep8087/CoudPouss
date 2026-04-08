@@ -4,6 +4,9 @@ import { Dimensions, Linking } from 'react-native';
 import { PermissionsAndroid, Platform } from 'react-native';
 import { getScaleSize } from './scaleSize';
 import RNFS from 'react-native-fs';
+import i18n from '../Translation/i18n';
+
+const t = (key: string) => i18n.t(key) as string;
 
 export const formatDecimalInput = (
   text: string,
@@ -83,6 +86,7 @@ export const arrayIcons = {
   'personal care': IMAGES.personalCareIcon,
   'tech support': IMAGES.ic_tech_support,
   gardening: IMAGES.gardening,
+  nurse: IMAGES.gardening,
 };
 
 export const isImageFile = (file: any) => {
@@ -97,11 +101,11 @@ export async function requestLocationPermission() {
     const granted = await PermissionsAndroid.request(
       PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION,
       {
-        title: 'Location Permission',
-        message: 'App needs access to your location',
-        buttonNeutral: 'Ask Me Later',
-        buttonNegative: 'Cancel',
-        buttonPositive: 'OK',
+        title: t('location_permission_string'),
+        message: t('app_needs_access_to_your_location'),
+        buttonNeutral: t('ask_me_later'),
+        buttonNegative: t('cancel'),
+        buttonPositive: t('OK'),
       },
     );
 
@@ -205,8 +209,36 @@ export const sanitizePublicProfileText = (text: string) => {
   return value;
 };
 
+export const validateAddress = (value: string) => {
+  if (!value) {
+      return t('address_is_required');
+  }
+
+  const trimmed = value.trim();
+
+  if (!trimmed) {
+      return t('address_is_required');
+  }
+
+  if (trimmed.length < 5) {
+      return t('address_must_be_at_least_05_characters_long');
+  }
+
+  if (trimmed.length > 250) {
+      return t('address_cannot_exceed_250_characters');
+  }
+
+  // Must contain at least one letter (not only numbers or special chars)
+  if (!/[A-Za-z]/.test(trimmed)) {
+      return t('please_enter_valid_address');
+  }
+
+  return "";
+}
+
 const SCREEN_WIDTH = Dimensions.get('window').width;
 const TABBAR_RATIO = getScaleSize(105) / getScaleSize(428);
 export const TABBAR_HEIGHT = SCREEN_WIDTH * TABBAR_RATIO;
+
 
 

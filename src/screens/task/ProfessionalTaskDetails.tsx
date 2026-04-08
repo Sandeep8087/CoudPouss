@@ -237,16 +237,14 @@ export default function ProfessionalTaskDetails(props: any) {
                 { marginTop: getScaleSize(12) },
               ]}>
               <View style={styles(theme).itemView}>
-                {taskDetails?.task?.category?.name ? (
+                {taskDetails?.task?.category?.icon ? (
                   <Image
                     style={[
                       styles(theme).informationIcon,
                       { tintColor: theme._1A3D51 },
                     ]}
                     source={
-                      arrayIcons[
-                      taskDetails?.task?.category?.name?.toLowerCase() as keyof typeof arrayIcons
-                      ] ?? (arrayIcons['diy'] as any)
+                      {uri: taskDetails?.task?.category?.icon}
                     }
                     resizeMode="cover"
                   />

@@ -136,10 +136,16 @@ export default function OtherUserProfile(props: any) {
               source={{ uri: userProfile?.profile_photo_url }}
             />
             :
-            <Image
-              style={styles(theme).profilePic}
-              source={IMAGES.user_placeholder}
-            />
+            <View style={[styles(theme).profilePic,{alignItems:'center',backgroundColor: '#D5D5D5', justifyContent: 'center'}]}>
+              <Text
+                size={getScaleSize(24)}
+                font={FONTS.Lato.Regular}
+                align="center"
+                color={theme._262B43E5}>
+                {(userProfile?.first_name?.charAt(0) ?? '').toUpperCase() +
+                  (userProfile?.last_name?.charAt(0) ?? '').toUpperCase()}
+              </Text>
+            </View>
           }
           <Text
             size={getScaleSize(22)}
@@ -464,7 +470,6 @@ const styles = (theme: ThemeContextType['theme']) =>
       width: getScaleSize(130),
       borderRadius: getScaleSize(65),
       alignSelf: 'center',
-      backgroundColor: '#D5D5D5',
     },
     horizontalContainer: {
       flexDirection: 'row',

@@ -91,7 +91,8 @@ const API_ROUTES = {
     onServiceProviderAccepted: "quote_accept/service-provider/accepted",
     getCompletedTaskDetails: "quote_accept",
     onLikeReviewRating: "profile_module/like-review-rating",
-
+    getNotificationCount: "userService/notifications/count",
+    onReadAllNotifications: "userService/notifications",
 }
 
 

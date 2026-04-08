@@ -244,7 +244,7 @@ export default function Assistance(props: any) {
                         }}>
                         <Image
                           resizeMode='cover'
-                          style={styles(theme).categoryImage}
+                          style={[styles(theme).categoryImage,{tintColor: selectedCategory?.id === item?.id ? theme.white : theme._2C6587}]}
                           source={{ uri: item?.category_logo }}
                         />
                         <Text

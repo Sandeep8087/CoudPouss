@@ -344,7 +344,7 @@ export default function BottomSheet(props: BottomSheetProps) {
                                     font={FONTS.Lato.Bold}
                                     align="center"
                                     color={theme.white}>
-                                    {STRING.delete_service}
+                                    {buttonTitle}
                                 </Text>
                             </TouchableOpacity>
                         )

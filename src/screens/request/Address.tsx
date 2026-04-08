@@ -2,7 +2,7 @@ import { ActivityIndicator, FlatList, Image, StyleSheet, TouchableOpacity, View 
 import React, { useContext, useEffect, useRef, useState } from 'react'
 import { ThemeContext, ThemeContextType } from '../../context/ThemeProvider';
 import { getScaleSize } from '../../constant/scaleSize';
-import { Button, Header, Text } from '../../components';
+import { BottomSheet, Button, Header, Text } from '../../components';
 import { useString } from '../../constant/string';
 import { API } from '../../api';
 import { SHOW_TOAST } from '../../constant';
@@ -15,9 +15,11 @@ export default function Address(props: any) {
     const { theme } = useContext<any>(ThemeContext);
     const { profile, setSelectedAddress, selectedAddress } = useContext<any>(AuthContext);
     const STRING = useString();
+    const deleteAddressPopupRef = useRef<any>(null);
 
     const [savedAddresses, setSavedAddresses] = useState<any>([]);
     const [isLoading, setIsLoading] = useState<boolean>(false);
+    const [selectedAddressId, setSelectedAddressId] = useState<string>('');
 
     const isFocused = useIsFocused();
 
@@ -42,6 +44,12 @@ export default function Address(props: any) {
             setIsLoading(false);
         }
     }
+
+    useEffect(() => {
+        if (selectedAddressId) {
+            deleteAddressPopupRef.current.open();
+        }
+    }, [selectedAddressId]);
 
     async function onDeleteAddress(id: string) {
         try {
@@ -134,7 +142,7 @@ export default function Address(props: any) {
                                 <TouchableOpacity
                                     activeOpacity={1}
                                     onPress={() => {
-                                        onDeleteAddress(item.id);
+                                        setSelectedAddressId(item.id);
                                     }}
                                 >
                                     <Image source={IMAGES.ic_delete} style={styles(theme).deleteIcon} />
@@ -154,6 +162,19 @@ export default function Address(props: any) {
                 style={{ margin: getScaleSize(24) }}
                 onPress={() => {
                     props.navigation.navigate(SCREENS.AddressMapScreen.identifier);
+                }}
+            />
+            <BottomSheet
+                bottomSheetRef={deleteAddressPopupRef}
+                isDelete={true}
+                height={getScaleSize(290)}
+                buttonTitle={STRING.delete_address}
+                icon={IMAGES.ic_alart}
+                title={
+                    STRING.are_you_sure_to_delete_the_address
+                }
+                onPressDelete={() => {
+                    onDeleteAddress(selectedAddressId);
                 }}
             />
         </View>

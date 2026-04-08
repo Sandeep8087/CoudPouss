@@ -162,7 +162,7 @@ export default function MyProfileProfessional(props: any) {
                   color={'#214C65'}
                   align='center'
                   style={{ marginTop: getScaleSize(4) }}>
-                  {profile?.provider_info?.is_docs_verified === true ? STRING.Certified : 'Not\ncertified'}
+                  {profile?.provider_info?.is_docs_verified === true ? STRING.Certified : STRING.not_certified}
                 </Text>
               </View>
             </View>

@@ -7,6 +7,8 @@ import {
   Image,
   TouchableOpacity,
   Platform,
+  ImageBackground,
+  Dimensions,
 } from 'react-native';
 
 import { ThemeContext, ThemeContextType } from '../../context';
@@ -37,8 +39,8 @@ export default function Home(props: any) {
   const [allServices, setAllServices] = useState([]);
   const [recentRequests, setRecentRequests] = useState([]);
   const [favoriteProfessionals, setFavoriteProfessionals] = useState([]);
-  const [professionalConnectedCount, setProfessionalConnectedCount] =
-    useState(0);
+  const [professionalConnectedCount, setProfessionalConnectedCount] = useState(0);
+  const [hasUnreadNotification, setHasUnreadNotification] = useState<boolean>(false);
 
   useFocusEffect(
     React.useCallback(() => {
@@ -57,6 +59,7 @@ export default function Home(props: any) {
       getHomeData();
       getFavoriteProfessionals();
       getAllRequests();
+      getNotificationCount()
     }
   }, [isFocused]);
 
@@ -135,6 +138,25 @@ export default function Home(props: any) {
     }
   }
 
+  async function getNotificationCount() {
+    try {
+      setLoading(true);
+      const result = await API.Instance.get(API.API_ROUTES.getNotificationCount);
+      if (result.status) {
+        console.log('notificationCount==', result?.data?.data);
+        setHasUnreadNotification(result?.data?.data?.has_unread ?? false);
+      } else {
+        SHOW_TOAST(result?.data?.message ?? '', 'error');
+      }
+    }
+    catch (error: any) {
+      SHOW_TOAST(error?.message ?? '', 'error');
+      console.log(error?.message);
+    } finally {
+      setLoading(false);
+    }
+  }
+
   return (
     <View style={styles(theme).container}>
       <StatusBar
@@ -146,6 +168,7 @@ export default function Home(props: any) {
       {/* HEADER */}
       <HomeHeader
         professionalConnectedCount={professionalConnectedCount}
+        hasUnreadNotification={hasUnreadNotification}
         onSearchPress={() => {
           props.navigation.navigate(SCREENS.Search.identifier);
         }}
@@ -216,8 +239,8 @@ export default function Home(props: any) {
           color={theme._323232}>
           {STRING.explore_all_service}
         </Text>
+
         <TouchableOpacity
-          style={styles(theme).bannerContainer}
           activeOpacity={1}
           onPress={() => {
             const service = allServices.find(
@@ -231,17 +254,24 @@ export default function Home(props: any) {
               SHOW_TOAST(STRING.service_not_found, 'error');
             }
           }}>
-          <Text
-            style={{ flex: 1.0, alignSelf: 'center' }}
-            size={getScaleSize(24)}
-            font={FONTS.Lato.Bold}
-            color={theme._323232}>
-            {STRING.home_assistance}
-          </Text>
-          <Image
-            style={styles(theme).bannerImage}
-            source={IMAGES.home_assitance}
-          />
+          <ImageBackground source={IMAGES.homeBG} style={styles(theme).bannerContainer}>
+            <Text
+              style={{ flex: 1.0, alignSelf: 'center' }}
+              size={getScaleSize(24)}
+              font={FONTS.Lato.Bold}
+              color={theme._323232}>
+              {STRING.home_assistance}
+            </Text>
+            <Image
+              style={styles(theme).bannerImage}
+              source={IMAGES.home_assitance}
+            />
+          </ImageBackground>
+
+          {/* <Image
+            style={styles(theme).bgIcon}
+            source={IMAGES.homeBG}
+          /> */}
         </TouchableOpacity>
         <View style={styles(theme).optionView}>
           <TouchableOpacity
@@ -480,22 +510,20 @@ const styles = (theme: ThemeContextType['theme']) =>
       backgroundColor: theme.white
     },
     bannerContainer: {
-      height: getScaleSize(105),
       flex: 1.0,
-      backgroundColor: '#FDBE12',
-      borderBottomLeftRadius: getScaleSize(40),
-      borderTopRightRadius: getScaleSize(40),
-      borderBottomRightRadius: getScaleSize(12),
-      borderTopLeftRadius: getScaleSize(12),
+      height: ((Dimensions.get('window').width - getScaleSize(48)) * getScaleSize(104)) / getScaleSize(382),
+      width: Dimensions.get('window').width - getScaleSize(48),
       marginTop: getScaleSize(26),
-      paddingHorizontal: getScaleSize(22),
+      paddingLeft: getScaleSize(32),
+      paddingRight: getScaleSize(70),
       justifyContent: 'center',
       flexDirection: 'row',
-      marginHorizontal: getScaleSize(22),
+      marginHorizontal: getScaleSize(24),
+
     },
     bannerImage: {
-      height: getScaleSize(74),
-      width: getScaleSize(86),
+      height: getScaleSize(66),
+      width: getScaleSize(66),
       alignSelf: 'center',
     },
     optionView: {
@@ -512,8 +540,8 @@ const styles = (theme: ThemeContextType['theme']) =>
       paddingVertical: getScaleSize(16),
     },
     iconImage: {
-      height: getScaleSize(60),
-      width: getScaleSize(60),
+      height: getScaleSize(56),
+      width: getScaleSize(56),
     },
     deviderView: {
       marginTop: getScaleSize(35),

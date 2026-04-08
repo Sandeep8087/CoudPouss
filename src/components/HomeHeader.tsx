@@ -67,6 +67,9 @@ const HomeHeader = (props: any) => {
             style={styles(theme).notificationContainer}
             source={IMAGES.notification}
           />
+          {props?.hasUnreadNotification && (
+            <View style={styles(theme).unreadNotificationContainer} />
+          )}
         </TouchableOpacity>
         <TouchableOpacity
           style={[
@@ -230,6 +233,15 @@ const styles = (theme: ThemeContextType['theme']) =>
       justifyContent: 'center',
       marginTop: getScaleSize(32),
       marginLeft: getScaleSize(-40),
+    },
+    unreadNotificationContainer: {
+      height: getScaleSize(6),
+      width: getScaleSize(6),
+      backgroundColor: theme._F0B52C,
+      borderRadius: getScaleSize(10),
+      position: 'absolute',
+      right: 2,
+      top: 0,
     },
   });
 export default HomeHeader;

@@ -227,10 +227,10 @@ export default function ServicePreview(props: any) {
                 { marginTop: getScaleSize(12) },
               ]}>
               <View style={styles(theme).itemView}>
-                {serviceDetails?.category_info?.category_name ?
+                {serviceDetails?.category_info?.category_logo_url ?
                   <Image
                     style={[styles(theme).informationIcon, { tintColor: theme._1A3D51 }]}
-                    source={arrayIcons[serviceDetails?.category_info?.category_name?.toLowerCase() as keyof typeof arrayIcons] ?? arrayIcons['diy'] as any}
+                    source={{uri: serviceDetails?.category_info?.category_logo_url}}
                     resizeMode='cover'
                   />
                   :

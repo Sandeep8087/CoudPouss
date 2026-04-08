@@ -34,17 +34,17 @@ export default function ServiceRequest(props: any) {
       style={styles(theme).container}
       activeOpacity={1}
       onPress={onPress}>
-      {data?.subcategory_info?.sub_category_name?.service_photo === null ?
-        <View style={[styles(theme).imageContainer, {
-          backgroundColor: 'gray'
-        }]}>
-        </View>
-        :
+      {data?.subcategory_info?.sub_category_name?.img_url ?
         <Image
           style={styles(theme).imageContainer}
           resizeMode='cover'
           source={{ uri: data?.subcategory_info?.sub_category_name?.img_url }}
         />
+        :
+        <View style={[styles(theme).imageContainer, {
+          backgroundColor: 'gray'
+        }]}>
+        </View>
       }
       <View style={styles(theme).horizontalView}>
         <Text
@@ -100,10 +100,10 @@ export default function ServiceRequest(props: any) {
         <View
           style={[styles(theme).horizontalView, { marginTop: getScaleSize(12) }]}>
           <View style={styles(theme).itemView}>
-            {data?.category_info?.category_name?.name ?
+            {data?.category_info?.category_name?.logo_url ?
               <Image
                 style={[styles(theme).informationIcon, { tintColor: theme._1A3D51 }]}
-                source={arrayIcons[data?.category_info?.category_name?.name?.toLowerCase() as keyof typeof arrayIcons] ?? arrayIcons['diy'] as any}
+                source={{ uri: data?.category_info?.category_name?.logo_url }}
                 resizeMode='cover'
               />
               :
@@ -118,7 +118,7 @@ export default function ServiceRequest(props: any) {
               size={getScaleSize(14)}
               font={FONTS.Lato.Medium}
               color={theme._424242}>
-              {`${data?.category_info?.category_name?.name} Services`}
+              {`${data?.category_info?.category_name?.name} ${STRING.service}`}
             </Text>
           </View>
           <View style={styles(theme).itemView}>
@@ -138,36 +138,36 @@ export default function ServiceRequest(props: any) {
         </View>
       </View>
       {/* {profile?.user?.service_provider_type === 'professional' ? */}
-        <View
-          style={[styles(theme).horizontalView, { marginTop: getScaleSize(24), alignItems: 'center' }]}>
-          <View style={{ flex: 1.0 }}>
-            <Text
-              size={getScaleSize(14)}
-              font={FONTS.Lato.Medium}
-              color={'#424242'}>
-              {STRING.EstimatedCost}
-            </Text>
-            <Text
-              style={{ marginTop: getScaleSize(2) }}
-              size={getScaleSize(27)}
-              font={FONTS.Lato.ExtraBold}
-              color={theme._2C6587}>
-              {`€${parseFloat(data?.estimated_cost).toFixed(2)}`}
-            </Text>
-          </View>
-          <TouchableOpacity
-            style={styles(theme).quateContainer}
-            activeOpacity={1}
-            onPress={onPressAccept}>
-            <Text
-              size={getScaleSize(16)}
-              font={FONTS.Lato.SemiBold}
-              color={theme.white}>
-              {STRING.Quote}
-            </Text>
-          </TouchableOpacity>
+      <View
+        style={[styles(theme).horizontalView, { marginTop: getScaleSize(24), alignItems: 'center' }]}>
+        <View style={{ flex: 1.0 }}>
+          <Text
+            size={getScaleSize(14)}
+            font={FONTS.Lato.Medium}
+            color={'#424242'}>
+            {STRING.EstimatedCost}
+          </Text>
+          <Text
+            style={{ marginTop: getScaleSize(2) }}
+            size={getScaleSize(27)}
+            font={FONTS.Lato.ExtraBold}
+            color={theme._2C6587}>
+            {`€${parseFloat(data?.estimated_cost).toFixed(2)}`}
+          </Text>
         </View>
-        {/* :
+        <TouchableOpacity
+          style={styles(theme).quateContainer}
+          activeOpacity={1}
+          onPress={onPressAccept}>
+          <Text
+            size={getScaleSize(16)}
+            font={FONTS.Lato.SemiBold}
+            color={theme.white}>
+            {STRING.Quote}
+          </Text>
+        </TouchableOpacity>
+      </View>
+      {/* :
         <View style={styles(theme).buttonView}>
           <TouchableOpacity style={styles(theme).viewButton}
             onPress={onPress}>

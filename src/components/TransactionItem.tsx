@@ -22,6 +22,19 @@ export default function TransactionItem(props: any) {
             return theme._FFBB4E;
         }
     }
+
+    function getStatusMessage(status: any) {
+        if (status === 'SUCCESS') {
+            return STRING.success;
+        } else if (status === 'FAILED') {
+            return STRING.failed;
+        } else if (status === 'PENDING') {
+            return STRING.pending;
+        }else {
+            return '';
+        }
+    }
+
     return (
         <View key={key} style={[styles(theme).transactionItem, itemContainer]}>
             {item?.user?.profile_photo_url ? (
@@ -44,8 +57,9 @@ export default function TransactionItem(props: any) {
                 <Text
                     size={getScaleSize(16)}
                     font={FONTS.Lato.SemiBold}
+                    style={{textTransform: 'uppercase'}}
                     color={getStatus(item?.status)}>
-                    {item?.status ?? ''}
+                    {getStatusMessage(item?.status)}
                 </Text>
             </View>
         </View>

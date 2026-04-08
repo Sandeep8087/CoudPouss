@@ -10,7 +10,7 @@ import {
 import React, { useContext, useEffect, useState } from 'react';
 
 // CONTEXT
-import { ThemeContext, ThemeContextType } from '../../context';
+import { LaungageContext, ThemeContext, ThemeContextType } from '../../context';
 
 // COMPONENTS
 import { Header, DateRangeModal, TransactionItem, Text, ProgressView } from '../../components';
@@ -69,6 +69,7 @@ const groupByMonth = (transactions: any[]) => {
 export default function Transactions(props: any) {
 
   const { theme } = useContext<any>(ThemeContext);
+  const { language } = useContext<any>(LaungageContext);
   const STRING = useString();
 
   const [visible, setVisible] = useState(false);

@@ -16,7 +16,7 @@ import { AuthContext, LaungageContext, ThemeContext, ThemeContextType } from '..
 
 //CONSTANT & ASSETS
 import { FONTS, IMAGES } from '../../assets';
-import { getScaleSize, REGEX, sanitizeAddressInput, sanitizeNameInput, SHOW_TOAST, Storage, useString } from '../../constant';
+import { getScaleSize, REGEX, sanitizeAddressInput, sanitizeNameInput, SHOW_TOAST, Storage, useString, validateAddress } from '../../constant';
 
 //SCREENS
 import { SCREENS } from '..';
@@ -140,7 +140,7 @@ export default function AddPersonalDetails(props: any) {
     if (isLoading) return;
     const cleanName = name.trim();
     const cleanMobile = mobileNo.trim();
-    const cleanAddress = address.trim();
+    const cleanAddress = validateAddress(address)
     let nextNameError = '';
     let nextMobileError = '';
     let nextAddressError = '';
@@ -157,12 +157,8 @@ export default function AddPersonalDetails(props: any) {
       nextMobileError = STRING.mobile_number_must_be_6_to_15_digits;
     }
 
-    if (!cleanAddress) {
-      nextAddressError = STRING.address_required;
-    } else if (/^\d+$/.test(cleanAddress)) {
-      nextAddressError = STRING.address_only_numbers_error;
-    } else if (/^[^A-Za-z0-9]+$/.test(cleanAddress)) {
-      nextAddressError = STRING.address_special_char_error;
+    if (cleanAddress) {
+      nextAddressError = cleanAddress;
     }
 
     setNameError(nextNameError);

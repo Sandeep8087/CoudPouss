@@ -22,11 +22,12 @@ interface ButtonProps {
   style?: StyleProp<ViewStyle>;
   onPress?: () => void;
   disabled?: boolean;
+  numberOfLines?: number;
 }
 
 const Button = (props: ButtonProps) => {
   const { theme } = useContext<any>(ThemeContext)
-  const { style, title, onPress, disabled } = props;
+  const { style, title, onPress, disabled, numberOfLines } = props;
 
   return (
     <TouchableOpacity 
@@ -37,6 +38,7 @@ const Button = (props: ButtonProps) => {
         align="center"
         font={FONTS.Lato.Bold}
         size={getScaleSize(19)}
+        numberOfLines={numberOfLines}
         lineHeight={getScaleSize(24)}
         color={disabled ?  theme._214C65 : theme.white}>
         {title}

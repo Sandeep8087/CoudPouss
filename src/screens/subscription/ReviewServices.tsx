@@ -12,7 +12,7 @@ import { getScaleSize, useString, SHOW_TOAST, arrayIcons, openStripeCheckout } f
 import { SCREENS } from '..';
 
 //COMPONENTS
-import { Header, Input, Text, Button, ServiceItem } from '../../components';
+import { Header, Input, Text, Button, ServiceItem, BottomSheet } from '../../components';
 import { API } from '../../api';
 import { CommonActions } from '@react-navigation/native';
 
@@ -25,7 +25,7 @@ export default function ReviewServices(props: any) {
     const { selectedServices, setSelectedServices, myPlan, profile } = useContext<any>(AuthContext);
 
     const [isLoading, setLoading] = useState(false);
-
+    const bottomSheetRef = useRef<any>(null);
     useEffect(() => {
         const parseParams = (url: string) => {
             const queryString = url.split('?')[1] || '';
@@ -202,7 +202,7 @@ export default function ReviewServices(props: any) {
                                 <View key={index} style={styles(theme).itemContainer}>
                                     <View style={styles(theme).sectionHeaderContainer}>
                                         <Image
-                                            source={arrayIcons[section?.category?.category_name?.toLowerCase() as keyof typeof arrayIcons] ?? arrayIcons['diy'] as any}
+                                            source={{uri: section?.category?.category_logo}}
                                             style={[styles(theme).sectionHeaderIcon, { tintColor: theme._2C6587 }]}
                                             resizeMode='cover' />
                                         <Text size={getScaleSize(16)}
@@ -251,12 +251,32 @@ export default function ReviewServices(props: any) {
                         if (profile?.user?.service_provider_type === 'professional') {
                             onSelectedCategoriesProfessional();
                         } else {
-                            onSelectedCategoriesNonProfessional();
+                            if (selectedServices.length > 1) {
+                                bottomSheetRef?.current?.open();
+                            } else {
+                                onSelectedCategoriesNonProfessional();
+                            }
                         }
                     }}
                 />
             </View>
-        </View >
+            <BottomSheet
+                bottomSheetRef={bottomSheetRef}
+                height={getScaleSize(380)}
+                type="payment"
+                title={STRING.want_to_add_more_service_categories}
+                description={STRING.additional_category_you_add_will_incur_a_monthly_fee_of}
+                buttonTitle={STRING.proceed_to_pay}
+                secondButtonTitle={STRING.cancel}
+                onPressButton={() => {
+                    bottomSheetRef?.current?.close();
+                    onSelectedCategoriesNonProfessional()
+                }}
+                onPressSecondButton={() => {
+                    bottomSheetRef?.current?.close();
+                }}
+            />
+        </View>
     );
 }
 

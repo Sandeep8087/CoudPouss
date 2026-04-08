@@ -1,6 +1,6 @@
 import { Dimensions, Image, Platform, ScrollView, StyleSheet, TouchableOpacity, View } from 'react-native'
 import React, { useContext, useEffect, useState } from 'react'
-import { ThemeContext, ThemeContextType } from '../../context'
+import { LaungageContext, ThemeContext, ThemeContextType } from '../../context'
 import { Button, EarningsChart, Header, ProgressView, Text, TransactionItem } from '../../components'
 import { getScaleSize, SHOW_TOAST, useString } from '../../constant'
 import { FONTS, IMAGES } from '../../assets'
@@ -14,8 +14,10 @@ import { useIsFocused } from '@react-navigation/native'
 export default function MyEarnings(props: any) {
 
     const { theme } = useContext<any>(ThemeContext);
+    const { language } = useContext<any>(LaungageContext);
     const STRING = useString();
 
+    console.log('language==>', language);
     const [activities, setActivities] = useState<any>([]);
     const [isLoading, setLoading] = useState(false);
     const [showPicker, setShowPicker] = useState(false);
@@ -165,6 +167,7 @@ export default function MyEarnings(props: any) {
                     value={selectedDate}
                     mode='date'
                     display='spinner'
+                    locale={language === 'fr' ? 'fr-FR' : 'en-US'}
                     onChange={onChange}
                 />
             )}

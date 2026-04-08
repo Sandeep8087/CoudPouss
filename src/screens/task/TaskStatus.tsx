@@ -475,7 +475,8 @@ export default function TaskStatus(props: any) {
           }
           {taskStatusData?.is_renegotiated == 'no_record' && <View style={{ width: getScaleSize(16) }} />}
           <Button
-            style={{ flex: 1 }}
+            style={{ flex: 1, paddingHorizontal: getScaleSize(8)}}
+            numberOfLines={1}
             title={STRING.mark_as_completed}
             onPress={() => {
               onMarkAsCompleted()

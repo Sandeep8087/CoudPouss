@@ -30,7 +30,7 @@ const CategoryDropdown = (props: DropdownProps) => {
             <View style={styles(theme).item}>
                 <View style={styles(theme).iconLabelContainer}>
                     <Image
-                        source={arrayIcons[item?.category_name?.toLowerCase() as keyof typeof arrayIcons] ?? arrayIcons['diy'] as any}
+                        source={{uri: item?.category_logo}}
                         style={[styles(theme).icon, {tintColor: isSelected ? theme._2C6587 : theme._818285}]}
                         resizeMode='cover'
                     />
@@ -77,7 +77,7 @@ const CategoryDropdown = (props: DropdownProps) => {
                         <>
                             {selectedItem?.category_name &&
                                 <Image 
-                                source={arrayIcons[selectedItem?.category_name?.toLowerCase() as keyof typeof arrayIcons] ?? arrayIcons['diy'] as any} 
+                                source={{uri: selectedItem?.category_logo}} 
                                 style={[styles(theme).icon, {tintColor: theme._2C6587}]} 
                                 resizeMode='cover' />
                             }

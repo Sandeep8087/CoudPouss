@@ -12,6 +12,7 @@ import {
   sanitizeAddressInput,
   sanitizeNameInput,
   sanitizePublicProfileText,
+  validateAddress,
 } from './utils';
 import {Storage} from './storage';
 import {REGEX} from './regex';
@@ -36,4 +37,5 @@ export {
   sanitizeAddressInput,
   sanitizeNameInput,
   sanitizePublicProfileText,
+  validateAddress,
 };

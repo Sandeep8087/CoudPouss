@@ -34,7 +34,17 @@ function FavouritesItem(props: any) {
       {item?.provider?.profile_picture_url ?
         <Image style={styles(theme).userImage} source={{ uri: item?.provider?.profile_picture_url }} />
         :
-        <Image style={styles(theme).userImage} source={IMAGES.user_placeholder} />}
+        <View style={[styles(theme).userImage, { alignItems: 'center', backgroundColor: '#D5D5D5', justifyContent: 'center' }]}>
+          <Text
+            size={getScaleSize(24)}
+            font={FONTS.Lato.Regular}
+            align="center"
+            color={theme._262B43E5}>
+            {(item?.provider?.first_name?.charAt(0) ?? '').toUpperCase() +
+              (item?.provider?.last_name?.charAt(0) ?? '').toUpperCase()}
+          </Text>
+        </View>
+      }
       <TouchableOpacity
         style={styles(theme).likeImageContainer}
         onPress={() => {

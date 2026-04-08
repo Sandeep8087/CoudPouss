@@ -75,8 +75,16 @@ export default function ProfessionalHome(props: any) {
   const [isLoading, setLoading] = useState(false);
   const [serviceList, setServiceList] = useState<any>([]);
   const [locationDenied, setLocationDenied] = useState(false);
+  const [hasUnreadNotification, setHasUnreadNotification] = useState<boolean>(false);
 
   const isFocused = useIsFocused();
+
+
+  useEffect(() => {
+    if (isFocused) {
+      getNotificationCount();
+    }
+  }, [isFocused]);
 
   let currentState = AppState.currentState;
 
@@ -139,6 +147,26 @@ export default function ProfessionalHome(props: any) {
     return granted === PermissionsAndroid.RESULTS.GRANTED;
   };
 
+  async function getNotificationCount() {
+    try {
+      setLoading(true);
+      const result = await API.Instance.get(API.API_ROUTES.getNotificationCount);
+      if (result.status) {
+        console.log('notificationCount==', result?.data?.data);
+        setHasUnreadNotification(result?.data?.data?.has_unread ?? false);
+      } else {
+        SHOW_TOAST(result?.data?.message ?? '', 'error');
+      }
+    }
+    catch (error: any) {
+      SHOW_TOAST(error?.message ?? '', 'error');
+      console.log(error?.message);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+
   async function getLocation() {
     const permission = await hasLocationPermission();
     if (!permission) return;
@@ -160,54 +188,6 @@ export default function ProfessionalHome(props: any) {
       },
     );
   }
-
-  // const getLocation = () => {
-
-  //   let resolved = false;
-
-  //   const watchId = Geolocation.watchPosition(
-  //     pos => {
-  //       if (!resolved) {
-  //         resolved = true;
-  //         Geolocation.clearWatch(watchId);
-  //         console.log('LOCATION 👉', pos);
-  //         const { latitude, longitude } = pos.coords;
-  //         setLoading(false);
-  //         getAllServices({ latitude, longitude });
-  //       }
-  //     },
-  //     err => {
-  //       console.log('WATCH ERROR 👉', err);
-  //     },
-  //     { enableHighAccuracy: false }
-  //   );
-
-  //   setTimeout(() => {
-  //     if (!resolved) {
-  //       Geolocation.clearWatch(watchId);
-  //       console.log('Location timeout fallback');
-  //     }
-  //   }, 35000);
-  // };
-
-  // async function getLocation() {
-  //   const permission = await hasLocationPermission();
-  //   if (!permission) return;
-
-  //   Geolocation.getCurrentPosition(
-  //     position => {
-  //       const { latitude, longitude } = position.coords;
-  //       setLoading(false);
-  //       getAllServices({ latitude, longitude });
-  //     },
-  //     error => console.log('Error:', error),
-  //     {
-  //       enableHighAccuracy: false,
-  //       timeout: 30000,
-  //       maximumAge: 10000,
-  //     },
-  //   );
-  // }
 
   const requestPermissions = async () => {
     if (Platform.OS === 'android') {
@@ -516,6 +496,9 @@ export default function ProfessionalHome(props: any) {
             style={styles(theme).notifiationIcon}
             source={IMAGES.notification}
           />
+          {hasUnreadNotification && (
+            <View style={styles(theme).unreadNotificationContainer} />
+          )}
         </TouchableOpacity>
         <TouchableOpacity
           style={styles(theme).profilePic}
@@ -693,5 +676,14 @@ const styles = (theme: ThemeContextType['theme']) =>
       marginHorizontal: getScaleSize(24),
       marginVertical: getScaleSize(24),
       flex: 1,
+    },
+    unreadNotificationContainer: {
+      height: getScaleSize(6),
+      width: getScaleSize(6),
+      backgroundColor: theme._F0B52C,
+      borderRadius: getScaleSize(10),
+      position: 'absolute',
+      right: 2,
+      top: 0,
     },
   });

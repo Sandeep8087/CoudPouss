@@ -14,7 +14,7 @@ import { AuthContext, ThemeContext, ThemeContextType } from '../../context';
 
 //CONSTANT & ASSETS
 import { FONTS, IMAGES } from '../../assets';
-import { getScaleSize, sanitizeAddressInput, SHOW_SUCCESS_TOAST, SHOW_TOAST, useString } from '../../constant';
+import { getScaleSize, sanitizeAddressInput, SHOW_SUCCESS_TOAST, SHOW_TOAST, useString, validateAddress } from '../../constant';
 
 //COMPONENTS
 import { Text, Header, Input, Button, BottomSheet, SelectCountrySheet } from '../../components';
@@ -150,17 +150,17 @@ export default function MyProfile(props: any) {
 
         // 1. Only whitespace
         if (!trimmed) {
-            return "Name cannot be empty or only spaces";
+            return STRING.name_cannot_be_empty_or_only_spaces;
         }
 
         // 2. Length
         if (trimmed.length < 2 || trimmed.length > 50) {
-            return "Name must be between 2 and 50 characters";
+            return STRING.name_must_be_between_2_and_50_characters;
         }
 
         // 3. Emoji check
         if (containsEmoji(trimmed)) {
-            return "Name cannot contain emojis";
+            return STRING.name_cannot_contain_emojis;
         }
 
         // 4. Allow only letters + space
@@ -173,42 +173,6 @@ export default function MyProfile(props: any) {
 
         return "";
     };
-
-    // ADDRESS VALIDATION 
-
-    const validateAddress = (value: string) => {
-        if (!value) {
-            return "Address is required.";
-        }
-
-        const trimmed = value.trim();
-
-        if (!trimmed) {
-            return "Address is required.";
-        }
-
-        if (trimmed.length < 5) {
-            return "Address must be at least 05 characters long.";
-        }
-
-        if (trimmed.length > 250) {
-            return "Address cannot exceed 250 characters.";
-        }
-
-        // Allow only approved characters
-        const allowedRegex = /^[A-Za-z0-9\s,.\-/#]+$/;
-
-        if (!allowedRegex.test(trimmed)) {
-            return "Special characters are not allowed except , . - / #.";
-        }
-
-        // Must contain at least one letter (not only numbers or special chars)
-        if (!/[A-Za-z]/.test(trimmed)) {
-            return "Please enter a valid address.";
-        }
-
-        return "";
-    }
 
     async function onEditUserProfile() {
 
@@ -230,7 +194,7 @@ export default function MyProfile(props: any) {
 
         // Mobile validation
         if (isOnlyWhitespace(mobileNumber)) {
-            setMobileNumberError("Mobile number required");
+            setMobileNumberError(STRING.mobile_number_required);
             return;
         }
 

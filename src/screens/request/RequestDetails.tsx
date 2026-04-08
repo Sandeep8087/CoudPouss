@@ -679,9 +679,7 @@ export default function RequestDetails(props: any) {
                       { tintColor: theme._1A3D51 },
                     ]}
                     source={
-                      arrayIcons[
-                      serviceDetails?.category_name?.toLowerCase() as keyof typeof arrayIcons
-                      ] ?? (arrayIcons['diy'] as any)
+                      {uri: serviceDetails?.category_logo}
                     }
                     resizeMode="cover"
                   />

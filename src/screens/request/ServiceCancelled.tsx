@@ -148,9 +148,7 @@ export default function ServiceCancelled(props: any) {
                                             { tintColor: theme._1A3D51 },
                                         ]}
                                         source={
-                                            arrayIcons[
-                                            serviceItem?.category_name?.toLowerCase() as keyof typeof arrayIcons
-                                            ] ?? (arrayIcons['diy'] as any)
+                                            {uri: serviceItem?.category_logo}
                                         }
                                         resizeMode="cover"
                                     />
@@ -237,7 +235,7 @@ export default function ServiceCancelled(props: any) {
                                 size={getScaleSize(11)}
                                 font={FONTS.Lato.Regular}
                                 color={theme._424242}>
-                                {'  (final amount you will get)'}
+                                {`  ${STRING.final_amount_you_will_get}`}
                             </Text>
                         </Text>
                         <Text

@@ -159,7 +159,7 @@ const RejectBottomPopup = (props: any) => {
                 <View style={styles(theme).inputContainer}>
                   <TextInput
                     style={styles(theme).input}
-                    placeholder={'Write your reason here…'}
+                    placeholder={STRING.write_your_reason_here}
                     placeholderTextColor={theme._818285}
                     value={reason}
                     onChangeText={handleReasonChange}

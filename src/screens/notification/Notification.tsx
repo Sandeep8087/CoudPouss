@@ -37,7 +37,7 @@ import {
 } from '../../components';
 
 //PACKAGES
-import { useFocusEffect } from '@react-navigation/native';
+import { useFocusEffect, useIsFocused } from '@react-navigation/native';
 import { SCREENS } from '..';
 import { API } from '../../api';
 import moment from 'moment';
@@ -94,6 +94,7 @@ export default function Notification(props: any) {
       const result = await API.Instance.get(API.API_ROUTES.getNotifications + `?page=${page}&limit=${PAGE_SIZE}`);
       if (result.status) {
         console.log('notifications==>', result?.data?.data?.notifications)
+        onReadAllNotifications()
         const newData = result?.data?.data?.notifications ?? [];
         if (newData?.length < PAGE_SIZE) {
           setHasMore(false);
@@ -110,6 +111,24 @@ export default function Notification(props: any) {
     } catch (error) {
       setHasMore(false);
       console.log(error);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  async function onReadAllNotifications() {
+    try {
+      setLoading(true);
+      const result = await API.Instance.post(API.API_ROUTES.onReadAllNotifications + '/mark-all-read');
+      if (result.status) {
+        console.log('onReadAllNotifications==>', result?.data?.data);
+      } else {
+        SHOW_TOAST(result?.data?.message ?? '', 'error');
+      }
+    }
+    catch (error: any) {
+      SHOW_TOAST(error?.message ?? '', 'error');
+      console.log(error?.message);
     } finally {
       setLoading(false);
     }
