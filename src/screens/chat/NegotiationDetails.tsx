@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useMemo, useRef, useState } from 'react';
+import React, {useContext, useEffect, useMemo, useRef, useState} from 'react';
 import {
   View,
   StatusBar,
@@ -18,19 +18,19 @@ import {
 } from 'react-native';
 
 //ASSETS
-import { FONTS, IMAGES } from '../../assets';
+import {FONTS, IMAGES} from '../../assets';
 
 //CONTEXT
-import { ThemeContext, ThemeContextType, AuthContext } from '../../context';
+import {ThemeContext, ThemeContextType, AuthContext} from '../../context';
 
 //CONSTANT
-import { getScaleSize, SHOW_TOAST, useString } from '../../constant';
+import {getScaleSize, SHOW_TOAST, useString} from '../../constant';
 
 //COMPONENT
-import { Text } from '../../components';
+import {Text} from '../../components';
 
 //PACKAGES
-import { useFocusEffect } from '@react-navigation/native';
+import {useFocusEffect} from '@react-navigation/native';
 import {
   acceptNegotiation,
   messagesListThread,
@@ -38,13 +38,13 @@ import {
   removeThread,
   userNegotiationMessage,
 } from '../../services/negotiationchat';
-import { API } from '../../api';
+import {API} from '../../api';
 import RBSheet from 'react-native-raw-bottom-sheet';
 
 export default function NegotiationDetails(props: any) {
   const STRING = useString();
-  const { theme } = useContext<any>(ThemeContext);
-  const { profile } = useContext<any>(AuthContext);
+  const {theme} = useContext<any>(ThemeContext);
+  const {profile} = useContext<any>(AuthContext);
   const peerUser = props?.route?.params?.peerUser;
   // const [message, setMessage] = useState('');
   const [messages, setMessages] = useState<any[]>([]);
@@ -88,13 +88,15 @@ export default function NegotiationDetails(props: any) {
   useEffect(() => {
     // chat found, so we need to get the messages
     setCommanId(props.route.params.conversationId);
-    const unsubscribe = messagesListThread(props.route.params.conversationId).onSnapshot(querySnapshot => {
+    const unsubscribe = messagesListThread(
+      props.route.params.conversationId,
+    ).onSnapshot(querySnapshot => {
       console.log('querySnapshot', querySnapshot.docs);
       const formattedMessages = querySnapshot.docs.map((doc: any) => {
         return {
           _id: doc.id,
           text: '',
-          createdAt: new Date().getTime(),
+          createdAt: Date.now(),
           ...doc.data(),
         };
       });
@@ -114,13 +116,15 @@ export default function NegotiationDetails(props: any) {
   async function getServiceDetails(selectedNegotiation: any) {
     try {
       const params = {
-        service_id: selectedNegotiation?.serviceId
-      }
+        service_id: selectedNegotiation?.serviceId,
+      };
       setLoading(true);
-      const result = await API.Instance.post(API.API_ROUTES.getServiceDetails, params);
+      const result = await API.Instance.post(
+        API.API_ROUTES.getServiceDetails,
+        params,
+      );
       setLoading(false);
       if (result.status) {
-        console.log('result', result?.data?.data?.quote_id);
         createNegotiationMessage(
           selectedNegotiation.serviceId,
           result?.data?.data?.quote_id,
@@ -128,12 +132,12 @@ export default function NegotiationDetails(props: any) {
           selectedNegotiation._id,
         );
       } else {
-        SHOW_TOAST(result?.data?.message ?? '', 'error')
+        SHOW_TOAST(result?.data?.message ?? '', 'error');
       }
     } catch (error: any) {
       setLoading(false);
       SHOW_TOAST(error?.message ?? '', 'error');
-      console.log(error?.message)
+      console.log(error?.message);
     } finally {
       setLoading(false);
     }
@@ -153,7 +157,6 @@ export default function NegotiationDetails(props: any) {
         negotiation_amount: negotiation_amount,
       };
 
-      console.log('payload', payload);
       setLoading(true);
       const result = await API.Instance.post(
         API.API_ROUTES.createNegotiationChat,
@@ -179,18 +182,338 @@ export default function NegotiationDetails(props: any) {
     }
   }
 
-  const renderMessage = ({ item }: { item: any }) => {
+  const renderMessage = ({item}: {item: any}) => {
     switch (item.type) {
       case 'NEGOTIATION':
-        const isMe = item.senderId === profile?.user?.id;
+        // const isMe = item.senderId === profile?.user?.id;
+        const isMe = item.negotiation.currentTurn === profile?.user?.id;
 
-        const latestNegotiationMessage = messages?.filter(msg => msg?.type === 'NEGOTIATION')?.sort((a: any, b: any) => b?.createdAt - a?.createdAt)[0];
+        const latestNegotiationMessage = messages
+          ?.filter(msg => msg?.type === 'NEGOTIATION')
+          ?.sort((a: any, b: any) => b?.createdAt - a?.createdAt)[0];
+
         const isLatest = latestNegotiationMessage?._id === item._id;
 
-        return isLatest ? (
+        const isFinalized =
+          item.negotiation.status === 'ACCEPTED' ||
+          item.negotiation.status === 'REJECTED';
+
+        const lastOffer =
+          item.negotiation.offers?.[item.negotiation.offers.length - 1];
+
+        const isMyTurn =
+          !isFinalized &&
+          isLatest &&
+          item.negotiation.currentTurn === profile?.user?.id &&
+          lastOffer?.by !== profile?.user?.id;
+
+        // const canCounter = isMyTurn && !isFinalized;
+        // const canAccept = isCustomer && isMyTurn && !isFinalized;
+        // const canCancel = isProfessional && isMyTurn && !isFinalized;
+
+        // return isLatest ? (
+        //   <View
+        //     style={
+        //       profile?.user?.role === 'service_provider'
+        //         ? styles(theme).negotiationCard
+        //         : styles(theme).quoteCardContainer
+        //     }>
+        //     <Text
+        //       size={getScaleSize(16)}
+        //       font={FONTS.Lato.Bold}
+        //       color={theme._323232}>
+        //       {item.negotiation.serviceName}
+        //     </Text>
+        //     {item.negotiation?.offers.map((offer: any) => {
+        //       return (
+        //         <View style={styles(theme).pricingRow}>
+        //           {offer.label === 'ORIGINAL_VALUATION' ? (
+        //             <Text
+        //               style={{flex: 1}}
+        //               size={getScaleSize(14)}
+        //               font={FONTS.Lato.Medium}
+        //               color={theme._6D6D6D}>
+        //               {'Original Valuation :'}
+        //             </Text>
+        //           ) : offer.label === 'PROVIDER_QUOTE' ? (
+        //             <Text
+        //               style={{flex: 1}}
+        //               size={getScaleSize(14)}
+        //               font={FONTS.Lato.Medium}
+        //               color={theme._6D6D6D}>
+        //               {'Initial Quote :'}
+        //             </Text>
+        //           ) : (
+        //             <Text
+        //               style={{flex: 1}}
+        //               size={getScaleSize(14)}
+        //               font={FONTS.Lato.Medium}
+        //               color={theme._6D6D6D}>
+        //               {offer.userName === profile?.user?.first_name
+        //                 ? 'Your Previous Offer'
+        //                 : offer.userName + ' Current Offer'}
+        //             </Text>
+        //           )}
+
+        //           <Text
+        //             size={getScaleSize(16)}
+        //             font={FONTS.Lato.Bold}
+        //             color={theme._424242}>
+        //             €{offer.amount}
+        //           </Text>
+        //         </View>
+        //       );
+        //     })}
+        //     {isMe &&
+        //       item?.negotiation?.status === 'PENDING' &&
+        //       (profile?.user?.role === 'service_provider' ? (
+        //         <View>
+        //           {!editingForMessageId && (
+        //             <TouchableOpacity
+        //               style={styles(theme).editOfferButton}
+        //               onPress={() => {
+        //                 setEditingForMessageId(!editingForMessageId);
+        //               }}>
+        //               <Text
+        //                 size={getScaleSize(14)}
+        //                 font={FONTS.Lato.SemiBold}
+        //                 color={theme.primary}>
+        //                 {STRING.edit_offer}
+        //               </Text>
+        //             </TouchableOpacity>
+        //           )}
+
+        //           {editingForMessageId && (
+        //             <View>
+        //               <View style={styles(theme).offerInputWrapper}>
+        //                 <Text
+        //                   size={getScaleSize(16)}
+        //                   font={FONTS.Lato.Medium}
+        //                   color={theme._424242}>
+        //                   €
+        //                 </Text>
+        //                 <TextInput
+        //                   value={offerInputValue}
+        //                   onChangeText={setOfferInputValue}
+        //                   style={styles(theme).offerTextInput}
+        //                   placeholder="0.00"
+        //                   placeholderTextColor={theme._ACADAD}
+        //                   keyboardType="decimal-pad"
+        //                 />
+        //               </View>
+        //               <View style={styles(theme).actionRow}>
+        //                 <TouchableOpacity
+        //                   style={styles(theme).actionButtonPrimary}
+        //                   disabled={buttonDisabled}
+        //                   onPress={async () => {
+        //                     if (!offerInputValue.trim()) {
+        //                       SHOW_TOAST(
+        //                         'Please enter an offer amount',
+        //                         'error',
+        //                       );
+        //                       return;
+        //                     }
+
+        //                     setButtonDisabled(true);
+        //                     const updatedNegotiation = {
+        //                       ...item.negotiation,
+        //                       currentAmount: offerInputValue,
+        //                       currentTurn: peerUserId,
+        //                       offers: [
+        //                         ...item.negotiation.offers,
+
+        //                         {
+        //                           amount: offerInputValue.toString(),
+        //                           by: profile?.user?.id,
+        //                           label: 'EDITED',
+        //                           createdAt: Date.now(),
+        //                           userName: profile?.user?.first_name,
+        //                         },
+        //                       ],
+        //                     };
+
+        //                     userNegotiationMessage(
+        //                       item.serviceId,
+        //                       item.serviceName,
+        //                       item.servicePhoto,
+        //                       profile?.user?.id,
+        //                       profile?.user?.first_name,
+        //                       peerUserId,
+        //                       peerUserName,
+        //                       commanId,
+        //                       {
+        //                         type: 'NEGOTIATION',
+        //                         text: `My revised offer is €${offerInputValue}`,
+        //                         negotiation: updatedNegotiation,
+        //                       },
+        //                       peerUserAvatar ?? '',
+        //                       profile?.user?.profile_photo_url || '',
+        //                     );
+        //                     setEditingForMessageId(false);
+        //                     setOfferInputValue('');
+        //                     setButtonDisabled(false);
+        //                   }}>
+        //                   <Text
+        //                     size={getScaleSize(14)}
+        //                     font={FONTS.Lato.SemiBold}
+        //                     color={theme.white}>
+        //                     Submit
+        //                   </Text>
+        //                 </TouchableOpacity>
+        //                 <View style={{width: getScaleSize(12)}} />
+        //                 <TouchableOpacity
+        //                   style={styles(theme).actionButtonSecondary}
+        //                   onPress={() => {
+        //                     setEditingForMessageId(false);
+        //                     setOfferInputValue('');
+        //                   }}>
+        //                   <Text
+        //                     size={getScaleSize(14)}
+        //                     font={FONTS.Lato.SemiBold}
+        //                     color={theme.primary}>
+        //                     Cancel
+        //                   </Text>
+        //                 </TouchableOpacity>
+        //               </View>
+        //             </View>
+        //           )}
+        //         </View>
+        //       ) : profile?.user?.role === 'elderly_user' ? (
+        //         <View>
+        //           {!editingForMessageId && (
+        //             <View style={styles(theme).actionRow}>
+        //               <TouchableOpacity
+        //                 style={styles(theme).actionButtonSecondary}
+        //                 onPress={() => {
+        //                   setEditingForMessageId(true);
+        //                 }}>
+        //                 <Text
+        //                   size={getScaleSize(14)}
+        //                   font={FONTS.Lato.SemiBold}
+        //                   color={theme.primary}>
+        //                   {STRING.counter_offer}
+        //                 </Text>
+        //               </TouchableOpacity>
+        //               <TouchableOpacity
+        //                 style={styles(theme).actionButtonPrimary}
+        //                 onPress={async () => {
+        //                   mediaPickerSheetRef.current?.open();
+        //                   setSelectedNegotiation(item);
+        //                 }}>
+        //                 <Text
+        //                   size={getScaleSize(14)}
+        //                   font={FONTS.Lato.SemiBold}
+        //                   color={theme.white}>
+        //                   {STRING.accept_offer}
+        //                 </Text>
+        //               </TouchableOpacity>
+        //             </View>
+        //           )}
+        //           {editingForMessageId && (
+        //             <View>
+        //               <View style={styles(theme).offerInputWrapper}>
+        //                 <Text
+        //                   size={getScaleSize(16)}
+        //                   font={FONTS.Lato.Medium}
+        //                   color={theme._424242}>
+        //                   €
+        //                 </Text>
+        //                 <TextInput
+        //                   value={offerInputValue}
+        //                   onChangeText={setOfferInputValue}
+        //                   style={styles(theme).offerTextInput}
+        //                   placeholder="0.00"
+        //                   placeholderTextColor={theme._ACADAD}
+        //                   keyboardType="decimal-pad"
+        //                 />
+        //               </View>
+        //               <View style={styles(theme).actionRow}>
+        //                 <TouchableOpacity
+        //                   style={styles(theme).actionButtonPrimary}
+        //                   disabled={buttonDisabled}
+        //                   onPress={async () => {
+        //                     if (!offerInputValue.trim()) {
+        //                       SHOW_TOAST(
+        //                         STRING.please_enter_an_offer_amount,
+        //                         'error',
+        //                       );
+        //                       return;
+        //                     }
+        //                     setButtonDisabled(true);
+        //                     const newOffer = {
+        //                       amount: offerInputValue.toString(),
+        //                       by: profile?.user?.id,
+        //                       label: 'COUNTER', // or ACCEPTED / REJECTED
+        //                       createdAt: Date.now(),
+        //                       userName: profile?.user?.first_name,
+        //                     };
+        //                     console.log('newOffer', newOffer);
+        //                     const updatedNegotiation = {
+        //                       ...item.negotiation,
+        //                       currentAmount: offerInputValue,
+        //                       currentTurn: peerUserId,
+        //                       offers: [...item.negotiation.offers, newOffer],
+        //                     };
+        //                     console.log(
+        //                       'updatedNegotiation',
+        //                       updatedNegotiation,
+        //                     );
+        //                     userNegotiationMessage(
+        //                       item.serviceId,
+        //                       item.serviceName,
+        //                       item.servicePhoto,
+        //                       profile?.user?.id,
+        //                       profile?.user?.first_name,
+        //                       peerUserId,
+        //                       peerUserName,
+        //                       commanId,
+        //                       {
+        //                         type: 'NEGOTIATION',
+        //                         text: `My revised offer is €${offerInputValue}`,
+        //                         negotiation: updatedNegotiation,
+        //                       },
+        //                       profile?.user?.profile_photo_url || '',
+        //                       peerUserAvatar ?? '',
+        //                     );
+        //                     console.log('message sent');
+
+        //                     setEditingForMessageId(false);
+
+        //                     setOfferInputValue('');
+        //                     setButtonDisabled(false);
+        //                   }}>
+        //                   <Text
+        //                     size={getScaleSize(14)}
+        //                     font={FONTS.Lato.SemiBold}
+        //                     color={theme.white}>
+        //                     {STRING.Submit}
+        //                   </Text>
+        //                 </TouchableOpacity>
+        //                 <View style={{width: getScaleSize(12)}} />
+        //                 <TouchableOpacity
+        //                   style={styles(theme).actionButtonSecondary}
+        //                   onPress={() => {
+        //                     setEditingForMessageId(false);
+        //                     setOfferInputValue('');
+        //                   }}>
+        //                   <Text
+        //                     size={getScaleSize(14)}
+        //                     font={FONTS.Lato.SemiBold}
+        //                     color={theme.primary}>
+        //                     {STRING.Cancel}
+        //                   </Text>
+        //                 </TouchableOpacity>
+        //               </View>
+        //             </View>
+        //           )}
+        //         </View>
+        //       ) : null)}
+        //   </View>
+        // ) : (
+        return (
           <View
             style={
-              profile?.user?.role === 'service_provider'
+              isMe
                 ? styles(theme).quoteCardContainer
                 : styles(theme).negotiationCard
             }>
@@ -205,7 +528,7 @@ export default function NegotiationDetails(props: any) {
                 <View style={styles(theme).pricingRow}>
                   {offer.label === 'ORIGINAL_VALUATION' ? (
                     <Text
-                      style={{ flex: 1 }}
+                      style={{flex: 1}}
                       size={getScaleSize(14)}
                       font={FONTS.Lato.Medium}
                       color={theme._6D6D6D}>
@@ -213,7 +536,7 @@ export default function NegotiationDetails(props: any) {
                     </Text>
                   ) : offer.label === 'PROVIDER_QUOTE' ? (
                     <Text
-                      style={{ flex: 1 }}
+                      style={{flex: 1}}
                       size={getScaleSize(14)}
                       font={FONTS.Lato.Medium}
                       color={theme._6D6D6D}>
@@ -221,7 +544,7 @@ export default function NegotiationDetails(props: any) {
                     </Text>
                   ) : (
                     <Text
-                      style={{ flex: 1 }}
+                      style={{flex: 1}}
                       size={getScaleSize(14)}
                       font={FONTS.Lato.Medium}
                       color={theme._6D6D6D}>
@@ -240,7 +563,7 @@ export default function NegotiationDetails(props: any) {
                 </View>
               );
             })}
-            {item?.negotiation?.status === 'PENDING' &&
+            {isMyTurn &&
               (profile?.user?.role === 'service_provider' ? (
                 <View>
                   {!editingForMessageId && (
@@ -309,7 +632,6 @@ export default function NegotiationDetails(props: any) {
 
                             userNegotiationMessage(
                               item.serviceId,
-                              item.quoteId,
                               item.serviceName,
                               item.servicePhoto,
                               profile?.user?.id,
@@ -322,8 +644,8 @@ export default function NegotiationDetails(props: any) {
                                 text: `My revised offer is €${offerInputValue}`,
                                 negotiation: updatedNegotiation,
                               },
-                              peerUserAvatar ?? '',
                               profile?.user?.profile_photo_url || '',
+                              peerUserAvatar ?? '',
                             );
                             setEditingForMessageId(false);
                             setOfferInputValue('');
@@ -336,7 +658,7 @@ export default function NegotiationDetails(props: any) {
                             Submit
                           </Text>
                         </TouchableOpacity>
-                        <View style={{ width: getScaleSize(12) }} />
+                        <View style={{width: getScaleSize(12)}} />
                         <TouchableOpacity
                           style={styles(theme).actionButtonSecondary}
                           onPress={() => {
@@ -409,7 +731,10 @@ export default function NegotiationDetails(props: any) {
                           disabled={buttonDisabled}
                           onPress={async () => {
                             if (!offerInputValue.trim()) {
-                              SHOW_TOAST(STRING.please_enter_an_offer_amount, 'error');
+                              SHOW_TOAST(
+                                STRING.please_enter_an_offer_amount,
+                                'error',
+                              );
                               return;
                             }
                             setButtonDisabled(true);
@@ -420,17 +745,19 @@ export default function NegotiationDetails(props: any) {
                               createdAt: Date.now(),
                               userName: profile?.user?.first_name,
                             };
-                            console.log('newOffer', newOffer);
                             const updatedNegotiation = {
                               ...item.negotiation,
                               currentAmount: offerInputValue,
                               currentTurn: peerUserId,
                               offers: [...item.negotiation.offers, newOffer],
                             };
-                            console.log('updatedNegotiation', updatedNegotiation);
+
+                            console.log(
+                              'updatedNegotiation',
+                              updatedNegotiation,
+                            );
                             userNegotiationMessage(
                               item.serviceId,
-                              item.quoteId,
                               item.serviceName,
                               item.servicePhoto,
                               profile?.user?.id,
@@ -460,7 +787,7 @@ export default function NegotiationDetails(props: any) {
                             {STRING.Submit}
                           </Text>
                         </TouchableOpacity>
-                        <View style={{ width: getScaleSize(12) }} />
+                        <View style={{width: getScaleSize(12)}} />
                         <TouchableOpacity
                           style={styles(theme).actionButtonSecondary}
                           onPress={() => {
@@ -480,60 +807,6 @@ export default function NegotiationDetails(props: any) {
                 </View>
               ) : null)}
           </View>
-        ) : (
-          <View
-            style={
-              isMe
-                ? styles(theme).quoteCardContainer
-                : styles(theme).negotiationCard
-            }>
-            <Text
-              size={getScaleSize(16)}
-              font={FONTS.Lato.Bold}
-              color={theme._323232}>
-              {item.negotiation.serviceName}
-            </Text>
-            {item.negotiation?.offers.map((offer: any) => {
-              return (
-                <View style={styles(theme).pricingRow}>
-                  {offer.label === 'ORIGINAL_VALUATION' ? (
-                    <Text
-                      style={{ flex: 1 }}
-                      size={getScaleSize(14)}
-                      font={FONTS.Lato.Medium}
-                      color={theme._6D6D6D}>
-                      {'Original Valuation :'}
-                    </Text>
-                  ) : offer.label === 'PROVIDER_QUOTE' ? (
-                    <Text
-                      style={{ flex: 1 }}
-                      size={getScaleSize(14)}
-                      font={FONTS.Lato.Medium}
-                      color={theme._6D6D6D}>
-                      {'Initial Quote :'}
-                    </Text>
-                  ) : (
-                    <Text
-                      style={{ flex: 1 }}
-                      size={getScaleSize(14)}
-                      font={FONTS.Lato.Medium}
-                      color={theme._6D6D6D}>
-                      {offer.userName === profile?.user?.first_name
-                        ? 'Your Previous Offer'
-                        : offer.userName + ' Current Offer'}
-                    </Text>
-                  )}
-
-                  <Text
-                    size={getScaleSize(16)}
-                    font={FONTS.Lato.Bold}
-                    color={theme._424242}>
-                    €{offer.amount}
-                  </Text>
-                </View>
-              );
-            })}
-          </View>
         );
       default:
         return null;
@@ -545,7 +818,7 @@ export default function NegotiationDetails(props: any) {
       style={styles(theme).container}
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       keyboardVerticalOffset={Platform.OS === 'ios' ? 80 : 0}>
-      <View style={{ flex: 1 }}>
+      <View style={{flex: 1}}>
         <StatusBar
           barStyle="dark-content"
           backgroundColor={theme.white}
@@ -558,15 +831,12 @@ export default function NegotiationDetails(props: any) {
             onPress={() => {
               props.navigation.goBack();
             }}>
-            <Image
-              style={styles(theme).backImage}
-              source={IMAGES.back_black}
-            />
+            <Image style={styles(theme).backImage} source={IMAGES.back_black} />
           </TouchableOpacity>
           <Image
             style={styles(theme).userImage}
             source={
-              peerUserAvatar ? { uri: peerUserAvatar } : IMAGES.user_placeholder
+              peerUserAvatar ? {uri: peerUserAvatar} : IMAGES.user_placeholder
             }
           />
           <View style={styles(theme).headerDetails}>
@@ -606,8 +876,8 @@ export default function NegotiationDetails(props: any) {
           closeOnPressMask
           customAvoidingViewProps={
             Platform.OS === 'android'
-              ? { enabled: false }
-              : { enabled: true, behavior: 'padding' }
+              ? {enabled: false}
+              : {enabled: true, behavior: 'padding'}
           }
           customStyles={{
             container: styles(theme).sheetContainer,
@@ -617,10 +887,7 @@ export default function NegotiationDetails(props: any) {
           }}>
           <Image
             source={IMAGES.ic_alart}
-            style={[
-              styles(theme).alartIcon,
-              { marginBottom: getScaleSize(24) },
-            ]}
+            style={[styles(theme).alartIcon, {marginBottom: getScaleSize(24)}]}
           />
 
           <Text
@@ -647,14 +914,8 @@ export default function NegotiationDetails(props: any) {
             </TouchableOpacity>
             <TouchableOpacity
               onPress={() => {
-                console.log('selectedNegotiation', selectedNegotiation);
                 getServiceDetails(selectedNegotiation);
-                // createNegotiationMessage(
-                //   selectedNegotiation.serviceId,
-                //   selectedNegotiation.quoteId,
-                //   Number(selectedNegotiation.negotiation.currentAmount),
-                //   selectedNegotiation._id,
-                // );
+
                 setEditingForMessageId(false);
                 setOfferInputValue('');
                 closeSheet();
@@ -676,7 +937,7 @@ export default function NegotiationDetails(props: any) {
 }
 const styles = (theme: ThemeContextType['theme']) =>
   StyleSheet.create({
-    container: { flex: 1, backgroundColor: theme.white },
+    container: {flex: 1, backgroundColor: theme.white},
     hearderContainer: {
       paddingVertical: getScaleSize(12),
       flexDirection: 'row',

@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useMemo, useRef, useState } from 'react';
+import React, {useContext, useEffect, useMemo, useRef, useState} from 'react';
 import {
   View,
   StatusBar,
@@ -20,19 +20,19 @@ import {
 } from 'react-native';
 
 //ASSETS
-import { FONTS, IMAGES } from '../../assets';
+import {FONTS, IMAGES} from '../../assets';
 
 //CONTEXT
-import { ThemeContext, ThemeContextType, AuthContext } from '../../context';
+import {ThemeContext, ThemeContextType, AuthContext} from '../../context';
 
 //CONSTANT
-import { getScaleSize, SHOW_TOAST, useString } from '../../constant';
+import {getScaleSize, SHOW_TOAST, useString} from '../../constant';
 
 //COMPONENT
-import { Text } from '../../components';
+import {Text} from '../../components';
 
 //PACKAGES
-import { useFocusEffect } from '@react-navigation/native';
+import {useFocusEffect} from '@react-navigation/native';
 import {
   getReadCount,
   listenToUserStatus,
@@ -40,19 +40,19 @@ import {
   updateReadCount,
   userMessage,
 } from '../../services/chat';
-import { FirebaseFirestoreTypes } from '@react-native-firebase/firestore';
-import { launchImageLibrary } from 'react-native-image-picker';
+import {FirebaseFirestoreTypes} from '@react-native-firebase/firestore';
+import {launchImageLibrary} from 'react-native-image-picker';
 
 //API
-import { API } from '../../api';
+import {API} from '../../api';
 
 //SCREENS
-import { SCREENS } from '..';
+import {SCREENS} from '..';
 
 export default function ChatDetails(props: any) {
   const STRING = useString();
-  const { theme } = useContext<any>(ThemeContext);
-  const { profile } = useContext<any>(AuthContext);
+  const {theme} = useContext<any>(ThemeContext);
+  const {profile} = useContext<any>(AuthContext);
   const peerUser = props?.route?.params?.peerUser;
   const [message, setMessage] = useState('');
   const [messages, setMessages] = useState<any[]>([]);
@@ -186,7 +186,7 @@ export default function ChatDetails(props: any) {
         return {
           _id: doc.id,
           text: '',
-          createdAt: new Date().getTime(),
+          createdAt: Date.now(),
           ...doc.data(),
         };
       });
@@ -236,7 +236,7 @@ export default function ChatDetails(props: any) {
 
   const scrollToBottom = (animated = true) => {
     requestAnimationFrame(() => {
-      flatListRef.current?.scrollToEnd({ animated });
+      flatListRef.current?.scrollToEnd({animated});
     });
   };
 
@@ -284,7 +284,7 @@ export default function ChatDetails(props: any) {
     scrollToBottom(true);
   };
 
-  const renderMessage = ({ item }: { item: any }) => {
+  const renderMessage = ({item}: {item: any}) => {
     const isMessageMe = item.senderId === profile?.user?.id;
     const currentUserAvatar = profile?.user?.profile_photo_url;
     console.log('item', item);
@@ -303,7 +303,7 @@ export default function ChatDetails(props: any) {
                 style={styles(theme).userProfilePic}
                 source={
                   peerUserAvatar
-                    ? { uri: peerUserAvatar }
+                    ? {uri: peerUserAvatar}
                     : IMAGES.user_placeholder
                 }
               />
@@ -334,7 +334,7 @@ export default function ChatDetails(props: any) {
                 style={styles(theme).userProfilePic}
                 source={
                   currentUserAvatar
-                    ? { uri: currentUserAvatar }
+                    ? {uri: currentUserAvatar}
                     : IMAGES.user_placeholder
                 }
               />
@@ -368,7 +368,7 @@ export default function ChatDetails(props: any) {
                   );
                 }}>
                 <Image
-                  source={{ uri: item.images[0] }}
+                  source={{uri: item.images[0]}}
                   style={styles(theme).image}
                 />
               </Pressable>
@@ -391,7 +391,7 @@ export default function ChatDetails(props: any) {
                     );
                   }}>
                   <Image
-                    source={{ uri: item.images[0] }}
+                    source={{uri: item.images[0]}}
                     style={styles(theme).image}
                   />
                 </Pressable>
@@ -405,7 +405,7 @@ export default function ChatDetails(props: any) {
                     );
                   }}>
                   <Image
-                    source={{ uri: item.images[1] }}
+                    source={{uri: item.images[1]}}
                     style={styles(theme).image}
                   />
                 </Pressable>
@@ -419,7 +419,7 @@ export default function ChatDetails(props: any) {
                   padding: getScaleSize(10),
                   borderRadius: getScaleSize(10),
                 }}>
-                <View style={{ gap: getScaleSize(10) }}>
+                <View style={{gap: getScaleSize(10)}}>
                   <Pressable
                     onPress={() => {
                       props.navigation.navigate(
@@ -430,7 +430,7 @@ export default function ChatDetails(props: any) {
                       );
                     }}>
                     <Image
-                      source={{ uri: item.images[0] }}
+                      source={{uri: item.images[0]}}
                       style={styles(theme).image}
                     />
                   </Pressable>
@@ -444,12 +444,12 @@ export default function ChatDetails(props: any) {
                       );
                     }}>
                     <Image
-                      source={{ uri: item.images[1] }}
+                      source={{uri: item.images[1]}}
                       style={styles(theme).image}
                     />
                   </Pressable>
                 </View>
-                <View style={{ gap: getScaleSize(10) }}>
+                <View style={{gap: getScaleSize(10)}}>
                   <Pressable
                     onPress={() => {
                       props.navigation.navigate(
@@ -460,7 +460,7 @@ export default function ChatDetails(props: any) {
                       );
                     }}>
                     <Image
-                      source={{ uri: item.images[2] }}
+                      source={{uri: item.images[2]}}
                       style={styles(theme).image}
                     />
                   </Pressable>
@@ -475,7 +475,7 @@ export default function ChatDetails(props: any) {
                   padding: getScaleSize(10),
                   borderRadius: getScaleSize(10),
                 }}>
-                <View style={{ gap: getScaleSize(10) }}>
+                <View style={{gap: getScaleSize(10)}}>
                   <Pressable
                     onPress={() => {
                       props.navigation.navigate(
@@ -486,7 +486,7 @@ export default function ChatDetails(props: any) {
                       );
                     }}>
                     <Image
-                      source={{ uri: item.images[0] }}
+                      source={{uri: item.images[0]}}
                       style={styles(theme).image}
                     />
                   </Pressable>
@@ -500,12 +500,12 @@ export default function ChatDetails(props: any) {
                       );
                     }}>
                     <Image
-                      source={{ uri: item.images[1] }}
+                      source={{uri: item.images[1]}}
                       style={styles(theme).image}
                     />
                   </Pressable>
                 </View>
-                <View style={{ gap: getScaleSize(10) }}>
+                <View style={{gap: getScaleSize(10)}}>
                   <Pressable
                     onPress={() => {
                       props.navigation.navigate(
@@ -516,7 +516,7 @@ export default function ChatDetails(props: any) {
                       );
                     }}>
                     <Image
-                      source={{ uri: item.images[2] }}
+                      source={{uri: item.images[2]}}
                       style={styles(theme).image}
                     />
                   </Pressable>
@@ -530,7 +530,7 @@ export default function ChatDetails(props: any) {
                       );
                     }}>
                     <Image
-                      source={{ uri: item.images[3] }}
+                      source={{uri: item.images[3]}}
                       style={styles(theme).image}
                     />
                   </Pressable>
@@ -546,115 +546,113 @@ export default function ChatDetails(props: any) {
 
   return (
     <KeyboardAvoidingView
-      style={{ flex: 1 }}
+      style={{flex: 1}}
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-      keyboardVerticalOffset={Platform.OS === 'ios' ? 80 : isKeyboardVisible ? 40 : 0}>
-        <View
-          style={styles(theme).container}>
-          <StatusBar
-            barStyle="dark-content"
-            backgroundColor={theme.white}
-            translucent={false}
+      keyboardVerticalOffset={
+        Platform.OS === 'ios' ? 80 : isKeyboardVisible ? 40 : 0
+      }>
+      <View style={styles(theme).container}>
+        <StatusBar
+          barStyle="dark-content"
+          backgroundColor={theme.white}
+          translucent={false}
+        />
+        <View style={styles(theme).hearderContainer}>
+          <TouchableOpacity
+            style={styles(theme).backImage}
+            activeOpacity={1}
+            onPress={() => {
+              props.navigation.goBack();
+            }}>
+            <Image style={styles(theme).backImage} source={IMAGES.back_black} />
+          </TouchableOpacity>
+          <Image
+            style={styles(theme).userImage}
+            source={
+              peerUserAvatar ? {uri: peerUserAvatar} : IMAGES.user_placeholder
+            }
           />
-          <View style={styles(theme).hearderContainer}>
-            <TouchableOpacity
-              style={styles(theme).backImage}
-              activeOpacity={1}
-              onPress={() => {
-                props.navigation.goBack();
-              }}>
-              <Image
-                style={styles(theme).backImage}
-                source={IMAGES.back_black}
-              />
-            </TouchableOpacity>
-            <Image
-              style={styles(theme).userImage}
-              source={
-                peerUserAvatar ? { uri: peerUserAvatar } : IMAGES.user_placeholder
-              }
-            />
-            <View style={styles(theme).headerDetails}>
-              <Text
-                size={getScaleSize(16)}
-                font={FONTS.Lato.Bold}
-                color={theme._2B2B2B}>
-                {peerUserName || STRING.unknown_user}
-              </Text>
-              <Text
-                size={getScaleSize(14)}
-                font={FONTS.Lato.Medium}
-                color={isPeerOnline ? theme._2E7D32 : theme._818285}>
-                {peerStatusLabel}
-              </Text>
-            </View>
+          <View style={styles(theme).headerDetails}>
+            <Text
+              size={getScaleSize(16)}
+              font={FONTS.Lato.Bold}
+              color={theme._2B2B2B}>
+              {peerUserName || STRING.unknown_user}
+            </Text>
+            <Text
+              size={getScaleSize(14)}
+              font={FONTS.Lato.Medium}
+              color={isPeerOnline ? theme._2E7D32 : theme._818285}>
+              {peerStatusLabel}
+            </Text>
           </View>
-          <View style={styles(theme).messagesWrapper}>
-            {loadingMessages ? (
-              <View style={styles(theme).loaderContainer}>
-                <ActivityIndicator size="small" color={theme.primary} />
-              </View>
-            ) : (
-              <View style={{ flex: 1 }}>
-                <FlatList
-                  ref={flatListRef}
-                  data={messages}
-                  renderItem={renderMessage}
-                  keyExtractor={item => item._id || item.id}
-                  contentContainerStyle={messageListContentStyle}
-                  showsVerticalScrollIndicator={false}
-                  onLayout={() => scrollToBottom(false)}
-                  onContentSizeChange={() => scrollToBottom(true)}
-                />
-              </View>
-            )}
-          </View>
-          <View style={styles(theme).sendMessageContainer}>
-            {/* <Image style={styles(theme).microphoneImage} source={IMAGES.mic} /> */}
-            <TextInput
-              style={styles(theme).searchInput}
-              placeholderTextColor={'#939393'}
-              placeholder={STRING.Sendamessagehere}
-              value={message}
-              onChangeText={setMessage}
-              multiline
-              onFocus={() => {
-                setIsKeyboardVisible(true);
-                scrollToBottom(true);
-              }}
-              onBlur={() => {
-                setIsKeyboardVisible(false);
-              }}
-              onChange={() => scrollToBottom(false)}
-            />
-            <Pressable
-              onPress={() => {
-                handleChoosePhoto();
-              }}
-              style={styles(theme).imageContainer}>
-              <Image source={IMAGES.attachment} style={styles(theme).image1} />
-            </Pressable>
-            <TouchableOpacity
-              style={styles(theme).sendButtonWrapper}
-              disabled={buttonDisabled || !message.trim()}
-              onPress={handleSendMessage}>
-              <Image
-                style={[
-                  styles(theme).microphoneImage,
-                  (buttonDisabled || !message.trim()) &&
-                  styles(theme).disabledSendIcon,
-                ]}
-                source={IMAGES.message_send}
-              />
-            </TouchableOpacity>
-          </View>
-          {loading && (
+        </View>
+        <View style={styles(theme).messagesWrapper}>
+          {loadingMessages ? (
             <View style={styles(theme).loaderContainer}>
               <ActivityIndicator size="small" color={theme.primary} />
             </View>
+          ) : (
+            <View style={{flex: 1}}>
+              <FlatList
+                ref={flatListRef}
+                data={messages}
+                renderItem={renderMessage}
+                keyExtractor={item => item._id || item.id}
+                contentContainerStyle={messageListContentStyle}
+                showsVerticalScrollIndicator={false}
+                onLayout={() => scrollToBottom(false)}
+                onContentSizeChange={() => scrollToBottom(true)}
+              />
+            </View>
           )}
-          <SafeAreaView />
         </View>
+        <View style={styles(theme).sendMessageContainer}>
+          {/* <Image style={styles(theme).microphoneImage} source={IMAGES.mic} /> */}
+          <TextInput
+            style={styles(theme).searchInput}
+            placeholderTextColor={'#939393'}
+            placeholder={STRING.Sendamessagehere}
+            value={message}
+            onChangeText={setMessage}
+            multiline
+            onFocus={() => {
+              setIsKeyboardVisible(true);
+              scrollToBottom(true);
+            }}
+            onBlur={() => {
+              setIsKeyboardVisible(false);
+            }}
+            onChange={() => scrollToBottom(false)}
+          />
+          <Pressable
+            onPress={() => {
+              handleChoosePhoto();
+            }}
+            style={styles(theme).imageContainer}>
+            <Image source={IMAGES.attachment} style={styles(theme).image1} />
+          </Pressable>
+          <TouchableOpacity
+            style={styles(theme).sendButtonWrapper}
+            disabled={buttonDisabled || !message.trim()}
+            onPress={handleSendMessage}>
+            <Image
+              style={[
+                styles(theme).microphoneImage,
+                (buttonDisabled || !message.trim()) &&
+                  styles(theme).disabledSendIcon,
+              ]}
+              source={IMAGES.message_send}
+            />
+          </TouchableOpacity>
+        </View>
+        {loading && (
+          <View style={styles(theme).loaderContainer}>
+            <ActivityIndicator size="small" color={theme.primary} />
+          </View>
+        )}
+        <SafeAreaView />
+      </View>
     </KeyboardAvoidingView>
   );
 }
@@ -668,7 +666,7 @@ const formatTimestamp = (
   const date = timestamp.toDate
     ? timestamp.toDate()
     : new Date(timestamp as any);
-  return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  return date.toLocaleTimeString([], {hour: '2-digit', minute: '2-digit'});
 };
 
 const formatLastSeen = (timestamp: number) => {
@@ -677,7 +675,7 @@ const formatLastSeen = (timestamp: number) => {
   const sameDay = date.toDateString() === now.toDateString();
 
   if (sameDay) {
-    return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    return date.toLocaleTimeString([], {hour: '2-digit', minute: '2-digit'});
   }
 
   return `${date.toLocaleDateString()} ${date.toLocaleTimeString([], {
@@ -688,7 +686,7 @@ const formatLastSeen = (timestamp: number) => {
 
 const styles = (theme: ThemeContextType['theme']) =>
   StyleSheet.create({
-    container: { flex: 1, backgroundColor: theme.white },
+    container: {flex: 1, backgroundColor: theme.white},
     hearderContainer: {
       paddingVertical: getScaleSize(12),
       flexDirection: 'row',

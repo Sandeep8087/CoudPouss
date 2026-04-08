@@ -1,4 +1,4 @@
-import firestore from '@react-native-firebase/firestore';
+import firestore, { serverTimestamp } from '@react-native-firebase/firestore';
 
 
 /* =========================
@@ -90,7 +90,6 @@ export const buildThreadId = (first: string, second: string) =>
 ========================= */
 export const userNegotiationMessage = async (
   serviceId: string,
-  quoteId: string,
   serviceName: string,
   servicePhoto: string,
   userId: string,
@@ -120,7 +119,7 @@ export const userNegotiationMessage = async (
     .set(
       {
         message: previewMessage,
-        createdAt: new Date().getTime(),
+        createdAt: serverTimestamp(),
         readCount: 'true',
         user: {
           userId: userId,
@@ -128,7 +127,6 @@ export const userNegotiationMessage = async (
           recipientId: recipientId,
           recipientPhoto: recipientPhoto,
           serviceId: serviceId,
-          quoteId: quoteId,
           serviceName: serviceName,
           servicePhoto: servicePhoto,
           chatVisible: 'single',
@@ -145,15 +143,14 @@ export const userNegotiationMessage = async (
         .set(
           {
             message: previewMessage,
-            createdAt: new Date().getTime(),
+            createdAt: serverTimestamp(),
             readCount: 'false',
             user: {
-              userId: userId,
+              userId: recipientId,
               name: userName,
               recipientId: userId,
               recipientPhoto: userPhoto,
               serviceId: serviceId,
-              quoteId: quoteId,
               serviceName: serviceName,
               servicePhoto: servicePhoto,
               chatVisible: 'single',
@@ -181,11 +178,10 @@ export const userNegotiationMessage = async (
                 receiverId: recipientId || '',
                 text: payload.text || '',
                 serviceId: serviceId,
-                quoteId: quoteId,
                 serviceName: serviceName,
                 servicePhoto: servicePhoto,
                 negotiation: payload.negotiation || null,
-                createdAt: new Date().getTime(),
+                createdAt: serverTimestamp(),
                 type: payload.type || '',
               });
           });
@@ -199,9 +195,8 @@ export const userNegotiationMessage = async (
             receiverId: recipientId || '',
             text: payload.text || '',
             serviceId: serviceId,
-            quoteId: quoteId,
             negotiation: payload.negotiation || null,
-            createdAt: new Date().getTime(),
+            createdAt: serverTimestamp(),
             type: payload.type || '',
           });
       }
@@ -211,7 +206,6 @@ export const userNegotiationMessage = async (
 
 type NegotiationPayload = {
   serviceName: string;
-  quoteId: string;
   status: "PENDING" | "ACCEPTED" | "REJECTED";
   currentTurn: string;
   currentAmount: number;
