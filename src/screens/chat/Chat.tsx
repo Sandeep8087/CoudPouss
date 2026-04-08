@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useRef, useState } from 'react';
+import React, {useContext, useEffect, useRef, useState} from 'react';
 import {
   View,
   StyleSheet,
@@ -10,21 +10,21 @@ import {
 } from 'react-native';
 
 //ASSETS
-import { FONTS, IMAGES } from '../../assets';
+import {FONTS, IMAGES} from '../../assets';
 
 //CONTEXT
-import { ThemeContext, ThemeContextType, AuthContext } from '../../context';
+import {ThemeContext, ThemeContextType, AuthContext} from '../../context';
 
 //CONSTANT
-import { getScaleSize, useString } from '../../constant';
+import {getScaleSize, useString} from '../../constant';
 
 //COMPONENT
-import { Header, SearchComponent, Text } from '../../components';
+import {Header, SearchComponent, Text} from '../../components';
 
 //SERVICES
-import { listenToThreads } from '../../services/chat';
+import {listenToThreads} from '../../services/chat';
 
-import { SCREENS } from '..';
+import {SCREENS} from '..';
 import {
   listenToNegotiationThreads,
   removeDocument,
@@ -34,8 +34,8 @@ import RBSheet from 'react-native-raw-bottom-sheet';
 
 export default function Chat(props: any) {
   const STRING = useString();
-  const { theme } = useContext<any>(ThemeContext);
-  const { profile } = useContext<any>(AuthContext);
+  const {theme} = useContext<any>(ThemeContext);
+  const {profile} = useContext<any>(AuthContext);
   const mediaPickerSheetRef = useRef<any>(null);
 
   // const [threads, setThreads] = useState<ChatThread[]>([]);
@@ -58,7 +58,7 @@ export default function Chat(props: any) {
           return {
             _id: doc.id,
             message: '',
-            createdAt: new Date().getTime(),
+            createdAt: Date.now(),
             ...doc.data(),
           };
         });
@@ -72,7 +72,7 @@ export default function Chat(props: any) {
             return {
               _id: doc.id,
               message: '',
-              createdAt: new Date().getTime(),
+              createdAt: Date.now(),
               ...doc.data(),
             };
           });
@@ -87,7 +87,7 @@ export default function Chat(props: any) {
     mediaPickerSheetRef.current?.close();
   };
 
-  const ItemView = ({ item }: { item: any }) => {
+  const ItemView = ({item}: {item: any}) => {
     console.log('item', item);
     return (
       <TouchableOpacity
@@ -108,7 +108,7 @@ export default function Chat(props: any) {
           style={styles(theme).userImage}
           source={
             item?.user?.recipientPhoto
-              ? { uri: item?.user?.recipientPhoto }
+              ? {uri: item?.user?.recipientPhoto}
               : IMAGES.user_placeholder
           }
         />
@@ -119,7 +119,7 @@ export default function Chat(props: any) {
             color={theme._2B2B2B}>
             {item?.user?.name}
           </Text>
-          <View style={{ marginTop: getScaleSize(5) }} />
+          <View style={{marginTop: getScaleSize(5)}} />
           <Text
             size={getScaleSize(12)}
             font={FONTS.Lato.Regular}
@@ -142,7 +142,7 @@ export default function Chat(props: any) {
     );
   };
 
-  const ItemViewNegotiation = ({ item }: { item: any }) => {
+  const ItemViewNegotiation = ({item}: {item: any}) => {
     return (
       <TouchableOpacity
         style={styles(theme).itemNegotiationContainer}
@@ -162,7 +162,7 @@ export default function Chat(props: any) {
           style={styles(theme).serviceImage}
           source={
             item?.user?.servicePhoto
-              ? { uri: item?.user?.servicePhoto }
+              ? {uri: item?.user?.servicePhoto}
               : IMAGES.user_placeholder
           }
         />
@@ -173,14 +173,14 @@ export default function Chat(props: any) {
             color={theme._2B2B2B}>
             {item?.user?.serviceName}
           </Text>
-          <View style={{ marginTop: getScaleSize(5) }} />
+          <View style={{marginTop: getScaleSize(5)}} />
           <Text
             size={getScaleSize(12)}
             font={FONTS.Lato.Regular}
             color={theme._ACADAD}>
             {item?.message}
           </Text>
-          <View style={{ marginTop: getScaleSize(5) }} />
+          <View style={{marginTop: getScaleSize(5)}} />
           <View
             style={{
               flexDirection: 'row',
@@ -195,7 +195,7 @@ export default function Chat(props: any) {
               }}
               source={
                 item?.user?.recipientPhoto
-                  ? { uri: item?.user?.recipientPhoto }
+                  ? {uri: item?.user?.recipientPhoto}
                   : IMAGES.user_placeholder
               }
             />
@@ -268,7 +268,7 @@ export default function Chat(props: any) {
         <SearchComponent
           value={searchQuery}
           onChangeText={(text: string) => searchFilterFunction(text)}
-          onPressMicrophone={() => { }}
+          onPressMicrophone={() => {}}
         />
       </View>
       <View
@@ -319,9 +319,9 @@ export default function Chat(props: any) {
           </Text>
         </TouchableOpacity>
       </View>
-      <View style={{ flex: 1 }}>
+      <View style={{flex: 1}}>
         {selectedTab === 'chat' ? (
-          <View style={{ flex: 1 }}>
+          <View style={{flex: 1}}>
             <FlatList
               data={filteredDataSource}
               keyExtractor={(item, index) => index.toString()}
@@ -330,7 +330,7 @@ export default function Chat(props: any) {
             />
           </View>
         ) : (
-          <View style={{ flex: 1 }}>
+          <View style={{flex: 1}}>
             <FlatList
               data={filteredNegotiationDataSource}
               showsVerticalScrollIndicator={false}
@@ -356,7 +356,7 @@ export default function Chat(props: any) {
         }}>
         <Image
           source={IMAGES.ic_alart}
-          style={[styles(theme).alartIcon, { marginBottom: getScaleSize(24) }]}
+          style={[styles(theme).alartIcon, {marginBottom: getScaleSize(24)}]}
         />
 
         <Text
@@ -405,7 +405,7 @@ export default function Chat(props: any) {
 
 const styles = (theme: ThemeContextType['theme']) =>
   StyleSheet.create({
-    container: { flex: 1, backgroundColor: theme.white },
+    container: {flex: 1, backgroundColor: theme.white},
     scrolledContainer: {
       marginHorizontal: getScaleSize(22),
       flex: 1.0,

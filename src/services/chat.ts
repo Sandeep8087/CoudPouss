@@ -1,4 +1,4 @@
-import firestore from '@react-native-firebase/firestore';
+import firestore, { serverTimestamp } from '@react-native-firebase/firestore';
 
 
 /* =========================
@@ -29,7 +29,7 @@ export const createNewThread = (
       address: userAddress,
       avatarUrl: userImage,
       text: `${userName} created.`,
-      createdAt: new Date().getTime(),
+      createdAt: serverTimestamp(),
     });
 };
 
@@ -80,7 +80,7 @@ export const createNewThread = (
 //           senderId: userId,
 //           receiverId: recipientId,
 //           text: message,
-//           createdAt: new Date().getTime(),
+//           createdAt: serverTimestamp(),
 //         });
 //     });
 // };
@@ -111,7 +111,7 @@ export const userMessage = async (
     .set(
       {
         message: text,
-        createdAt: new Date().getTime(),
+        createdAt: serverTimestamp(),
         readCount: readCount || 0,
         user: {
           userId: userId,
@@ -131,7 +131,7 @@ export const userMessage = async (
         .set(
           {
             message: text,
-            createdAt: new Date().getTime(),
+            createdAt: serverTimestamp(),
             readCount: readCount || 0,
             user: {
               userId: userId,
@@ -154,7 +154,7 @@ export const userMessage = async (
           text: text || '',
           images: images || [],
           type: type || '',
-          createdAt: new Date().getTime(),
+          createdAt: serverTimestamp(),
         });
     });
 };
@@ -209,7 +209,7 @@ export const updateReadCount = async (recipientId: string, conversationId: strin
     .set(
       {
 
-        createdAt: new Date().getTime(),
+        createdAt: serverTimestamp(),
         readCount: 0,
 
       },
@@ -223,7 +223,7 @@ export const updateUserStatus = async (userId: string, status: string) => {
     .doc(userId)
     .set({
       isOnline: status,
-      lastActive: new Date().getTime(),
+      lastActive: serverTimestamp(),
     }, { merge: true });
 }
 
@@ -344,7 +344,7 @@ export const messagesNegotiationListThread = (threadId: string) => {
 //           by: userId,
 //           label: label,
 //           userName: userName,
-//           createdAt: new Date().getTime(), // keeping your existing pattern
+//           createdAt: serverTimestamp(), // keeping your existing pattern
 //         },
 //       ],
 //     };
@@ -406,7 +406,7 @@ export const messagesNegotiationListThread = (threadId: string) => {
 //           by: userId,
 //           label: 'ACCEPT',
 //           userName: userName,
-//           createdAt: new Date().getTime(),
+//           createdAt: serverTimestamp(),
 //         },
 //       ],
 //     };
