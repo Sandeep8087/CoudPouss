@@ -28,6 +28,7 @@ interface BottomSheetProps {
     subTitle?: string;
     isDelete?: boolean;
     onPressDelete?: () => void;
+    onClose?: () => void;
 }
 
 export default function BottomSheet(props: BottomSheetProps) {
@@ -56,7 +57,8 @@ export default function BottomSheet(props: BottomSheetProps) {
         icon,
         isDelete,
         renegotiationAmount,
-        onPressDelete
+        onPressDelete,
+        onClose,
     } = props;
     return (
         <RBSheet
@@ -82,7 +84,8 @@ export default function BottomSheet(props: BottomSheetProps) {
                 },
             }}
             draggable={false}
-            closeOnPressMask={isNotCloseable ? false : true}>
+            closeOnPressMask={isNotCloseable ? false : true}
+            onClose={onClose}>
             <SafeAreaView style={[styles(theme).container,
                 // { paddingBottom: Platform.OS === 'android' ? insets.bottom : 0 }
             ]}>

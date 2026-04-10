@@ -35,8 +35,6 @@ export default function Profile(props: any) {
   const [isLoading, setLoading] = useState(false);
   const bottomSheetRef = useRef<any>(null);
 
-  console.log('user', insets.bottom)
-
   const profileItemsElder = [
     { id: 1, title: STRING.my_profile, icon: IMAGES.ic_my_profile, onPress: SCREENS.MyProfile.identifier },
     { id: 2, title: STRING.transactions, icon: IMAGES.ic_transactions, onPress: SCREENS.TransactionsElder.identifier },

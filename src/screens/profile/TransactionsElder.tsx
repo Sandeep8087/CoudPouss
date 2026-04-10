@@ -353,11 +353,14 @@ export default function TransactionsElder(props: any) {
                 visible={open}
                 onClose={() => setOpen(false)}
                 onApply={(start: any, end: any) => {
+                    if ((start && !end) || (!start && end)) {
+                        return;
+                    }
                     const startUTC = start
-                        ? moment.utc(start).startOf('day').toISOString()
+                        ? moment(start).startOf('day').toISOString()
                         : null;
                     const endUTC = end
-                        ? moment.utc(end).endOf('day').toISOString()
+                        ? moment(end).endOf('day').toISOString()
                         : null;
 
                     onDateApply(startUTC, endUTC);

@@ -86,28 +86,32 @@ export default function ProfessionalHome(props: any) {
     }
   }, [isFocused]);
 
-  let currentState = AppState.currentState;
+  const currentState = useRef(AppState.currentState);
 
   useEffect(() => {
     const sub = AppState.addEventListener('change', nextState => {
-      if (currentState === 'active' && nextState === 'background') {
+      if (currentState.current === 'active' && nextState === 'background') {
         onUpdateProfile();
       }
 
-      if (currentState === 'background' && nextState === 'active') {
+      if (currentState.current === 'background' && nextState === 'active') {
         onUpdateProfile();
       }
 
-      currentState = nextState;
+      currentState.current = nextState;
     });
 
     return () => sub.remove();
   }, []);
 
   useEffect(() => {
-    EventRegister.addEventListener('onAccountSuccess', (data: any) => {
+    const accountSuccessListener = EventRegister.addEventListener('onAccountSuccess', () => {
       onUpdateProfile();
     });
+
+    return () => {
+      EventRegister.removeEventListener(accountSuccessListener as string);
+    };
   }, []);
 
   const onUpdateProfile = async () => {
@@ -118,9 +122,13 @@ export default function ProfessionalHome(props: any) {
 
   useEffect(() => {
     console.log('onAccountCancel');
-    EventRegister.addEventListener('onAccountCancel', (data: any) => {
+    const accountCancelListener = EventRegister.addEventListener('onAccountCancel', () => {
       onUpdateProfile();
     });
+
+    return () => {
+      EventRegister.removeEventListener(accountCancelListener as string);
+    };
   }, []);
 
   useEffect(() => {

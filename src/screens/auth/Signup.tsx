@@ -141,7 +141,7 @@ export default function Signup(props: any) {
                         color={theme._737373}
                         align="center"
                         style={{ marginHorizontal: getScaleSize(48) }}>
-                        {STRING.Empowering_seniors_with_easy_access_to_trusted_help_care_and_companionship_whenever_needed}
+                        {STRING.Empowering_seekers_with_easy_access_to_trusted_help_care_and_companionship_whenever_needed}
                     </Text>
                     {/* {isPhoneNumber ? (
                         <Input

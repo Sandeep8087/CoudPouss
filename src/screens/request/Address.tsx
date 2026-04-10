@@ -57,6 +57,7 @@ export default function Address(props: any) {
             const result = await API.Instance.delete(API.API_ROUTES.onUpdateAddress + '/' + id);
             if (result.status) {
                 getSavedAddresses();
+
             } else {
                 SHOW_TOAST(result.data.message, 'error');
             }
@@ -174,7 +175,13 @@ export default function Address(props: any) {
                     STRING.are_you_sure_to_delete_the_address
                 }
                 onPressDelete={() => {
-                    onDeleteAddress(selectedAddressId);
+                    const addressId = selectedAddressId;
+                    deleteAddressPopupRef.current.close();
+                    setSelectedAddressId('');
+                    onDeleteAddress(addressId);
+                }}
+                onClose={() => {
+                    setSelectedAddressId('');
                 }}
             />
         </View>

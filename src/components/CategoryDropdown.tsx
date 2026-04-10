@@ -58,7 +58,7 @@ const CategoryDropdown = (props: DropdownProps) => {
                 placeholderStyle={styles(theme).placeholderStyle}
                 selectedTextStyle={styles(theme).selectedTextStyle}
                 containerStyle={styles(theme).containerStyle}
-                data={data}
+                data={data ?? []}
                 showsVerticalScrollIndicator={false}
                 maxHeight={getScaleSize(500)}
                 labelField="category_name"
@@ -72,6 +72,11 @@ const CategoryDropdown = (props: DropdownProps) => {
                     setIsFocus(false);
                 }}
                 renderItem={renderItem}
+                renderRightIcon={() => {
+                    return (
+                        <Image source={isFocus ? IMAGES.ic_arrow_up : IMAGES.ic_arrow_down} style={styles(theme).arrowIcon} />
+                    )
+                }}
                 renderLeftIcon={() => {
                     return (
                         <>
@@ -144,6 +149,10 @@ const styles = (theme: ThemeContextType['theme']) =>
             width: getScaleSize(36),
             height: getScaleSize(36),
 
+        },
+        arrowIcon: {
+            width: getScaleSize(28),
+            height: getScaleSize(28),
         },
     });
 

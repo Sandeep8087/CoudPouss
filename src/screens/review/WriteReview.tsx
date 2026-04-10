@@ -220,7 +220,7 @@ export default function WriteReview(props: any) {
               size={getScaleSize(18)}
               font={FONTS.Lato.Medium}
               color={'#424242'}>
-              {STRING.Solution}
+              {STRING.solution}
             </Text>
             {!isLoadingRating && renderStars(solutionRatting, value => setSolutionRatting(normalizeRatingValue(value)))}
           </View>

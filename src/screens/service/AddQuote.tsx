@@ -69,13 +69,9 @@ export default function AddQuote(props: any) {
   useEffect(() => {
     if (!isServiceDetails && isItem) {
       getServicesDetails()
+
     }
   }, [])
-
-
-  console.log('doc1Id==>', doc1Id, doc2Id)
-
-
 
   async function getServicesDetails() {
     try {

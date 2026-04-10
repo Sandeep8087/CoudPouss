@@ -1,4 +1,4 @@
-import React, {useContext, useEffect, useMemo, useRef, useState} from 'react';
+import React, { useContext, useEffect, useMemo, useRef, useState } from 'react';
 import {
   View,
   StatusBar,
@@ -18,19 +18,19 @@ import {
 } from 'react-native';
 
 //ASSETS
-import {FONTS, IMAGES} from '../../assets';
+import { FONTS, IMAGES } from '../../assets';
 
 //CONTEXT
-import {ThemeContext, ThemeContextType, AuthContext} from '../../context';
+import { ThemeContext, ThemeContextType, AuthContext } from '../../context';
 
 //CONSTANT
-import {getScaleSize, SHOW_TOAST, useString} from '../../constant';
+import { formatDecimalInput, getScaleSize, SHOW_TOAST, useString } from '../../constant';
 
 //COMPONENT
-import {Text} from '../../components';
+import { Text } from '../../components';
 
 //PACKAGES
-import {useFocusEffect} from '@react-navigation/native';
+import { useFocusEffect } from '@react-navigation/native';
 import {
   acceptNegotiation,
   messagesListThread,
@@ -38,13 +38,13 @@ import {
   removeThread,
   userNegotiationMessage,
 } from '../../services/negotiationchat';
-import {API} from '../../api';
+import { API } from '../../api';
 import RBSheet from 'react-native-raw-bottom-sheet';
 
 export default function NegotiationDetails(props: any) {
   const STRING = useString();
-  const {theme} = useContext<any>(ThemeContext);
-  const {profile} = useContext<any>(AuthContext);
+  const { theme } = useContext<any>(ThemeContext);
+  const { profile } = useContext<any>(AuthContext);
   const peerUser = props?.route?.params?.peerUser;
   // const [message, setMessage] = useState('');
   const [messages, setMessages] = useState<any[]>([]);
@@ -182,7 +182,7 @@ export default function NegotiationDetails(props: any) {
     }
   }
 
-  const renderMessage = ({item}: {item: any}) => {
+  const renderMessage = ({ item }: { item: any }) => {
     switch (item.type) {
       case 'NEGOTIATION':
         // const isMe = item.senderId === profile?.user?.id;
@@ -528,7 +528,7 @@ export default function NegotiationDetails(props: any) {
                 <View style={styles(theme).pricingRow}>
                   {offer.label === 'ORIGINAL_VALUATION' ? (
                     <Text
-                      style={{flex: 1}}
+                      style={{ flex: 1 }}
                       size={getScaleSize(14)}
                       font={FONTS.Lato.Medium}
                       color={theme._6D6D6D}>
@@ -536,7 +536,7 @@ export default function NegotiationDetails(props: any) {
                     </Text>
                   ) : offer.label === 'PROVIDER_QUOTE' ? (
                     <Text
-                      style={{flex: 1}}
+                      style={{ flex: 1 }}
                       size={getScaleSize(14)}
                       font={FONTS.Lato.Medium}
                       color={theme._6D6D6D}>
@@ -544,7 +544,7 @@ export default function NegotiationDetails(props: any) {
                     </Text>
                   ) : (
                     <Text
-                      style={{flex: 1}}
+                      style={{ flex: 1 }}
                       size={getScaleSize(14)}
                       font={FONTS.Lato.Medium}
                       color={theme._6D6D6D}>
@@ -592,7 +592,9 @@ export default function NegotiationDetails(props: any) {
                         </Text>
                         <TextInput
                           value={offerInputValue}
-                          onChangeText={setOfferInputValue}
+                          onChangeText={(text) => {
+                            setOfferInputValue(formatDecimalInput(text))
+                          }}
                           style={styles(theme).offerTextInput}
                           placeholder="0.00"
                           placeholderTextColor={theme._ACADAD}
@@ -658,7 +660,7 @@ export default function NegotiationDetails(props: any) {
                             Submit
                           </Text>
                         </TouchableOpacity>
-                        <View style={{width: getScaleSize(12)}} />
+                        <View style={{ width: getScaleSize(12) }} />
                         <TouchableOpacity
                           style={styles(theme).actionButtonSecondary}
                           onPress={() => {
@@ -718,7 +720,11 @@ export default function NegotiationDetails(props: any) {
                         </Text>
                         <TextInput
                           value={offerInputValue}
-                          onChangeText={setOfferInputValue}
+                          onChangeText={(text) => {
+                            setOfferInputValue(formatDecimalInput(text))
+                          }
+
+                          }
                           style={styles(theme).offerTextInput}
                           placeholder="0.00"
                           placeholderTextColor={theme._ACADAD}
@@ -787,7 +793,7 @@ export default function NegotiationDetails(props: any) {
                             {STRING.Submit}
                           </Text>
                         </TouchableOpacity>
-                        <View style={{width: getScaleSize(12)}} />
+                        <View style={{ width: getScaleSize(12) }} />
                         <TouchableOpacity
                           style={styles(theme).actionButtonSecondary}
                           onPress={() => {
@@ -818,7 +824,7 @@ export default function NegotiationDetails(props: any) {
       style={styles(theme).container}
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       keyboardVerticalOffset={Platform.OS === 'ios' ? 80 : 0}>
-      <View style={{flex: 1}}>
+      <View style={{ flex: 1 }}>
         <StatusBar
           barStyle="dark-content"
           backgroundColor={theme.white}
@@ -836,7 +842,7 @@ export default function NegotiationDetails(props: any) {
           <Image
             style={styles(theme).userImage}
             source={
-              peerUserAvatar ? {uri: peerUserAvatar} : IMAGES.user_placeholder
+              peerUserAvatar ? { uri: peerUserAvatar } : IMAGES.user_placeholder
             }
           />
           <View style={styles(theme).headerDetails}>
@@ -876,8 +882,8 @@ export default function NegotiationDetails(props: any) {
           closeOnPressMask
           customAvoidingViewProps={
             Platform.OS === 'android'
-              ? {enabled: false}
-              : {enabled: true, behavior: 'padding'}
+              ? { enabled: false }
+              : { enabled: true, behavior: 'padding' }
           }
           customStyles={{
             container: styles(theme).sheetContainer,
@@ -887,7 +893,7 @@ export default function NegotiationDetails(props: any) {
           }}>
           <Image
             source={IMAGES.ic_alart}
-            style={[styles(theme).alartIcon, {marginBottom: getScaleSize(24)}]}
+            style={[styles(theme).alartIcon, { marginBottom: getScaleSize(24) }]}
           />
 
           <Text
@@ -937,7 +943,7 @@ export default function NegotiationDetails(props: any) {
 }
 const styles = (theme: ThemeContextType['theme']) =>
   StyleSheet.create({
-    container: {flex: 1, backgroundColor: theme.white},
+    container: { flex: 1, backgroundColor: theme.white },
     hearderContainer: {
       paddingVertical: getScaleSize(12),
       flexDirection: 'row',

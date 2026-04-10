@@ -72,7 +72,7 @@ const API_ROUTES = {
     onProcessRenegotiation: 'quote_accept',
     onMarkAsCompleted: 'quote_accept/mark-service-completed',
     onValidateSecurityCode: 'quote_accept/validate-service-code',
-    onNotification: "userService/devices-token/register-token",
+    onNotificationService: "userService/devices-token/register-token",
     getNotifications: "userService/notifications/get",
     getSubscriptionData: "subscription_and_payment/subscription/success-data",
     onConfirmStart: "service_confirmation/service_accept/elder/confirm_start",

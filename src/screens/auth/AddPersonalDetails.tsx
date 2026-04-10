@@ -140,7 +140,8 @@ export default function AddPersonalDetails(props: any) {
     if (isLoading) return;
     const cleanName = name.trim();
     const cleanMobile = mobileNo.trim();
-    const cleanAddress = validateAddress(address)
+    const cleanAddress = address.trim();
+    const addressValidation = validateAddress(cleanAddress);
     let nextNameError = '';
     let nextMobileError = '';
     let nextAddressError = '';
@@ -157,8 +158,8 @@ export default function AddPersonalDetails(props: any) {
       nextMobileError = STRING.mobile_number_must_be_6_to_15_digits;
     }
 
-    if (cleanAddress) {
-      nextAddressError = cleanAddress;
+    if (addressValidation) {
+      nextAddressError = addressValidation;
     }
 
     setNameError(nextNameError);

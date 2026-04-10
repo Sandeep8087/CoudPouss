@@ -1,5 +1,5 @@
 import { Dimensions, FlatList, Image, Linking, ScrollView, SectionList, StyleSheet, TouchableOpacity, View } from 'react-native';
-import React, { useContext, useEffect, useRef, useState } from 'react';
+import React, { useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
 
 //CONTEXT
 import { AuthContext, ThemeContext, ThemeContextType } from '../../context';
@@ -23,6 +23,7 @@ export default function ReviewServices(props: any) {
 
     const { theme } = useContext<any>(ThemeContext);
     const { selectedServices, setSelectedServices, myPlan, profile } = useContext<any>(AuthContext);
+    const serviceItemContainerStyle = useMemo(() => ({ marginBottom: getScaleSize(20) }), []);
 
     const [isLoading, setLoading] = useState(false);
     const bottomSheetRef = useRef<any>(null);
@@ -89,14 +90,14 @@ export default function ReviewServices(props: any) {
             }
         };
 
-        Linking.addEventListener('url', handleUrl);
+        const linkingSubscription = Linking.addEventListener('url', handleUrl);
 
         return () => {
-            Linking.removeAllListeners('url')
+            linkingSubscription.remove()
         };
     }, []);
 
-    const onDeleteService = (service: any) => {
+    const onDeleteService = useCallback((service: any) => {
         const updated = selectedServices
             .map((section: any) => ({
                 ...section,
@@ -105,7 +106,11 @@ export default function ReviewServices(props: any) {
             .filter((section: any) => section?.service?.length > 0);
 
         setSelectedServices(updated);
-    };
+    }, [selectedServices, setSelectedServices]);
+
+    const onPressServiceItem = useCallback((item: any) => {
+        onDeleteService(item);
+    }, [onDeleteService]);
 
     async function onSelectedCategoriesProfessional() {
         const output = selectedServices.map((item: any) => ({
@@ -214,13 +219,11 @@ export default function ReviewServices(props: any) {
                                     {(section?.service ?? []).map((item: any, index: number) => {
                                         return (
                                             <ServiceItem
-                                                key={index}
+                                                key={item?.id ?? index}
                                                 item={item}
-                                                itemContainer={{ marginBottom: getScaleSize(20) }}
+                                                itemContainer={serviceItemContainerStyle}
                                                 isReview={true}
-                                                onPress={() => {
-                                                    onDeleteService(item);
-                                                }}
+                                                onPress={onPressServiceItem}
                                             />
                                         )
                                     })}

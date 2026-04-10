@@ -96,10 +96,10 @@ export default function EditAddress(props: any) {
         if (isFromAddressMap) {
             setHouseFlatNumber('');
             setAddress(selectedAddress || '');
-            setCity(selectedCity || 'Surat');
-            setState(selectedState || 'Gujrat');
-            setCountry(selectedCountry || 'India');
-            setPostalCode(selectedPostalCode || '123456');
+            setCity(selectedCity || '');
+            setState(selectedState || '');
+            setCountry(selectedCountry || '');
+            setPostalCode(selectedPostalCode || '');
             if (myLocationData?.latitude && myLocationData?.longitude) {
                 setMyLocation({ latitude: myLocationData.latitude, longitude: myLocationData.longitude });
             }

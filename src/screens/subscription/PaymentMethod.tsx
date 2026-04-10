@@ -43,11 +43,11 @@ export default function PaymentMethod(props: any) {
     ]
 
     useEffect(() => {
-        EventRegister.addEventListener('subscriptionPaymentCancel', (data: any) => {
+        const paymentCancelListener = EventRegister.addEventListener('subscriptionPaymentCancel', (data: any) => {
             SHOW_TOAST(data?.message ?? '', 'error')
         });
         return () => {
-            EventRegister.removeEventListener('subscriptionPaymentCancel')
+            EventRegister.removeEventListener(paymentCancelListener as string)
         }
     }, []);
 
@@ -143,10 +143,10 @@ export default function PaymentMethod(props: any) {
             }
         };
 
-        Linking.addEventListener('url', handleUrl);
+        const linkingSubscription = Linking.addEventListener('url', handleUrl);
 
         return () => {
-            Linking.removeAllListeners('url')
+            linkingSubscription.remove()
         };
     }, []);
 

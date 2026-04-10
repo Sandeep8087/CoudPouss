@@ -319,18 +319,6 @@ export default function Login(props: any) {
           </Text>
         </View>
       </ScrollView>
-      {/* <SelectCountrySheet
-        height={getScaleSize(500)}
-        isVisible={visibleCountry}
-        onPress={(e: any) => {
-          console.log('e000', e);
-          setCountryCode(e.dial_code);
-          setVisibleCountry(false);
-        }}
-        onClose={() => {
-          setVisibleCountry(false);
-        }}
-      /> */}
       {isLoading && <ProgressView />}
     </View>
   );

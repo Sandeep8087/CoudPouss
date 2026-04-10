@@ -51,8 +51,8 @@ export const useString = () => {
     re_enter_new_password: getTranslation('re_enter_new_password'),
     set_new_password: getTranslation('set_new_password'),
     coudPouss: getTranslation('coudPouss'),
-    Empowering_seniors_with_easy_access_to_trusted_help_care_and_companionship_whenever_needed: getTranslation('Empowering_seniors_with_easy_access_to_trusted_help_care_and_companionship_whenever_needed'),
-    Sign_up_as_Elder: getTranslation('Sign_up_as_Elder'),
+    Empowering_seekers_with_easy_access_to_trusted_help_care_and_companionship_whenever_needed: getTranslation('Empowering_seekers_with_easy_access_to_trusted_help_care_and_companionship_whenever_needed'),
+    Sign_up_as_Seeker: getTranslation('Sign_up_as_Seeker'),
     Sign_up_as_Professional: getTranslation('Sign_up_as_Professional'),
     or: getTranslation('or'),
     get_started_now: getTranslation('get_started_now'),
@@ -377,6 +377,7 @@ export const useString = () => {
     enter_security_code: getTranslation('enter_security_code'),
     enter_security_code_message: getTranslation('enter_security_code_message'),
     validate: getTranslation('validate'),
+    please_enter_valid_code: getTranslation('please_enter_valid_code'),
     security_code_validated_successfully: getTranslation('security_code_validated_successfully'),
     procced_to_payment: getTranslation('procced_to_payment'),
     information_message: getTranslation('information_message'),
@@ -541,7 +542,7 @@ export const useString = () => {
     work_quality: getTranslation('work_quality'),
     reliability: getTranslation('reliability'),
     punctunality: getTranslation('punctunality'),
-    soluction: getTranslation('soluction'),
+    solution: getTranslation('solution'),
     payout: getTranslation('payout'),
     remove: getTranslation('remove'),
     add_more: getTranslation('add_more'),
@@ -595,6 +596,10 @@ export const useString = () => {
     week_4: getTranslation('week_4'),
     week_5: getTranslation('week_5'),
     service: getTranslation('service'),
+    start_and_end_date_cannot_be_same: getTranslation('start_and_end_date_cannot_be_same'),
+    please_select_end_date: getTranslation('please_select_end_date'),
+    great_job_Your_service_quote_submitted_successfully: getTranslation('great_job_Your_service_quote_submitted_successfully'),
+    increase_from_last_month: getTranslation('increase_from_last_month'),
   };
 };
 

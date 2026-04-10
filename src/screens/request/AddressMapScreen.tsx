@@ -9,6 +9,7 @@ import Geolocation from 'react-native-geolocation-service';
 import { getScaleSize } from '../../constant/scaleSize';
 import { BottomSheet, Button } from '../../components';
 import { SCREENS } from '..';
+import { SHOW_TOAST } from '../../constant';
 
 export default function AddressMapScreen(props: any) {
     const { theme } = useContext<any>(ThemeContext);
@@ -346,7 +347,7 @@ export default function AddressMapScreen(props: any) {
                     title={STRING.proceed}
                     onPress={() => {
                         if (!selectedPlaceObject) {
-                            Alert.alert(STRING.select_address, STRING.please_select_address);
+                            SHOW_TOAST(STRING.please_select_address, 'error');
                             return;
                         }
                         mapViewRef.current?.open();

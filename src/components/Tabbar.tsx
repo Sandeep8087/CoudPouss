@@ -164,19 +164,20 @@ function Tabbar(props: any) {
       }
     };
 
-    Linking.addEventListener('url', handleUrl);
+    const linkingSubscription = Linking.addEventListener('url', handleUrl);
 
     return () => {
-      Linking.removeAllListeners('url');
+      linkingSubscription.remove();
     };
   }, []);
 
   useEffect(() => {
-    EventRegister.addEventListener('onInvalidToken', () => {
+    const invalidTokenListener = EventRegister.addEventListener('onInvalidToken', () => {
       onLogout();
     });
+
     return () => {
-      EventRegister.removeEventListener('onInvalidToken');
+      EventRegister.removeEventListener(invalidTokenListener as string);
     };
   }, []);
 

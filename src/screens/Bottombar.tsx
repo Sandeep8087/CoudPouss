@@ -51,7 +51,6 @@ function BottomBar(props: any) {
   }
 
   function getProfessionalRouteName() {
-    console.log('isTask==>', isTask);
     if (isTask) {
       return TABS.Task.identifier;
     }
@@ -117,7 +116,7 @@ function BottomBar(props: any) {
     });
 
     // 🟡 App opened from BACKGROUND
-    getMessaging().onNotificationOpenedApp(remoteMessage => {
+    const unsubscribeNotificationOpenedApp = getMessaging().onNotificationOpenedApp(remoteMessage => {
       console.log('Opened from background:', remoteMessage);
       if (profile && remoteMessage) {
         props?.navigation?.navigate(SCREENS.Notification.identifier);
@@ -132,7 +131,10 @@ function BottomBar(props: any) {
     });
 
 
-    return unsubscribe;
+    return () => {
+      unsubscribe();
+      unsubscribeNotificationOpenedApp();
+    };
   }, []);
 
   useEffect(() => {
@@ -343,7 +345,7 @@ function BottomBar(props: any) {
           <Tab.Screen name={'plus'} component={() => <View />} />
           <Tab.Screen
             name={TABS.Chat.identifier}
-            component={TABS.Chat.component}
+          component={TABS.Chat.component}
             options={{
               freezeOnBlur: false
             }}

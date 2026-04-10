@@ -95,12 +95,11 @@ const CalendarComponent = (props: any) => {
   };
 
   const calendarData = generateCalendar(currentDate);
-  const weekDays = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+  const weekDays = Array.from({ length: 7 }, (_, dayIndex) =>
+    moment().day(dayIndex).format('ddd')
+  );
 
-  const monthYear = currentDate.toLocaleString('default', {
-    month: 'long',
-    year: 'numeric',
-  });
+  const monthYear = moment(currentDate).format('MMMM YYYY');
 
   const isPastDate = (day: number | null) => {
     if (!day) return false;
@@ -115,6 +114,11 @@ const CalendarComponent = (props: any) => {
       moment().startOf('day')
     );
   };
+
+  const pastDateErrorMessage =
+    moment.locale() === 'fr'
+      ? 'Vous ne pouvez pas sélectionner une date passée'
+      : 'You cannot select a date in the past';
 
   return (
     <View style={styles(theme).container}>
@@ -150,6 +154,7 @@ const CalendarComponent = (props: any) => {
         <View style={styles(theme).weekDaysContainer}>
           {weekDays.map((day, index) => (
             <Text
+              key={index}
               size={getScaleSize(14)}
               align="center"
               font={FONTS.Lato.Medium}
@@ -172,7 +177,7 @@ const CalendarComponent = (props: any) => {
                         const date = new Date(currentDate.getFullYear(), currentDate.getMonth(), day);
                         const currentDateMoment = moment().set({ hour: 0, minute: 0, second: 0, millisecond: 0 });
                         if (moment(date).isBefore(currentDateMoment)) {
-                          SHOW_TOAST('You cannot select a date in the past', 'error');
+                          SHOW_TOAST(pastDateErrorMessage, 'error');
                           return;
                         } else {
                           onDateChange(date);

@@ -23,7 +23,7 @@ import { FONTS, IMAGES } from '../../assets';
 import { ThemeContext, ThemeContextType } from '../../context';
 
 //CONSTANT
-import { getScaleSize } from '../../constant';
+import { getScaleSize, useString } from '../../constant';
 
 //COMPONENT
 import {
@@ -44,31 +44,41 @@ import { SCREENS } from '..';
 
 export default function Success(props: any) {
   const { theme } = useContext<any>(ThemeContext);
-
+  const STRING = useString();
   const isFromHome = props?.route?.params?.isFromHome ?? false;
 
-  useEffect(() => {
-    if (isFromHome) {
-      setTimeout(() => {
-        props.navigation.dispatch(
-          CommonActions.reset({
-            index: 0,
-            routes: [{
-              name: SCREENS.BottomBar.identifier
-            }],
-          }),
-        )
-      }, 2000);
-    } else {
-      setTimeout(() => {
-        props.navigation.navigate(SCREENS.ExploreServiceRequest.identifier);
-      }, 2000);
-    }
-  }, [])
+  // useEffect(() => {
+  //   if (isFromHome) {
+  //     setTimeout(() => {
+  //       props.navigation.dispatch(
+  //         CommonActions.reset({
+  //           index: 0,
+  //           routes: [{
+  //             name: SCREENS.BottomBar.identifier
+  //           }],
+  //         }),
+  //       )
+  //     }, 2000);
+  //   } else {
+  //     setTimeout(() => {
+  //       props.navigation.navigate(SCREENS.ExploreServiceRequest.identifier);
+  //     }, 2000);
+  //   }
+  // }, [])
 
   return (
     <View style={styles(theme).container}>
-      <Image style={styles(theme).imageView} source={IMAGES.quate_message} />
+      <Image style={styles(theme).imageView}
+        source={IMAGES.quate_message}
+        resizeMode="contain"
+      />
+      <Text 
+      size={getScaleSize(24)}
+        font={FONTS.Lato.Bold}
+        color={theme._939393}
+        align="center">
+        {STRING.great_job_Your_service_quote_submitted_successfully}
+      </Text>
     </View>
   );
 }
@@ -79,11 +89,13 @@ const styles = (theme: ThemeContextType['theme']) =>
       flex: 1,
       backgroundColor: theme.white,
       justifyContent: 'center',
+      alignItems: 'center',
+      paddingHorizontal: getScaleSize(24),
     },
     imageView: {
-      width: Dimensions.get('window').width - getScaleSize(58),
-      height: getScaleSize(500),
+      width: Dimensions.get('window').width - getScaleSize(167),
+      height: ((Dimensions.get('window').width - getScaleSize(167)) * getScaleSize(290)) / getScaleSize(262),
       resizeMode: 'contain',
-      alignSelf: 'center'
+      marginBottom: getScaleSize(40),
     }
   });

@@ -10,6 +10,8 @@ import { SCREENS } from '..'
 import { API } from '../../api'
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { useIsFocused } from '@react-navigation/native'
+import DatePicker from 'react-native-date-picker'
+
 
 export default function MyEarnings(props: any) {
 
@@ -102,7 +104,7 @@ export default function MyEarnings(props: any) {
                             size={getScaleSize(16)}
                             font={FONTS.Lato.Medium}
                             color={theme._4CAF50}>
-                            {`${earningsData?.increase_from_last_month?.percentage >= 0 ? '+' : '-'}${earningsData?.increase_from_last_month?.percentage ?? 0}% increase from last month`}
+                            {`${earningsData?.increase_from_last_month?.percentage >= 0 ? '+' : '-'}${earningsData?.increase_from_last_month?.percentage ?? 0}% ${STRING.increase_from_last_month}`}
                         </Text>
                     </View>
                     <View style={styles(theme).chartContainer}>
@@ -163,12 +165,13 @@ export default function MyEarnings(props: any) {
                     props.navigation.navigate(SCREENS.MoneyWithdrawal.identifier);
                 }} />
             {showPicker && (
-                <DateTimePicker
-                    value={selectedDate}
+                <DatePicker
+                    date={selectedDate}
+                    open={showPicker}
                     mode='date'
-                    display='spinner'
+                    modal
                     locale={language === 'fr' ? 'fr-FR' : 'en-US'}
-                    onChange={onChange}
+                    onDateChange={onChange}
                 />
             )}
         </View>

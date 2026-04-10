@@ -116,11 +116,11 @@ export default function RequestDetails(props: any) {
   }, [cancelServiceDetails]);
 
   useEffect(() => {
-    EventRegister.addEventListener('onPaymentCancel', (data: any) => {
+    const paymentCancelListener = EventRegister.addEventListener('onPaymentCancel', (data: any) => {
       SHOW_TOAST(data?.message ?? '', 'error');
     });
     return () => {
-      EventRegister.removeEventListener('onPaymentCancel');
+      EventRegister.removeEventListener(paymentCancelListener as string);
     };
   }, []);
 

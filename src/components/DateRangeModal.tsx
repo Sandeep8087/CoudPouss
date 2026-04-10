@@ -134,6 +134,7 @@ const DateRangeModal = ({
   const [startDate, setStartDate] = useState<string | null>(null);
   const [endDate, setEndDate] = useState<string | null>(null);
   const [markedDates, setMarkedDates] = useState({});
+  const [errorMessage, setErrorMessage] = useState('');
 
   const STRING = useString();
 
@@ -145,6 +146,7 @@ const DateRangeModal = ({
   }, [calendarLocale]);
 
   const onDayPress = (day: any) => {
+    setErrorMessage('');
     if (!startDate || (startDate && endDate)) {
       setStartDate(day.dateString);
       setEndDate(null);
@@ -157,9 +159,14 @@ const DateRangeModal = ({
       });
     } else {
       if (day.dateString < startDate) return;
+      if (day.dateString === startDate) {
+        setErrorMessage(STRING.start_and_end_date_cannot_be_same);
+        return;
+      }
 
       setEndDate(day.dateString);
       setMarkedDates(getMarkedRange(startDate, day.dateString));
+      setErrorMessage('');
     }
   };
 
@@ -167,9 +174,25 @@ const DateRangeModal = ({
     setStartDate(null);
     setEndDate(null);
     setMarkedDates({});
+    setErrorMessage('');
   };
 
   const onApplyPress = () => {
+    // Allow apply with no range to clear/remove filter
+    if (!startDate && !endDate) {
+      setErrorMessage('');
+      onApply('', '');
+      onClose();
+      return;
+    }
+
+    // Incomplete range is invalid
+    if (!startDate || !endDate) {
+      setErrorMessage(STRING.please_select_end_date);
+      return;
+    }
+
+    setErrorMessage('');
     onApply(startDate ?? '', endDate ?? '');
     onClose();
   };
@@ -180,7 +203,14 @@ const DateRangeModal = ({
         <View style={styles.container}>
 
           {/* HEADER */}
-          <Text style={styles.title}>{STRING.select_date_range}</Text>
+          <Text
+            font={FONTS.Lato.Bold}
+            size={getScaleSize(18)}
+            color={theme._214C65}
+            style={styles.title}
+          >
+            {STRING.select_date_range}
+          </Text>
 
           {/* CALENDAR */}
           <Calendar
@@ -191,6 +221,17 @@ const DateRangeModal = ({
             enableSwipeMonths // 👈 smooth month animation
             onDayPress={onDayPress}
           />
+
+          {!!errorMessage && (
+            <Text
+              font={FONTS.Lato.Regular}
+              size={getScaleSize(14)}
+              color={theme._EF5350}
+              style={styles.validationText}
+            >
+              {errorMessage}
+            </Text>
+          )}
 
           {/* FOOTER */}
           <View style={styles.footer}>
@@ -234,10 +275,7 @@ const styles = StyleSheet.create({
     padding: getScaleSize(12),
   },
   title: {
-    fontSize: 16,
-    fontWeight: '600',
-    textAlign: 'center',
-    marginBottom: 6,
+    padding: getScaleSize(6),
   },
   footer: {
     flexDirection: 'row',
@@ -245,6 +283,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingTop: getScaleSize(12),
     paddingHorizontal: getScaleSize(16),
+  },
+  validationText: {
+    paddingHorizontal: getScaleSize(16),
+    marginTop: getScaleSize(8),
   },
   clear: {
     color: 'red',

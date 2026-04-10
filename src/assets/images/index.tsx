@@ -137,4 +137,6 @@ export const IMAGES = {
   ic_camare: require('./ic_camare.png'),
   ic_coupon: require('./ic_coupon.png'),
   homeBG: require('./homeBG.png'),
+  ic_arrow_down: require('./ic_arrow_down.png'),
+  ic_arrow_up: require('./ic_arrow_up.png'),
 };

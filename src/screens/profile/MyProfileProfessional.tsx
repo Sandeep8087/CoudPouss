@@ -344,7 +344,7 @@ export default function MyProfileProfessional(props: any) {
           </View>
           <View style={{ marginTop: getScaleSize(15) }}>
             <RattingControler
-              title={STRING.soluction}
+              title={STRING.solution}
               value={profile?.customer_ratings?.criteria_averages?.solution ?? '0.0'}
               fillCount={profile?.customer_ratings?.criteria_averages?.solution ?? 0}
               totalCount={5}

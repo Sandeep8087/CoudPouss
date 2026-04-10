@@ -9,7 +9,7 @@ import {
     TouchableOpacity,
     View,
 } from 'react-native';
-import React, { useContext, useEffect, useRef, useState } from 'react';
+import React, { useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
 
 // CONTEXT
 import { AuthContext, ThemeContext, ThemeContextType } from '../../context';
@@ -69,7 +69,6 @@ export default function ManageServices(props: any) {
             if (result.status) {
                 const serviceList = result?.data?.data?.services ?? [];
 
-                console.log('serviceList==>', JSON.stringify(result?.data?.data))
                 setServices(result?.data?.data ?? []);
 
                 if (!keepSelection || !selectedCategoryId) {
@@ -127,7 +126,33 @@ export default function ManageServices(props: any) {
         (i: any) => i.category_id === selectedCategoryId
     );
 
-    console.log('services==>', services, services?.services?.length > 1)
+    const subCategoryIds = useMemo(
+        () =>
+            services?.services?.flatMap((service: any) =>
+                service.subcategories.map((sub: any) => sub.sub_category_id)
+            ) || [],
+        [services]
+    );
+
+    const handleRemoveSubCategory = useCallback((item: any) => {
+        setSelectedServiceId(item?.sub_category_id ?? null);
+    }, []);
+
+    const handleEditSubCategory = useCallback(() => {
+        props.navigation.navigate(SCREENS.AddServices.identifier, {
+            isFromManageServices: true,
+            isEdit: true,
+            categoryId: selectedCategoryId,
+            disableServicesIds: subCategoryIds,
+        });
+    }, [props.navigation, selectedCategoryId, subCategoryIds]);
+
+    const navigateToAddServices = useCallback(() => {
+        props.navigation.navigate(SCREENS.AddServices.identifier, {
+            isFromManageServices: true,
+            disableServicesIds: subCategoryIds,
+        });
+    }, [props.navigation, subCategoryIds]);
 
     function renderSubCategories() {
         if (selectedService?.subcategories?.length > 0) {
@@ -143,23 +168,8 @@ export default function ManageServices(props: any) {
                                 styles(theme).itemContainerStyle
                             }
                             isManage={true}
-                            onRemove={() => {
-                                setSelectedServiceId(item.sub_category_id)
-                            }}
-
-                            onEdit={(item: any) => {
-
-                                const subCategoryIds = services?.services?.flatMap((service: any) =>
-                                    service.subcategories.map((sub: any) => sub.sub_category_id)
-                                ) || [];
-
-                                props.navigation.navigate(SCREENS.AddServices.identifier, {
-                                    isFromManageServices: true,
-                                    isEdit: true,
-                                    categoryId: selectedCategoryId,
-                                    disableServicesIds: subCategoryIds,
-                                });
-                            }}
+                            onRemove={handleRemoveSubCategory}
+                            onEdit={handleEditSubCategory}
                         />
                     )}
                 />
@@ -287,27 +297,12 @@ export default function ManageServices(props: any) {
                     }}
                     onPress={() => {
                         if (profile?.user?.service_provider_type === 'professional') {
-                            const subCategoryIds = services?.services?.flatMap((service: any) =>
-                                service.subcategories.map((sub: any) => sub.sub_category_id)
-                            ) || [];
-
-                            props.navigation.navigate(
-                                SCREENS.AddServices.identifier,
-                                { isFromManageServices: true, disableServicesIds: subCategoryIds }
-                            );
+                            navigateToAddServices();
                         } else {
                             if (services?.services?.length > 0) {
                                 bottomSheetRef.current.open();
                             } else {
-
-                                const subCategoryIds = services?.services?.flatMap((service: any) =>
-                                    service.subcategories.map((sub: any) => sub.sub_category_id)
-                                ) || [];
-
-                                props.navigation.navigate(
-                                    SCREENS.AddServices.identifier,
-                                    { isFromManageServices: true, disableServicesIds: subCategoryIds }
-                                );
+                                navigateToAddServices();
                             }
                         }
                     }}
@@ -326,14 +321,7 @@ export default function ManageServices(props: any) {
                 buttonTitle={STRING.proceed}
                 secondButtonTitle={STRING.cancel}
                 onPressButton={() => {
-
-                    const subCategoryIds = services?.services?.flatMap((service: any) =>
-                        service.subcategories.map((sub: any) => sub.sub_category_id)
-                    ) || [];
-
-                    props.navigation.navigate(SCREENS.AddServices.identifier,
-                        { isFromManageServices: true, disableServicesIds: subCategoryIds }
-                    );
+                    navigateToAddServices();
                     bottomSheetRef.current.close();
                 }}
             />

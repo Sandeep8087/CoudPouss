@@ -57,8 +57,6 @@ export default function TaskStatus(props: any) {
   const [newQuoteAmountError, setNewQuoteAmountError] = useState('');
   const [renegotiationDetails, setRenegotiationDetails] = useState<any>({});
   const [renegotiationNewDetails, setRenegotiationNewDetails] = useState<any>({});
-  const [otp, setOtp] = useState('');
-  const [otpError, setOtpError] = useState('');
   const [serviceFlags, setServiceFlags] = useState({
     isOutForService: false,
     isExpertConfirmed: false,
@@ -346,11 +344,11 @@ export default function TaskStatus(props: any) {
     }
   }
 
-  async function onVerifySecurityCode() {
+  async function onVerifySecurityCode(enteredCode: string) {
     try {
       setLoading(true);
       const params = {
-        entered_code: otp,
+        entered_code: enteredCode,
       }
       const result = await API.Instance.post(API.API_ROUTES.onValidateSecurityCode + `/${item?.service_request_id}`, params);
       if (result.status) {
@@ -563,25 +561,13 @@ export default function TaskStatus(props: any) {
       <EnterSecurityCodeSheet
         onRef={enterSecurityCodeSheetRef}
         otpInput={otpInput}
-        onChangeOtp={(text: string) => {
-          setOtp(text);
-          setOtpError('');
-
-        }}
-        otpError={otpError}
-        otp={otp}
         security_Code={taskStatusData?.displayed_service_code?.replace(/\*/g, '') ?? '0'}
         onClose={() => {
           enterSecurityCodeSheetRef.current?.close();
         }}
-        onProcessPress={() => {
-          if (!otp || otp.length !== 3) {
-            setOtpError('Please enter Valid Code');
-            return;
-          } else {
-            onVerifySecurityCode();
-            Keyboard.dismiss()
-          }
+        onProcessPress={(enteredCode: string) => {
+          onVerifySecurityCode(enteredCode);
+          Keyboard.dismiss()
         }}
       />
       <BottomSheet

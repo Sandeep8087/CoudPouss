@@ -106,7 +106,7 @@ const responseValidator = (response: AxiosResponse<any, any>) => {
     if (!DISABLE_API_LOGS) {
         console.log(`Response Status ${response?.status}`)
         console.log(`Response Config Header ${JSON.stringify(response?.config?.headers)}`)
-        console.log(`Response Config Base URL ${JSON.stringify(response?.config?.baseURL) } ${JSON.stringify(response?.config?.url)}`)
+        console.log(`Response Config Base URL ${JSON.stringify(response?.config?.baseURL)} ${JSON.stringify(response?.config?.url)}`)
         console.log(`Response Config Data ${JSON.stringify(response?.config?.data)}`)
         console.log(`Response Details ${JSON.stringify(response?.data)}`)
     }
@@ -124,7 +124,7 @@ const errorValidator = (error: any) => {
         console.log(`Error ${error}`)
         console.log(`Error Status ${error?.response?.status}`)
         console.log(`Error Config Header ${JSON.stringify(error?.response?.config?.headers)}`)
-        console.log(`Error Config Base URL ${JSON.stringify(error?.response?.config?.baseURL)}`)
+        console.log(`Error Config Base URL ${JSON.stringify(error?.response?.config?.baseURL)} ${JSON.stringify(error?.response?.config?.url)}`)
         console.log(`Error Config Data ${JSON.stringify(error?.response?.config?.data)}`)
         console.log(`Error Details ${JSON.stringify(error?.response?.data)}`)
     }

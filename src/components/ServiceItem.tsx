@@ -1,20 +1,18 @@
 import {
   Image,
-  Modal,
   StatusBar,
   StyleSheet,
   TouchableOpacity,
   View,
 } from 'react-native';
-import React, {useContext, useState} from 'react';
+import React, {memo, useCallback, useContext, useMemo, useState} from 'react';
 import {ThemeContext, ThemeContextType} from '../context/ThemeProvider';
 import {getScaleSize, useString} from '../constant';
 import Text from './Text';
 import {FONTS, IMAGES} from '../assets';
 import Tooltip from 'react-native-walkthrough-tooltip';
-import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
-export default function ServiceItem(props: any) {
+function ServiceItem(props: any) {
 
   const STRING = useString();
   const {
@@ -31,21 +29,39 @@ export default function ServiceItem(props: any) {
     onEdit,
   } = props;
   const {theme} = useContext<any>(ThemeContext);
+  const actionTypes = useMemo(
+    () => [
+      {id: 1, title: STRING.remove, icon: IMAGES.trash2},
+      {id: 2, title: STRING.add_more, icon: IMAGES.edit},
+    ],
+    [STRING.remove, STRING.add_more],
+  );
 
-    const [visible, setVisible] = useState(false);
-    return (
+  const [visible, setVisible] = useState(false);
+
+  const handlePress = useCallback(() => {
+    if (isDisabled || isManage) {
+      return;
+    }
+    onPress?.(item);
+  }, [isDisabled, isManage, onPress, item]);
+
+  const handleMenuAction = useCallback(
+    (typeId: number) => {
+      if (typeId === 1) {
+        onRemove?.(item);
+      } else {
+        onEdit?.(item);
+      }
+    },
+    [onEdit, onRemove, item],
+  );
+
+  return (
         <TouchableOpacity
             activeOpacity={0.9}
             disabled={isDisabled || isManage}
-            onPress={() => {
-                if (isDisabled) {
-                    return;
-                }
-                if (isManage) {
-                    return;
-                }
-                onPress(item);
-            }}
+            onPress={handlePress}
             style={[styles(theme).container, itemContainer, { opacity: isDisabled ? 0.5 : 1 }]}>
             {isSelectedBox &&
                 <Image
@@ -107,19 +123,11 @@ export default function ServiceItem(props: any) {
                         onClose={() => setVisible(false)}
                         content={
                             <View style={{}}>
-                                {[{id: 1, title: STRING.remove, icon: IMAGES.trash2 }, {id: 2, title: STRING.add_more, icon: IMAGES.edit }].map((type, i) => (
+                                {actionTypes.map((type, i) => (
                                     <TouchableOpacity
                                         key={i}
                                         style={styles(theme).dropdownItem}
-                                        onPress={() => {
-                                            if (type.id === 1) {
-                                                onRemove(item);
-                                                // setVisible(false);
-                                            } else {
-                                                onEdit(item);
-                                                // setVisible(false);
-                                            }
-                                        }}
+                                        onPress={() => handleMenuAction(type.id)}
                                     >
                                         <View style={styles(theme).dropdownItemContainer}>
                                             <Text
@@ -154,8 +162,27 @@ export default function ServiceItem(props: any) {
                 </>
             }
         </TouchableOpacity>
-    )
+    );
 }
+
+function areEqual(prevProps: any, nextProps: any) {
+  return (
+    prevProps?.item?.id === nextProps?.item?.id &&
+    prevProps?.item?.sub_category_id === nextProps?.item?.sub_category_id &&
+    prevProps?.item?.subcategory_name === nextProps?.item?.subcategory_name &&
+    prevProps?.item?.image === nextProps?.item?.image &&
+    prevProps?.isSelected === nextProps?.isSelected &&
+    prevProps?.isDisabled === nextProps?.isDisabled &&
+    prevProps?.isReview === nextProps?.isReview &&
+    prevProps?.isSelectedBox === nextProps?.isSelectedBox &&
+    prevProps?.isManage === nextProps?.isManage &&
+    prevProps?.onPress === nextProps?.onPress &&
+    prevProps?.onRemove === nextProps?.onRemove &&
+    prevProps?.onEdit === nextProps?.onEdit
+  );
+}
+
+export default memo(ServiceItem, areEqual);
 
 const styles = (theme: ThemeContextType['theme']) =>
   StyleSheet.create({

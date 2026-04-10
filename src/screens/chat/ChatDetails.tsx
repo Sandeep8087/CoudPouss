@@ -62,7 +62,7 @@ export default function ChatDetails(props: any) {
 
   const [loading, setLoading] = useState(false);
   const [isPeerOnline, setIsPeerOnline] = useState(false);
-  const [peerLastActive, setPeerLastActive] = useState(0);
+  const [peerLastActive, setPeerLastActive] = useState<number | null>(null);
   const flatListRef = useRef<FlatList<any> | null>(null);
 
   const [commanId, setCommanId] = useState<string | ''>(
@@ -217,7 +217,7 @@ export default function ChatDetails(props: any) {
         rawStatus === 'online';
 
       setIsPeerOnline(userIsOnline);
-      setPeerLastActive(userData?.lastActive || 0);
+      setPeerLastActive(getTimestampInMs(userData?.lastActive));
     });
 
     return () => {
@@ -669,8 +669,52 @@ const formatTimestamp = (
   return date.toLocaleTimeString([], {hour: '2-digit', minute: '2-digit'});
 };
 
-const formatLastSeen = (timestamp: number) => {
+const getTimestampInMs = (rawTimestamp: any): number | null => {
+  if (!rawTimestamp) {
+    return null;
+  }
+
+  // Firestore Timestamp object
+  if (typeof rawTimestamp?.toDate === 'function') {
+    return rawTimestamp.toDate().getTime();
+  }
+
+  // Unix timestamp object shape: {seconds, nanoseconds}
+  if (
+    typeof rawTimestamp === 'object' &&
+    typeof rawTimestamp?.seconds === 'number'
+  ) {
+    return rawTimestamp.seconds * 1000;
+  }
+
+  if (typeof rawTimestamp === 'number') {
+    // Heuristic: values below 1e12 are likely seconds, not milliseconds.
+    return rawTimestamp < 1e12 ? rawTimestamp * 1000 : rawTimestamp;
+  }
+
+  if (typeof rawTimestamp === 'string') {
+    const numericValue = Number(rawTimestamp);
+    if (!Number.isNaN(numericValue)) {
+      return numericValue < 1e12 ? numericValue * 1000 : numericValue;
+    }
+
+    const parsedDate = Date.parse(rawTimestamp);
+    return Number.isNaN(parsedDate) ? null : parsedDate;
+  }
+
+  return null;
+};
+
+const formatLastSeen = (timestamp: number | null) => {
+  if (!timestamp) {
+    return '';
+  }
+
   const date = new Date(timestamp);
+  if (Number.isNaN(date.getTime())) {
+    return '';
+  }
+
   const now = new Date();
   const sameDay = date.toDateString() === now.toDateString();
 

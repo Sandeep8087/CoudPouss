@@ -1,5 +1,5 @@
 import { Alert, Dimensions, FlatList, Image, Linking, Platform, ScrollView, StyleSheet, TouchableOpacity, View } from 'react-native';
-import React, { useContext, useEffect, useRef, useState } from 'react';
+import React, { useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
 
 //CONTEXT
 import { AuthContext, ThemeContext, ThemeContextType } from '../../context';
@@ -35,6 +35,9 @@ export default function AddServices(props: any) {
     const [isLoading, setLoading] = useState(false);
     const [subCategoryList, setSubCategoryList] = useState([]);
     const [paymentPopup, setPaymentPopup] = useState(false);
+    const [localSelectedServices, setLocalSelectedServices] = useState<any[]>(selectedServices ?? []);
+    const lastServiceTapRef = useRef<Record<string, number>>({});
+    const SERVICE_TAP_GUARD_MS = 250;
 
 
     useEffect(() => {
@@ -136,10 +139,10 @@ export default function AddServices(props: any) {
             }
         };
 
-        Linking.addEventListener('url', handleUrl);
+        const linkingSubscription = Linking.addEventListener('url', handleUrl);
 
         return () => {
-            Linking.removeAllListeners('url')
+            linkingSubscription.remove()
         };
     }, []);
 
@@ -148,9 +151,7 @@ export default function AddServices(props: any) {
             setLoading(true);
             const result = await API.Instance.get(API.API_ROUTES.allCategories);
             setLoading(false);
-            console.log('result', result.status, result)
             if (result.status) {
-                console.log('allCategories==', result?.data?.data)
                 const sortedData: any = [...(result?.data?.data || [])].sort(
                     (a: any, b: any) =>
                         a.category_name?.toLowerCase().localeCompare(b.category_name?.toLowerCase())
@@ -158,7 +159,6 @@ export default function AddServices(props: any) {
                 setAllCategories(sortedData);
             } else {
                 SHOW_TOAST(result?.data?.message ?? '', 'error')
-                console.log('error==>', result?.data?.message)
             }
         } catch (error: any) {
             setLoading(false);
@@ -174,13 +174,10 @@ export default function AddServices(props: any) {
             setLoading(true);
             const result = await API.Instance.get(API.API_ROUTES.getHomeData + `/${id}`);
             setLoading(false);
-            console.log('result', result.status, result)
             if (result.status) {
-                console.log('subcategoryList==', result?.data?.data)
                 setSubCategoryList(result?.data?.data?.subcategories ?? []);
             } else {
                 SHOW_TOAST(result?.data?.message ?? '', 'error')
-                console.log('error==>', result?.data?.message)
             }
         } catch (error: any) {
             setLoading(false);
@@ -192,95 +189,111 @@ export default function AddServices(props: any) {
     }
 
 
-    const isServiceSelected = (item: any) => {
-        if (selectedServices && selectedServices.length > 0) {
-            const categoryItem = selectedServices.find((e: any) => e?.category?.id === selectedCategory?.id);
-            if (categoryItem) {
-                return categoryItem?.service?.some((f: any) => f?.id === item?.id);
-            }
+    const selectedServiceIds = useMemo(() => {
+        if (!selectedCategory?.id || !localSelectedServices?.length) {
+            return new Set<string>();
         }
-        return false;
-    }
+        const categoryItem = localSelectedServices.find((e: any) => e?.category?.id === selectedCategory?.id);
+        const ids = (categoryItem?.service ?? []).map((service: any) => service?.id).filter(Boolean);
+        return new Set<string>(ids);
+    }, [selectedCategory?.id, localSelectedServices]);
 
-    async function onSelectServices(item: any) {
-        if (selectedServices && selectedServices.length > 0) {
-            const categoryItem = selectedServices.find((e: any) => e?.category?.id === selectedCategory?.id);
-            if (categoryItem) {
-                const newCategoryItem = { ...categoryItem };
+    const isServiceSelected = useCallback((item: any) => {
+        return selectedServiceIds.has(item?.id);
+    }, [selectedServiceIds]);
 
-                let services: any[] = newCategoryItem?.service ?? [];
-                const serviceItem = services?.find((e: any) => e?.id === item?.id);
-                if (serviceItem) {
-                    services = services.filter((e: any) => e.id !== item.id);
-                }
-                else {
-                    services = [...services, item];
-                }
+    const onSelectServices = useCallback((item: any) => {
+        if (!selectedCategory) return;
 
-                newCategoryItem.service = services;
+        setLocalSelectedServices((prev: any[] = []) => {
+            const categoryItemIndex = prev.findIndex((e: any) => e?.category?.id === selectedCategory?.id);
 
-                const categoryItemIndex = selectedServices.findIndex((e: any) => e?.category?.id === selectedCategory?.id);
-                if (newCategoryItem.service && newCategoryItem.service.length > 0) {
-                    selectedServices.splice(categoryItemIndex, 1, newCategoryItem);
-                    setSelectedServices([...selectedServices]);
-                }
-                else {
-                    selectedServices.splice(categoryItemIndex, 1);
-                    setSelectedServices([...selectedServices]);
-                }
+            if (categoryItemIndex === -1) {
+                return [
+                    ...prev,
+                    {
+                        category: selectedCategory,
+                        service: [item],
+                    },
+                ];
             }
-            else {
-                const newCategoryItem = {
-                    category: selectedCategory,
-                    service: [item],
-                }
 
-                setSelectedServices([...selectedServices, newCategoryItem]);
+            const categoryItem = prev[categoryItemIndex];
+            const currentServices: any[] = categoryItem?.service ?? [];
+            const isAlreadySelected = currentServices.some((e: any) => e?.id === item?.id);
+            const updatedServices = isAlreadySelected
+                ? currentServices.filter((e: any) => e?.id !== item?.id)
+                : [...currentServices, item];
+
+            if (updatedServices.length === 0) {
+                return prev.filter((_: any, index: number) => index !== categoryItemIndex);
             }
-        }
-        else {
-            const categoryItem = {
+
+            const updated = [...prev];
+            updated[categoryItemIndex] = {
+                ...categoryItem,
                 category: selectedCategory,
-                service: [item],
+                service: updatedServices,
+            };
+            return updated;
+        });
+    }, [selectedCategory]);
+
+    const onSelectServicesForManageServices = useCallback((item: any) => {
+        if (!selectedCategory) return;
+
+        setLocalSelectedServices((prev: any[] = []) => {
+            const current = prev[0];
+
+            // reset services if category changed
+            const currentServices: any[] =
+                current?.category?.id === selectedCategory?.id
+                    ? (current?.service ?? [])
+                    : [];
+
+            const exists = currentServices.some((e: any) => e?.id === item?.id);
+            const services = exists
+                ? currentServices.filter((e: any) => e?.id !== item?.id)
+                : [...currentServices, item];
+
+            if (services.length === 0) {
+                return [];
             }
 
-            setSelectedServices([...selectedServices, categoryItem]);
+            // always save ONE category
+            return [
+                {
+                    category: selectedCategory,
+                    service: services,
+                },
+            ];
+        });
+    }, [selectedCategory]);
+
+    const canHandleServiceTap = useCallback((serviceId?: string) => {
+        if (!serviceId) return true;
+        const now = Date.now();
+        const lastTappedAt = lastServiceTapRef.current[serviceId] ?? 0;
+        if (now - lastTappedAt < SERVICE_TAP_GUARD_MS) {
+            return false;
         }
-    };
+        lastServiceTapRef.current[serviceId] = now;
+        return true;
+    }, []);
 
-    function onSelectServicesForManageServices(item: any) {
-        const current = selectedServices[0];
-
-        // reset services if category changed
-        let services =
-            current?.category?.id === selectedCategory?.id
-                ? current.service
-                : [];
-
-        // toggle service
-        const exists = services.some((e: any) => e.id === item.id);
-
-        services = exists
-            ? services.filter((e: any) => e.id !== item.id)
-            : [...services, item];
-
-        // clear if empty
-        if (services.length === 0) {
-            setSelectedServices([]);
+    const handleServicePress = useCallback((e: any) => {
+        if (!canHandleServiceTap(e?.id)) {
             return;
         }
-
-        // always save ONE category
-        setSelectedServices([
-            {
-                category: selectedCategory,
-                service: services,
-            },
-        ]);
-    }
+        if (isFromManageServices) {
+            onSelectServicesForManageServices(e);
+        } else {
+            onSelectServices(e);
+        }
+    }, [canHandleServiceTap, isFromManageServices, onSelectServices, onSelectServicesForManageServices]);
 
     async function onSelectedCategoriesProfessional() {
-        const output = selectedServices.map((item: any) => ({
+        const output = localSelectedServices.map((item: any) => ({
             category_id: item.category.id,
             sub_category_ids: item.service.map((e: any) => e.id),
         }));
@@ -292,6 +305,7 @@ export default function AddServices(props: any) {
             const result = await API.Instance.post(API.API_ROUTES.onSendCategoryIds + `?action=update`, params);
             if (result.status) {
                 props.navigation.goBack();
+                setLocalSelectedServices([]);
                 setSelectedServices([]);
                 SHOW_TOAST(result?.data?.message, 'success')
             } else {
@@ -306,8 +320,7 @@ export default function AddServices(props: any) {
     }
 
     async function onSelectedCategoriesNonProfessional() {
-        console.log('selectedServices==>', selectedServices)
-        const output = selectedServices.map((item: any) => ({
+        const output = localSelectedServices.map((item: any) => ({
             category_id: item.category.id,
             sub_category_ids: item.service.map((e: any) => e.id),
         }));
@@ -322,6 +335,7 @@ export default function AddServices(props: any) {
                 if (result?.data?.data?.checkout_url) {
                     const STRIPE_URL = result?.data?.data?.checkout_url ?? '';
                     openStripeCheckout(STRIPE_URL);
+                    setLocalSelectedServices([]);
                     setSelectedServices([]);
                     bottomSheetRef.current.close();
                 } else {
@@ -375,8 +389,8 @@ export default function AddServices(props: any) {
                 </Text>
                 <CategoryDropdown
                     onChange={(item) => {
-                        // if (selectedServices.length > 0) {
-                        //     const categoryItem = selectedServices.find((e: any) => e?.category?.id === selectedCategory?.id);
+                        // if (localSelectedServices.length > 0) {
+                        //     const categoryItem = localSelectedServices.find((e: any) => e?.category?.id === selectedCategory?.id);
                         //     if (categoryItem) {
                         //         bottomSheetRef.current.open();
                         //     } else {
@@ -403,8 +417,13 @@ export default function AddServices(props: any) {
                     {selectedCategory && (
                         <FlatList
                             data={subCategoryList}
+                            extraData={`${selectedCategory?.id ?? ''}:${selectedServiceIds.size}`}
                             showsVerticalScrollIndicator={false}
-                            keyExtractor={(item: any, index: number) => index.toString()}
+                            keyExtractor={(item: any, index: number) => item?.id?.toString?.() ?? index.toString()}
+                            removeClippedSubviews={true}
+                            initialNumToRender={12}
+                            maxToRenderPerBatch={10}
+                            windowSize={7}
                             renderItem={({ item, index }) => {
                                 const isSelected = isServiceSelected(item);
                                 const isDisabled = disableServicesIds.includes(item?.id);
@@ -415,13 +434,7 @@ export default function AddServices(props: any) {
                                         isSelectedBox={true}
                                         isSelected={isSelected}
                                         isDisabled={isDisabled}
-                                        onPress={(e: any) => {
-                                            if (isFromManageServices) {
-                                                onSelectServicesForManageServices(e);
-                                            } else {
-                                                onSelectServices(e);
-                                            }
-                                        }}
+                                        onPress={handleServicePress}
                                     />
 
                                 )
@@ -434,6 +447,7 @@ export default function AddServices(props: any) {
                 <TouchableOpacity
                     onPress={() => {
                         props.navigation.goBack();
+                        setLocalSelectedServices([]);
                         setSelectedServices([]);
                     }}
                     style={styles(theme).backButton}>
@@ -449,23 +463,23 @@ export default function AddServices(props: any) {
                 <Button
                     title={STRING.next}
                     style={{ flex: 1.0 }}
-                    disabled={selectedServices?.length == 0}
+                    disabled={localSelectedServices?.length == 0}
                     onPress={() => {
-                        console.log('selectedServices==>', selectedServices)
-                        if (selectedServices?.length == 0) {
+                        if (localSelectedServices?.length == 0) {
                             return
                         }
                         if (isFromManageServices) {
                             if (profile?.user?.service_provider_type === 'professional') {
                                 onSelectedCategoriesProfessional();
                             } else {
-                                if (selectedServices.length > 1) {
+                                if (localSelectedServices.length > 1) {
                                     bottomSheetRef.current.open();
                                 } else {
                                     onSelectedCategoriesNonProfessional();
                                 }
                             }
                         } else {
+                            setSelectedServices(localSelectedServices);
                             props.navigation.navigate(SCREENS.ReviewServices.identifier);
                         }
                     }}

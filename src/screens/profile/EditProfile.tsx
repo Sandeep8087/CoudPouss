@@ -111,7 +111,7 @@ export default function EditProfile(props: any) {
         }
     }, [])
 
-    console.log('firstImageURL', profile?.past_work_photos)
+    console.log('firstImageURL', profile?.past_work_files?.[0])
 
     const pickImage = async (type: string) => {
         launchImageLibrary({ mediaType: 'photo' }, (response) => {

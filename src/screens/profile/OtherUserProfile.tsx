@@ -402,7 +402,7 @@ export default function OtherUserProfile(props: any) {
           </View>
           <View style={{ marginTop: getScaleSize(15) }}>
             <RattingControler
-              title={STRING.soluction}
+              title={STRING.solution}
               value={ratings?.solution ?? '0.0'}
               fillCount={ratings?.solution ?? 0}
               totalCount={5}

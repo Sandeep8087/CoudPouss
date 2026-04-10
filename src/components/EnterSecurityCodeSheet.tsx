@@ -1,14 +1,9 @@
-import React, { useContext, useRef, useState } from 'react';
+import React, { useContext, useState } from 'react';
 import {
     View,
     StyleSheet,
     TouchableOpacity,
-    Alert,
     Image,
-    Dimensions,
-    Animated,
-    Easing,
-    TextInput,
     Platform,
 } from 'react-native';
 
@@ -31,13 +26,10 @@ import RBSheet from 'react-native-raw-bottom-sheet';
 interface EnterSecurityCodeProps {
     cancelServiceDetails?: any;
     onClose: () => void;
-    onProcessPress: any
+    onProcessPress: (otp: string) => void;
     onRef: any;
     height?: number;
     otpInput?: any;
-    onChangeOtp: (text: string) => void;
-    otpError?: string;
-    otp?: string;
     security_Code?: any;
 }
 
@@ -45,7 +37,9 @@ export default function EnterSecurityCodeSheet(props: EnterSecurityCodeProps) {
     const { theme } = useContext<any>(ThemeContext);
 
     const STRING = useString();
-    const { onRef, onProcessPress, onClose, otpInput, onChangeOtp, otpError, security_Code, otp } = props;
+    const { onRef, onProcessPress, onClose, otpInput, security_Code } = props;
+    const [otp, setOtp] = useState('');
+    const [otpError, setOtpError] = useState('');
 
     const formattedSecurityCode = security_Code ? security_Code.slice(0, 3) + '-' + security_Code.slice(3) : '';
 
@@ -74,7 +68,13 @@ export default function EnterSecurityCodeSheet(props: EnterSecurityCodeProps) {
                 },
             }}
             draggable={false}
-            closeOnPressMask={true}>
+            closeOnPressMask={true}
+            onOpen={() => {
+                setOtp('');
+                setOtpError('');
+                otpInput?.current?.clear?.();
+            }}
+            onClose={onClose}>
             <View style={styles(theme).content}>
                 <Image style={styles(theme).icon} source={IMAGES.pinIcon} />
                 <Text
@@ -113,7 +113,12 @@ export default function EnterSecurityCodeSheet(props: EnterSecurityCodeProps) {
                     <OTPTextInput
                         ref={otpInput}
                         inputCount={3}
-                        handleTextChange={onChangeOtp}
+                        handleTextChange={(text: string) => {
+                            setOtp(text);
+                            if (otpError) {
+                                setOtpError('');
+                            }
+                        }}
                         tintColor={otpError ? theme._EF5350 : theme.primary}
                         offTintColor={otpError ? theme._EF5350 : theme._BFBFBF}
                         textInputStyle={styles(theme).textInput}
@@ -131,10 +136,16 @@ export default function EnterSecurityCodeSheet(props: EnterSecurityCodeProps) {
                     }
                 </View>
                 <Button
-                    disabled={!otp}
-                    style={{margin: getScaleSize(24), }}
+                    disabled={otp.length !== 3}
+                    style={{ margin: getScaleSize(24), }}
                     title={STRING.validate}
-                    onPress={onProcessPress}
+                    onPress={() => {
+                        if (otp.length !== 3) {
+                            setOtpError(STRING.please_enter_valid_code);
+                            return;
+                        }
+                        onProcessPress(otp);
+                    }}
                 />
             </View>
         </RBSheet >

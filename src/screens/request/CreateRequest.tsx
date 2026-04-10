@@ -55,6 +55,7 @@ import { PERMISSIONS, request, RESULTS } from 'react-native-permissions';
 
 const { width } = Dimensions.get('window');
 const cellSize = (width - 30) / 7;
+const MAX_VIDEO_SIZE_BYTES = 20 * 1024 * 1024;
 
 type ProductValidationResult =
   | { valid: true; value: string }
@@ -238,6 +239,16 @@ export default function CreateRequest(props: any) {
   const handleMediaResponse = async (response: any, type: string) => {
     if (!response.didCancel && !response.errorCode && response.assets) {
       const asset: any = response.assets[0];
+console.log('asset size==> 1570024', asset?.fileSize , MAX_VIDEO_SIZE_BYTES)
+      if (
+        asset?.type?.startsWith('video') &&
+        typeof asset?.fileSize === 'number' &&
+        asset.fileSize > MAX_VIDEO_SIZE_BYTES
+      ) {
+        SHOW_TOAST(STRING.invalid_video_file, 'error');
+        setLoading(false);
+        return;
+      }
 
       const finalAsset = await handleThumbnail(asset);
 
@@ -297,7 +308,7 @@ export default function CreateRequest(props: any) {
 
       // 🔥 IMPORTANT: wait for video file to be ready
       if (isVideo) {
-        await new Promise((resolve: any) => setTimeout(resolve, 600));
+        await new Promise((resolve: any) => setTimeout(resolve, 10000));
       }
       const uploadAsset = await prepareMediaForUpload(asset);
       const formData = new FormData();

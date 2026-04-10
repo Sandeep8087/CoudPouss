@@ -55,9 +55,9 @@ export const useString = () => {
     re_enter_new_password: 'Re-enter Password',
     set_new_password: 'Set New Password',
     coudPouss: 'CoudPouss',
-    Empowering_seniors_with_easy_access_to_trusted_help_care_and_companionship_whenever_needed:
-      'Empowering seniors with easy access to trusted help, care, and companionship whenever needed.',
-    Sign_up_as_Elder: 'Sign up as Elder',
+    Empowering_seekers_with_easy_access_to_trusted_help_care_and_companionship_whenever_needed:
+      'Empowering seekers with easy access to trusted help, care, and companionship whenever needed.',
+    Sign_up_as_Seeker: 'Sign up as Seeker',
     Sign_up_as_Professional: 'Sign up as Professional',
     or: 'OR',
     get_started_now: 'Get Started Now',
@@ -416,6 +416,7 @@ export const useString = () => {
     enter_security_code: "Enter Security Code",
     enter_security_code_message: "The user will receive the last three digits of the code. Enter these digits provided by the user to validate the service and initiate the process.",
     validate: "Validate",
+    please_enter_valid_code: "Please enter valid code",
     security_code_validated_successfully: "Security Code validated successfully.",
     procced_to_payment: "Proceed to Payment",
     information_message: "Information message:",
