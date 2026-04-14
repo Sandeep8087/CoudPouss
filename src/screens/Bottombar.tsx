@@ -193,13 +193,12 @@ function BottomBar(props: any) {
         token: token,
         platform: Platform.OS,
       }
-      const result = await API.Instance.post(API.API_ROUTES.onNotification, params);
+      const result = await API.Instance.post(API.API_ROUTES.onNotificationService, params);
       console.log('result', result.status, result)
       if (result.status) {
         console.log('result==>', result?.data?.message)
       } else {
         console.log('error==>', result?.data?.message)
-
       }
     } catch (error: any) {
       console.log(error?.message)

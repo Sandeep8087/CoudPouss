@@ -1,4 +1,4 @@
-import { Dimensions, Image, ScrollView, StyleSheet, View } from 'react-native';
+import { Dimensions, Image, Platform, StyleSheet, View } from 'react-native';
 import React, { useContext, useEffect, useState } from 'react';
 
 //CONTEXT
@@ -15,6 +15,7 @@ import { SCREENS } from '..';
 import { Header, Input, Text, Button } from '../../components';
 import { API } from '../../api';
 import { CommonActions } from '@react-navigation/native';
+import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 
 export default function NewPassword(props: any) {
 
@@ -129,7 +130,15 @@ export default function NewPassword(props: any) {
                 }}
                 screenName={STRING.set_new_password}
             />
-            <ScrollView showsVerticalScrollIndicator={false}>
+            <KeyboardAwareScrollView
+                showsVerticalScrollIndicator={false}
+                enableOnAndroid={Platform.OS === 'android' && Number(Platform.Version) >= 35}
+                keyboardShouldPersistTaps="handled"
+                extraScrollHeight={Platform.OS === 'ios' ? getScaleSize(24) : 0}
+                contentContainerStyle={{
+                    flexGrow: 1,
+                    paddingBottom: getScaleSize(24)
+                }}>
                 <View style={styles(theme).mainContainer}>
                     <Text
                         size={getScaleSize(18)}
@@ -178,7 +187,7 @@ export default function NewPassword(props: any) {
                         isError={confirmPasswordError}
                     />
                 </View>
-            </ScrollView>
+            </KeyboardAwareScrollView>
             <Button
                 title={STRING.reset_password}
                 style={{ marginVertical: getScaleSize(24), marginHorizontal: getScaleSize(24) }}
@@ -195,13 +204,11 @@ const styles = (theme: ThemeContextType['theme']) =>
         container: {
             flex: 1.0,
             backgroundColor: theme.white,
-            justifyContent: 'center'
         },
         mainContainer: {
             flex: 1.0,
             marginHorizontal: getScaleSize(24),
             marginVertical: getScaleSize(18),
-            justifyContent: 'center'
         },
         logo: {
             width: Dimensions.get('window').width - getScaleSize(240),

@@ -2,7 +2,6 @@ import {
   Alert,
   Dimensions,
   Image,
-  ScrollView,
   StyleSheet,
   TouchableOpacity,
   View,
@@ -36,6 +35,7 @@ import { CommonActions } from '@react-navigation/native';
 import { API } from '../../api';
 import { launchImageLibrary } from 'react-native-image-picker';
 import debounce from 'lodash/debounce';
+import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 
 export default function AddPersonalDetails(props: any) {
 
@@ -256,7 +256,15 @@ export default function AddPersonalDetails(props: any) {
         }}
         screenName={STRING.add_personal_details}
       />
-      <ScrollView showsVerticalScrollIndicator={false}>
+      <KeyboardAwareScrollView
+        showsVerticalScrollIndicator={false}
+        enableOnAndroid={Platform.OS === 'android' && Number(Platform.Version) >= 35}
+        keyboardShouldPersistTaps="handled"
+        extraScrollHeight={Platform.OS === 'ios' ? getScaleSize(24) : 0}
+        contentContainerStyle={{
+          flexGrow: 1,
+          paddingBottom: getScaleSize(24)
+        }}>
         <View style={styles(theme).mainContainer}>
           <View style={styles(theme).imageContainer}>
             {profileImage ? (
@@ -372,7 +380,7 @@ export default function AddPersonalDetails(props: any) {
           />
 
         </View>
-      </ScrollView>
+      </KeyboardAwareScrollView>
       <Button
         title={STRING.next}
         style={{

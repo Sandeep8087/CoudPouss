@@ -177,6 +177,7 @@
     "Rejectedforanotherreason": "Rejected for another reason",
     "Cancel": "Cancel",
     "ConfirmServicerequest": "Confirm Service request ?",
+    "confirm_service_with_rate_and_provider": "You are about to confirm a service at the rate of €{{amount}} with the Provider {{providerName}}, Are you sure you want to continue?",
     "No": "No",
     "Yes": "Yes",
     "Proceedtopayment": "Proceed to payment",

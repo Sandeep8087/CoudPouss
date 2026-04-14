@@ -1,8 +1,7 @@
-import React, { useContext } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import {
   View,
   Keyboard,
-  ScrollView,
   StyleSheet,
   TouchableOpacity,
   Image,
@@ -15,6 +14,7 @@ import { FONTS, IMAGES } from '../assets';
 import Text from './Text';
 import RBSheet from 'react-native-raw-bottom-sheet';
 import Input from './Input';
+import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 
 const PaymentBottomPopup = (props: any) => {
   const STRING = useString();
@@ -23,6 +23,24 @@ const PaymentBottomPopup = (props: any) => {
   const maxSheetHeight = Dimensions.get('screen').height * 0.9;
   const desiredHeight = couponCodeError ? getScaleSize(780) : getScaleSize(750);
   const sheetHeight = Math.min(desiredHeight, maxSheetHeight);
+  const [keyboardHeight, setKeyboardHeight] = useState(0);
+
+  useEffect(() => {
+    const showEvent = Platform.OS === 'ios' ? 'keyboardWillShow' : 'keyboardDidShow';
+    const hideEvent = Platform.OS === 'ios' ? 'keyboardWillHide' : 'keyboardDidHide';
+
+    const showSub = Keyboard.addListener(showEvent, e => {
+      setKeyboardHeight(e?.endCoordinates?.height ?? 0);
+    });
+    const hideSub = Keyboard.addListener(hideEvent, () => {
+      setKeyboardHeight(0);
+    });
+
+    return () => {
+      showSub.remove();
+      hideSub.remove();
+    };
+  }, []);
 
   return (
     <RBSheet
@@ -50,10 +68,17 @@ const PaymentBottomPopup = (props: any) => {
         },
       }}>
       <View style={styles(theme).sheetContent}>
-        <ScrollView
+        <KeyboardAwareScrollView
           bounces={false}
+          showsVerticalScrollIndicator={false}
+          enableOnAndroid={Platform.OS === 'android' && Number(Platform.Version) >= 35}
+          enableAutomaticScroll={true}
           keyboardShouldPersistTaps="handled"
-          contentContainerStyle={styles(theme).scrollContent}>
+          extraScrollHeight={getScaleSize(100)}
+          contentContainerStyle={[
+            styles(theme).scrollContent,
+            { paddingBottom: keyboardHeight + getScaleSize(24) },
+          ]}>
         <View style={styles(theme).content}>
           <Image style={styles(theme).icon} source={IMAGES.payment_icon} />
           <Text
@@ -186,7 +211,7 @@ const PaymentBottomPopup = (props: any) => {
             </Text>
           </View>
         </View>
-        </ScrollView>
+        </KeyboardAwareScrollView>
         <View style={styles(theme).buttonContainer}>
           <TouchableOpacity
             style={styles(theme).backButtonContainer}

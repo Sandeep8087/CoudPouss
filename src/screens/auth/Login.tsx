@@ -1,4 +1,4 @@
-import { Dimensions, Image, ScrollView, StyleSheet, View } from 'react-native';
+import { Dimensions, Image, Platform, StyleSheet, View } from 'react-native';
 import React, { useContext, useEffect, useState } from 'react';
 
 //CONTEXT
@@ -28,6 +28,7 @@ import { API } from '../../api';
 import Geolocation from 'react-native-geolocation-service';
 
 import { createNewThread } from '../../services/chat';
+import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 
 export default function Login(props: any) {
   const STRING = useString();
@@ -206,7 +207,15 @@ export default function Login(props: any) {
   return (
     <View style={styles(theme).container}>
       <Header />
-      <ScrollView showsVerticalScrollIndicator={false}>
+      <KeyboardAwareScrollView
+        showsVerticalScrollIndicator={false}
+        enableOnAndroid={Platform.OS === 'android' && Number(Platform.Version) >= 35}
+        keyboardShouldPersistTaps="handled"
+        extraScrollHeight={Platform.OS === 'ios' ? getScaleSize(24) : 0}
+        contentContainerStyle={{
+          flexGrow: 1,
+          paddingBottom: getScaleSize(24),
+        }}>
         <View style={styles(theme).mainContainer}>
           <Image source={IMAGES.ic_logo} style={styles(theme).logo} />
           <Text
@@ -312,13 +321,13 @@ export default function Login(props: any) {
               font={FONTS.Lato.SemiBold}
               color={theme._2C6587}
               onPress={() => {
-                props.navigation.navigate(SCREENS.SignupSelect.identifier);
+                props.navigation.navigate(SCREENS.AddPersonalDetails.identifier);
               }}>
               {STRING.sign_up}
             </Text>
           </Text>
         </View>
-      </ScrollView>
+      </KeyboardAwareScrollView>
       {isLoading && <ProgressView />}
     </View>
   );

@@ -173,7 +173,9 @@ export default function WriteReview(props: any) {
         }}
         screenName={STRING.LeaveaReview}
       />
-      <ScrollView style={{ flex: 1.0 }}>
+      <ScrollView
+        style={{ flex: 1.0 }}
+        showsVerticalScrollIndicator={false}>
         <View style={styles(theme).serviceProviderCotainer}>
           <Text
             size={getScaleSize(22)}

@@ -1,4 +1,4 @@
-import React, { useContext} from 'react';
+import React, { useContext, useEffect, useRef, useState } from 'react';
 import {
   View,
   StyleSheet,
@@ -9,6 +9,7 @@ import {
   TextInput,
   Platform,
   Keyboard,
+  findNodeHandle,
 } from 'react-native';
 
 //CONTEXT
@@ -23,6 +24,7 @@ import Text from './Text';
 
 //PACKAGES
 import RBSheet from 'react-native-raw-bottom-sheet';
+import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 
 const RejectBottomPopup = (props: any) => {
 
@@ -30,6 +32,25 @@ const RejectBottomPopup = (props: any) => {
   const { theme } = useContext<any>(ThemeContext);
 
   const { selectedCategory, reason, setSelectedCategory, setReason } = props;
+  const [keyboardHeight, setKeyboardHeight] = useState(0);
+  const scrollRef = useRef<any>(null);
+
+  useEffect(() => {
+    const showEvent = Platform.OS === 'ios' ? 'keyboardWillShow' : 'keyboardDidShow';
+    const hideEvent = Platform.OS === 'ios' ? 'keyboardWillHide' : 'keyboardDidHide';
+
+    const showSub = Keyboard.addListener(showEvent, e => {
+      setKeyboardHeight(e?.endCoordinates?.height ?? 0);
+    });
+    const hideSub = Keyboard.addListener(hideEvent, () => {
+      setKeyboardHeight(0);
+    });
+
+    return () => {
+      showSub.remove();
+      hideSub.remove();
+    };
+  }, []);
 
   const handleReasonChange = (text: string) => {
     // Prevent starting space
@@ -41,6 +62,18 @@ const RejectBottomPopup = (props: any) => {
     if (text.length <= 250) {
       setReason(text);
     }
+  };
+
+  const handleReasonFocus = (event: any) => {
+    const nodeHandle = findNodeHandle(event?.target);
+    if (!nodeHandle || !scrollRef.current) {
+      return;
+    }
+
+    // RBSheet + Android can miss automatic focus scrolling, force it.
+    setTimeout(() => {
+      scrollRef.current?.scrollToFocusedInput(nodeHandle);
+    }, 120);
   };
 
   return (
@@ -67,6 +100,7 @@ const RejectBottomPopup = (props: any) => {
           },
         }}
         draggable={false}
+        onClose={() => Keyboard.dismiss()}
         closeOnPressMask={true}>
         <View style={[styles(theme).content,
         // { paddingBottom: Platform.OS === 'android' ? insets.bottom : 0 }
@@ -76,10 +110,18 @@ const RejectBottomPopup = (props: any) => {
             size={getScaleSize(22)}
             font={FONTS.Lato.Bold}
             color={theme.primary}
-            style={{ alignSelf: 'center', marginTop: getScaleSize(16) }}>
+            style={{ alignSelf: 'center', marginVertical: getScaleSize(16) }}>
             {STRING.RejectServicerequest}
           </Text>
-          <View style={{ flex: 1.0 }}>
+          <KeyboardAwareScrollView
+            ref={scrollRef}
+            style={{ flex: 1.0 }}
+            showsVerticalScrollIndicator={false}
+            enableOnAndroid={Platform.OS === 'android' && Number(Platform.Version) >= 35}
+            enableAutomaticScroll={true}
+            keyboardShouldPersistTaps="handled"
+            extraScrollHeight={Platform.OS === 'ios' ? getScaleSize(100) : 0}
+            contentContainerStyle={{ paddingBottom: keyboardHeight + getScaleSize(24) }}>
             <TouchableOpacity
               style={styles(theme).radioButtonContainer}
               activeOpacity={1}
@@ -163,6 +205,7 @@ const RejectBottomPopup = (props: any) => {
                     placeholderTextColor={theme._818285}
                     value={reason}
                     onChangeText={handleReasonChange}
+                    onFocus={handleReasonFocus}
                     multiline={true}
                     numberOfLines={8}
                     textAlignVertical="top"
@@ -171,7 +214,7 @@ const RejectBottomPopup = (props: any) => {
                 </View>
               )}
             </TouchableOpacity>
-          </View>
+          </KeyboardAwareScrollView>
           <View style={styles(theme).buttonContainer}>
             <TouchableOpacity
               style={styles(theme).backButtonContainer}

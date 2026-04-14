@@ -117,11 +117,11 @@ export default function Signup(props: any) {
             <Header />
             <KeyboardAwareScrollView
                 showsVerticalScrollIndicator={false}
-                enableOnAndroid={true}
-                // extraScrollHeight={20}
+                enableOnAndroid={Platform.OS === 'android' && Number(Platform.Version) >= 35}
                 keyboardShouldPersistTaps="handled"
+                extraScrollHeight={Platform.OS === 'ios' ? getScaleSize(24) : 0}
                 contentContainerStyle={{
-                    paddingBottom: 20,
+                    paddingBottom: getScaleSize(24),
                     flexGrow: 1,
                 }}
             >

@@ -165,7 +165,9 @@ const CalendarComponent = (props: any) => {
         </View>
 
         {/* Calendar Grid */}
-        <ScrollView style={styles(theme).calendarContainer}>
+        <ScrollView
+          style={styles(theme).calendarContainer}
+          showsVerticalScrollIndicator={false}>
           {calendarData.map((week, weekIndex) => (
             <View key={weekIndex} style={styles(theme).weekRow}>
               {week.map((day, dayIndex) => (

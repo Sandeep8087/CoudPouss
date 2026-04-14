@@ -1,4 +1,4 @@
-import { Dimensions, Image, KeyboardAvoidingView, Platform, ScrollView, StyleSheet, TouchableOpacity, View } from 'react-native';
+import { Dimensions, Image, Platform, StyleSheet, TouchableOpacity, View } from 'react-native';
 import React, { useContext, useEffect, useRef, useState } from 'react';
 
 //CONTEXT
@@ -19,6 +19,7 @@ import OTPTextInput from 'react-native-otp-textinput';
 import { useTranslation } from 'react-i18next';
 
 import { API } from '../../api';
+import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 
 export default function Otp(props: any) {
 
@@ -212,7 +213,15 @@ export default function Otp(props: any) {
                     }}
                     screenName={STRING.enter_OTP}
                 />
-                <ScrollView showsVerticalScrollIndicator={false}>
+                <KeyboardAwareScrollView
+                    showsVerticalScrollIndicator={false}
+                    enableOnAndroid={Platform.OS === 'android' && Number(Platform.Version) >= 35}
+                    keyboardShouldPersistTaps="handled"
+                    extraScrollHeight={Platform.OS === 'ios' ? getScaleSize(24) : 0}
+                    contentContainerStyle={{
+                        flexGrow: 1,
+                        paddingBottom: getScaleSize(24)
+                    }}>
                     <View style={styles(theme).mainContainer}>
                         <Text
                             size={getScaleSize(18)}
@@ -251,7 +260,7 @@ export default function Otp(props: any) {
                             }
                         </View>
                     </View>
-                </ScrollView>
+                </KeyboardAwareScrollView>
                 <View style={styles(theme).resendOtpView}>
                     {isResendDisabled ? (
                         <Text
@@ -295,13 +304,11 @@ const styles = (theme: ThemeContextType['theme']) =>
         container: {
             flex: 1.0,
             backgroundColor: theme.white,
-            justifyContent: 'center'
         },
         mainContainer: {
             flex: 1.0,
             marginHorizontal: getScaleSize(24),
             marginVertical: getScaleSize(18),
-            justifyContent: 'center'
         },
         inputContainer: {
             marginBottom: getScaleSize(16),

@@ -67,10 +67,16 @@ export default function EditProfile(props: any) {
     const [yearsOfExperience, setYearsOfExperience] = useState<string>('');
     const [firstImageURL, setFirstImageURL] = useState<any>(null);
     const [secondImageURL, setSecondImageURL] = useState<any>(null);
+    const [firstPastWorkImageAsset, setFirstPastWorkImageAsset] = useState<any>(null);
+    const [secondPastWorkImageAsset, setSecondPastWorkImageAsset] = useState<any>(null);
+    const [isImagePreviewLoading, setIsImagePreviewLoading] = useState(false);
+    const [pendingPreviewType, setPendingPreviewType] = useState<'profile' | 'first' | 'second' | null>(null);
+    const [pendingPreviewUri, setPendingPreviewUri] = useState<string | null>(null);
     const [firstProductImageURL, setFirstProductImageURL] = useState<any>(null);
     const [secondProductImageURL, setSecondProductImageURL] = useState<any>(null);
     const [addressHeight, setAddressHeight] = useState(inputHeight);
     const [visibleCountry, setVisibleCountry] = useState(false)
+    const [isFormInitialized, setIsFormInitialized] = useState(false);
 
     const fullPhone = profile?.user?.phone_number ?? '';
 
@@ -81,6 +87,9 @@ export default function EditProfile(props: any) {
     console.log('profile==>', profile)
 
     useEffect(() => {
+        if (isFormInitialized || !profile?.user) {
+            return;
+        }
         setName((profile?.user?.first_name ?? "") + " " + (profile?.user?.last_name ?? ""));
         setEmail(profile?.user?.email ?? '');
         setMobileNumber(profile?.user?.phone_number ?? '');
@@ -93,8 +102,11 @@ export default function EditProfile(props: any) {
         setAchievements(profile?.provider_info?.achievements ?? '');
         setFirstImageURL(profile?.past_work_files?.[0] ?? null);
         setSecondImageURL(profile?.past_work_files?.[1] ?? null);
+        setFirstProductImageURL(profile?.past_work_files?.[0] ?? null);
+        setSecondProductImageURL(profile?.past_work_files?.[1] ?? null);
         setMobileNumber(profile?.user?.phone_number ?? '');
-    }, [profile]);
+        setIsFormInitialized(true);
+    }, [profile, isFormInitialized]);
 
     useEffect(() => {
         const flag: any = countryCodes.find((item: any) => {
@@ -114,21 +126,36 @@ export default function EditProfile(props: any) {
     console.log('firstImageURL', profile?.past_work_files?.[0])
 
     const pickImage = async (type: string) => {
+        setPendingPreviewType(type as 'profile' | 'first' | 'second');
+        setPendingPreviewUri(null);
+        setIsImagePreviewLoading(true);
+
         launchImageLibrary({ mediaType: 'photo' }, (response) => {
             if (!response.didCancel && !response.errorCode && response.assets) {
                 const asset: any = response.assets[0];
                 console.log('asset', asset)
                 if (type === 'profile') {
+                    setPendingPreviewType('profile');
+                    setPendingPreviewUri(asset?.uri ?? null);
+                    setIsImagePreviewLoading(true);
                     setProfileImage(asset);
-                    uploadProfileImage(asset);
                 } else if (type === 'first') {
+                    setPendingPreviewType('first');
+                    setPendingPreviewUri(asset?.uri ?? null);
+                    setIsImagePreviewLoading(true);
                     setFirstImageURL(asset?.uri);
-                    uploadProductImage(asset, 'first');
+                    setFirstPastWorkImageAsset(asset);
                 } else if (type === 'second') {
+                    setPendingPreviewType('second');
+                    setPendingPreviewUri(asset?.uri ?? null);
+                    setIsImagePreviewLoading(true);
                     setSecondImageURL(asset?.uri);
-                    uploadProductImage(asset, 'second');
+                    setSecondPastWorkImageAsset(asset);
                 }
             } else {
+                setPendingPreviewType(null);
+                setPendingPreviewUri(null);
+                setIsImagePreviewLoading(false);
                 console.log('response', response)
             }
         });
@@ -144,33 +171,95 @@ export default function EditProfile(props: any) {
                 type: asset?.type || 'image/jpeg',
             });
 
-            console.log('FORM DATA', formData)
-            setLoading(true);
             const result = await API.Instance.post(API.API_ROUTES.uploadProfileImage, formData, {
                 headers: {
                     'Content-Type': 'multipart/form-data',
                 },
             })
-            setLoading(false);
             if (result.status) {
-                SHOW_TOAST(result?.data?.message ?? '', 'success')
-                await fetchProfile()
+                return true;
             } else {
                 SHOW_TOAST(result?.data?.message ?? '', 'error')
-                setProfileImage(null);
+                return false;
             }
         }
         catch (error: any) {
-            setProfileImage(null);
-            setLoading(false);
             SHOW_TOAST(error?.message ?? '', 'error');
             console.log(error?.message)
-        } finally {
-            setLoading(false);
+            return false;
+        }
+    }
+
+    async function uploadPastWorkImages(
+        items: Array<{ type: 'first' | 'second'; asset: any }>
+    ) {
+        try {
+            if (!items.length) {
+                return {
+                    requestSuccess: true,
+                    uploadedKeysByType: {},
+                };
+            }
+
+            const formData = new FormData();
+            items.forEach((item) => {
+                formData.append('past_work_photos', {
+                    uri: item.asset?.uri,
+                    name: item.asset?.fileName || 'profile_image.jpg',
+                    type: item.asset?.type || 'image/jpeg',
+                });
+            });
+
+            const result = await API.Instance.post(API.API_ROUTES.uploadProviderJobFiles, formData, {
+                headers: { 'Content-Type': 'multipart/form-data' }
+            });
+
+            if (!result?.status) {
+                console.log('ERROR==>', result?.data?.message)
+                SHOW_TOAST(result?.data?.message ?? '', 'error');
+                return {
+                    requestSuccess: false,
+                    uploadedKeysByType: {},
+                };
+            }
+
+            const responseFilesRaw = result?.data?.file ?? result?.data?.files ?? [];
+            const responseFiles = Array.isArray(responseFilesRaw)
+                ? responseFilesRaw
+                : responseFilesRaw
+                    ? [responseFilesRaw]
+                    : [];
+            const uploadedKeysByType: any = {};
+
+            items.forEach((item, index) => {
+                const fileItem = responseFiles?.[index];
+                const key =
+                    typeof fileItem === 'string'
+                        ? fileItem
+                        : fileItem?.storage_key || fileItem?.key || fileItem?.url;
+                if (key) {
+                    uploadedKeysByType[item.type] = key;
+                }
+            });
+
+            return {
+                requestSuccess: true,
+                uploadedKeysByType,
+            };
+        } catch (error: any) {
+            console.log('ERROR', error)
+            SHOW_TOAST(error?.message ?? '', 'error');
+            return {
+                requestSuccess: false,
+                uploadedKeysByType: {},
+            };
         }
     }
 
     async function onEditUserProfile() {
+        if (isLoading) {
+            return;
+        }
 
         const nameErr = validateName(name);
         const mobileErr = validateMobile(mobileNumber);
@@ -195,63 +284,95 @@ export default function EditProfile(props: any) {
         }
 
         try {
+            setLoading(true);
+            let isProfileImageUploadSuccess = true;
+
+            // Best-effort: if this fails, continue with next API and final edit profile.
+            if (profileImage?.uri) {
+                isProfileImageUploadSuccess = await uploadProfileImage(profileImage);
+                if (!isProfileImageUploadSuccess) {
+                    // Revert local preview to server profile image when upload fails.
+                    setProfileImage(null);
+                }
+            }
+
+            let firstImageKey = firstProductImageURL;
+            let secondImageKey = secondProductImageURL;
+
+            const newPastWorkItems: Array<{ type: 'first' | 'second'; asset: any }> = [];
+            if (firstPastWorkImageAsset?.uri) {
+                newPastWorkItems.push({ type: 'first', asset: firstPastWorkImageAsset });
+            }
+            if (secondPastWorkImageAsset?.uri) {
+                newPastWorkItems.push({ type: 'second', asset: secondPastWorkImageAsset });
+            }
+
+            // Best-effort: if this fails, preserve old keys and continue edit profile.
+            const pastWorkUploadResult = await uploadPastWorkImages(newPastWorkItems);
+            const uploadedPastWorkKeys = pastWorkUploadResult?.uploadedKeysByType ?? {};
+            const isPastWorkUploadSuccess =
+                newPastWorkItems.length === 0 || !!pastWorkUploadResult?.requestSuccess;
+
+            if (uploadedPastWorkKeys?.first) {
+                firstImageKey = uploadedPastWorkKeys.first;
+                setFirstProductImageURL(uploadedPastWorkKeys.first);
+            }
+            if (uploadedPastWorkKeys?.second) {
+                secondImageKey = uploadedPastWorkKeys.second;
+                setSecondProductImageURL(uploadedPastWorkKeys.second);
+            }
+
+            if (!isPastWorkUploadSuccess) {
+                // Revert failed local previews back to existing server images.
+                if (!uploadedPastWorkKeys?.first) {
+                    setFirstImageURL(firstProductImageURL ?? null);
+                    setFirstPastWorkImageAsset(null);
+                }
+                if (!uploadedPastWorkKeys?.second) {
+                    setSecondImageURL(secondProductImageURL ?? null);
+                    setSecondPastWorkImageAsset(null);
+                }
+            }
+
+            const allSelectedPastWorkKeysMapped =
+                newPastWorkItems.length === 0 ||
+                newPastWorkItems.every((item) => !!uploadedPastWorkKeys?.[item.type]);
+
+            const providerData: any = {
+                "bio": bio.trim(),
+                "experience_speciality": experienceSpecialities.trim(),
+                "achievements": achievements.trim(),
+                "years_of_experience": parseFloat(yearsOfExperience) || 0,
+            };
+
+            if (newPastWorkItems.length === 0 || allSelectedPastWorkKeysMapped) {
+                providerData.past_work_image_keys = [firstImageKey, secondImageKey].filter(Boolean);
+            }
+
             const params = {
                 "user_data": {
                     "name": name.trim(),
                     "address": address.trim()
                 },
-                "provider_data": {
-                    "bio": bio.trim(),
-                    "experience_speciality": experienceSpecialities.trim(),
-                    "achievements": achievements.trim(),
-                    "years_of_experience": parseFloat(yearsOfExperience) || 0,
-                    past_work_image_keys: [firstImageURL, secondImageURL]
-                }
+                "provider_data": providerData
             }
-            setLoading(true);
             const result = await API.Instance.patch(API.API_ROUTES.editProfile, params);
-            setLoading(false);
             if (result?.status) {
-                SHOW_TOAST(STRING.profile_updated_successfully, 'success')
-                setTimeout(() => {
-                    props.navigation.goBack();
-                }, 500);
-                fetchProfile()
+                const allApisSuccessful = isProfileImageUploadSuccess && isPastWorkUploadSuccess;
+                await fetchProfile();
+
+                if (allApisSuccessful) {
+                    SHOW_TOAST(STRING.profile_updated_successfully, 'success')
+                    setTimeout(() => {
+                        props.navigation.goBack();
+                    }, 500);
+                }
             }
             else {
                 SHOW_TOAST(result?.data?.message, 'error')
                 console.log('ERR', result?.data?.message)
             }
         } catch (error: any) {
-            SHOW_TOAST(error?.message ?? '', 'error');
-        }
-    }
-
-    async function uploadProductImage(asset: any, type: string) {
-        try {
-            const formData = new FormData();
-
-            formData.append('past_work_photos', {
-                uri: asset?.uri,
-                name: asset?.fileName || 'profile_image.jpg',
-                type: asset?.type || 'image/jpeg',
-            });
-            setLoading(true);
-            const result = await API.Instance.post(API.API_ROUTES.uploadProviderJobFiles, formData, {
-                headers: { 'Content-Type': 'multipart/form-data' }
-            });
-            if (result.status) {
-                console.log('kjsdkjadakjdjasdna', result?.data?.file?.[0]?.storage_key)
-                if (type === 'first') setFirstProductImageURL(result?.data?.file?.[0]?.storage_key);
-                else if (type === 'second') setSecondProductImageURL(result?.data?.file?.[0]?.storage_key);
-            } else {
-                SHOW_TOAST(result?.data?.message ?? '', 'error');
-                if (type === 'first') setFirstImageURL(null);
-                else if (type === 'second') setSecondImageURL(null);
-            }
-        } catch (error: any) {
-            if (type === 'first') setFirstImageURL(null);
-            else if (type === 'second') setSecondImageURL(null);
             SHOW_TOAST(error?.message ?? '', 'error');
         } finally {
             setLoading(false);
@@ -419,8 +540,27 @@ export default function EditProfile(props: any) {
                 <ScrollView
                     style={styles(theme).scrolledContainer}
                     showsVerticalScrollIndicator={false}>
-                    {profile?.user?.profile_photo_url ?
-                        <Image source={{ uri: profile?.user?.profile_photo_url }}
+                    {(profileImage?.uri || profile?.user?.profile_photo_url) ?
+                        <Image
+                            source={{ uri: profileImage?.uri || profile?.user?.profile_photo_url }}
+                            onLoad={() => {
+                                if (
+                                    pendingPreviewType === 'profile' &&
+                                    pendingPreviewUri &&
+                                    pendingPreviewUri === (profileImage?.uri || profile?.user?.profile_photo_url)
+                                ) {
+                                    setIsImagePreviewLoading(false);
+                                    setPendingPreviewType(null);
+                                    setPendingPreviewUri(null);
+                                }
+                            }}
+                            onError={() => {
+                                if (pendingPreviewType === 'profile') {
+                                    setIsImagePreviewLoading(false);
+                                    setPendingPreviewType(null);
+                                    setPendingPreviewUri(null);
+                                }
+                            }}
                             resizeMode='cover' style={styles(theme).profileContainer} />
                         :
                         <View style={styles(theme).EmptyProfileContainer}>
@@ -635,6 +775,24 @@ export default function EditProfile(props: any) {
                                     <Image
                                         style={styles(theme).ImageStyle}
                                         source={{ uri: firstImageURL }}
+                                        onLoad={() => {
+                                            if (
+                                                pendingPreviewType === 'first' &&
+                                                pendingPreviewUri &&
+                                                pendingPreviewUri === firstImageURL
+                                            ) {
+                                                setIsImagePreviewLoading(false);
+                                                setPendingPreviewType(null);
+                                                setPendingPreviewUri(null);
+                                            }
+                                        }}
+                                        onError={() => {
+                                            if (pendingPreviewType === 'first') {
+                                                setIsImagePreviewLoading(false);
+                                                setPendingPreviewType(null);
+                                                setPendingPreviewUri(null);
+                                            }
+                                        }}
                                     />
                                 ) : (
                                     <View style={styles(theme).uploadButton}>
@@ -662,6 +820,24 @@ export default function EditProfile(props: any) {
                                     <Image
                                         style={styles(theme).ImageStyle}
                                         source={{ uri: secondImageURL }}
+                                        onLoad={() => {
+                                            if (
+                                                pendingPreviewType === 'second' &&
+                                                pendingPreviewUri &&
+                                                pendingPreviewUri === secondImageURL
+                                            ) {
+                                                setIsImagePreviewLoading(false);
+                                                setPendingPreviewType(null);
+                                                setPendingPreviewUri(null);
+                                            }
+                                        }}
+                                        onError={() => {
+                                            if (pendingPreviewType === 'second') {
+                                                setIsImagePreviewLoading(false);
+                                                setPendingPreviewType(null);
+                                                setPendingPreviewUri(null);
+                                            }
+                                        }}
                                     />
                                 ) : (
                                     <View style={[styles(theme).uploadButton]}>
@@ -687,6 +863,7 @@ export default function EditProfile(props: any) {
                     <Button
                         title={STRING.update}
                         style={styles(theme).updateButton}
+                        disabled={isLoading}
                         onPress={() => {
                             onEditUserProfile()
                         }}
@@ -721,7 +898,7 @@ export default function EditProfile(props: any) {
                     }}
                 />
             </View>
-            {isLoading && <ProgressView />}
+            {(isLoading || isImagePreviewLoading) && <ProgressView />}
         </KeyboardAvoidingView>
     );
 }
