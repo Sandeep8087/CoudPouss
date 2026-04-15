@@ -8,6 +8,10 @@ import i18n from '../Translation/i18n';
 
 const t = (key: string) => i18n.t(key) as string;
 
+export const waitForFileReady = async (delayMs: number = 1500) => {
+  await new Promise((resolve: any) => setTimeout(resolve, delayMs));
+};
+
 export const formatDecimalInput = (
   text: string,
   decimalLimit: number = 2
@@ -67,12 +71,15 @@ export const openStripeCheckout = async (url: any) => {
         forceCloseOnRedirection: false,
       });
       console.log('result==>', result);
+      return result;
     } else {
       // Fallback
-      Linking.openURL(url);
+      await Linking.openURL(url);
+      return { type: 'opened_external' };
     }
   } catch (error) {
     console.log(error);
+    return { type: 'error', error };
   }
 };
 

@@ -47,24 +47,24 @@ export default function Success(props: any) {
   const STRING = useString();
   const isFromHome = props?.route?.params?.isFromHome ?? false;
 
-  // useEffect(() => {
-  //   if (isFromHome) {
-  //     setTimeout(() => {
-  //       props.navigation.dispatch(
-  //         CommonActions.reset({
-  //           index: 0,
-  //           routes: [{
-  //             name: SCREENS.BottomBar.identifier
-  //           }],
-  //         }),
-  //       )
-  //     }, 2000);
-  //   } else {
-  //     setTimeout(() => {
-  //       props.navigation.navigate(SCREENS.ExploreServiceRequest.identifier);
-  //     }, 2000);
-  //   }
-  // }, [])
+  useEffect(() => {
+    if (isFromHome) {
+      setTimeout(() => {
+        props.navigation.dispatch(
+          CommonActions.reset({
+            index: 0,
+            routes: [{
+              name: SCREENS.BottomBar.identifier
+            }],
+          }),
+        )
+      }, 2000);
+    } else {
+      setTimeout(() => {
+        props.navigation.navigate(SCREENS.ExploreServiceRequest.identifier);
+      }, 2000);
+    }
+  }, [])
 
   return (
     <View style={styles(theme).container}>

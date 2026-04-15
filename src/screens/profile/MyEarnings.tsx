@@ -171,6 +171,9 @@ export default function MyEarnings(props: any) {
                     mode='date'
                     modal
                     locale={language === 'fr' ? 'fr-FR' : 'en-US'}
+                    title={STRING.select_date}
+                    cancelText={STRING.cancel}
+                    confirmText={STRING.confirm}
                     onDateChange={onChange}
                 />
             )}

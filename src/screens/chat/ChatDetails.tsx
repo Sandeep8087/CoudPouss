@@ -26,7 +26,7 @@ import {FONTS, IMAGES} from '../../assets';
 import {ThemeContext, ThemeContextType, AuthContext} from '../../context';
 
 //CONSTANT
-import {getScaleSize, SHOW_TOAST, useString} from '../../constant';
+import {getScaleSize, SHOW_TOAST, useString, waitForFileReady} from '../../constant';
 
 //COMPONENT
 import {Text} from '../../components';
@@ -129,6 +129,7 @@ export default function ChatDetails(props: any) {
 
       console.log('FORM DATA', formData);
       setLoading(true);
+      await waitForFileReady();
       const result = await API.Instance.post(
         API.API_ROUTES.uploadServiceRequestImage,
         formData,

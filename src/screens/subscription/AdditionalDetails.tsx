@@ -6,7 +6,7 @@ import { ThemeContext, ThemeContextType } from '../../context';
 
 //CONSTANT & ASSETS
 import { FONTS, IMAGES } from '../../assets';
-import { getScaleSize, useString, SHOW_TOAST, isImageFile, SHOW_SUCCESS_TOAST } from '../../constant';
+import { getScaleSize, useString, SHOW_TOAST, isImageFile, SHOW_SUCCESS_TOAST, waitForFileReady } from '../../constant';
 
 //SCREENS
 import { SCREENS } from '..';
@@ -116,6 +116,8 @@ export default function AdditionalDetails(props: any) {
                 name: proofOfResidence[0].name,
                 type: proofOfResidence[0].type,
             });
+
+            await waitForFileReady();
 
             const result = await API.Instance.post(
                 API.API_ROUTES.uploadDocuments,

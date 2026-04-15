@@ -19,6 +19,7 @@ import {
 import { FONTS, IMAGES } from '../../assets';
 import {
   arrayIcons,
+  formatDecimalInput,
   getScaleSize,
   openStripeCheckout,
   SHOW_TOAST,
@@ -74,6 +75,10 @@ export default function RequestDetails(props: any) {
   const rejectRef = useRef<any>(null);
   const acceptRef = useRef<any>(null);
   const paymentRef = useRef<any>(null);
+  const paymentPendingRef = useRef(false);
+  const paymentDeepLinkHandledRef = useRef(false);
+  const paymentSuccessRef = useRef(false);
+  const cancelToastTimeoutRef = useRef<any>(null);
   const cancelScheduledServicePopupRef = useRef<any>(null);
   const viewAllCouponsPopupRef = useRef<any>(null);
 
@@ -119,10 +124,32 @@ export default function RequestDetails(props: any) {
 
   useEffect(() => {
     const paymentCancelListener = EventRegister.addEventListener('onPaymentCancel', (data: any) => {
-      SHOW_TOAST(data?.message ?? '', 'error');
+      paymentDeepLinkHandledRef.current = true;
+      paymentPendingRef.current = false;
+      setLoading(false);
+      if (cancelToastTimeoutRef.current) {
+        clearTimeout(cancelToastTimeoutRef.current);
+      }
+      cancelToastTimeoutRef.current = setTimeout(() => {
+        if (paymentSuccessRef.current) return;
+        SHOW_TOAST(data?.message ?? '', 'error');
+      }, 1200);
+    });
+    const paymentSuccessListener = EventRegister.addEventListener('onPaymentSuccess', () => {
+      paymentDeepLinkHandledRef.current = true;
+      paymentSuccessRef.current = true;
+      paymentPendingRef.current = false;
+      if (cancelToastTimeoutRef.current) {
+        clearTimeout(cancelToastTimeoutRef.current);
+        cancelToastTimeoutRef.current = null;
+      }
     });
     return () => {
       EventRegister.removeEventListener(paymentCancelListener as string);
+      EventRegister.removeEventListener(paymentSuccessListener as string);
+      if (cancelToastTimeoutRef.current) {
+        clearTimeout(cancelToastTimeoutRef.current);
+      }
     };
   }, []);
 
@@ -239,6 +266,7 @@ export default function RequestDetails(props: any) {
   }
 
   async function onAcceptService() {
+    let keepLoaderForPaymentRedirect = false;
     try {
       const params = {
         service_id: serviceDetails?.service_id,
@@ -253,7 +281,35 @@ export default function RequestDetails(props: any) {
       if (result.status) {
         const STRIPE_URL = result?.data?.data?.checkout_url ?? '';
         paymentRef.current.close();
-        openStripeCheckout(STRIPE_URL);
+        paymentDeepLinkHandledRef.current = false;
+        paymentSuccessRef.current = false;
+        if (cancelToastTimeoutRef.current) {
+          clearTimeout(cancelToastTimeoutRef.current);
+          cancelToastTimeoutRef.current = null;
+        }
+        paymentPendingRef.current = true;
+        keepLoaderForPaymentRedirect = true;
+        const checkoutResult: any = await openStripeCheckout(STRIPE_URL);
+        const checkoutType = String(checkoutResult?.type ?? '').toLowerCase();
+        const isClosedManually =
+          checkoutType === 'cancel' ||
+          checkoutType === 'dismiss' ||
+          checkoutType === 'close';
+        const isCheckoutError = checkoutType === 'error';
+
+        if (isClosedManually) {
+          setTimeout(() => {
+            if (paymentDeepLinkHandledRef.current) return;
+            paymentPendingRef.current = false;
+            keepLoaderForPaymentRedirect = false;
+            setLoading(false);
+          }, 1200);
+        } else if (isCheckoutError) {
+          paymentPendingRef.current = false;
+          keepLoaderForPaymentRedirect = false;
+          setLoading(false);
+          SHOW_TOAST('Unable to open payment page', 'error');
+        }
         // props.navigation.navigate(SCREENS.ServiceConfirmed.identifier, {
         //   serviceId: serviceDetails?.service_id,
         // });
@@ -263,7 +319,10 @@ export default function RequestDetails(props: any) {
     } catch (error: any) {
       SHOW_TOAST(error?.message ?? '', 'error');
     } finally {
-      setLoading(false);
+      if (!keepLoaderForPaymentRedirect) {
+        paymentPendingRef.current = false;
+        setLoading(false);
+      }
     }
   }
 
@@ -586,7 +645,36 @@ export default function RequestDetails(props: any) {
     }
   }
 
-  console.log('serviceDetails==>', serviceDetails);
+  const handleNavigateToNegotiationDetails = async () => {
+    const conversationId = buildThreadId(
+      profile?.user?.id,
+      serviceDetails?.service_id,
+    );
+    console.log('conversationId==>', conversationId);
+    const negotiationFieldData = await getNegotiationFieldData(
+      conversationId,
+    );
+    console.log('negotiationFieldData==>', negotiationFieldData);
+    if (negotiationFieldData) {
+      props.navigation.navigate(
+        SCREENS.NegotiationDetails.identifier,
+        {
+          conversationId: conversationId,
+          peerUser: {
+            user_id: serviceDetails?.provider?.id,
+            name: serviceDetails?.provider?.full_name,
+            email: serviceDetails?.provider?.email,
+            avatarUrl:
+              serviceDetails?.provider?.profile_photo_url,
+          },
+        },
+      );
+    } else {
+      setNewQuoteAmount('');
+      setNewQuoteAmountError('');
+      setShowOfferModal(true);
+    }
+  }
 
   return (
     <View style={[styles(theme).container]}>
@@ -825,33 +913,8 @@ export default function RequestDetails(props: any) {
               <TouchableOpacity
                 style={styles(theme).negociateButton}
                 activeOpacity={1}
-                onPress={async () => {
-                  const conversationId = buildThreadId(
-                    profile?.user?.id,
-                    serviceDetails?.service_id,
-                  );
-                  const negotiationFieldData = await getNegotiationFieldData(
-                    conversationId,
-                  );
-                  if (negotiationFieldData) {
-                    props.navigation.navigate(
-                      SCREENS.NegotiationDetails.identifier,
-                      {
-                        conversationId: conversationId,
-                        peerUser: {
-                          user_id: serviceDetails?.provider?.id,
-                          name: serviceDetails?.provider?.full_name,
-                          email: serviceDetails?.provider?.email,
-                          avatarUrl:
-                            serviceDetails?.provider?.profile_photo_url,
-                        },
-                      },
-                    );
-                  } else {
-                    setNewQuoteAmount('');
-                    setNewQuoteAmountError('');
-                    setShowOfferModal(true);
-                  }
+                onPress={() => {
+                  handleNavigateToNegotiationDetails();
                 }}>
                 <Text
                   size={getScaleSize(14)}
@@ -1499,7 +1562,7 @@ export default function RequestDetails(props: any) {
               font={FONTS.Lato.SemiBold}
               color={theme._323232}
               style={{ marginBottom: getScaleSize(16) }}>
-              Enter Your Offer Amount
+              {STRING.enter_your_offer_amount}
             </Text>
             <View
               style={[
@@ -1517,11 +1580,9 @@ export default function RequestDetails(props: any) {
                 value={newQuoteAmount ? `€${newQuoteAmount}` : ''}
                 keyboardType="numeric"
                 onChangeText={(text: string) => {
-                  // setNewQuoteAmount(text.replace('€', ''));
-                  const cleanedText = text.replace(/[^0-9]/g, '');
-                  setNewQuoteAmount(cleanedText);
+                  setNewQuoteAmount(formatDecimalInput(text));
                   if (text.replace('€', '').trim() === '') {
-                    setNewQuoteAmountError('Please enter an offer amount');
+                    setNewQuoteAmountError(STRING.please_enter_an_offer_amount);
                   } else {
                     setNewQuoteAmountError('');
                   }

@@ -487,6 +487,7 @@
     "are_you_sure_to_delete_the_service": "Are you sure to delete the service?",
     "delete_service": "Delete Service",
     "please_Enter_the_amount_to_withdraw": "Please Enter the amount to withdraw",
+    "amount_must_be_no_less_than_1_euro": "Amount must be greater than or equal to €1.00",
     "home_assistance": "Home Assistance",
     "service_not_found": "Service not found",
     "professionals_connected_today": "Professionals\nConnected Today",
@@ -538,7 +539,6 @@
     "not_certified": "Not\nCertified",
     "work_quality": "Work quality",
     "reliability": "Reliability",
-    "punctunality": "Punctunality",
     "solution": "Solution",
     "payout": "Payout",
     "remove": "Remove",
@@ -586,6 +586,8 @@
     "something_went_wrong": "Something went wrong",
     "select_date_range": "Select Date Range",
     "clear": "Clear",
+    "select_date": "Select date",
+    "confirm": "Confirm",
     "week": "Week",
     "week_1": "Week 1",
     "week_2": "Week 2",
@@ -596,5 +598,11 @@
     "start_and_end_date_cannot_be_same": "Start and end date cannot be same.",
     "please_select_end_date": "Please select end date.",
     "great_job_Your_service_quote_submitted_successfully": "Great job! Your service quote has been submitted successfully.",
-    "increase_from_last_month": "increase from last month"
+    "increase_from_last_month": "increase from last month",
+    "my_revised_offer_is": "My revised offer is",
+    "original_valuation": "Original Valuation",
+    "initial_quote": "Initial Quote",
+    "your_previous_offer": "Your Previous Offer",
+    "current_offer": "Current Offer",
+    "enter_your_offer_amount": "Enter Your Offer Amount"
 }

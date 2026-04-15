@@ -490,6 +490,7 @@ export const useString = () => {
     are_you_sure_to_delete_the_service: getTranslation('are_you_sure_to_delete_the_service'),
     delete_service: getTranslation('delete_service'),
     please_Enter_the_amount_to_withdraw: getTranslation('please_Enter_the_amount_to_withdraw'),
+    amount_must_be_no_less_than_1_euro: getTranslation('amount_must_be_no_less_than_1_euro'),
     home_assistance: getTranslation('home_assistance'),
     service_not_found: getTranslation('service_not_found'),
     professionals_connected_today: getTranslation('professionals_connected_today'),
@@ -541,7 +542,6 @@ export const useString = () => {
     not_certified: getTranslation('not_certified'),
     work_quality: getTranslation('work_quality'),
     reliability: getTranslation('reliability'),
-    punctunality: getTranslation('punctunality'),
     solution: getTranslation('solution'),
     payout: getTranslation('payout'),
     remove: getTranslation('remove'),
@@ -589,6 +589,8 @@ export const useString = () => {
     something_went_wrong: getTranslation('something_went_wrong'),
     select_date_range: getTranslation('select_date_range'),
     clear: getTranslation('clear'),
+    select_date: getTranslation('select_date'),
+    confirm: getTranslation('confirm'),
     week: getTranslation('week'),
     week_1: getTranslation('week_1'),
     week_2: getTranslation('week_2'),
@@ -600,6 +602,12 @@ export const useString = () => {
     please_select_end_date: getTranslation('please_select_end_date'),
     great_job_Your_service_quote_submitted_successfully: getTranslation('great_job_Your_service_quote_submitted_successfully'),
     increase_from_last_month: getTranslation('increase_from_last_month'),
+    my_revised_offer_is: getTranslation('my_revised_offer_is'),
+    original_valuation: getTranslation('original_valuation'),
+    initial_quote: getTranslation('initial_quote'),
+    your_previous_offer: getTranslation('your_previous_offer'),
+    current_offer: getTranslation('current_offer'),
+    enter_your_offer_amount: getTranslation('enter_your_offer_amount'),
   };
 };
 

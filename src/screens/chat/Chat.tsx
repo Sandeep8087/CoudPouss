@@ -76,6 +76,7 @@ export default function Chat(props: any) {
               ...doc.data(),
             };
           });
+          console.log('chatlist negotiation==>', formattedMessages);
           setFilteredNegotiationDataSource(formattedMessages);
           setMasterNegotiationDataSource(formattedMessages);
         },

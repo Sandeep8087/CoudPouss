@@ -336,7 +336,7 @@ export default function MyProfileProfessional(props: any) {
           </View>
           <View style={{ marginTop: getScaleSize(15) }}>
             <RattingControler
-              title={STRING.punctunality}
+              title={STRING.Punctuality}
               value={profile?.customer_ratings?.criteria_averages?.punctuality ?? '0.0'}
               fillCount={profile?.customer_ratings?.criteria_averages?.punctuality ?? 0}
               totalCount={5}

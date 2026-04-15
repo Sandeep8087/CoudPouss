@@ -17,7 +17,7 @@ import { FONTS, IMAGES } from '../../assets';
 import { AuthContext, ThemeContext, ThemeContextType } from '../../context';
 
 //CONSTANT
-import { getScaleSize, sanitizeAddressInput, sanitizeNameInput, sanitizePublicProfileText, SHOW_SUCCESS_TOAST, SHOW_TOAST, useString } from '../../constant';
+import { getScaleSize, sanitizeAddressInput, sanitizeNameInput, sanitizePublicProfileText, SHOW_SUCCESS_TOAST, SHOW_TOAST, useString, waitForFileReady } from '../../constant';
 
 //COMPONENT
 import {
@@ -171,6 +171,8 @@ export default function EditProfile(props: any) {
                 type: asset?.type || 'image/jpeg',
             });
 
+            await waitForFileReady();
+
             const result = await API.Instance.post(API.API_ROUTES.uploadProfileImage, formData, {
                 headers: {
                     'Content-Type': 'multipart/form-data',
@@ -194,7 +196,8 @@ export default function EditProfile(props: any) {
         items: Array<{ type: 'first' | 'second'; asset: any }>
     ) {
         try {
-            if (!items.length) {
+            const validItems = items.filter((item) => item?.asset?.uri);
+            if (!validItems.length) {
                 return {
                     requestSuccess: true,
                     uploadedKeysByType: {},
@@ -202,16 +205,24 @@ export default function EditProfile(props: any) {
             }
 
             const formData = new FormData();
-            items.forEach((item) => {
+            validItems.forEach((item, index) => {
+                const assetUri = Platform.OS === 'ios'
+                    ? item.asset.uri.replace('file://', '')
+                    : item.asset.uri;
+                const extension = item.asset?.type?.includes('png') ? 'png' : 'jpg';
+
                 formData.append('past_work_photos', {
-                    uri: item.asset?.uri,
-                    name: item.asset?.fileName || 'profile_image.jpg',
+                    uri: assetUri,
+                    name: item.asset?.fileName || `past_work_${index}_${Date.now()}.${extension}`,
                     type: item.asset?.type || 'image/jpeg',
-                });
+                } as any);
             });
 
+            await waitForFileReady();
+
             const result = await API.Instance.post(API.API_ROUTES.uploadProviderJobFiles, formData, {
-                headers: { 'Content-Type': 'multipart/form-data' }
+                headers: { 'Content-Type': 'multipart/form-data' },
+                timeout: 30000,
             });
 
             if (!result?.status) {
@@ -231,7 +242,7 @@ export default function EditProfile(props: any) {
                     : [];
             const uploadedKeysByType: any = {};
 
-            items.forEach((item, index) => {
+            validItems.forEach((item, index) => {
                 const fileItem = responseFiles?.[index];
                 const key =
                     typeof fileItem === 'string'
@@ -247,8 +258,13 @@ export default function EditProfile(props: any) {
                 uploadedKeysByType,
             };
         } catch (error: any) {
-            console.log('ERROR', error)
-            SHOW_TOAST(error?.message ?? '', 'error');
+            console.log('ERROR uploadPastWorkImages', error?.response?.data ?? error);
+            const errorMessage =
+                error?.response?.data?.message ||
+                error?.message ||
+                STRING?.something_went_wrong ||
+                'Upload failed';
+            SHOW_TOAST(errorMessage, 'error');
             return {
                 requestSuccess: false,
                 uploadedKeysByType: {},
@@ -260,6 +276,7 @@ export default function EditProfile(props: any) {
         if (isLoading) {
             return;
         }
+        let shouldStopLoaderInFinally = true;
 
         const nameErr = validateName(name);
         const mobileErr = validateMobile(mobileNumber);
@@ -363,7 +380,9 @@ export default function EditProfile(props: any) {
 
                 if (allApisSuccessful) {
                     SHOW_TOAST(STRING.profile_updated_successfully, 'success')
+                    shouldStopLoaderInFinally = false;
                     setTimeout(() => {
+                        setLoading(false);
                         props.navigation.goBack();
                     }, 500);
                 }
@@ -375,7 +394,9 @@ export default function EditProfile(props: any) {
         } catch (error: any) {
             SHOW_TOAST(error?.message ?? '', 'error');
         } finally {
-            setLoading(false);
+            if (shouldStopLoaderInFinally) {
+                setLoading(false);
+            }
         }
     }
 

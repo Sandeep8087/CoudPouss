@@ -24,7 +24,7 @@ import { FONTS, IMAGES } from '../../assets';
 import { AuthContext, ThemeContext, ThemeContextType } from '../../context';
 
 //CONSTANT
-import { formatDecimalInput, getScaleSize, prepareMediaForUpload, SHOW_TOAST, useString } from '../../constant';
+import { formatDecimalInput, getScaleSize, prepareMediaForUpload, SHOW_TOAST, useString, waitForFileReady } from '../../constant';
 
 //COMPONENT
 import {
@@ -253,7 +253,7 @@ console.log('asset size==> 1570024', asset?.fileSize , MAX_VIDEO_SIZE_BYTES)
       const finalAsset = await handleThumbnail(asset);
 
       if (asset?.type?.startsWith('video')) {
-        await new Promise((resolve: any) => setTimeout(resolve, 600));
+        await waitForFileReady(600);
       }
 
       if (type === 'first') {
@@ -308,7 +308,9 @@ console.log('asset size==> 1570024', asset?.fileSize , MAX_VIDEO_SIZE_BYTES)
 
       // 🔥 IMPORTANT: wait for video file to be ready
       if (isVideo) {
-        await new Promise((resolve: any) => setTimeout(resolve, 10000));
+        await waitForFileReady(5000);
+      } else {
+        await waitForFileReady();
       }
       const uploadAsset = await prepareMediaForUpload(asset);
       const formData = new FormData();

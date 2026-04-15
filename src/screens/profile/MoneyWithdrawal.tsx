@@ -52,8 +52,8 @@ export default function MoneyWithdrawal(props: any) {
             setAmountError(STRING.please_Enter_the_amount_to_withdraw);
             return;
         }
-        if(Number(amount) <= 0 ){
-            setAmountError(STRING.please_Enter_the_amount_to_withdraw);
+        if (Number(amount) < 1) {
+            setAmountError(STRING.amount_must_be_no_less_than_1_euro);
             return;
         }
         try {

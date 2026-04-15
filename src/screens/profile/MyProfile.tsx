@@ -14,7 +14,7 @@ import { AuthContext, ThemeContext, ThemeContextType } from '../../context';
 
 //CONSTANT & ASSETS
 import { FONTS, IMAGES } from '../../assets';
-import { getScaleSize, sanitizeAddressInput, SHOW_SUCCESS_TOAST, SHOW_TOAST, useString, validateAddress } from '../../constant';
+import { getScaleSize, sanitizeAddressInput, SHOW_SUCCESS_TOAST, SHOW_TOAST, useString, validateAddress, waitForFileReady } from '../../constant';
 
 //COMPONENTS
 import { Text, Header, Input, Button, BottomSheet, SelectCountrySheet } from '../../components';
@@ -97,6 +97,7 @@ export default function MyProfile(props: any) {
 
             console.log('FORM DATA', formData)
             setLoading(true);
+            await waitForFileReady();
             const result = await API.Instance.post(API.API_ROUTES.uploadProfileImage, formData, {
                 headers: {
                     'Content-Type': 'multipart/form-data',

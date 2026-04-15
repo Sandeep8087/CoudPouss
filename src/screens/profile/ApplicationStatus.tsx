@@ -5,7 +5,7 @@ import React, { useContext, useEffect, useRef, useState } from 'react'
 import { ThemeContext, ThemeContextType } from '../../context';
 
 //CONSTANT & ASSETS
-import { getScaleSize, SHOW_TOAST, useString } from '../../constant';
+import { getScaleSize, SHOW_TOAST, useString, waitForFileReady } from '../../constant';
 import { FONTS, IMAGES } from '../../assets';
 
 //COMPONENTS
@@ -176,6 +176,7 @@ export default function ApplicationStatus(props: any) {
             });
             console.log('formData==>', formData)
             setLoading(true);
+            await waitForFileReady();
             const result = await API.Instance.post(API.API_ROUTES.uploadDocuments, formData, {
                 headers: {
                     'Content-Type': 'multipart/form-data',

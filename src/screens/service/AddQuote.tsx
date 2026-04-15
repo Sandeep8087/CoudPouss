@@ -20,7 +20,7 @@ import { FONTS, IMAGES } from '../../assets';
 import { AuthContext, ThemeContext, ThemeContextType } from '../../context';
 
 //CONSTANT
-import { arrayIcons, formatDecimalInput, getScaleSize, SHOW_SUCCESS_TOAST, SHOW_TOAST, useString } from '../../constant';
+import { arrayIcons, formatDecimalInput, getScaleSize, SHOW_SUCCESS_TOAST, SHOW_TOAST, useString, waitForFileReady } from '../../constant';
 
 //COMPONENT
 import {
@@ -103,6 +103,7 @@ export default function AddQuote(props: any) {
         type: asset.type || 'image/jpeg',
       } as any);
       setLoading(true);
+      await waitForFileReady();
       const result: any = await API.Instance.post(API.API_ROUTES.fileUploadProfessionalServices, formData, {
         headers: {
           'Content-Type': 'multipart/form-data',

@@ -101,6 +101,7 @@ export default function NegotiationDetails(props: any) {
         };
       });
       setLoadingMessages(false);
+      console.log('formattedMessages==>', formattedMessages);
       setMessages(formattedMessages.reverse());
     });
 
@@ -165,9 +166,9 @@ export default function NegotiationDetails(props: any) {
       setLoading(false);
       if (result.status) {
         acceptNegotiation(commanId, messageId);
-        removeDocument(profile?.user?.id, commanId);
-        removeDocument(peerUserId, commanId);
-        removeThread(commanId);
+        // removeDocument(profile?.user?.id, commanId);
+        // removeDocument(peerUserId, commanId);
+        // removeThread(commanId);
         props.navigation.goBack();
       } else {
         console.log('result error', result);
@@ -187,6 +188,7 @@ export default function NegotiationDetails(props: any) {
       case 'NEGOTIATION':
         // const isMe = item.senderId === profile?.user?.id;
         const isMe = item.negotiation.currentTurn === profile?.user?.id;
+        const isServiceProvider = profile?.user?.role === 'service_provider';
 
         const latestNegotiationMessage = messages
           ?.filter(msg => msg?.type === 'NEGOTIATION')
@@ -513,9 +515,13 @@ export default function NegotiationDetails(props: any) {
         return (
           <View
             style={
-              isMe
-                ? styles(theme).quoteCardContainer
-                : styles(theme).negotiationCard
+              isServiceProvider
+                ? isMe
+                  ? styles(theme).quoteCardContainer
+                  : styles(theme).negotiationCard
+                : isMe
+                  ? styles(theme).negotiationCard
+                  : styles(theme).quoteCardContainer
             }>
             <Text
               size={getScaleSize(16)}
@@ -532,7 +538,7 @@ export default function NegotiationDetails(props: any) {
                       size={getScaleSize(14)}
                       font={FONTS.Lato.Medium}
                       color={theme._6D6D6D}>
-                      {'Original Valuation :'}
+                      {`${STRING.original_valuation} : `}
                     </Text>
                   ) : offer.label === 'PROVIDER_QUOTE' ? (
                     <Text
@@ -540,17 +546,17 @@ export default function NegotiationDetails(props: any) {
                       size={getScaleSize(14)}
                       font={FONTS.Lato.Medium}
                       color={theme._6D6D6D}>
-                      {'Initial Quote :'}
+                      {`${STRING.initial_quote} : `}
                     </Text>
                   ) : (
                     <Text
-                      style={{ flex: 1 }}
+                      style={{ flex: 1, marginRight: getScaleSize(8)}}
                       size={getScaleSize(14)}
                       font={FONTS.Lato.Medium}
                       color={theme._6D6D6D}>
                       {offer.userName === profile?.user?.first_name
-                        ? 'Your Previous Offer'
-                        : offer.userName + ' Current Offer'}
+                        ? STRING.your_previous_offer
+                        : `${offer.userName} ${STRING.current_offer}`}
                     </Text>
                   )}
 
@@ -601,16 +607,13 @@ export default function NegotiationDetails(props: any) {
                           keyboardType="decimal-pad"
                         />
                       </View>
-                      <View style={styles(theme).actionRow}>
+                      <View style={[styles(theme).actionRow,{alignSelf: 'flex-end'}]}>
                         <TouchableOpacity
-                          style={styles(theme).actionButtonPrimary}
+                          style={[styles(theme).actionButtonPrimary,{paddingHorizontal: getScaleSize(14)}]}
                           disabled={buttonDisabled}
                           onPress={async () => {
                             if (!offerInputValue.trim()) {
-                              SHOW_TOAST(
-                                'Please enter an offer amount',
-                                'error',
-                              );
+                              SHOW_TOAST(STRING.please_enter_an_offer_amount, 'error')
                               return;
                             }
 
@@ -643,7 +646,7 @@ export default function NegotiationDetails(props: any) {
                               commanId,
                               {
                                 type: 'NEGOTIATION',
-                                text: `My revised offer is €${offerInputValue}`,
+                                text: `${STRING.my_revised_offer_is} €${offerInputValue}`,
                                 negotiation: updatedNegotiation,
                               },
                               profile?.user?.profile_photo_url || '',
@@ -657,12 +660,12 @@ export default function NegotiationDetails(props: any) {
                             size={getScaleSize(14)}
                             font={FONTS.Lato.SemiBold}
                             color={theme.white}>
-                            Submit
+                            {STRING.Submit}
                           </Text>
                         </TouchableOpacity>
-                        <View style={{ width: getScaleSize(12) }} />
+                        <View style={{ width: getScaleSize(8) }} />
                         <TouchableOpacity
-                          style={styles(theme).actionButtonSecondary}
+                          style={[styles(theme).actionButtonSecondary,{paddingHorizontal: getScaleSize(14)}]}
                           onPress={() => {
                             setEditingForMessageId(false);
                             setOfferInputValue('');
@@ -671,7 +674,7 @@ export default function NegotiationDetails(props: any) {
                             size={getScaleSize(14)}
                             font={FONTS.Lato.SemiBold}
                             color={theme.primary}>
-                            Cancel
+                            {STRING.Cancel}
                           </Text>
                         </TouchableOpacity>
                       </View>
@@ -679,30 +682,31 @@ export default function NegotiationDetails(props: any) {
                   )}
                 </View>
               ) : profile?.user?.role === 'elderly_user' ? (
-                <View>
+                <View style={{ flex: 1.0 }}>
                   {!editingForMessageId && (
-                    <View style={styles(theme).actionRow}>
+                    <View style={[styles(theme).actionRow, { flex: 1.0 }]}>
                       <TouchableOpacity
-                        style={styles(theme).actionButtonSecondary}
+                        style={[styles(theme).actionButtonSecondary, {flex: 1.0,}]}
                         onPress={() => {
                           setEditingForMessageId(true);
                         }}>
                         <Text
-                          size={getScaleSize(14)}
-                          font={FONTS.Lato.SemiBold}
+                          size={getScaleSize(12)}
+                          font={FONTS.Lato.Medium}
                           color={theme.primary}>
                           {STRING.counter_offer}
                         </Text>
                       </TouchableOpacity>
+                      <View style={{ width: getScaleSize(8) }} />
                       <TouchableOpacity
-                        style={styles(theme).actionButtonPrimary}
+                        style={[styles(theme).actionButtonPrimary, {flex: 1.0,}]}
                         onPress={async () => {
                           mediaPickerSheetRef.current?.open();
                           setSelectedNegotiation(item);
                         }}>
                         <Text
-                          size={getScaleSize(14)}
-                          font={FONTS.Lato.SemiBold}
+                          size={getScaleSize(12)}
+                          font={FONTS.Lato.Medium}
                           color={theme.white}>
                           {STRING.accept_offer}
                         </Text>
@@ -713,7 +717,7 @@ export default function NegotiationDetails(props: any) {
                     <View>
                       <View style={styles(theme).offerInputWrapper}>
                         <Text
-                          size={getScaleSize(16)}
+                          size={getScaleSize(12)}
                           font={FONTS.Lato.Medium}
                           color={theme._424242}>
                           €
@@ -731,9 +735,9 @@ export default function NegotiationDetails(props: any) {
                           keyboardType="decimal-pad"
                         />
                       </View>
-                      <View style={styles(theme).actionRow}>
+                      <View style={[styles(theme).actionRow, {alignSelf: 'flex-end'}]}>
                         <TouchableOpacity
-                          style={styles(theme).actionButtonPrimary}
+                          style={[styles(theme).actionButtonPrimary, { paddingHorizontal: getScaleSize(14) }]}
                           disabled={buttonDisabled}
                           onPress={async () => {
                             if (!offerInputValue.trim()) {
@@ -773,7 +777,7 @@ export default function NegotiationDetails(props: any) {
                               commanId,
                               {
                                 type: 'NEGOTIATION',
-                                text: `My revised offer is €${offerInputValue}`,
+                                text: `${STRING.my_revised_offer_is} €${offerInputValue}`,
                                 negotiation: updatedNegotiation,
                               },
                               profile?.user?.profile_photo_url || '',
@@ -788,21 +792,21 @@ export default function NegotiationDetails(props: any) {
                           }}>
                           <Text
                             size={getScaleSize(14)}
-                            font={FONTS.Lato.SemiBold}
+                            font={FONTS.Lato.Regular}
                             color={theme.white}>
                             {STRING.Submit}
                           </Text>
                         </TouchableOpacity>
-                        <View style={{ width: getScaleSize(12) }} />
+                        <View style={{ width: getScaleSize(8) }} />
                         <TouchableOpacity
-                          style={styles(theme).actionButtonSecondary}
+                          style={[styles(theme).actionButtonSecondary, { paddingHorizontal: getScaleSize(14) }]}
                           onPress={() => {
                             setEditingForMessageId(false);
                             setOfferInputValue('');
                           }}>
                           <Text
                             size={getScaleSize(14)}
-                            font={FONTS.Lato.SemiBold}
+                            font={FONTS.Lato.Regular}
                             color={theme.primary}>
                             {STRING.Cancel}
                           </Text>
@@ -1063,7 +1067,7 @@ const styles = (theme: ThemeContextType['theme']) =>
       backgroundColor: theme._F5F5F5,
     },
     quoteCardContainer: {
-      width: '65%',
+      width: '75%',
       alignSelf: 'flex-end',
       paddingHorizontal: getScaleSize(16),
       paddingVertical: getScaleSize(16),
@@ -1072,7 +1076,7 @@ const styles = (theme: ThemeContextType['theme']) =>
       marginBottom: getScaleSize(10),
     },
     negotiationCard: {
-      width: '65%',
+      width: '75%',
       alignSelf: 'flex-start',
       paddingHorizontal: getScaleSize(16),
       paddingVertical: getScaleSize(16),
@@ -1085,6 +1089,7 @@ const styles = (theme: ThemeContextType['theme']) =>
       justifyContent: 'space-between',
       alignItems: 'center',
       marginBottom: getScaleSize(8),
+      flex: 1.0,
     },
     offersHeaderRow: {
       flexDirection: 'row',
@@ -1133,23 +1138,25 @@ const styles = (theme: ThemeContextType['theme']) =>
     },
     actionRow: {
       flexDirection: 'row',
-      justifyContent: 'flex-end',
       marginTop: getScaleSize(10),
     },
     actionButtonPrimary: {
-      paddingHorizontal: getScaleSize(16),
-      paddingVertical: getScaleSize(10),
-      borderRadius: getScaleSize(12),
+      paddingVertical: getScaleSize(6),
+      borderRadius: getScaleSize(16),
       backgroundColor: theme.primary,
+      borderWidth: 1,
+      borderColor: theme.primary,
+      alignItems: 'center',
+      justifyContent: 'center',
     },
     actionButtonSecondary: {
-      paddingHorizontal: getScaleSize(12),
-      paddingVertical: getScaleSize(8),
-      borderRadius: getScaleSize(10),
+      paddingVertical: getScaleSize(6),
+      borderRadius: getScaleSize(16),
       backgroundColor: theme.white,
       borderWidth: 1,
       borderColor: theme.primary,
-      marginRight: getScaleSize(8),
+      alignItems: 'center',
+      justifyContent: 'center',
     },
     alartIcon: {
       width: getScaleSize(60),

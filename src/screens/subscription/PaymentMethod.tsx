@@ -12,7 +12,7 @@ import { getScaleSize, useString, SHOW_TOAST, openStripeCheckout } from '../../c
 import { SCREENS } from '..';
 
 //COMPONENTS
-import { Header, Input, Text, Button } from '../../components';
+import { Header, Input, Text, Button, ProgressView } from '../../components';
 import { EventRegister } from 'react-native-event-listeners';
 import { API } from '../../api';
 import { CommonActions } from '@react-navigation/native';
@@ -28,6 +28,8 @@ export default function PaymentMethod(props: any) {
 
     const [isLoading, setLoading] = useState(false);
     const [paymentDetails, setPaymentDetails] = useState<any>({});
+    const paymentPendingRef = useRef(false);
+    const paymentDeepLinkHandledRef = useRef(false);
 
     console.log(isFromSubscriptionButton, 'isFromSubscriptionButton')
 
@@ -44,10 +46,19 @@ export default function PaymentMethod(props: any) {
 
     useEffect(() => {
         const paymentCancelListener = EventRegister.addEventListener('subscriptionPaymentCancel', (data: any) => {
+            paymentDeepLinkHandledRef.current = true;
+            paymentPendingRef.current = false;
+            setLoading(false);
             SHOW_TOAST(data?.message ?? '', 'error')
+        });
+        const paymentSuccessListener = EventRegister.addEventListener('subscriptionPaymentSuccess', () => {
+            paymentDeepLinkHandledRef.current = true;
+            paymentPendingRef.current = false;
+            setLoading(false);
         });
         return () => {
             EventRegister.removeEventListener(paymentCancelListener as string)
+            EventRegister.removeEventListener(paymentSuccessListener as string)
         }
     }, []);
 
@@ -65,53 +76,21 @@ export default function PaymentMethod(props: any) {
             return params;
         };
 
-        Linking.getInitialURL().then((url: any) => {
+        const handleDeepLink = (url: string) => {
             if (!url) return;
 
             if (url.includes('payment-success')) {
+                paymentDeepLinkHandledRef.current = true;
+                paymentPendingRef.current = false;
+                setLoading(false);
+                EventRegister.emit('subscriptionPaymentSuccess');
+
                 const params = parseParams(url);
                 const type = params.type;
                 const subscriptionId = params.succription_id;
                 console.log(subscriptionId, params, 'params')
                 if (type == 'add') {
                     Alert.alert('Payment successful');
-                    fetchProfile()
-                    setTimeout(() => {
-                        props.navigation.navigate(SCREENS.SubscriptionSuccessful.identifier, {
-                            id: subscriptionId
-                        });
-                    }, 2000);
-                } else if (type == 'update') {
-                    fetchProfile()
-                    props?.navigation?.dispatch(
-                        CommonActions.reset({
-                            index: 0,
-                            routes: [{ name: SCREENS.BottomBar.identifier }],
-                        }),
-                    );
-                }
-            }
-
-            if (url.includes('payment-cancel')) {
-                const params = parseParams(url);
-                const error = params.error || 'Payment cancelled';
-                const type = params.type;
-                EventRegister.emit('subscriptionPaymentCancel', {
-                    message: error,
-                });
-            }
-        });
-
-        //coudpouss://payment-success?type=add&succription_id=91fb80cb-0d1a-4640-b908-95fc32d2660d
-        const handleUrl = ({ url }: { url: string }) => {
-            console.log('Deep link:', url);
-            // ✅ PAYMENT SUCCESS
-            if (url.startsWith('coudpouss://payment-success')) {
-                const params = parseParams(url);
-                const type = params.type;
-                const subscriptionId = params.succription_id;
-                console.log(subscriptionId, params, 'params')
-                if (type == 'add') {
                     fetchProfile()
                     setTimeout(() => {
                         props.navigation.navigate(SCREENS.SubscriptionSuccessful.identifier, {
@@ -131,16 +110,29 @@ export default function PaymentMethod(props: any) {
                 }
                 return;
             }
-            // ❌ PAYMENT CANCEL
-            if (url.startsWith('coudpouss://payment-cancel')) {
+
+            if (url.includes('payment-cancel')) {
+                paymentDeepLinkHandledRef.current = true;
+                paymentPendingRef.current = false;
+                setLoading(false);
+
                 const params = parseParams(url);
                 const error = params.error || 'Payment cancelled';
-                const type = params.type;
                 EventRegister.emit('subscriptionPaymentCancel', {
                     message: error,
                 });
-                return;
             }
+        };
+
+        Linking.getInitialURL().then((url: any) => {
+            if (!url) return;
+            handleDeepLink(url);
+        });
+
+        //coudpouss://payment-success?type=add&succription_id=91fb80cb-0d1a-4640-b908-95fc32d2660d
+        const handleUrl = ({ url }: { url: string }) => {
+            console.log('Deep link:', url);
+            handleDeepLink(url);
         };
 
         const linkingSubscription = Linking.addEventListener('url', handleUrl);
@@ -151,6 +143,7 @@ export default function PaymentMethod(props: any) {
     }, []);
 
     async function onPayment() {
+        let keepLoaderForPaymentRedirect = false;
         try {
             setLoading(true);
             const params = {
@@ -160,7 +153,30 @@ export default function PaymentMethod(props: any) {
             if (result.status) {
                 setPaymentDetails(result?.data?.data ?? {});
                 const STRIPE_URL = result?.data?.data?.checkout_url ?? '';
-                openStripeCheckout(STRIPE_URL);
+                paymentDeepLinkHandledRef.current = false;
+                paymentPendingRef.current = true;
+                keepLoaderForPaymentRedirect = true;
+                const checkoutResult: any = await openStripeCheckout(STRIPE_URL);
+                const checkoutType = String(checkoutResult?.type ?? '').toLowerCase();
+                const isClosedManually =
+                    checkoutType === 'cancel' ||
+                    checkoutType === 'dismiss' ||
+                    checkoutType === 'close';
+                const isCheckoutError = checkoutType === 'error';
+
+                if (isClosedManually) {
+                    setTimeout(() => {
+                        if (paymentDeepLinkHandledRef.current) return;
+                        paymentPendingRef.current = false;
+                        keepLoaderForPaymentRedirect = false;
+                        setLoading(false);
+                    }, 1200);
+                } else if (isCheckoutError) {
+                    paymentPendingRef.current = false;
+                    keepLoaderForPaymentRedirect = false;
+                    setLoading(false);
+                    SHOW_TOAST('Unable to open payment page', 'error');
+                }
             } else {
                 SHOW_TOAST(result?.data?.message ?? '', 'error')
             }
@@ -168,7 +184,10 @@ export default function PaymentMethod(props: any) {
             SHOW_TOAST(error?.message ?? '', 'error');
             console.log(error?.message)
         } finally {
-            setLoading(false);
+            if (!keepLoaderForPaymentRedirect) {
+                paymentPendingRef.current = false;
+                setLoading(false);
+            }
         }
     }
 
@@ -276,6 +295,7 @@ export default function PaymentMethod(props: any) {
                     }}
                 />
             </View>
+            {isLoading && <ProgressView />}
         </View>
     );
 }

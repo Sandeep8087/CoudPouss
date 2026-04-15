@@ -41,6 +41,7 @@ import { useFocusEffect, useIsFocused } from '@react-navigation/native';
 import { SCREENS } from '..';
 import { API } from '../../api';
 import moment from 'moment';
+import { EventRegister } from 'react-native-event-listeners';
 
 export default function Notification(props: any) {
   const STRING = useString();
@@ -51,6 +52,7 @@ export default function Notification(props: any) {
 
   console.log('userType==>', userType);
   const [isLoading, setLoading] = useState(false);
+  const [isListLoading, setIsListLoading] = useState(false);
   const [notification, setNotification] = useState<any[]>([]);
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
@@ -61,6 +63,7 @@ export default function Notification(props: any) {
 
   const mapViewRef = useRef<any>(null);
   const renegotiationViewRef = useRef<any>(null);
+  const isFetchingNotificationsRef = useRef(false);
 
   useEffect(() => {
     if (selectedItem) {
@@ -88,21 +91,33 @@ export default function Notification(props: any) {
     getNotification();
   }, [page]);
 
-  async function getNotification() {
+  useEffect(() => {
+    const paymentSuccessListener = EventRegister.addEventListener('onNotificationPaymentSuccess', () => {
+      reloadPageOne();
+    });
+
+    return () => {
+      EventRegister.removeEventListener(paymentSuccessListener as string);
+    };
+  }, []);
+
+  async function getNotification(targetPage: number = page) {
+    if (isFetchingNotificationsRef.current) return;
     try {
-      setLoading(true);
-      const result = await API.Instance.get(API.API_ROUTES.getNotifications + `?page=${page}&limit=${PAGE_SIZE}`);
+      isFetchingNotificationsRef.current = true;
+      setIsListLoading(true);
+      const result = await API.Instance.get(API.API_ROUTES.getNotifications + `?page=${targetPage}&limit=${PAGE_SIZE}`);
       if (result.status) {
         console.log('notifications==>', result?.data?.data?.notifications)
         onReadAllNotifications()
         const newData = result?.data?.data?.notifications ?? [];
+        setHasMore(newData?.length >= PAGE_SIZE);
         if (newData?.length < PAGE_SIZE) {
-          setHasMore(false);
-          setNotification((prev: any[]) => [...prev, ...newData]);
+          setNotification((prev: any[]) => targetPage === 1 ? newData : [...prev, ...newData]);
           setError(newData?.length === 0 ? 'No Data Found' : '')
         }
         else {
-          setNotification((prev: any[]) => [...prev, ...newData]);
+          setNotification((prev: any[]) => targetPage === 1 ? newData : [...prev, ...newData]);
         }
       } else {
         setHasMore(false);
@@ -112,13 +127,23 @@ export default function Notification(props: any) {
       setHasMore(false);
       console.log(error);
     } finally {
-      setLoading(false);
+      isFetchingNotificationsRef.current = false;
+      setIsListLoading(false);
     }
+  }
+
+  async function reloadPageOne() {
+    setNotification([]);
+    setHasMore(true);
+    if (page === 1) {
+      await getNotification(1);
+      return;
+    }
+    setPage(1);
   }
 
   async function onReadAllNotifications() {
     try {
-      setLoading(true);
       const result = await API.Instance.post(API.API_ROUTES.onReadAllNotifications + '/mark-all-read');
       if (result.status) {
         console.log('onReadAllNotifications==>', result?.data?.data);
@@ -129,14 +154,12 @@ export default function Notification(props: any) {
     catch (error: any) {
       SHOW_TOAST(error?.message ?? '', 'error');
       console.log(error?.message);
-    } finally {
-      setLoading(false);
     }
   }
 
   const loadMore = () => {
-    if (hasMore) {
-      setPage(page + 1);
+    if (hasMore && !isListLoading) {
+      setPage((prevPage: number) => prevPage + 1);
     }
   }
 
@@ -148,9 +171,7 @@ export default function Notification(props: any) {
         SHOW_TOAST(result?.data?.message ?? '', 'success');
         mapViewRef.current?.close();
         setSelectedItem(null);
-        getNotification()
-        setPage(1)
-        setNotification([])
+        await reloadPageOne();
       } else {
         SHOW_TOAST(result?.data?.message ?? '', 'error');
         mapViewRef.current?.close();
@@ -173,9 +194,7 @@ export default function Notification(props: any) {
         SHOW_TOAST(result?.data?.message ?? '', 'success');
         mapViewRef.current?.close();
         setSelectedItem(null);
-        getNotification()
-        setPage(1)
-        setNotification([])
+        await reloadPageOne();
       } else {
         SHOW_TOAST(result?.data?.message ?? '', 'error');
         mapViewRef.current?.close();
@@ -201,9 +220,6 @@ export default function Notification(props: any) {
       if (result.status) {
         SHOW_TOAST(result?.data?.message ?? '', 'success');
         const STRIPE_URL = result?.data?.data?.checkout_url ?? '';
-        getNotification()
-        setPage(1)
-        setNotification([])
         openStripeCheckout(STRIPE_URL);
         setTimeout(() => {
           renegotiationViewRef.current?.close();
@@ -235,9 +251,7 @@ export default function Notification(props: any) {
         SHOW_TOAST(result?.data?.message ?? '', 'success');
         renegotiationViewRef.current?.close();
         setSelectedRenegotiationItem(null);
-        getNotification()
-        setPage(1)
-        setNotification([])
+        await reloadPageOne();
       } else {
         SHOW_TOAST(result?.data?.message ?? '', 'error');
         renegotiationViewRef.current?.close();
@@ -279,7 +293,9 @@ export default function Notification(props: any) {
           onEndReached={loadMore}
           onEndReachedThreshold={0.1}
           ListFooterComponent={
-            isLoading ? <ActivityIndicator size="large" color={theme.primary} style={{ margin: 20 }} /> : null
+            isListLoading && page > 1
+              ? <ActivityIndicator size="large" color={theme.primary} style={{ margin: 20 }} />
+              : null
           }
           renderItem={({ item, index }) => {
             const imageUrl = item?.data?.sender_profile_photo_url;
@@ -534,7 +550,7 @@ export default function Notification(props: any) {
           }}
         />
       )
-    } else if (isLoading) {
+    } else if (isListLoading) {
       return (
         <View style={styles(theme).emptyContainer}>
           <ActivityIndicator size="large" color={theme.primary} style={{ margin: 20 }} />

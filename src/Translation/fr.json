@@ -487,6 +487,7 @@
     "are_you_sure_to_delete_the_service": "Êtes-vous sûr de vouloir supprimer ce service ?",
     "delete_service": "Supprimer le service",
     "please_Enter_the_amount_to_withdraw": "Veuillez saisir le montant à retirer",
+    "amount_must_be_no_less_than_1_euro": "Le montant doit être supérieur ou égal à €1.00",
     "home_assistance": "Assistance à domicile",
     "service_not_found": "Service non trouvé",
     "professionals_connected_today": "Professionnels\nConnectés\naujourd’hui",
@@ -538,7 +539,6 @@
     "not_certified": "Non\nCertifié",
     "work_quality": "Qualité du travail",
     "reliability": "Fiabilité",
-    "punctunality": "Ponctualité",
     "solution": "Solution",
     "payout": "Paiement",
     "remove": "Supprimer",
@@ -586,6 +586,8 @@
     "something_went_wrong": "Une erreur est survenue",
     "select_date_range": "Sélectionner la plage de dates",
     "clear": "Effacer",
+    "select_date": "Sélectionner une date",
+    "confirm": "Confirmer",
     "week": "Semaine",
     "week_1": "Semaine 1",
     "week_2": "Semaine 2",
@@ -596,5 +598,11 @@
     "start_and_end_date_cannot_be_same": "La date de début et la date de fin ne peuvent pas être la même.",
     "please_select_end_date": "Veuillez sélectionner la date de fin.",
     "great_job_Your_service_quote_submitted_successfully": "Super travail ! Votre devis de service a été soumis avec succès.",
-    "increase_from_last_month": "augmentation par rapport au mois dernier"
+    "increase_from_last_month": "augmentation par rapport au mois dernier",
+    "my_revised_offer_is": "Mon offre révisée est",
+    "original_valuation": "Évaluation originale",
+    "initial_quote": "Devis initial",
+    "your_previous_offer": "Votre offre précédente",
+    "current_offer": "Offre actuelle",
+    "enter_your_offer_amount": "Saisir le montant de votre offre"
   }

@@ -394,7 +394,7 @@ export default function OtherUserProfile(props: any) {
           </View>
           <View style={{ marginTop: getScaleSize(15) }}>
             <RattingControler
-              title={STRING.punctunality}
+              title={STRING.Punctuality}
               value={ratings?.punctuality ?? '0.0'}
               fillCount={ratings?.punctuality ?? 0}
               totalCount={5}

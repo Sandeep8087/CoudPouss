@@ -1,4 +1,4 @@
-import React, { useContext, useEffect } from 'react';
+import React, { useContext, useEffect, useRef } from 'react';
 import { Alert, Dimensions, Image, ImageBackground, Linking, StyleSheet, TouchableOpacity, View } from 'react-native';
 
 // CONSTANT & ASSETS
@@ -20,6 +20,8 @@ function Tabbar(props: any) {
 
   const insets = useSafeAreaInsets();
   const STRING = useString();
+  const paymentLinkSeqRef = useRef(0);
+  const paymentCancelTimeoutRef = useRef<any>(null);
 
   const { theme } = useContext<any>(ThemeContext);
 
@@ -39,88 +41,34 @@ function Tabbar(props: any) {
       return params;
     };
 
-    Linking.getInitialURL().then((url: any) => {
+    const handleDeepLink = (url: string) => {
       if (!url) return;
+      const params = parseParams(url);
 
       if (url.includes('payment-success')) {
-        const params = parseParams(url);
-
-        const serviceId = params.service_id;
-        const type = params.type;
-        if (type == 'services_payment') {
-          props.navigation.navigate(SCREENS.ServiceConfirmed.identifier, {
-            serviceId: serviceId,
-          });
-        }
-      }
-
-      if (url.includes('account-success')) {
-        const params = parseParams(url);
-        fetchProfile()
-        props?.navigation?.dispatch(
-          CommonActions.reset({
-            index: 0,
-            routes: [{ name: SCREENS.BottomBar.identifier }],
-          }),
-        );
-      }
-
-      if (url.includes('account-cancel')) {
-        const params = parseParams(url);
-        fetchProfile()
-        props?.navigation?.dispatch(
-          CommonActions.reset({
-            index: 0,
-            routes: [{ name: SCREENS.BottomBar.identifier }],
-          }),
-        );
-      }
-
-      if (url.includes('payment-cancel')) {
-        const params = parseParams(url);
-        const error = params.error || 'Payment cancelled';
-        const type = params.type;
-
-        if (type == 'services_payment') {
-          EventRegister.emit('onPaymentCancel', {
-            message: error,
-          });
-        }
-      }
-    });
-
-    const handleUrl = ({ url }: { url: string }) => {
-      console.log('Deep link:', url);
-      // ✅ PAYMENT SUCCESS
-      if (url.startsWith('coudpouss://payment-success')) {
-        const params = parseParams(url);
-
         const serviceId = params.service_id;
         const type = params.type;
 
         if (type == 'services_payment') {
+          paymentLinkSeqRef.current += 1;
+          if (paymentCancelTimeoutRef.current) {
+            clearTimeout(paymentCancelTimeoutRef.current);
+            paymentCancelTimeoutRef.current = null;
+          }
           setTimeout(() => {
+            EventRegister.emit('onPaymentSuccess', {
+              serviceId: serviceId,
+            });
             props.navigation.navigate(SCREENS.ServiceConfirmed.identifier, {
               serviceId: serviceId,
             });
           }, 2000);
-        } else {
+          return;
         }
-        return;
-      }
 
-      if (url.startsWith('coudpouss://account-success')) {
-        const params = parseParams(url);
-        EventRegister.emit('onAccountSuccess', {
-          message: 'Account created successfully',
-        });
-      }
-
-      if (url.startsWith('coudpouss://payment-success')) {
-        const params = parseParams(url);
-        const type = params.type
         if (type == 'payment_type') {
           setTimeout(() => {
+            EventRegister.emit('onNotificationPaymentSuccess');
             props.navigation.navigate(SCREENS.Notification.identifier, {
               isFromDeepLink: true,
             });
@@ -129,9 +77,25 @@ function Tabbar(props: any) {
         return;
       }
 
-      if (url.startsWith('coudpouss://payment-cancel')) {
-        const params = parseParams(url);
-        const type = params.type
+      if (url.includes('payment-cancel')) {
+        const error = params.error || 'Payment cancelled';
+        const type = params.type;
+
+        if (type == 'services_payment') {
+          const seq = paymentLinkSeqRef.current + 1;
+          paymentLinkSeqRef.current = seq;
+          if (paymentCancelTimeoutRef.current) {
+            clearTimeout(paymentCancelTimeoutRef.current);
+          }
+          paymentCancelTimeoutRef.current = setTimeout(() => {
+            if (paymentLinkSeqRef.current !== seq) return;
+            EventRegister.emit('onPaymentCancel', {
+              message: error,
+            });
+          }, 1500);
+          return;
+        }
+
         if (type == 'payment_type') {
           setTimeout(() => {
             props.navigation.navigate(SCREENS.Notification.identifier, {
@@ -140,33 +104,53 @@ function Tabbar(props: any) {
             });
           }, 2000);
         }
+        return;
       }
 
-      if (url.startsWith('coudpouss://account-cancle')) {
-        const params = parseParams(url);
+      if (url.includes('account-success')) {
+        fetchProfile();
+        EventRegister.emit('onAccountSuccess', {
+          message: 'Account created successfully',
+        });
+        props?.navigation?.dispatch(
+          CommonActions.reset({
+            index: 0,
+            routes: [{ name: SCREENS.BottomBar.identifier }],
+          }),
+        );
+        return;
+      }
+
+      if (url.includes('account-cancel') || url.includes('account-cancle')) {
+        fetchProfile();
         EventRegister.emit('onAccountCancel', {
           message: 'Account cancelled',
         });
-        return;
+        props?.navigation?.dispatch(
+          CommonActions.reset({
+            index: 0,
+            routes: [{ name: SCREENS.BottomBar.identifier }],
+          }),
+        );
       }
-      // ❌ PAYMENT CANCEL
-      if (url.startsWith('coudpouss://payment-cancel')) {
-        const params = parseParams(url);
-        const error = params.error || 'Payment cancelled';
-        const type = params.type;
+    };
 
-        if (type == 'services_payment') {
-          EventRegister.emit('onPaymentCancel', {
-            message: error,
-          });
-        }
-        return;
-      }
+    Linking.getInitialURL().then((url: any) => {
+      if (!url) return;
+      handleDeepLink(url);
+    });
+
+    const handleUrl = ({ url }: { url: string }) => {
+      console.log('Deep link:', url);
+      handleDeepLink(url);
     };
 
     const linkingSubscription = Linking.addEventListener('url', handleUrl);
 
     return () => {
+      if (paymentCancelTimeoutRef.current) {
+        clearTimeout(paymentCancelTimeoutRef.current);
+      }
       linkingSubscription.remove();
     };
   }, []);

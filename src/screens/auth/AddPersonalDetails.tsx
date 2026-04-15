@@ -15,7 +15,7 @@ import { AuthContext, LaungageContext, ThemeContext, ThemeContextType } from '..
 
 //CONSTANT & ASSETS
 import { FONTS, IMAGES } from '../../assets';
-import { getScaleSize, REGEX, sanitizeAddressInput, sanitizeNameInput, SHOW_TOAST, Storage, useString, validateAddress } from '../../constant';
+import { getScaleSize, REGEX, sanitizeAddressInput, sanitizeNameInput, SHOW_TOAST, Storage, useString, validateAddress, waitForFileReady } from '../../constant';
 
 //SCREENS
 import { SCREENS } from '..';
@@ -109,6 +109,7 @@ export default function AddPersonalDetails(props: any) {
         type: asset?.type || 'image/jpeg',
       });
       setLoading(true);
+      await waitForFileReady();
       const result = await API.Instance.post(
         API.API_ROUTES.uploadProfileImage,
         formData,
