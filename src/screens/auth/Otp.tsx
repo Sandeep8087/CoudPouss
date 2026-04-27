@@ -1,4 +1,4 @@
-import { Dimensions, Image, Platform, StyleSheet, TouchableOpacity, View } from 'react-native';
+import { Dimensions, Image, ScrollView, StyleSheet, TouchableOpacity, View } from 'react-native';
 import React, { useContext, useEffect, useRef, useState } from 'react';
 
 //CONTEXT
@@ -19,7 +19,6 @@ import OTPTextInput from 'react-native-otp-textinput';
 import { useTranslation } from 'react-i18next';
 
 import { API } from '../../api';
-import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 
 export default function Otp(props: any) {
 
@@ -213,11 +212,9 @@ export default function Otp(props: any) {
                     }}
                     screenName={STRING.enter_OTP}
                 />
-                <KeyboardAwareScrollView
+                <ScrollView
                     showsVerticalScrollIndicator={false}
-                    enableOnAndroid={Platform.OS === 'android' && Number(Platform.Version) >= 35}
                     keyboardShouldPersistTaps="handled"
-                    extraScrollHeight={Platform.OS === 'ios' ? getScaleSize(24) : 0}
                     contentContainerStyle={{
                         flexGrow: 1,
                         paddingBottom: getScaleSize(24)
@@ -260,7 +257,7 @@ export default function Otp(props: any) {
                             }
                         </View>
                     </View>
-                </KeyboardAwareScrollView>
+                </ScrollView>
                 <View style={styles(theme).resendOtpView}>
                     {isResendDisabled ? (
                         <Text

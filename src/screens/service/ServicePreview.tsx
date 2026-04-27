@@ -42,6 +42,7 @@ import {
 
 //PACKAGES
 import { useFocusEffect } from '@react-navigation/native'; import moment from 'moment';
+import { useTranslation } from 'react-i18next';
 
 //SCREENS
 import { SCREENS } from '..';
@@ -52,6 +53,7 @@ export default function ServicePreview(props: any) {
   const STRING = useString();
 
   const { theme } = useContext<any>(ThemeContext);
+  const { t } = useTranslation();
 
   const { profile } = useContext(AuthContext)
 
@@ -184,7 +186,7 @@ export default function ServicePreview(props: any) {
             size={getScaleSize(24)}
             font={FONTS.Lato.Bold}
             color={theme.primary}>
-            {serviceDetails?.subcategory_info?.sub_category_name ?? ''}
+            {t(serviceDetails?.subcategory_info?.sub_category_name) ?? ''}
           </Text>
           <View style={styles(theme).informationView}>
             <View style={styles(theme).horizontalView}>
@@ -244,7 +246,7 @@ export default function ServicePreview(props: any) {
                   size={getScaleSize(12)}
                   font={FONTS.Lato.Medium}
                   color={theme.primary}>
-                  {`${serviceDetails?.category_info?.category_name ?? 'No'} Service`}
+                  {`${t(serviceDetails?.category_info?.category_name ?? 'No')} Service`}
                 </Text>
               </View>
               <View style={styles(theme).itemView}>

@@ -41,11 +41,13 @@ import { CommonActions, useFocusEffect } from '@react-navigation/native';
 import { SCREENS } from '..';
 import { API } from '../../api';
 import moment from 'moment';
+import { useTranslation } from 'react-i18next';
 
 export default function ServiceConfirmed(props: any) {
 
   const STRING = useString();
   const { theme } = useContext<any>(ThemeContext);
+  const { t } = useTranslation();
 
   const item = props?.route?.params?.item ?? {};
   const serviceId = props?.route?.params?.serviceId ?? '';
@@ -103,7 +105,7 @@ export default function ServiceConfirmed(props: any) {
             size={getScaleSize(16)}
             font={FONTS.Lato.Bold}
             color={theme.primary}>
-            {paymentDetails?.subcategory_name ?? ''}
+            {t(paymentDetails?.subcategory_name) ?? ''}
           </Text>
           <View style={styles(theme).informationView}>
             <View style={styles(theme).horizontalView}>
@@ -146,7 +148,7 @@ export default function ServiceConfirmed(props: any) {
                 { marginTop: getScaleSize(12) },
               ]}>
               <View style={styles(theme).itemView}>
-                {paymentDetails?.category_name ?
+                {paymentDetails?.category_logo ?
                   <Image
                     style={[styles(theme).informationIcon, { tintColor: theme._1A3D51 }]}
                     source={{uri: paymentDetails?.category_logo}}
@@ -163,7 +165,7 @@ export default function ServiceConfirmed(props: any) {
                   size={getScaleSize(12)}
                   font={FONTS.Lato.Medium}
                   color={theme.primary}>
-                  {paymentDetails?.category_name ?? ''}
+                  {t(paymentDetails?.category_name) ?? ''}
                 </Text>
               </View>
               <View style={styles(theme).itemView}>

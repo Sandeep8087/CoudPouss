@@ -1,4 +1,4 @@
-import { Dimensions, Image, KeyboardAvoidingView, Platform, ScrollView, StyleSheet, TouchableOpacity, View } from 'react-native';
+import { Dimensions, Image, KeyboardAvoidingView, ScrollView, StyleSheet, TouchableOpacity, View } from 'react-native';
 import React, { useContext, useEffect, useState } from 'react';
 
 //CONTEXT
@@ -15,7 +15,6 @@ import { SCREENS } from '..';
 import { Header, Input, Text, Button, SelectCountrySheet } from '../../components';
 import { CommonActions } from '@react-navigation/native';
 import { API } from '../../api';
-import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 
 export default function Signup(props: any) {
 
@@ -115,11 +114,9 @@ export default function Signup(props: any) {
     return (
         <View style={styles(theme).container}>
             <Header />
-            <KeyboardAwareScrollView
+            <ScrollView
                 showsVerticalScrollIndicator={false}
-                enableOnAndroid={Platform.OS === 'android' && Number(Platform.Version) >= 35}
                 keyboardShouldPersistTaps="handled"
-                extraScrollHeight={Platform.OS === 'ios' ? getScaleSize(24) : 0}
                 contentContainerStyle={{
                     paddingBottom: getScaleSize(24),
                     flexGrow: 1,
@@ -207,7 +204,7 @@ export default function Signup(props: any) {
                         </Text>
                     </Text>
                 </View>
-            </KeyboardAwareScrollView>
+            </ScrollView>
             {/* <SelectCountrySheet
                 height={getScaleSize(500)}
                 isVisible={visibleCountry}

@@ -5,15 +5,15 @@ import {
   TouchableOpacity,
   View,
   SectionList,
-  Platform,
+  ActivityIndicator,
 } from 'react-native';
-import React, { useContext, useEffect, useState } from 'react';
+import React, { useContext, useEffect, useRef, useState } from 'react';
 
 // CONTEXT
-import { LaungageContext, ThemeContext, ThemeContextType } from '../../context';
+import { ThemeContext, ThemeContextType } from '../../context';
 
 // COMPONENTS
-import { Header, DateRangeModal, TransactionItem, Text, ProgressView } from '../../components';
+import { Header, DateRangeModal, TransactionItem, Text } from '../../components';
 
 // CONSTANT
 import { getScaleSize, SHOW_TOAST, useString } from '../../constant';
@@ -69,11 +69,12 @@ const groupByMonth = (transactions: any[]) => {
 export default function Transactions(props: any) {
 
   const { theme } = useContext<any>(ThemeContext);
-  const { language } = useContext<any>(LaungageContext);
   const STRING = useString();
 
   const [visible, setVisible] = useState(false);
   const [open, setOpen] = useState(false);
+  const [showEmpty, setShowEmpty] = useState(false);
+  const emptyTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const [requestData, setRequestData] = useState<any>({
     transactions: [],
@@ -180,6 +181,35 @@ export default function Transactions(props: any) {
     }
   }, [requestData.page]);
 
+  useEffect(() => {
+    if (emptyTimerRef.current) {
+      clearTimeout(emptyTimerRef.current);
+      emptyTimerRef.current = null;
+    }
+
+    if (requestData.isLoading) {
+      setShowEmpty(false);
+      return;
+    }
+
+    if ((requestData.flatTransactions?.length ?? 0) > 0) {
+      setShowEmpty(false);
+      return;
+    }
+
+    emptyTimerRef.current = setTimeout(() => {
+      setShowEmpty(true);
+      emptyTimerRef.current = null;
+    }, 400);
+
+    return () => {
+      if (emptyTimerRef.current) {
+        clearTimeout(emptyTimerRef.current);
+        emptyTimerRef.current = null;
+      }
+    };
+  }, [requestData.isLoading, requestData.flatTransactions]);
+
   /* ================= ACTIONS ================= */
 
   const loadMore = () => {
@@ -230,7 +260,7 @@ export default function Transactions(props: any) {
 
   const renderEmptyComponent = () => {
     // Show empty only when API call finished
-    if (requestData.isLoading) return null;
+    if (!showEmpty) return null;
 
     return (
       <View style={styles(theme).emptyContainer}>
@@ -327,6 +357,15 @@ export default function Transactions(props: any) {
         onEndReachedThreshold={0.4}
         showsVerticalScrollIndicator={false}
         ListEmptyComponent={renderEmptyComponent}
+        ListFooterComponent={() => {
+          if (!requestData.isLoading) return null;
+
+          return (
+            <View style={styles(theme).footerLoaderContainer}>
+              <ActivityIndicator color={theme.primary} />
+            </View>
+          );
+        }}
         renderSectionHeader={({ section }: any) => (
           <View style={styles(theme).sectionHeaderContainer}>
             <View style={{ flex: 1 }}>
@@ -338,7 +377,7 @@ export default function Transactions(props: any) {
               </Text>
             </View>
             <Text size={24} font={FONTS.Lato.Bold} color={theme._2C6587}>
-              {section.title.total.toFixed(2)}
+              {`€${section.title.total.toFixed(2)}`}
             </Text>
           </View>
         )}
@@ -354,18 +393,19 @@ export default function Transactions(props: any) {
         visible={open}
         onClose={() => setOpen(false)}
         onApply={(start: any, end: any) => {
+          if ((start && !end) || (!start && end)) {
+            return;
+          }
           const startUTC = start
-            ? moment.utc(start).startOf('day').toISOString()
+            ? moment(start).startOf('day').toISOString()
             : null;
           const endUTC = end
-            ? moment.utc(end).endOf('day').toISOString()
+            ? moment(end).endOf('day').toISOString()
             : null;
 
           onDateApply(startUTC, endUTC);
         }}
       />
-
-      {requestData.isLoading && <ProgressView />}
     </View>
   );
 }
@@ -428,5 +468,10 @@ const styles = (theme: ThemeContextType['theme']) => StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     marginTop: getScaleSize(80),
+  },
+  footerLoaderContainer: {
+    paddingVertical: getScaleSize(16),
+    alignItems: 'center',
+    justifyContent: 'center',
   },
 });

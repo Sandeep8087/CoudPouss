@@ -90,7 +90,6 @@ export default function PaymentMethod(props: any) {
                 const subscriptionId = params.succription_id;
                 console.log(subscriptionId, params, 'params')
                 if (type == 'add') {
-                    Alert.alert('Payment successful');
                     fetchProfile()
                     setTimeout(() => {
                         props.navigation.navigate(SCREENS.SubscriptionSuccessful.identifier, {

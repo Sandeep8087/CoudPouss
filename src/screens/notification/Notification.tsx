@@ -46,11 +46,8 @@ import { EventRegister } from 'react-native-event-listeners';
 export default function Notification(props: any) {
   const STRING = useString();
   const { theme } = useContext<any>(ThemeContext);
-
   const { userType } = useContext<any>(AuthContext);
-
-
-  console.log('userType==>', userType);
+  
   const [isLoading, setLoading] = useState(false);
   const [isListLoading, setIsListLoading] = useState(false);
   const [notification, setNotification] = useState<any[]>([]);
@@ -73,7 +70,6 @@ export default function Notification(props: any) {
 
   useEffect(() => {
     if (selectedRenegotiationItem) {
-      console.log('selectedRenegotiationItem==>', selectedRenegotiationItem);
       renegotiationViewRef.current?.open();
     }
   }, [selectedRenegotiationItem]);
@@ -135,11 +131,11 @@ export default function Notification(props: any) {
   async function reloadPageOne() {
     setNotification([]);
     setHasMore(true);
-    if (page === 1) {
-      await getNotification(1);
-      return;
+    isFetchingNotificationsRef.current = false;
+    if (page !== 1) {
+      setPage(1);
     }
-    setPage(1);
+    await getNotification(1);
   }
 
   async function onReadAllNotifications() {

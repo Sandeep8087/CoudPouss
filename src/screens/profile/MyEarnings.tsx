@@ -8,7 +8,6 @@ import { SCREENS } from '..'
 
 //PACKAGES
 import { API } from '../../api'
-import DateTimePicker from '@react-native-community/datetimepicker';
 import { useIsFocused } from '@react-navigation/native'
 import DatePicker from 'react-native-date-picker'
 
@@ -44,15 +43,11 @@ export default function MyEarnings(props: any) {
         }
     }, [isFocused]);
 
-    const onChange = (_: any, date?: Date) => {
-        setShowPicker(false);
-        if (date) {
-
-            setSelectedDate(date);
-            // Call API with new month
-            const month = date.toISOString().slice(0, 7); // YYYY-MM
-            fetchActivities(month);
-        }
+    const onDateSelect = (date: Date) => {
+        setSelectedDate(date);
+        // Call API with new month
+        const month = date.toISOString().slice(0, 7); // YYYY-MM
+        fetchActivities(month);
     };
 
     async function fetchActivities(month: string) {
@@ -164,19 +159,21 @@ export default function MyEarnings(props: any) {
                 onPress={() => {
                     props.navigation.navigate(SCREENS.MoneyWithdrawal.identifier);
                 }} />
-            {showPicker && (
-                <DatePicker
-                    date={selectedDate}
-                    open={showPicker}
-                    mode='date'
-                    modal
-                    locale={language === 'fr' ? 'fr-FR' : 'en-US'}
-                    title={STRING.select_date}
-                    cancelText={STRING.cancel}
-                    confirmText={STRING.confirm}
-                    onDateChange={onChange}
-                />
-            )}
+            <DatePicker
+                date={selectedDate}
+                open={showPicker}
+                mode='date'
+                modal
+                locale={language === 'fr' ? 'fr-FR' : 'en-US'}
+                title={STRING.select_date}
+                cancelText={STRING.cancel}
+                confirmText={STRING.confirm}
+                onCancel={() => setShowPicker(false)}
+                onConfirm={(date) => {
+                    setShowPicker(false);
+                    onDateSelect(date);
+                }}
+            />
         </View>
     )
 }

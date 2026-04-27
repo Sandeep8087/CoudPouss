@@ -89,7 +89,6 @@ export default function Chat(props: any) {
   };
 
   const ItemView = ({item}: {item: any}) => {
-    console.log('item', item);
     return (
       <TouchableOpacity
         style={styles(theme).itemContainer}

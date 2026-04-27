@@ -2,11 +2,9 @@ import React, { useContext, useEffect, useRef, useState } from 'react';
 import {
     View,
     StyleSheet,
-    TouchableOpacity,
     Image,
-    ScrollView,
-    SafeAreaView,
     Platform,
+    ScrollView,
 } from 'react-native';
 
 //CONTEXT
@@ -17,7 +15,7 @@ import { FONTS, IMAGES } from '../../assets';
 import { getScaleSize, sanitizeAddressInput, SHOW_SUCCESS_TOAST, SHOW_TOAST, useString, validateAddress, waitForFileReady } from '../../constant';
 
 //COMPONENTS
-import { Text, Header, Input, Button, BottomSheet, SelectCountrySheet } from '../../components';
+import { Text, Header, Input, Button, BottomSheet, SelectCountrySheet, SinglePressTouchable } from '../../components';
 
 //API
 import { API } from '../../api';
@@ -30,6 +28,7 @@ import { CommonActions } from '@react-navigation/native';
 //SCREENS
 import { SCREENS } from '..';
 import { countryCodes } from 'react-native-country-codes-picker';
+import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 
 export default function MyProfile(props: any) {
 
@@ -49,13 +48,22 @@ export default function MyProfile(props: any) {
     const [mobileNumberError, setMobileNumberError] = useState('');
     const [address, setAddress] = useState(profile?.user?.address ?? "");
     const [addressError, setAddressError] = useState('');
+    const [location, setLocation] = useState<any>({
+        latitude: 21.2332124,
+        longitude: 72.9148332
+    });
     const [isLoading, setLoading] = useState(false);
+    const isMediaPickerOpenRef = useRef(false);
     const [profileImage, setProfileImage] = useState<any>(null);
     const [addressHeight, setAddressHeight] = useState(inputHeight);
+    const [isAddressFocused, setIsAddressFocused] = useState(false);
     const [visibleCountry, setVisibleCountry] = useState(false);
     const [countryCode, setCountryCode] = useState('');
     const [countryFlag, setCountryFlag] = useState('');
     const [mobileNumber, setMobileNumber] = useState(profile?.user?.phone_number ?? '');
+    const dynamicBottomPadding = isAddressFocused
+        ? getScaleSize(24) + Math.max(0, addressHeight - inputHeight)
+        : getScaleSize(24);
 
     useEffect(() => {
         const flag: any = countryCodes.find((item: any) => {
@@ -73,12 +81,15 @@ export default function MyProfile(props: any) {
     }, [])
 
     const pickImage = async () => {
+        if (isMediaPickerOpenRef.current) return;
+        isMediaPickerOpenRef.current = true;
         launchImageLibrary({ mediaType: 'photo' }, (response) => {
+            isMediaPickerOpenRef.current = false;
             if (!response.didCancel && !response.errorCode && response.assets) {
                 const asset: any = response.assets[0];
-                console.log('asset', asset)
-                setProfileImage(asset);
-                uploadProfileImage(asset);
+                console.log('asset', asset);
+                setProfileImage(asset)
+                uploadProfileImage(asset)
             } else {
                 console.log('response', response)
             }
@@ -274,7 +285,8 @@ export default function MyProfile(props: any) {
                     screenName={STRING.my_profile}
                 />
             </View>
-            <ScrollView showsVerticalScrollIndicator={false}>
+            <ScrollView 
+            showsVerticalScrollIndicator={false}>
                 <View style={styles(theme).mainContainer}>
                     {profile?.user?.profile_photo_url ? (
                         <Image source={{ uri: profile?.user?.profile_photo_url }} resizeMode='cover' style={styles(theme).profileContainer} />
@@ -290,9 +302,11 @@ export default function MyProfile(props: any) {
                             </Text>
                         </View>
                     )}
-                    <TouchableOpacity onPress={() => {
-                        pickImage()
-                    }}>
+                    <SinglePressTouchable
+                        onPress={() => {
+                            pickImage();
+                        }}
+                    >
                         <Text
                             size={getScaleSize(16)}
                             font={FONTS.Lato.SemiBold}
@@ -300,7 +314,7 @@ export default function MyProfile(props: any) {
                             color={theme._2C6587}>
                             {STRING.edit_picture_or_avatar}
                         </Text>
-                    </TouchableOpacity>
+                    </SinglePressTouchable>
                     <Text
                         style={{ marginTop: getScaleSize(22), marginBottom: getScaleSize(12) }}
                         size={getScaleSize(20)}
@@ -360,7 +374,7 @@ export default function MyProfile(props: any) {
                         keyboardType="numeric"
                         continerStyle={{ marginBottom: getScaleSize(20) }}
                         value={mobileNumber}
-                        maxLength={10}
+                        maxLength={15}
                         countryCode={`${countryFlag} ${countryCode}`}
                         onPressCountryCode={() => {
                             setVisibleCountry(true);
@@ -394,6 +408,12 @@ export default function MyProfile(props: any) {
                             minHeight: inputHeight,
                         }}
                         continerStyle={{ marginBottom: getScaleSize(20) }}
+                        onFocus={() => {
+                            setIsAddressFocused(true);
+                        }}
+                        onBlur={() => {
+                            setIsAddressFocused(false);
+                        }}
                         onChangeText={text => {
                             // let cleaned = text.replace(/[<>]/g, '');
                             // cleaned = cleaned.replace(/^\s+/, '');
@@ -452,7 +472,6 @@ const styles = (theme: ThemeContextType['theme']) =>
             backgroundColor: theme.white
         },
         mainContainer: {
-            flex: 1,
             marginHorizontal: getScaleSize(24),
         },
         profileContainer: {

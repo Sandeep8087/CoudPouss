@@ -1,3 +1,5 @@
+import { uploadFiles } from "react-native-fs"
+
 const API_BASE_URL = "http://163.227.92.122:4001/"
 
 const DISABLE_API_LOGS = false
@@ -93,6 +95,7 @@ const API_ROUTES = {
     onLikeReviewRating: "profile_module/like-review-rating",
     getNotificationCount: "userService/notifications/count",
     onReadAllNotifications: "userService/notifications",
+    uploadFiles: "service_request/upload-file"
 }
 
 

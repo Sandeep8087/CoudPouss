@@ -10,6 +10,7 @@ import {
   Platform,
   Keyboard,
   findNodeHandle,
+  ScrollView,
 } from 'react-native';
 
 //CONTEXT
@@ -53,15 +54,18 @@ const RejectBottomPopup = (props: any) => {
   }, []);
 
   const handleReasonChange = (text: string) => {
-    // Prevent starting space
-    if (text.length === 1 && text === ' ') {
-      return;
+    // 1) No starting space
+    // 2) Only 1 space between words
+    // 3) Max length: 250
+    let nextText = text
+      .replace(/^\s+/, '')
+      .replace(/\s{2,}/g, ' ');
+
+    if (nextText.length > 250) {
+      nextText = nextText.slice(0, 250);
     }
-  
-    // Limit to 250 characters
-    if (text.length <= 250) {
-      setReason(text);
-    }
+
+    setReason(nextText);
   };
 
   const handleReasonFocus = (event: any) => {
@@ -113,15 +117,7 @@ const RejectBottomPopup = (props: any) => {
             style={{ alignSelf: 'center', marginVertical: getScaleSize(16) }}>
             {STRING.RejectServicerequest}
           </Text>
-          <KeyboardAwareScrollView
-            ref={scrollRef}
-            style={{ flex: 1.0 }}
-            showsVerticalScrollIndicator={false}
-            enableOnAndroid={Platform.OS === 'android' && Number(Platform.Version) >= 35}
-            enableAutomaticScroll={true}
-            keyboardShouldPersistTaps="handled"
-            extraScrollHeight={Platform.OS === 'ios' ? getScaleSize(100) : 0}
-            contentContainerStyle={{ paddingBottom: keyboardHeight + getScaleSize(24) }}>
+          <ScrollView showsVerticalScrollIndicator={false}>
             <TouchableOpacity
               style={styles(theme).radioButtonContainer}
               activeOpacity={1}
@@ -214,7 +210,7 @@ const RejectBottomPopup = (props: any) => {
                 </View>
               )}
             </TouchableOpacity>
-          </KeyboardAwareScrollView>
+          </ScrollView>
           <View style={styles(theme).buttonContainer}>
             <TouchableOpacity
               style={styles(theme).backButtonContainer}

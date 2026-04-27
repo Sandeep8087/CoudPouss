@@ -24,6 +24,7 @@ import {
 } from '../../components';
 import { API } from '../../api';
 import moment from 'moment';
+import { useTranslation } from 'react-i18next';
 
 export const arrayIcons = {
     pets: IMAGES.pets,
@@ -40,11 +41,10 @@ export const arrayIcons = {
 export default function ServiceCancelled(props: any) {
     const STRING = useString();
     const { theme } = useContext<any>(ThemeContext);
+    const { t } = useTranslation();
 
     const item = props?.route?.params?.item ?? {};
     const serviceItem = props?.route?.params?.serviceItem ?? {};
-
-    console.log('ITEM==>', JSON.stringify(item))
 
     const [isLoading, setLoading] = useState(false);
     // async function cancelService(serviceId: any) {
@@ -92,7 +92,7 @@ export default function ServiceCancelled(props: any) {
                         size={getScaleSize(16)}
                         font={FONTS.Lato.Bold}
                         color={theme.primary}>
-                        {serviceItem?.sub_category_name ?? ''}
+                        {t(serviceItem?.sub_category_name) ?? ''}
                     </Text>
                     <View style={styles(theme).informationView}>
                         <View style={styles(theme).horizontalView}>
@@ -141,7 +141,7 @@ export default function ServiceCancelled(props: any) {
                                 { marginTop: getScaleSize(12) },
                             ]}>
                             <View style={styles(theme).itemView}>
-                                {serviceItem?.category_name ? (
+                                {serviceItem?.category_logo ? (
                                     <Image
                                         style={[
                                             styles(theme).informationIcon,
@@ -163,7 +163,7 @@ export default function ServiceCancelled(props: any) {
                                     size={getScaleSize(12)}
                                     font={FONTS.Lato.Medium}
                                     color={theme.primary}>
-                                    {serviceItem?.category_name ?? ''}
+                                    {t(serviceItem?.category_name) ?? ''}
                                 </Text>
                             </View>
                             <View style={styles(theme).itemView}>

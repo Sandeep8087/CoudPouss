@@ -5,8 +5,7 @@ import {
   StyleSheet,
   TouchableOpacity,
   View,
-  KeyboardAvoidingView,
-  Platform
+  ScrollView
 } from 'react-native';
 import React, { useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
 
@@ -35,7 +34,6 @@ import { CommonActions } from '@react-navigation/native';
 import { API } from '../../api';
 import { launchImageLibrary } from 'react-native-image-picker';
 import debounce from 'lodash/debounce';
-import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 
 export default function AddPersonalDetails(props: any) {
 
@@ -63,6 +61,8 @@ export default function AddPersonalDetails(props: any) {
   const [profileImage, setProfileImage] = useState<any>(null);
   const [countryFlag, setCountryFlag] = useState('🇮🇳');
 
+  const isMediaPickerOpenRef = useRef(false);
+
   // useEffect(() => {
   //   if (isPhoneNumber) {
   //     setMobileNo(isEmail);
@@ -88,7 +88,10 @@ export default function AddPersonalDetails(props: any) {
   };
 
   const pickImage = async () => {
+    if (isMediaPickerOpenRef.current) return;
+    isMediaPickerOpenRef.current = true;
     launchImageLibrary({ mediaType: 'photo' }, response => {
+      isMediaPickerOpenRef.current = false;
       if (!response.didCancel && !response.errorCode && response.assets) {
         const asset: any = response.assets[0];
         setProfileImage(asset);
@@ -257,15 +260,7 @@ export default function AddPersonalDetails(props: any) {
         }}
         screenName={STRING.add_personal_details}
       />
-      <KeyboardAwareScrollView
-        showsVerticalScrollIndicator={false}
-        enableOnAndroid={Platform.OS === 'android' && Number(Platform.Version) >= 35}
-        keyboardShouldPersistTaps="handled"
-        extraScrollHeight={Platform.OS === 'ios' ? getScaleSize(24) : 0}
-        contentContainerStyle={{
-          flexGrow: 1,
-          paddingBottom: getScaleSize(24)
-        }}>
+      <ScrollView showsVerticalScrollIndicator={false}>
         <View style={styles(theme).mainContainer}>
           <View style={styles(theme).imageContainer}>
             {profileImage ? (
@@ -379,9 +374,8 @@ export default function AddPersonalDetails(props: any) {
             }}
             isError={addressError}
           />
-
         </View>
-      </KeyboardAwareScrollView>
+      </ScrollView>
       <Button
         title={STRING.next}
         style={{

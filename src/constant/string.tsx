@@ -608,6 +608,7 @@ export const useString = () => {
     your_previous_offer: getTranslation('your_previous_offer'),
     current_offer: getTranslation('current_offer'),
     enter_your_offer_amount: getTranslation('enter_your_offer_amount'),
+    reviews: getTranslation('reviews'),
   };
 };
 

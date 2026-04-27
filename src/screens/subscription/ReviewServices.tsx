@@ -15,12 +15,12 @@ import { SCREENS } from '..';
 import { Header, Input, Text, Button, ServiceItem, BottomSheet } from '../../components';
 import { API } from '../../api';
 import { CommonActions } from '@react-navigation/native';
-
+import { useTranslation } from 'react-i18next';
 
 export default function ReviewServices(props: any) {
 
     const STRING = useString();
-
+const { t } = useTranslation();
     const { theme } = useContext<any>(ThemeContext);
     const { selectedServices, setSelectedServices, myPlan, profile } = useContext<any>(AuthContext);
     const serviceItemContainerStyle = useMemo(() => ({ marginBottom: getScaleSize(20) }), []);
@@ -213,7 +213,7 @@ export default function ReviewServices(props: any) {
                                         <Text size={getScaleSize(16)}
                                             font={FONTS.Lato.SemiBold}
                                             color={theme._2C6587}>
-                                            {section?.category?.category_name ?? ''}
+                                            {t(section?.category?.category_name ?? '')}
                                         </Text>
                                     </View>
                                     {(section?.service ?? []).map((item: any, index: number) => {

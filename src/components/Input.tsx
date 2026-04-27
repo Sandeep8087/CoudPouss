@@ -42,6 +42,7 @@ interface InputProps {
   containerStyle?: StyleProp<ViewStyle>;
   couponCode?: string | null;
   onPressCouponCode?: () => void;
+  disabled?: boolean;
 }
 
 function Input(props: InputProps & TextInputProps) {
@@ -65,6 +66,7 @@ function Input(props: InputProps & TextInputProps) {
     onPressQuantityAdd,
     couponCode,
     onPressCouponCode,
+    disabled,
   } = props;
 
   const { theme } = useContext<any>(ThemeContext);
@@ -190,6 +192,7 @@ function Input(props: InputProps & TextInputProps) {
           )}
           {couponCode && (
             <Pressable
+              disabled={disabled}
               style={styles(theme).couponCodeContainer}
               onPress={onPressCouponCode}>
               <Text

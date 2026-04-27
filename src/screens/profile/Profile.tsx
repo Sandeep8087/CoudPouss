@@ -115,19 +115,19 @@ export default function Profile(props: any) {
           </Text>
           {userType === 'service_provider' && (
             <>
-              {(profile?.provider_info?.is_docs_verified === false ||
-                profile?.onboarding_status === false) && (
-                  <View style={styles(theme).checkStatusContainer}>
-                    <Image source={IMAGES.ic_alart} style={styles(theme).alartIcon} />
-                    <Text
-                      size={getScaleSize(19)}
-                      font={FONTS.Lato.Bold}
-                      align="center"
-                      color={theme._214C65}>
-                      {STRING.account_under_verification}
-                    </Text>
-                    {profile?.user?.service_provider_type === 'professional' &&
-                      <>
+              {profile?.user?.service_provider_type === 'professional' ?
+                <>
+                  {(profile?.provider_info?.is_docs_verified === false ||
+                    profile?.onboarding_status === false) && (
+                      <View style={styles(theme).checkStatusContainer}>
+                        <Image source={IMAGES.ic_alart} style={styles(theme).alartIcon} />
+                        <Text
+                          size={getScaleSize(19)}
+                          font={FONTS.Lato.Bold}
+                          align="center"
+                          color={theme._214C65}>
+                          {STRING.account_under_verification}
+                        </Text>
                         {profile?.provider_info?.is_docs_verified === false && (
                           <TouchableOpacity
                             onPress={() => {
@@ -143,9 +143,36 @@ export default function Profile(props: any) {
                             </Text>
                           </TouchableOpacity>
                         )}
-                      </>
-                    }
-                    {profile?.onboarding_status === false && (
+                        {profile?.onboarding_status === false && (
+                          <TouchableOpacity
+                            onPress={() => {
+                              openStripeCheckout(profile?.onboarding_redirect_url ?? '')
+                            }}
+                            style={[styles(theme).checkStatusButton, { backgroundColor: theme._F0B52C }]}>
+                            <Text
+                              size={getScaleSize(16)}
+                              font={FONTS.Lato.SemiBold}
+                              align="center"
+                              color={theme.white}>
+                              {STRING.onboarding_process}
+                            </Text>
+                          </TouchableOpacity>
+                        )}
+                      </View>
+                    )}
+                </>
+                :
+                <>
+                  {(profile?.onboarding_status === false) && (
+                    <View style={styles(theme).checkStatusContainer}>
+                      <Image source={IMAGES.ic_alart} style={styles(theme).alartIcon} />
+                      <Text
+                        size={getScaleSize(19)}
+                        font={FONTS.Lato.Bold}
+                        align="center"
+                        color={theme._214C65}>
+                        {STRING.account_under_verification}
+                      </Text>
                       <TouchableOpacity
                         onPress={() => {
                           openStripeCheckout(profile?.onboarding_redirect_url ?? '')
@@ -159,9 +186,10 @@ export default function Profile(props: any) {
                           {STRING.onboarding_process}
                         </Text>
                       </TouchableOpacity>
-                    )}
-                  </View>
-                )}
+                    </View>
+                  )}
+                </>
+              }
             </>
           )}
           <View style={{ marginTop: userType === 'service_provider' ? getScaleSize(20) : getScaleSize(40) }}>

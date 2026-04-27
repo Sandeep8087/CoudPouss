@@ -716,7 +716,7 @@ export default function RequestDetails(props: any) {
             size={getScaleSize(24)}
             font={FONTS.Lato.Bold}
             color={theme.primary}>
-            {serviceDetails?.sub_category_name}
+            {t(serviceDetails?.sub_category_name) ?? ''}
           </Text>
           <View style={styles(theme).informationView}>
             <View style={styles(theme).horizontalView}>
@@ -791,7 +791,7 @@ export default function RequestDetails(props: any) {
                   size={getScaleSize(12)}
                   font={FONTS.Lato.Medium}
                   color={theme.primary}>
-                  {serviceDetails?.category_name}
+                  {t(serviceDetails?.category_name) ?? ''}
                 </Text>
               </View>
               <View style={styles(theme).itemView}>
@@ -1475,7 +1475,6 @@ export default function RequestDetails(props: any) {
           }, 200);
         }}
         onCancel={(item: any) => {
-          console.log('item==>', item);
           if (item) {
             onCancelService(item);
           }

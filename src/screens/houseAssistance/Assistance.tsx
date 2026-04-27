@@ -37,6 +37,7 @@ import Animated, {
   interpolate,
   Extrapolate,
 } from 'react-native-reanimated';
+import { useTranslation } from 'react-i18next';
 
 const { width } = Dimensions.get('window');
 const cellSize = (width - 30) / 7;
@@ -46,6 +47,7 @@ export default function Assistance(props: any) {
   const service = props.route.params?.service;
   const STRING = useString();
   const { theme } = useContext<any>(ThemeContext);
+  const { t } = useTranslation();
 
   const [selectedCategory, setSelectedCategory] = useState<any>(null);
   const [loading, setLoading] = useState(true);
@@ -163,7 +165,7 @@ export default function Assistance(props: any) {
         onBack={() => {
           props.navigation.goBack();
         }}
-        screenName={selectedCategory ? selectedCategory?.category_name : service?.name}
+        screenName={selectedCategory ? t(selectedCategory?.category_name) : t(service?.name)}
       />
       <View
         style={{
@@ -259,7 +261,7 @@ export default function Assistance(props: any) {
                               ? theme.white
                               : theme._999999
                           }>
-                          {item?.category_name}
+                          {t(item?.category_name)}
                         </Text>
                       </TouchableOpacity>
                     );
@@ -320,7 +322,7 @@ export default function Assistance(props: any) {
                     size={getScaleSize(16)}
                     font={FONTS.Lato.Bold}
                     color={theme.primary}>
-                    {item?.subcategory_name}
+                    {t(item?.subcategory_name) ?? ''}
                   </Text>
                 </Pressable>
               )

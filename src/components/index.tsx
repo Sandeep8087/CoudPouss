@@ -36,6 +36,8 @@ import RenegotiationSheet from './RenegotiationSheet'
 import EnterSecurityCodeSheet from './EnterSecurityCodeSheet'
 import SelectMediaModal from './SelectMediaModal'
 import ViewAllCouponsPopup from './ViewAllCouponsPopup'
+import KeyBoardAware from './KeyBoardAware'
+import SinglePressTouchable from './SinglePressTouchable'
 
 export {
     Header,
@@ -76,4 +78,6 @@ export {
     EnterSecurityCodeSheet,
     SelectMediaModal,
     ViewAllCouponsPopup,
+    KeyBoardAware,
+    SinglePressTouchable,
 }

@@ -1,4 +1,4 @@
-import { Dimensions, Image, Platform, StyleSheet, View } from 'react-native';
+import { Dimensions, Image, ScrollView, StyleSheet, View } from 'react-native';
 import React, { useContext, useEffect, useState } from 'react';
 
 //CONTEXT
@@ -15,7 +15,6 @@ import { SCREENS } from '..';
 import { Header, Input, Text, Button } from '../../components';
 import { API } from '../../api';
 import { CommonActions } from '@react-navigation/native';
-import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 
 export default function NewPassword(props: any) {
 
@@ -130,11 +129,9 @@ export default function NewPassword(props: any) {
                 }}
                 screenName={STRING.set_new_password}
             />
-            <KeyboardAwareScrollView
+            <ScrollView
                 showsVerticalScrollIndicator={false}
-                enableOnAndroid={Platform.OS === 'android' && Number(Platform.Version) >= 35}
                 keyboardShouldPersistTaps="handled"
-                extraScrollHeight={Platform.OS === 'ios' ? getScaleSize(24) : 0}
                 contentContainerStyle={{
                     flexGrow: 1,
                     paddingBottom: getScaleSize(24)
@@ -187,7 +184,7 @@ export default function NewPassword(props: any) {
                         isError={confirmPasswordError}
                     />
                 </View>
-            </KeyboardAwareScrollView>
+            </ScrollView>
             <Button
                 title={STRING.reset_password}
                 style={{ marginVertical: getScaleSize(24), marginHorizontal: getScaleSize(24) }}

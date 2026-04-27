@@ -1,4 +1,4 @@
-import React, {useContext, useEffect, useRef, useState} from 'react';
+import React, { useContext, useEffect, useRef, useState } from 'react';
 import {
   View,
   StyleSheet,
@@ -9,13 +9,13 @@ import {
 } from 'react-native';
 
 //ASSETS
-import {FONTS, IMAGES} from '../../assets';
+import { FONTS, IMAGES } from '../../assets';
 
 //CONTEXT
-import {AuthContext, ThemeContext, ThemeContextType} from '../../context';
+import { AuthContext, ThemeContext, ThemeContextType } from '../../context';
 
 //CONSTANT
-import {arrayIcons, getScaleSize, SHOW_TOAST, useString} from '../../constant';
+import { arrayIcons, getScaleSize, SHOW_TOAST, useString } from '../../constant';
 
 //COMPONENT
 import {
@@ -28,21 +28,23 @@ import {
 } from '../../components';
 
 //PACKAGES
-import {SCREENS} from '..';
-import {API} from '../../api';
+import { SCREENS } from '..';
+import { API } from '../../api';
 import moment from 'moment';
-import {buildThreadId} from '../../services/chat';
+import { buildThreadId } from '../../services/chat';
+import { useTranslation } from 'react-i18next';
 
 export default function CompletedTaskDetails(props: any) {
   const STRING = useString();
-  const {theme} = useContext<any>(ThemeContext);
+  const { theme } = useContext<any>(ThemeContext);
+  const { t } = useTranslation();
 
   const [isStatus, setIsStatus] = useState(false);
   const [visibleTaskDetails, setVisibleTaskDetails] = useState(false);
   const [isLoading, setLoading] = useState(false);
   const [serviceDetails, setServiceDetails] = useState<any>({});
   const [cancelServiceDetails, setCancelServiceDetails] = useState<any>(null);
-  const {profile} = useContext<any>(AuthContext);
+  const { profile } = useContext<any>(AuthContext);
   const cancelScheduledServicePopupRef = useRef<any>(null);
 
   const item = props?.route?.params?.item ?? {};
@@ -87,7 +89,7 @@ export default function CompletedTaskDetails(props: any) {
       setLoading(true);
       const result = await API.Instance.post(
         API.API_ROUTES.addFavoriteProfessional +
-          `/${serviceDetails?.provider?.id}`,
+        `/${serviceDetails?.provider?.id}`,
       );
       if (result.status) {
         SHOW_TOAST(result?.data?.message ?? '', 'success');
@@ -107,7 +109,7 @@ export default function CompletedTaskDetails(props: any) {
       setLoading(true);
       const result = await API.Instance.delete(
         API.API_ROUTES.removeFavoriteProfessional +
-          `/${serviceDetails?.provider?.id}`,
+        `/${serviceDetails?.provider?.id}`,
       );
       if (result.status) {
         SHOW_TOAST(result?.data?.message ?? '', 'success');
@@ -127,7 +129,7 @@ export default function CompletedTaskDetails(props: any) {
       setLoading(true);
       const result = await API.Instance.get(
         API.API_ROUTES.getCancelServiceDetails +
-          `/${serviceDetails?.service_id}`,
+        `/${serviceDetails?.service_id}`,
       );
       if (result.status) {
         console.log('result==>', result?.data);
@@ -188,7 +190,7 @@ export default function CompletedTaskDetails(props: any) {
             <View
               style={[
                 styles(theme).imageView,
-                {backgroundColor: theme._D5D5D5},
+                { backgroundColor: theme._D5D5D5 },
               ]}
             />
           )}
@@ -200,7 +202,7 @@ export default function CompletedTaskDetails(props: any) {
             size={getScaleSize(24)}
             font={FONTS.Lato.Bold}
             color={theme.primary}>
-            {serviceDetails?.sub_category_name ?? ''}
+            {t(serviceDetails?.sub_category_name) ?? ''}
           </Text>
           <View style={styles(theme).informationView}>
             <View style={styles(theme).horizontalView}>
@@ -219,9 +221,9 @@ export default function CompletedTaskDetails(props: any) {
                   color={theme.primary}>
                   {serviceDetails?.chosen_datetime
                     ? moment
-                        .utc(serviceDetails?.chosen_datetime)
-                        .local()
-                        .format('DD MMM, YYYY')
+                      .utc(serviceDetails?.chosen_datetime)
+                      .local()
+                      .format('DD MMM, YYYY')
                     : '-'}
                 </Text>
               </View>
@@ -240,9 +242,9 @@ export default function CompletedTaskDetails(props: any) {
                   color={theme.primary}>
                   {serviceDetails?.chosen_datetime
                     ? moment
-                        .utc(serviceDetails?.chosen_datetime)
-                        .local()
-                        .format('hh:mm A')
+                      .utc(serviceDetails?.chosen_datetime)
+                      .local()
+                      .format('hh:mm A')
                     : '-'}
                 </Text>
               </View>
@@ -250,17 +252,17 @@ export default function CompletedTaskDetails(props: any) {
             <View
               style={[
                 styles(theme).horizontalView,
-                {marginTop: getScaleSize(12)},
+                { marginTop: getScaleSize(12) },
               ]}>
               <View style={styles(theme).itemView}>
                 {serviceDetails?.category_name ? (
                   <Image
                     style={[
                       styles(theme).informationIcon,
-                      {tintColor: theme._1A3D51},
+                      { tintColor: theme._1A3D51 },
                     ]}
                     source={
-                      {uri: serviceDetails?.category_logo}
+                      { uri: serviceDetails?.category_logo }
                     }
                     resizeMode="cover"
                   />
@@ -300,14 +302,14 @@ export default function CompletedTaskDetails(props: any) {
         </View>
         <View style={styles(theme).amountContainer}>
           <Text
-            style={{flex: 1.0}}
+            style={{ flex: 1.0 }}
             size={getScaleSize(18)}
             font={FONTS.Lato.Medium}
             color={theme._323232}>
             {STRING.FinalizedQuoteAmount}
           </Text>
           <Text
-            style={{flex: 1.0, marginTop: getScaleSize(8)}}
+            style={{ flex: 1.0, marginTop: getScaleSize(8) }}
             size={getScaleSize(27)}
             font={FONTS.Lato.Bold}
             color={theme._323232}>
@@ -317,7 +319,7 @@ export default function CompletedTaskDetails(props: any) {
         {serviceDetails?.task_status === 'accepted' && (
           <View style={styles(theme).amountContainer}>
             <Text
-              style={{flex: 1.0}}
+              style={{ flex: 1.0 }}
               size={getScaleSize(18)}
               font={FONTS.Lato.Medium}
               color={theme._323232}>
@@ -327,15 +329,15 @@ export default function CompletedTaskDetails(props: any) {
               data={['1', '2', '3', '4', '5', '6', '.', '.', '.']}
               horizontal
               showsHorizontalScrollIndicator={false}
-              renderItem={({item, index}) => {
+              renderItem={({ item, index }) => {
                 return (
                   <View
                     style={[
                       styles(theme).securityItemContainer,
-                      {marginLeft: index === 0 ? 0 : 6},
+                      { marginLeft: index === 0 ? 0 : 6 },
                     ]}>
                     <Text
-                      style={{flex: 1.0}}
+                      style={{ flex: 1.0 }}
                       size={getScaleSize(18)}
                       font={FONTS.Lato.Medium}
                       color={theme._323232}>
@@ -346,7 +348,7 @@ export default function CompletedTaskDetails(props: any) {
               }}
             />
             <Text
-              style={{flex: 1.0, marginTop: getScaleSize(12)}}
+              style={{ flex: 1.0, marginTop: getScaleSize(12) }}
               size={getScaleSize(11)}
               font={FONTS.Lato.Regular}
               color={'#424242'}>
@@ -357,7 +359,7 @@ export default function CompletedTaskDetails(props: any) {
         <View style={styles(theme).profileContainer}>
           <View style={styles(theme).horizontalView}>
             <Text
-              style={{flex: 1.0}}
+              style={{ flex: 1.0 }}
               size={getScaleSize(18)}
               font={FONTS.Lato.SemiBold}
               color={theme._323232}>
@@ -386,13 +388,13 @@ export default function CompletedTaskDetails(props: any) {
           <View
             style={[
               styles(theme).horizontalView,
-              {marginTop: getScaleSize(16)},
+              { marginTop: getScaleSize(16) },
             ]}>
             {serviceDetails?.provider?.profile_photo_url ? (
               <Image
                 style={styles(theme).profilePicView}
                 resizeMode="cover"
-                source={{uri: serviceDetails?.provider?.profile_photo_url}}
+                source={{ uri: serviceDetails?.provider?.profile_photo_url }}
               />
             ) : (
               <Image
@@ -401,7 +403,7 @@ export default function CompletedTaskDetails(props: any) {
               />
             )}
             <Text
-              style={{alignSelf: 'center', marginLeft: getScaleSize(16)}}
+              style={{ alignSelf: 'center', marginLeft: getScaleSize(16) }}
               size={getScaleSize(20)}
               font={FONTS.Lato.SemiBold}
               color={'#0F232F'}>
@@ -423,11 +425,11 @@ export default function CompletedTaskDetails(props: any) {
           <View
             style={[
               styles(theme).horizontalView,
-              {marginTop: getScaleSize(16)},
+              { marginTop: getScaleSize(16) },
             ]}>
             <TouchableOpacity
               activeOpacity={1}
-              style={[styles(theme).newButton, {marginRight: getScaleSize(6)}]}
+              style={[styles(theme).newButton, { marginRight: getScaleSize(6) }]}
               onPress={() => {
                 const conversationId = buildThreadId(
                   serviceDetails?.elderly_user?.id,
@@ -452,7 +454,7 @@ export default function CompletedTaskDetails(props: any) {
             </TouchableOpacity>
             <TouchableOpacity
               activeOpacity={1}
-              style={[styles(theme).newButton, {marginLeft: getScaleSize(6)}]}
+              style={[styles(theme).newButton, { marginLeft: getScaleSize(6) }]}
               onPress={() => {
                 props.navigation.navigate(SCREENS.OtherUserProfile.identifier, {
                   item: serviceDetails?.provider,
@@ -470,29 +472,29 @@ export default function CompletedTaskDetails(props: any) {
         <View
           style={[
             styles(theme).profileContainer,
-            {paddingVertical: getScaleSize(26)},
+            { paddingVertical: getScaleSize(26) },
           ]}>
           <TouchableOpacity
-            style={{flexDirection: 'row'}}
+            style={{ flexDirection: 'row' }}
             activeOpacity={1}
             onPress={() => {
               setIsStatus(!isStatus);
             }}>
             <Text
-              style={{flex: 1.0}}
+              style={{ flex: 1.0 }}
               size={getScaleSize(18)}
               font={FONTS.Lato.Medium}
               color={theme._323232}>
               {STRING.CheckStatus}
             </Text>
             <TouchableOpacity
-              style={{height: getScaleSize(25), width: getScaleSize(24)}}
+              style={{ height: getScaleSize(25), width: getScaleSize(24) }}
               activeOpacity={1}
               onPress={() => {
                 setIsStatus(!isStatus);
               }}>
               <Image
-                style={{height: getScaleSize(25), width: getScaleSize(24)}}
+                style={{ height: getScaleSize(25), width: getScaleSize(24) }}
                 source={isStatus ? IMAGES.up : IMAGES.down}
               />
             </TouchableOpacity>
@@ -500,7 +502,7 @@ export default function CompletedTaskDetails(props: any) {
           {isStatus && (
             <>
               <View style={styles(theme).devider}></View>
-              <View style={{marginTop: getScaleSize(32)}}>
+              <View style={{ marginTop: getScaleSize(32) }}>
                 {serviceDetails?.lifecycle?.map((item: any, index: number) => (
                   <StatusItem
                     key={index}
@@ -516,29 +518,29 @@ export default function CompletedTaskDetails(props: any) {
         <View
           style={[
             styles(theme).profileContainer,
-            {paddingVertical: getScaleSize(26)},
+            { paddingVertical: getScaleSize(26) },
           ]}>
           <TouchableOpacity
-            style={{flexDirection: 'row'}}
+            style={{ flexDirection: 'row' }}
             activeOpacity={1}
             onPress={() => {
               setVisibleTaskDetails(!visibleTaskDetails);
             }}>
             <Text
-              style={{flex: 1.0}}
+              style={{ flex: 1.0 }}
               size={getScaleSize(18)}
               font={FONTS.Lato.SemiBold}
               color={theme._323232}>
               {STRING.TaskDetails}
             </Text>
             <TouchableOpacity
-              style={{height: getScaleSize(25), width: getScaleSize(24)}}
+              style={{ height: getScaleSize(25), width: getScaleSize(24) }}
               activeOpacity={1}
               onPress={() => {
                 setVisibleTaskDetails(!visibleTaskDetails);
               }}>
               <Image
-                style={{height: getScaleSize(25), width: getScaleSize(24)}}
+                style={{ height: getScaleSize(25), width: getScaleSize(24) }}
                 source={visibleTaskDetails ? IMAGES.up : IMAGES.down}
               />
             </TouchableOpacity>
@@ -547,14 +549,14 @@ export default function CompletedTaskDetails(props: any) {
             <>
               <View style={styles(theme).devider}></View>
               <Text
-                style={{flex: 1.0, marginTop: getScaleSize(20)}}
+                style={{ flex: 1.0, marginTop: getScaleSize(20) }}
                 size={getScaleSize(18)}
                 font={FONTS.Lato.SemiBold}
                 color={'#424242'}>
                 {STRING.Servicedescription}
               </Text>
               <Text
-                style={{flex: 1.0, marginTop: getScaleSize(16)}}
+                style={{ flex: 1.0, marginTop: getScaleSize(16) }}
                 size={getScaleSize(14)}
                 font={FONTS.Lato.Medium}
                 color={theme._939393}>
@@ -562,7 +564,7 @@ export default function CompletedTaskDetails(props: any) {
               </Text>
               {serviceDetails?.media?.photos?.length > 0 && (
                 <Text
-                  style={{flex: 1.0, marginTop: getScaleSize(20)}}
+                  style={{ flex: 1.0, marginTop: getScaleSize(20) }}
                   size={getScaleSize(18)}
                   font={FONTS.Lato.SemiBold}
                   color={'#424242'}>
@@ -574,7 +576,7 @@ export default function CompletedTaskDetails(props: any) {
                 horizontal
                 keyExtractor={(item: any, index: number) => index.toString()}
                 showsHorizontalScrollIndicator={false}
-                renderItem={({item, index}) => {
+                renderItem={({ item, index }) => {
                   return (
                     <TouchableOpacity
                       onPress={() => {
@@ -587,7 +589,7 @@ export default function CompletedTaskDetails(props: any) {
                       }}>
                       <Image
                         style={[styles(theme).photosView]}
-                        source={{uri: item}}
+                        source={{ uri: item }}
                       />
                     </TouchableOpacity>
                   );
@@ -598,11 +600,11 @@ export default function CompletedTaskDetails(props: any) {
                 horizontal
                 keyExtractor={(item: any, index: number) => index.toString()}
                 showsHorizontalScrollIndicator={false}
-                renderItem={({item, index}) => {
+                renderItem={({ item, index }) => {
                   return (
                     <Image
                       style={[styles(theme).photosView]}
-                      source={{uri: item}}
+                      source={{ uri: item }}
                     />
                   );
                 }}
@@ -619,7 +621,7 @@ export default function CompletedTaskDetails(props: any) {
           </Text>
           <View style={styles(theme).newHorizontalView}>
             <Text
-              style={{flex: 1.0}}
+              style={{ flex: 1.0 }}
               size={getScaleSize(14)}
               font={FONTS.Lato.SemiBold}
               color={'#595959'}>
@@ -634,7 +636,7 @@ export default function CompletedTaskDetails(props: any) {
           </View>
           <View style={styles(theme).newHorizontalView}>
             <Text
-              style={{flex: 1.0}}
+              style={{ flex: 1.0 }}
               size={getScaleSize(14)}
               font={FONTS.Lato.SemiBold}
               color={'#595959'}>
@@ -649,7 +651,7 @@ export default function CompletedTaskDetails(props: any) {
           </View>
           <View style={styles(theme).newHorizontalView}>
             <Text
-              style={{flex: 1.0}}
+              style={{ flex: 1.0 }}
               size={getScaleSize(14)}
               font={FONTS.Lato.SemiBold}
               color={'#595959'}>
@@ -665,7 +667,7 @@ export default function CompletedTaskDetails(props: any) {
           <View style={styles(theme).dotView} />
           <View style={styles(theme).newHorizontalView}>
             <Text
-              style={{flex: 1.0}}
+              style={{ flex: 1.0 }}
               size={getScaleSize(20)}
               font={FONTS.Lato.SemiBold}
               color={'#0F232F'}>
@@ -679,7 +681,7 @@ export default function CompletedTaskDetails(props: any) {
             </Text>
           </View>
         </View>
-        <View style={{height: getScaleSize(16)}} />
+        <View style={{ height: getScaleSize(16) }} />
       </ScrollView>
       {serviceDetails?.task_status === 'completed' && (
         <Button
@@ -707,19 +709,19 @@ export default function CompletedTaskDetails(props: any) {
               size={getScaleSize(19)}
               font={FONTS.Lato.Bold}
               color={theme.primary}
-              style={{alignSelf: 'center'}}>
+              style={{ alignSelf: 'center' }}>
               {STRING.Cancel}
             </Text>
           </TouchableOpacity>
           <TouchableOpacity
             style={styles(theme).nextButtonContainer}
             activeOpacity={1}
-            onPress={() => {}}>
+            onPress={() => { }}>
             <Text
               size={getScaleSize(19)}
               font={FONTS.Lato.Bold}
               color={theme.white}
-              style={{alignSelf: 'center'}}>
+              style={{ alignSelf: 'center' }}>
               {STRING.Chat}
             </Text>
           </TouchableOpacity>
@@ -747,7 +749,7 @@ export default function CompletedTaskDetails(props: any) {
 
 const styles = (theme: ThemeContextType['theme']) =>
   StyleSheet.create({
-    container: {flex: 1, backgroundColor: theme.white},
+    container: { flex: 1, backgroundColor: theme.white },
     scrolledContainer: {
       marginTop: getScaleSize(19),
       marginHorizontal: getScaleSize(24),

@@ -17,6 +17,7 @@ export default function AddressMapScreen(props: any) {
     const mapRef = useRef<MapView>(null);
     const mapViewRef = useRef<any>(null);
     const searchTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+    const hasCenteredInitialLocationRef = useRef<boolean>(false);
 
     const [myLocation, setMyLocation] = useState<any>(null);
     const [searchText, setSearchText] = useState<string>('');
@@ -25,9 +26,11 @@ export default function AddressMapScreen(props: any) {
     const [isSearching, setIsSearching] = useState<boolean>(false);
     const [selectedPlaceObject, setSelectedPlaceObject] = useState<any>(null);
     const [selectedCoordinates, setSelectedCoordinates] = useState<any>(null);
+    const [selectedAddressText, setSelectedAddressText] = useState<string>('');
     const GOOGLE_PLACES_API_KEY = 'AIzaSyA0izPHXGkAk0BtOqAiwNOv1mKbZSdM0xM';
 
     const baseAddress =
+        selectedAddressText ||
         selectedPlaceObject?.description ||
         selectedPlaceObject?.formatted_address ||
         selectedPlaceObject?.name ||
@@ -40,12 +43,15 @@ export default function AddressMapScreen(props: any) {
             const data = await response.json();
             const firstResult = data?.results?.[0];
             if (firstResult) {
+                const resolvedAddress = firstResult?.formatted_address || '';
                 setSelectedPlaceObject({
                     ...firstResult,
-                    description: firstResult?.formatted_address || '',
+                    description: resolvedAddress,
+                    formatted_address: resolvedAddress,
                 });
                 setSelectedCoordinates({ latitude, longitude });
-                setSearchText(firstResult?.formatted_address || '');
+                setSearchText(resolvedAddress);
+                setSelectedAddressText(resolvedAddress);
             } else {
                 const fallbackAddress = `${latitude.toFixed(6)}, ${longitude.toFixed(6)}`;
                 setSelectedPlaceObject({
@@ -55,6 +61,7 @@ export default function AddressMapScreen(props: any) {
                 });
                 setSelectedCoordinates({ latitude, longitude });
                 setSearchText(fallbackAddress);
+                setSelectedAddressText(fallbackAddress);
             }
         } catch (error) {
             console.log('Reverse geocode error:', error);
@@ -66,6 +73,7 @@ export default function AddressMapScreen(props: any) {
             });
             setSelectedCoordinates({ latitude, longitude });
             setSearchText(fallbackAddress);
+            setSelectedAddressText(fallbackAddress);
         }
     };
 
@@ -82,6 +90,23 @@ export default function AddressMapScreen(props: any) {
             }
         );
     }, []);
+
+    useEffect(() => {
+        if (!myLocation || hasCenteredInitialLocationRef.current) {
+            return;
+        }
+
+        hasCenteredInitialLocationRef.current = true;
+        mapRef.current?.animateToRegion(
+            {
+                latitude: myLocation.latitude,
+                longitude: myLocation.longitude,
+                latitudeDelta: 0.01,
+                longitudeDelta: 0.01,
+            },
+            500
+        );
+    }, [myLocation]);
 
     useEffect(() => {
         return () => {
@@ -134,6 +159,7 @@ export default function AddressMapScreen(props: any) {
         setShowSearchModal(false);
         setSelectedPlaceObject(null);
         setSelectedCoordinates(null);
+        setSelectedAddressText('');
     };
 
     const onPressSearchItem = async (item: any) => {
@@ -162,7 +188,12 @@ export default function AddressMapScreen(props: any) {
                 description: item?.description || placeDetails?.formatted_address || '',
                 place_id: item?.place_id,
             });
-            setSearchText(item?.description || '');
+            const resolvedAddress =
+                item?.description ||
+                placeDetails?.formatted_address ||
+                '';
+            setSearchText(resolvedAddress);
+            setSelectedAddressText(resolvedAddress);
             setShowSearchModal(false);
         } catch (error) {
             console.log('Place details error:', error);
@@ -172,6 +203,7 @@ export default function AddressMapScreen(props: any) {
     };
 
     const openEditAddressScreen = () => {
+        const selectedAddressForEdit = searchText?.trim() || baseAddress || '';
         const addressComponents = selectedPlaceObject?.address_components || [];
         const getAddressPart = (types: string[]) =>
             addressComponents.find((component: any) =>
@@ -195,7 +227,7 @@ export default function AddressMapScreen(props: any) {
         props.navigation.navigate(SCREENS.EditAddress.identifier, {
             myLocation: selectedLocation,
             selectedPlaceObject: selectedPlaceObject,
-            selectedAddress: baseAddress,
+            selectedAddress: selectedAddressForEdit,
             city,
             state,
             country,
@@ -245,18 +277,18 @@ export default function AddressMapScreen(props: any) {
                         </View>
                         {showSearchModal && (
                             <View
-                                style={styles(theme).searchModalContainer}
-                                onStartShouldSetResponder={() => true}
-                                onMoveShouldSetResponder={() => true}>
+                                style={styles(theme).searchModalContainer}>
                                 <FlatList
                                     data={searchResults}
                                     keyExtractor={(item, index) => `${item?.place_id || index}`}
-                                    keyboardShouldPersistTaps={'always'}
+                                    keyboardShouldPersistTaps={'handled'}
+                                    keyboardDismissMode={'none'}
                                     scrollEnabled={false}
                                     nestedScrollEnabled={true}
                                     renderItem={({ item }) => (
                                         <TouchableOpacity
                                             style={styles(theme).searchItemContainer}
+                                            activeOpacity={0.7}
                                             onPress={() => onPressSearchItem(item)}>
                                             <Text style={styles(theme).searchItemText}>
                                                 {item?.description}
@@ -287,21 +319,8 @@ export default function AddressMapScreen(props: any) {
                     showsCompass={true}
                     showsScale={true}
                     provider={PROVIDER_GOOGLE}
-                    onPress={(e) => {
+                    onPress={() => {
                         setShowSearchModal(false);
-                        const { latitude, longitude } = e.nativeEvent.coordinate;
-                        const next = { latitude, longitude };
-                        setMyLocation(next);
-                        setSelectedCoordinates(next);
-                        mapRef.current?.animateToRegion(
-                            {
-                                ...next,
-                                latitudeDelta: 0.01,
-                                longitudeDelta: 0.01,
-                            },
-                            350,
-                        );
-                        fetchAddressFromCoordinates(latitude, longitude);
                     }}
                     style={{ flex: 1, width: '100%', height: '100%' }}
                     initialRegion={
@@ -360,7 +379,7 @@ export default function AddressMapScreen(props: any) {
                 bottomSheetRef={mapViewRef}
                 height={getScaleSize(380)}
                 description={
-                    baseAddress ||
+                    searchText ||
                     ''
                 }
                 title={STRING.confirm_your_address}

@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useState } from 'react';
+import React, { useContext, useEffect, useRef, useState } from 'react';
 import {
   View,
   StatusBar,
@@ -52,6 +52,7 @@ import moment from 'moment';
 import { createThumbnail } from 'react-native-create-thumbnail';
 import Geolocation from 'react-native-geolocation-service';
 import { PERMISSIONS, request, RESULTS } from 'react-native-permissions';
+import { useTranslation } from 'react-i18next';
 
 const { width } = Dimensions.get('window');
 const cellSize = (width - 30) / 7;
@@ -65,6 +66,7 @@ export default function CreateRequest(props: any) {
 
   const STRING = useString();
   const { theme } = useContext<any>(ThemeContext);
+  const { t } = useTranslation();
   const { selectedAddress, setSelectedAddress } = useContext<any>(AuthContext);
 
   const category = props.route.params?.category;
@@ -109,6 +111,8 @@ export default function CreateRequest(props: any) {
   const [location, setLocation] = useState<any>(null);
   const [mediaModal, setMediaModal] = useState(false);
   const [mediaType, setMediaType] = useState<any>(null);
+
+  const isMediaPickerOpenRef = useRef(false);
 
 
   // const totalSteps = selectedCategory === 'professional' ? 6 : 7;
@@ -210,6 +214,8 @@ export default function CreateRequest(props: any) {
   };
 
   const pickImageFromCamera = (type: string) => {
+    if (isMediaPickerOpenRef.current) return;
+    isMediaPickerOpenRef.current = true;
     launchCamera(
       {
         mediaType: 'mixed', // 📷 photo + 🎥 video
@@ -219,18 +225,22 @@ export default function CreateRequest(props: any) {
         saveToPhotos: true,
       },
       (response) => {
+        isMediaPickerOpenRef.current = false;
         handleMediaResponse(response, type);
       }
     );
   };
 
   const pickImage = (type: string) => {
+    if (isMediaPickerOpenRef.current) return;
+    isMediaPickerOpenRef.current = true;
     launchImageLibrary(
       {
         mediaType: 'mixed',
         selectionLimit: 1,
       },
       (response) => {
+        isMediaPickerOpenRef.current = false;
         handleMediaResponse(response, type);
       }
     );
@@ -785,7 +795,7 @@ console.log('asset size==> 1570024', asset?.fileSize , MAX_VIDEO_SIZE_BYTES)
             size={getScaleSize(24)}
             font={FONTS.Lato.Bold}
             color={theme.primary}>
-            {selectedCategoryItem?.category_name ?? 'No Category Selected'}
+            {t(selectedCategoryItem?.category_name) ?? 'No Category Selected'}
           </Text>
           <View style={styles(theme).categoryView}>
             {selectSubCategoryItem?.image ?
@@ -804,7 +814,7 @@ console.log('asset size==> 1570024', asset?.fileSize , MAX_VIDEO_SIZE_BYTES)
               size={getScaleSize(20)}
               font={FONTS.Lato.SemiBold}
               color={theme.primary}>
-              {selectSubCategoryItem?.subcategory_name ?? 'No Service Selected'}
+              {t(selectSubCategoryItem?.subcategory_name) ?? 'No Service Selected'}
             </Text>
           </View>
           <Text
@@ -1443,7 +1453,7 @@ console.log('asset size==> 1570024', asset?.fileSize , MAX_VIDEO_SIZE_BYTES)
                     size={getScaleSize(16)}
                     font={FONTS.Lato.Bold}
                     color={theme.primary}>
-                    {item?.subcategory_name}
+                    {t(item?.subcategory_name) ?? ''}
                   </Text>
                 </TouchableOpacity>
               )

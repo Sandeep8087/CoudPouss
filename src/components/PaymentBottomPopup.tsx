@@ -7,6 +7,7 @@ import {
   Image,
   Dimensions,
   Platform,
+  ScrollView,
 } from 'react-native';
 import { ThemeContext, ThemeContextType } from '../context';
 import { getScaleSize, useString } from '../constant';
@@ -20,27 +21,6 @@ const PaymentBottomPopup = (props: any) => {
   const STRING = useString();
   const { theme } = useContext<any>(ThemeContext);
   const { serviceAmount, couponCode, onChangeText, appliedCouponCode, couponCodeError, onPressViewAllCoupons, onPressApply } = props;
-  const maxSheetHeight = Dimensions.get('screen').height * 0.9;
-  const desiredHeight = couponCodeError ? getScaleSize(780) : getScaleSize(750);
-  const sheetHeight = Math.min(desiredHeight, maxSheetHeight);
-  const [keyboardHeight, setKeyboardHeight] = useState(0);
-
-  useEffect(() => {
-    const showEvent = Platform.OS === 'ios' ? 'keyboardWillShow' : 'keyboardDidShow';
-    const hideEvent = Platform.OS === 'ios' ? 'keyboardWillHide' : 'keyboardDidHide';
-
-    const showSub = Keyboard.addListener(showEvent, e => {
-      setKeyboardHeight(e?.endCoordinates?.height ?? 0);
-    });
-    const hideSub = Keyboard.addListener(hideEvent, () => {
-      setKeyboardHeight(0);
-    });
-
-    return () => {
-      showSub.remove();
-      hideSub.remove();
-    };
-  }, []);
 
   return (
     <RBSheet
@@ -62,156 +42,147 @@ const PaymentBottomPopup = (props: any) => {
         },
         container: {
           backgroundColor: '#FFF',
-          height: sheetHeight,
+          height: couponCodeError ? getScaleSize(780) : getScaleSize(750),
           borderTopLeftRadius: getScaleSize(20),
           borderTopRightRadius: getScaleSize(20),
         },
       }}>
       <View style={styles(theme).sheetContent}>
-        <KeyboardAwareScrollView
-          bounces={false}
-          showsVerticalScrollIndicator={false}
-          enableOnAndroid={Platform.OS === 'android' && Number(Platform.Version) >= 35}
-          enableAutomaticScroll={true}
-          keyboardShouldPersistTaps="handled"
-          extraScrollHeight={getScaleSize(100)}
-          contentContainerStyle={[
-            styles(theme).scrollContent,
-            { paddingBottom: keyboardHeight + getScaleSize(24) },
-          ]}>
-        <View style={styles(theme).content}>
-          <Image style={styles(theme).icon} source={IMAGES.payment_icon} />
-          <Text
-            size={getScaleSize(22)}
-            font={FONTS.Lato.Bold}
-            color={theme.primary}
-            style={{ alignSelf: 'center', marginTop: getScaleSize(16) }}>
-            {STRING.Proceedtopayment}
-          </Text>
-          <Text
-            size={getScaleSize(14)}
-            font={FONTS.Lato.Medium}
-            color={'#555555'}
-            align="center"
-            style={{
-              alignSelf: 'center',
-              marginTop: getScaleSize(16),
-              marginHorizontal: getScaleSize(22),
-            }}>
-            {STRING.payment_message}
-          </Text>
-          <View style={styles(theme).informationContainer}>
+        <ScrollView showsVerticalScrollIndicator={false}>
+          <View style={styles(theme).content}>
+            <Image style={styles(theme).icon} source={IMAGES.payment_icon} />
             <Text
-              size={getScaleSize(18)}
-              font={FONTS.Lato.SemiBold}
-              color={theme._323232}>
-              {STRING.FinalPaymentBreakdown}
+              size={getScaleSize(22)}
+              font={FONTS.Lato.Bold}
+              color={theme.primary}
+              style={{ alignSelf: 'center', marginTop: getScaleSize(16) }}>
+              {STRING.Proceedtopayment}
             </Text>
-            <View style={styles(theme).horizontalView}>
+            <Text
+              size={getScaleSize(14)}
+              font={FONTS.Lato.Medium}
+              color={'#555555'}
+              align="center"
+              style={{
+                alignSelf: 'center',
+                marginTop: getScaleSize(16),
+                marginHorizontal: getScaleSize(22),
+              }}>
+              {STRING.payment_message}
+            </Text>
+            <View style={styles(theme).informationContainer}>
               <Text
-                style={{ flex: 1.0 }}
-                size={getScaleSize(14)}
+                size={getScaleSize(18)}
                 font={FONTS.Lato.SemiBold}
-                color={'#595959'}>
-                {STRING.FinalizedQuoteAmount}
+                color={theme._323232}>
+                {STRING.FinalPaymentBreakdown}
               </Text>
-              <Text
-                size={getScaleSize(14)}
-                font={FONTS.Lato.SemiBold}
-                color={'#595959'}>
-                {`€${serviceAmount?.finalize_quote_amount ?? 0}`}
-              </Text>
-            </View>
-            <View style={styles(theme).horizontalView}>
-              <Text
-                style={{ flex: 1.0 }}
-                size={getScaleSize(14)}
-                font={FONTS.Lato.SemiBold}
-                color={'#595959'}>
-                {STRING.PlatformFee + ' (10%)'}
-              </Text>
-              <Text
-                size={getScaleSize(14)}
-                font={FONTS.Lato.SemiBold}
-                color={'#595959'}>
-                {`€${serviceAmount?.platform_fees ?? 0}`}
-              </Text>
-            </View>
-            <View style={styles(theme).horizontalView}>
-              <Text
-                style={{ flex: 1.0 }}
-                size={getScaleSize(14)}
-                font={FONTS.Lato.SemiBold}
-                color={'#595959'}>
-                {STRING.Taxes}
-              </Text>
-              <Text
-                size={getScaleSize(14)}
-                font={FONTS.Lato.SemiBold}
-                color={'#595959'}>
-                {`€${serviceAmount?.tax ?? 0}`}
-              </Text>
-            </View>
-            {serviceAmount?.coupon_code && (
               <View style={styles(theme).horizontalView}>
                 <Text
                   style={{ flex: 1.0 }}
                   size={getScaleSize(14)}
                   font={FONTS.Lato.SemiBold}
                   color={'#595959'}>
-                  {STRING.discount}
+                  {STRING.FinalizedQuoteAmount}
                 </Text>
                 <Text
                   size={getScaleSize(14)}
                   font={FONTS.Lato.SemiBold}
                   color={'#595959'}>
-                  {`-€${serviceAmount?.discount_amount ?? 0}`}
+                  {`€${serviceAmount?.finalize_quote_amount ?? 0}`}
                 </Text>
               </View>
-            )}
-            <View style={styles(theme).dotView} />
-            <View style={styles(theme).horizontalView}>
+              <View style={styles(theme).horizontalView}>
+                <Text
+                  style={{ flex: 1.0 }}
+                  size={getScaleSize(14)}
+                  font={FONTS.Lato.SemiBold}
+                  color={'#595959'}>
+                  {STRING.PlatformFee + ' (10%)'}
+                </Text>
+                <Text
+                  size={getScaleSize(14)}
+                  font={FONTS.Lato.SemiBold}
+                  color={'#595959'}>
+                  {`€${serviceAmount?.platform_fees ?? 0}`}
+                </Text>
+              </View>
+              <View style={styles(theme).horizontalView}>
+                <Text
+                  style={{ flex: 1.0 }}
+                  size={getScaleSize(14)}
+                  font={FONTS.Lato.SemiBold}
+                  color={'#595959'}>
+                  {STRING.Taxes}
+                </Text>
+                <Text
+                  size={getScaleSize(14)}
+                  font={FONTS.Lato.SemiBold}
+                  color={'#595959'}>
+                  {`€${serviceAmount?.tax ?? 0}`}
+                </Text>
+              </View>
+              {serviceAmount?.coupon_code && (
+                <View style={styles(theme).horizontalView}>
+                  <Text
+                    style={{ flex: 1.0 }}
+                    size={getScaleSize(14)}
+                    font={FONTS.Lato.SemiBold}
+                    color={'#595959'}>
+                    {STRING.discount}
+                  </Text>
+                  <Text
+                    size={getScaleSize(14)}
+                    font={FONTS.Lato.SemiBold}
+                    color={'#595959'}>
+                    {`-€${serviceAmount?.discount_amount ?? 0}`}
+                  </Text>
+                </View>
+              )}
+              <View style={styles(theme).dotView} />
+              <View style={styles(theme).horizontalView}>
+                <Text
+                  style={{ flex: 1.0 }}
+                  size={getScaleSize(20)}
+                  font={FONTS.Lato.SemiBold}
+                  color={'#0F232F'}>
+                  {STRING.Total}
+                </Text>
+                <Text
+                  size={getScaleSize(20)}
+                  font={FONTS.Lato.SemiBold}
+                  color={theme.primary}>
+                  {`€${serviceAmount?.total_renegotiated ?? 0}`}
+                </Text>
+              </View>
+            </View>
+            <View style={styles(theme).inputContainer}>
+              <Input
+                inputTitle={STRING.enter_discount_coupon}
+                placeholder={STRING.coupon_code}
+                placeholderTextColor={theme._818285}
+                inputColor={true}
+                disabled={appliedCouponCode?.id ? true : false}
+                value={appliedCouponCode?.code_name ? appliedCouponCode?.code_name : appliedCouponCode?.coupon_code ? appliedCouponCode?.coupon_code : couponCode}
+                couponCode={appliedCouponCode?.id ? STRING.applied : STRING.apply}
+                onPressCouponCode={onPressApply}
+                onChangeText={onChangeText}
+                isError={couponCodeError}
+              />
               <Text
-                style={{ flex: 1.0 }}
-                size={getScaleSize(20)}
+                size={getScaleSize(14)}
                 font={FONTS.Lato.SemiBold}
-                color={'#0F232F'}>
-                {STRING.Total}
-              </Text>
-              <Text
-                size={getScaleSize(20)}
-                font={FONTS.Lato.SemiBold}
-                color={theme.primary}>
-                {`€${serviceAmount?.total_renegotiated ?? 0}`}
+                align="right"
+                style={{ marginTop: getScaleSize(8) }}
+                color={theme.primary}
+                onPress={() => {
+                  onPressViewAllCoupons()
+                }}>
+                {STRING.view_all_coupons}
               </Text>
             </View>
           </View>
-          <View style={styles(theme).inputContainer}>
-            <Input
-              inputTitle={STRING.enter_discount_coupon}
-              placeholder={STRING.coupon_code}
-              placeholderTextColor={theme._818285}
-              inputColor={true}
-              value={appliedCouponCode?.code_name ? appliedCouponCode?.code_name : appliedCouponCode?.coupon_code ? appliedCouponCode?.coupon_code : couponCode}
-              couponCode={appliedCouponCode?.id ? STRING.applied : STRING.apply}
-              onPressCouponCode={onPressApply}
-              onChangeText={onChangeText}
-              isError={couponCodeError}
-            />
-            <Text
-              size={getScaleSize(14)}
-              font={FONTS.Lato.SemiBold}
-              align="right"
-              style={{ marginTop: getScaleSize(8) }}
-              color={theme.primary}
-              onPress={() => {
-                onPressViewAllCoupons()
-              }}>
-              {STRING.view_all_coupons}
-            </Text>
-          </View>
-        </View>
-        </KeyboardAwareScrollView>
+        </ScrollView>
         <View style={styles(theme).buttonContainer}>
           <TouchableOpacity
             style={styles(theme).backButtonContainer}
@@ -260,6 +231,7 @@ const styles = (theme: ThemeContextType['theme']) =>
     },
     sheetContent: {
       flex: 1,
+      paddingBottom: getScaleSize(24),
     },
     scrollContent: {
       paddingBottom: getScaleSize(12),
@@ -288,7 +260,6 @@ const styles = (theme: ThemeContextType['theme']) =>
       flexDirection: 'row',
       marginHorizontal: getScaleSize(22),
       marginTop: getScaleSize(12),
-      marginBottom: getScaleSize(20),
     },
     backButtonContainer: {
       flex: 1.0,

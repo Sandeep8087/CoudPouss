@@ -73,7 +73,7 @@ function FavouritesItem(props: any) {
           style={{ alignSelf: 'center' }}
           font={FONTS.Lato.Regular}
           color={theme._999999}>
-          {`(${item?.total_reviews ?? '0'} Reviews)`}
+          {`(${item?.total_reviews ?? '0'} ${STRING.reviews})`}
         </Text>
       </View>
     </TouchableOpacity>

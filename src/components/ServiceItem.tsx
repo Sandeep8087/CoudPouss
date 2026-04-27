@@ -11,10 +11,13 @@ import {getScaleSize, useString} from '../constant';
 import Text from './Text';
 import {FONTS, IMAGES} from '../assets';
 import Tooltip from 'react-native-walkthrough-tooltip';
+import { useTranslation } from 'react-i18next';
+
 
 function ServiceItem(props: any) {
 
   const STRING = useString();
+  const { t } = useTranslation();
   const {
     item,
     itemContainer,
@@ -86,7 +89,7 @@ function ServiceItem(props: any) {
                 font={FONTS.Lato.SemiBold}
                 color={theme._323232}
             >
-                {item.subcategory_name ?? ''}
+                {t(item.subcategory_name) ?? ''}
             </Text>
             {isReview &&
                 (

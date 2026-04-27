@@ -31,11 +31,13 @@ import {
 import { SCREENS } from '..';
 import { API } from '../../api';
 import { CommonActions, useIsFocused } from '@react-navigation/native';
+import { useTranslation } from 'react-i18next';
 
 export default function ManageServices(props: any) {
 
     const isFromSelectServices: boolean = props?.route?.params?.isFromSelectServices ?? false;
     const { theme } = useContext<any>(ThemeContext);
+    const { t } = useTranslation();
     const STRING = useString();
     const bottomSheetRef = useRef<any>(null);
     const deleteServicePopupRef = useRef<any>(null);
@@ -263,7 +265,7 @@ export default function ManageServices(props: any) {
                                                             ? theme.white
                                                             : theme._818285
                                                     }>
-                                                    {item?.category_name ?? ''}
+                                                    {t(item?.category_name ?? '')}
                                                 </Text>
                                             </TouchableOpacity>
                                         );

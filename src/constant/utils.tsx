@@ -243,6 +243,17 @@ export const validateAddress = (value: string) => {
   return "";
 }
 
+export const getAndroidBottomInsetSpacing = (
+  bottomInset: number = 0,
+  minimumSpacing: number = getScaleSize(8),
+) => {
+  if (Platform.OS !== 'android') {
+    return 0;
+  }
+
+  return Math.max(bottomInset, minimumSpacing);
+};
+
 const SCREEN_WIDTH = Dimensions.get('window').width;
 const TABBAR_RATIO = getScaleSize(105) / getScaleSize(428);
 export const TABBAR_HEIGHT = SCREEN_WIDTH * TABBAR_RATIO;

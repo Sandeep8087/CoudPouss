@@ -62,8 +62,6 @@ export default function OtherUserProfile(props: any) {
       const params = {
         user_id: providerId ? providerId : item?.id,
       }
-
-      console.log('item?.id,', item?.id,)
       setLoading(true);
       const result = await API.Instance.post(API.API_ROUTES.otherUserProfile, params);
       if (result.status) {
@@ -99,7 +97,6 @@ export default function OtherUserProfile(props: any) {
   async function onLikeReviewRating(item: any, action: string) {
 
     if (isLoading) return;
-    console.log('item=====', item);
     try {
       setLoading(true);
       const params = {

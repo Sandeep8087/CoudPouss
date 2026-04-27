@@ -35,11 +35,13 @@ import {
 import { API } from '../../api';
 import moment from 'moment';
 import { SCREENS } from '..';
+import { useTranslation } from 'react-i18next';
 
 export default function OpenRequestDetails(props: any) {
 
     const STRING = useString();
     const { theme } = useContext<any>(ThemeContext);
+    const { t } = useTranslation();
     const item = props?.route?.params?.item;
 
     const [isStatus, setIsStatus] = useState(true);
@@ -67,7 +69,7 @@ export default function OpenRequestDetails(props: any) {
             setLoading(false);
             if (result.status) {
                 setServiceDetails(result?.data?.data ?? {});
-                
+
             } else {
                 SHOW_TOAST(result?.data?.message ?? '', 'error')
             }
@@ -109,7 +111,7 @@ export default function OpenRequestDetails(props: any) {
                         size={getScaleSize(24)}
                         font={FONTS.Lato.Bold}
                         color={theme.primary}>
-                        {serviceDetails?.sub_category_name ?? ''}
+                        {t(serviceDetails?.sub_category_name) ?? ''}
                     </Text>
                     <View style={styles(theme).informationView}>
                         <View style={styles(theme).horizontalView}>
@@ -155,7 +157,7 @@ export default function OpenRequestDetails(props: any) {
                                 {serviceDetails?.category_logo ?
                                     <Image
                                         style={[styles(theme).informationIcon, { tintColor: theme._1A3D51 }]}
-                                        source={{uri: serviceDetails?.category_logo}}
+                                        source={{ uri: serviceDetails?.category_logo }}
                                         resizeMode='cover'
                                     />
                                     :
@@ -169,7 +171,7 @@ export default function OpenRequestDetails(props: any) {
                                     size={getScaleSize(12)}
                                     font={FONTS.Lato.Medium}
                                     color={theme.primary}>
-                                    {serviceDetails?.category_name ?? ''}
+                                    {t(serviceDetails?.category_name ?? '')}
                                 </Text>
                             </View>
                             <View style={styles(theme).itemView}>

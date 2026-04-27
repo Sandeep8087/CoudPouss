@@ -12,6 +12,8 @@ import React, { useContext } from 'react';
 //CONTEXT
 import { ThemeContext, ThemeContextType } from '../context';
 
+import i18n from '../Translation/i18n';
+
 //CONSTANTS & ASSETS
 import { arrayIcons, getScaleSize, useString } from '../constant';
 import { FONTS, IMAGES } from '../assets';
@@ -19,10 +21,14 @@ import { FONTS, IMAGES } from '../assets';
 //COMPONENTS
 import Text from './Text';
 import moment from 'moment';
+import { useTranslation } from 'react-i18next';
 
 function RequestItem(props: any) {
   const STRING = useString();
   const { theme } = useContext(ThemeContext);
+  const { t } = useTranslation();
+
+
 
   const { item, selectedFilter, isFromSearch } = props;
 
@@ -53,7 +59,7 @@ function RequestItem(props: any) {
         <View style={styles(theme).imageContainer}>
           {item?.category_logo ? (
             <Image
-              source={{uri: isFromSearch ? item?.category_logo_url : item?.category_logo}}
+              source={{ uri: isFromSearch ? item?.category_logo_url : item?.category_logo }}
               style={[styles(theme).imageIcon, { tintColor: theme.white }]}
               resizeMode="cover"
             />
@@ -66,7 +72,7 @@ function RequestItem(props: any) {
           size={getScaleSize(24)}
           font={FONTS.Lato.Bold}
           color={theme.primary}>
-          {`${item?.category_name} Service`}
+          {`${t(item.category_name)} ${STRING.service}`}
         </Text>
       </View>
       <View
@@ -82,7 +88,7 @@ function RequestItem(props: any) {
           size={getScaleSize(20)}
           font={FONTS.Lato.SemiBold}
           color={theme.primary}>
-          {item?.sub_category_name ?? ''}
+          {t(item?.sub_category_name) ?? ''}
         </Text>
         {selectedFilter?.title === STRING.all && (
           <View style={styles(theme).statusContainer}>

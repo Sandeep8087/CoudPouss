@@ -157,7 +157,7 @@ export default function CancelScheduledServicePopup(props: CancelScheduledServic
                         color={theme._555555}
                         align='center'
                         style={{ marginTop: getScaleSize(16), marginHorizontal: getScaleSize(24) }}>
-                        {STRING.cancelled_message + ` ${cancelServiceDetails?.deduction_percentage ?? '0'}% ` + STRING.cancellation_message_3}
+                        {cancelServiceDetails?.message ?? ''}
                     </Text>
                 )}
                 {cancelServiceDetails?.cancellation_allowed == false && (
@@ -182,6 +182,7 @@ export default function CancelScheduledServicePopup(props: CancelScheduledServic
                             <Text
                                 size={getScaleSize(19)}
                                 font={FONTS.Lato.Bold}
+                                numberOfLines={1}
                                 color={theme.white}
                                 style={{ alignSelf: 'center' }}>
                                 {STRING.keep_booking}
@@ -198,6 +199,7 @@ export default function CancelScheduledServicePopup(props: CancelScheduledServic
                                     size={getScaleSize(19)}
                                     font={FONTS.Lato.Bold}
                                     color={theme._C62828}
+                                    numberOfLines={1}
                                     style={{ alignSelf: 'center' }}>
                                     {STRING.confirm_cancellation}
                                 </Text>
@@ -251,6 +253,7 @@ const styles = (theme: ThemeContextType['theme']) =>
             marginTop: getScaleSize(24),
         },
         backButtonContainer: {
+            flex: 1.0,
             justifyContent: 'center',
             borderWidth: 1,
             borderColor: theme._C62828,
@@ -264,7 +267,7 @@ const styles = (theme: ThemeContextType['theme']) =>
             paddingHorizontal: getScaleSize(7)
         },
         nextButtonContainer: {
-            // flex: 1.0,
+            
             justifyContent: 'center',
             borderWidth: 1,
             borderColor: theme.primary,

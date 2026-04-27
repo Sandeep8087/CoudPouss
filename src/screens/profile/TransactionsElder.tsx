@@ -5,14 +5,15 @@ import {
     TouchableOpacity,
     View,
     SectionList,
+    ActivityIndicator,
 } from 'react-native';
-import React, { useContext, useEffect, useState } from 'react';
+import React, { useContext, useEffect, useRef, useState } from 'react';
 
 // CONTEXT
 import { ThemeContext, ThemeContextType } from '../../context';
 
 // COMPONENTS
-import { Header, DateRangeModal, TransactionItem, Text, ProgressView } from '../../components';
+import { Header, DateRangeModal, TransactionItem, Text } from '../../components';
 
 // CONSTANT
 import { getScaleSize, SHOW_TOAST, useString } from '../../constant';
@@ -72,6 +73,8 @@ export default function TransactionsElder(props: any) {
 
     const [visible, setVisible] = useState(false);
     const [open, setOpen] = useState(false);
+    const [showEmpty, setShowEmpty] = useState(false);
+    const emptyTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
     const [requestData, setRequestData] = useState<any>({
         transactions: [],        // SectionList data
@@ -179,6 +182,35 @@ export default function TransactionsElder(props: any) {
         }
     }, [requestData.page]);
 
+    useEffect(() => {
+        if (emptyTimerRef.current) {
+            clearTimeout(emptyTimerRef.current);
+            emptyTimerRef.current = null;
+        }
+
+        if (requestData.isLoading) {
+            setShowEmpty(false);
+            return;
+        }
+
+        if ((requestData.flatTransactions?.length ?? 0) > 0) {
+            setShowEmpty(false);
+            return;
+        }
+
+        emptyTimerRef.current = setTimeout(() => {
+            setShowEmpty(true);
+            emptyTimerRef.current = null;
+        }, 400);
+
+        return () => {
+            if (emptyTimerRef.current) {
+                clearTimeout(emptyTimerRef.current);
+                emptyTimerRef.current = null;
+            }
+        };
+    }, [requestData.isLoading, requestData.flatTransactions]);
+
     /* ================= ACTIONS ================= */
 
     const loadMore = () => {
@@ -229,7 +261,7 @@ export default function TransactionsElder(props: any) {
 
     const renderEmptyComponent = () => {
         // Show empty only when API call finished
-        if (requestData.isLoading) return null;
+        if (!showEmpty) return null;
 
         return (
             <View style={styles(theme).emptyContainer}>
@@ -326,6 +358,15 @@ export default function TransactionsElder(props: any) {
                 onEndReachedThreshold={0.4}
                 showsVerticalScrollIndicator={false}
                 ListEmptyComponent={renderEmptyComponent}
+                ListFooterComponent={() => {
+                    if (!requestData.isLoading) return null;
+
+                    return (
+                        <View style={styles(theme).footerLoaderContainer}>
+                            <ActivityIndicator color={theme.primary} />
+                        </View>
+                    );
+                }}
                 renderSectionHeader={({ section }: any) => (
                     <View style={styles(theme).sectionHeaderContainer}>
                         <View style={{ flex: 1 }}>
@@ -367,7 +408,6 @@ export default function TransactionsElder(props: any) {
                 }}
             />
 
-            {requestData.isLoading && <ProgressView />}
         </View>
     );
 }
@@ -430,5 +470,10 @@ const styles = (theme: ThemeContextType['theme']) => StyleSheet.create({
         alignItems: 'center',
         justifyContent: 'center',
         marginTop: getScaleSize(80),
+    },
+    footerLoaderContainer: {
+        paddingVertical: getScaleSize(16),
+        alignItems: 'center',
+        justifyContent: 'center',
     },
 });

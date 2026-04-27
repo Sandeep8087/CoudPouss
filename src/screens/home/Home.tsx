@@ -50,7 +50,7 @@ export default function Home(props: any) {
           StatusBar.setBarStyle('light-content');
         }, 600);
       }
-    }, []),
+    }, [theme.primary]),
   );
 
   const isFocused = useIsFocused();

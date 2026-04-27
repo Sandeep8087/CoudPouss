@@ -51,9 +51,6 @@ export default function ProfessionalTaskDetails(props: any) {
     }
   }, []);
 
-  console.log('item==>', item)
-  console.log('serviceId==>', serviceId)
-
   // function getItemUrl() {
   //   if (item?.quote_status === 'send') {
   //     return '/quotes'

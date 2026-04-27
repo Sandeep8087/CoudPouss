@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useState } from 'react';
+import React, { useContext, useEffect, useRef, useState } from 'react';
 import {
   View,
   StatusBar,
@@ -35,6 +35,7 @@ import {
 import { launchImageLibrary } from 'react-native-image-picker';
 import moment from 'moment';
 import { createThumbnail } from 'react-native-create-thumbnail';
+import { useTranslation } from 'react-i18next';
 
 //SCREENS
 import { SCREENS } from '..';
@@ -45,6 +46,7 @@ export default function AddQuote(props: any) {
   const isItem = props?.route?.params?.isItem
 
   const STRING = useString();
+  const { t } = useTranslation();
 
   const { theme } = useContext<any>(ThemeContext);
 
@@ -65,6 +67,8 @@ export default function AddQuote(props: any) {
   const [descriptionError, setDescriptionError] = useState('');
   const [docError, setDocError] = useState('');
   const [videoError, setVideoError] = useState('');
+
+  const isMediaPickerOpenRef = useRef(false);
 
   useEffect(() => {
     if (!isServiceDetails && isItem) {
@@ -128,6 +132,8 @@ export default function AddQuote(props: any) {
   // return res.data.storage_key;
 
   const pickDocument = async (index: number) => {
+    if (isMediaPickerOpenRef.current) return;
+    isMediaPickerOpenRef.current = true;
     setDocError('');
     setLoading(true);
     launchImageLibrary(
@@ -136,6 +142,7 @@ export default function AddQuote(props: any) {
         selectionLimit: 1,
       },
       async response => {
+        isMediaPickerOpenRef.current = false;
         if (response.didCancel){
           setLoading(false);
           return
@@ -190,6 +197,8 @@ export default function AddQuote(props: any) {
   };
 
   const pickVideo = () => {
+    if (isMediaPickerOpenRef.current) return;
+    isMediaPickerOpenRef.current = true;
     setVideoError('');
     launchImageLibrary(
       {
@@ -197,6 +206,7 @@ export default function AddQuote(props: any) {
         videoQuality: 'high',
       },
       async response => {
+        isMediaPickerOpenRef.current = false;
         if (response.didCancel) return;
         if (response.errorCode) {
           SHOW_TOAST(response.errorMessage || 'Error', 'error');
@@ -309,16 +319,14 @@ export default function AddQuote(props: any) {
           });
         } else {
           console.log('result==>', result)
-          if (result?.code === 403) {
-            SHOW_TOAST(result?.data?.detail || STRING.failed_to_send_quote, 'error');
-          } else {
-            SHOW_TOAST(result?.message || STRING.failed_to_send_quote, 'error');
-          }
+         SHOW_TOAST(result?.error?.message , 'error')
         }
       } catch (e: any) {
         setLoading(false);
         console.log('e==>', e)
-        SHOW_TOAST(e?.message || STRING.something_went_wrong, 'error');
+        SHOW_TOAST(e?.message ||
+        e?.data?.detail ||
+        e?.data?.message || STRING.something_went_wrong, 'error');
       }
     }
   }
@@ -355,7 +363,7 @@ export default function AddQuote(props: any) {
             size={getScaleSize(24)}
             font={FONTS.Lato.Bold}
             color={theme.primary}>
-            {isServiceDetails?.subcategory_info?.sub_category_name ?? ''}
+            {t(isServiceDetails?.subcategory_info?.sub_category_name) ?? ''}
           </Text>
           <View style={styles(theme).informationView}>
             <View style={styles(theme).horizontalView}>
@@ -398,7 +406,7 @@ export default function AddQuote(props: any) {
                 { marginTop: getScaleSize(12) },
               ]}>
               <View style={styles(theme).itemView}>
-                {isServiceDetails?.category_info?.category_name ?
+                {isServiceDetails?.category_info?.category_logo ?
                   <Image
                     style={[styles(theme).informationIcon, { tintColor: theme._1A3D51 }]}
                     source={{uri: isServiceDetails?.category_info?.category_logo}}
@@ -415,7 +423,7 @@ export default function AddQuote(props: any) {
                   size={getScaleSize(12)}
                   font={FONTS.Lato.Medium}
                   color={theme.primary}>
-                  {`${isServiceDetails?.category_info?.category_name ?? ''} Services`}
+                  {`${t(isServiceDetails?.category_info?.category_name ?? '')} Services`}
                 </Text>
               </View>
               <View style={styles(theme).itemView}>

@@ -18,12 +18,14 @@ import { AuthContext } from '../context';
 
 //PACKAGES
 import moment from 'moment';
+import { useTranslation } from 'react-i18next';
 
 export default function ServiceRequest(props: any) {
 
   const { theme } = useContext<any>(ThemeContext);
 
   const { profile } = useContext(AuthContext)
+  const { t } = useTranslation();
 
   const STRING = useString();
 
@@ -52,7 +54,7 @@ export default function ServiceRequest(props: any) {
           size={getScaleSize(24)}
           font={FONTS.Lato.Bold}
           color={theme._2C6587}>
-          {data?.subcategory_info?.sub_category_name?.name}
+          {t(data?.subcategory_info?.sub_category_name?.name)}
         </Text>
         <Text
           style={{ alignSelf: 'center' }}
@@ -118,7 +120,7 @@ export default function ServiceRequest(props: any) {
               size={getScaleSize(14)}
               font={FONTS.Lato.Medium}
               color={theme._424242}>
-              {`${data?.category_info?.category_name?.name} ${STRING.service}`}
+              {`${t(data?.category_info?.category_name?.name)} ${STRING.service}`}
             </Text>
           </View>
           <View style={styles(theme).itemView}>

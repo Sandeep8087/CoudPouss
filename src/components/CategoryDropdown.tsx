@@ -1,4 +1,4 @@
-import React, { useContext, useState } from 'react';
+import React, { useContext, useMemo, useState } from 'react';
 import { View, StyleSheet, Image, StyleProp, ViewStyle } from 'react-native';
 import { Dropdown } from 'react-native-element-dropdown';
 import { IMAGES } from '../assets/images';
@@ -7,6 +7,7 @@ import { getScaleSize } from '../constant/scaleSize';
 import { FONTS } from '../assets';
 import { ThemeContext, ThemeContextType } from '../context/ThemeProvider';
 import { arrayIcons, useString } from '../constant';
+import { useTranslation } from 'react-i18next';
 
 interface DropdownProps {
     container?: StyleProp<ViewStyle>;
@@ -17,12 +18,21 @@ interface DropdownProps {
 
 const CategoryDropdown = (props: DropdownProps) => {
 
+    const { t } = useTranslation();
+
     const { container, data, selectedItem, onChange } = props;
     const { theme } = useContext<any>(ThemeContext);
 
     const STRING = useString();
     
     const [isFocus, setIsFocus] = useState(false);
+
+    const translatedData = useMemo(() => {
+        return (data ?? []).map((item: any) => ({
+            ...item,
+            category_name_i18n: t(item?.category_name, { defaultValue: item?.category_name }),
+        }));
+    }, [data, t]);
 
     const renderItem = (item: any) => {
         const isSelected = item?.id === selectedItem?.id;
@@ -38,7 +48,7 @@ const CategoryDropdown = (props: DropdownProps) => {
                         size={getScaleSize(16)}
                         font={FONTS.Lato.SemiBold}
                         color={isSelected ? theme._2C6587 : theme._818285}>
-                        {item.category_name}
+                        {t(item.category_name)}
                     </Text>
                 </View>
                 {isSelected ?
@@ -58,13 +68,13 @@ const CategoryDropdown = (props: DropdownProps) => {
                 placeholderStyle={styles(theme).placeholderStyle}
                 selectedTextStyle={styles(theme).selectedTextStyle}
                 containerStyle={styles(theme).containerStyle}
-                data={data ?? []}
+                data={translatedData}
                 showsVerticalScrollIndicator={false}
                 maxHeight={getScaleSize(500)}
-                labelField="category_name"
+                labelField="category_name_i18n"
                 valueField="category_name"
                 placeholder={STRING.select_category}
-                value={selectedItem?.category_name ?? "category_name"}
+                value={selectedItem?.category_name ?? null}
                 onFocus={() => setIsFocus(true)}
                 onBlur={() => setIsFocus(false)}
                 onChange={(item) => {
